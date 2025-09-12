@@ -1,3 +1,4 @@
+// client/src/components/PurchaseInvoiceItemsTable.jsx
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -8,6 +9,7 @@ import {
   DialogTitle,
   TextField,
   MenuItem,
+  CircularProgress,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,15 +19,14 @@ import {
   updateItem,
   deleteItem,
   clearItems,
-} from "../features/purchaseOrderItems/purchaseOrderItemsSlice";
-import { fetchProducts } from "../features/products/productsSlice"; // assuming you already have productsSlice
+} from "../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice";
+import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
-const PurchaseOrderItemsTable = ({ orderId }) => {
+const PurchaseInvoiceItemsTable = ({ invoiceId }) => {
   const dispatch = useDispatch();
 
-
   const { items = [], loading: itemsStatus } = useSelector(
-    (state) => state.purchaseOrderItems || {}
+    (state) => state.purchaseInvoiceItems || {}
   );
 
   const { items: products = [], loading: productsStatus } = useSelector(
@@ -43,22 +44,21 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
     batch_number: "",
     expiry_date: "",
     quantity: "",
+    bonus_quantity: "",
     unit_price: "",
     discount: "",
-    expected_date: "",
   });
 
   useEffect(() => {
-    if (orderId) {
-
-      dispatch(fetchItemsByOrder(orderId));
+    if (invoiceId) {
+      dispatch(fetchItemsByOrder(invoiceId));
       dispatch(fetchProducts());
       dispatch(fetchWarehouses());
     }
     return () => {
       dispatch(clearItems());
     };
-  }, [dispatch, orderId]);
+  }, [dispatch, invoiceId]);
 
   const handleOpenDialog = (item = null) => {
     setEditItem(item);
@@ -70,9 +70,9 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
           batch_number: item.batch_number || "",
           expiry_date: item.expiry_date || "",
           quantity: item.quantity,
+          bonus_quantity: item.bonus_quantity || "",
           unit_price: item.unit_price,
           discount: item.discount,
-          expected_date: item.expected_date || "",
         }
         : {
           product_id: "",
@@ -80,9 +80,9 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
           batch_number: "",
           expiry_date: "",
           quantity: "",
+          bonus_quantity: "",
           unit_price: "",
           discount: "",
-          expected_date: "",
         }
     );
     setOpenDialog(true);
@@ -95,9 +95,16 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
 
   const handleSave = () => {
     if (editItem) {
-      dispatch(updateItem({ id: editItem.id, data: { ...formData, purchase_order_id: orderId } }));
+      dispatch(
+        updateItem({
+          id: editItem.id,
+          data: { ...formData, purchase_invoice_id: invoiceId },
+        })
+      );
     } else {
-      dispatch(createItem({ ...formData, purchase_order_id: orderId }));
+      dispatch(
+        createItem({ ...formData, purchase_invoice_id: invoiceId })
+      );
     }
     handleCloseDialog();
   };
@@ -118,15 +125,19 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
     { accessorKey: "batch_number", header: "Batch Number" },
     { accessorKey: "expiry_date", header: "Expiry Date" },
     { accessorKey: "quantity", header: "Quantity" },
+    { accessorKey: "bonus_quantity", header: "Bonus Quantity" },
     { accessorKey: "unit_price", header: "Unit Price" },
     { accessorKey: "discount", header: "Discount" },
     { accessorKey: "total_price", header: "Total Price" },
-    { accessorKey: "expected_date", header: "Expected Date" },
     {
       header: "Actions",
       Cell: ({ row }) => (
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button size="small" variant="outlined" onClick={() => handleOpenDialog(row.original)}>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => handleOpenDialog(row.original)}
+          >
             Edit
           </Button>
           <Button
@@ -141,7 +152,9 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
       ),
     },
   ];
+
   const isLoading = productsStatus === "loading" || itemsStatus === "loading" || warehousesStatus === "loading";
+
   return (
     <Box>
       <Box sx={{ mb: 2 }}>
@@ -149,23 +162,28 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
           Add Item
         </Button>
       </Box>
+
       {isLoading ? (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            mt: 5,
-          }}
-        >
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
           <CircularProgress />
         </Box>
       ) : (
         <MaterialReactTable columns={columns} data={items} />
       )}
+
       {/* Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
-        <DialogTitle>{editItem ? "Edit Item" : "Add Item"}</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>
+          {editItem ? "Edit Purchase Invoice Item" : "Add Purchase Invoice Item"}
+        </DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}
+        >
           <TextField
             select
             label="Product"
@@ -187,7 +205,6 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
               </MenuItem>
             ))}
           </TextField>
-
           <TextField
             select
             label="Warehouse"
@@ -200,44 +217,53 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
               </MenuItem>
             ))}
           </TextField>
-
-
           <TextField
             label="Batch Number"
             value={formData.batch_number}
-            onChange={(e) => setFormData({ ...formData, batch_number: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, batch_number: e.target.value })
+            }
           />
           <TextField
             type="date"
             label="Expiry Date"
             InputLabelProps={{ shrink: true }}
             value={formData.expiry_date}
-            onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, expiry_date: e.target.value })
+            }
           />
           <TextField
             label="Quantity"
             type="number"
             value={formData.quantity}
-            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, quantity: e.target.value })
+            }
+          />
+          <TextField
+            label="Bonus Quantity"
+            type="number"
+            value={formData.bonus_quantity}
+            onChange={(e) =>
+              setFormData({ ...formData, bonus_quantity: e.target.value })
+            }
           />
           <TextField
             label="Unit Price"
             type="number"
             value={formData.unit_price}
-            onChange={(e) => setFormData({ ...formData, unit_price: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, unit_price: e.target.value })
+            }
           />
           <TextField
             label="Discount"
             type="number"
             value={formData.discount}
-            onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-          />
-          <TextField
-            type="date"
-            label="Expected Date"
-            InputLabelProps={{ shrink: true }}
-            value={formData.expected_date}
-            onChange={(e) => setFormData({ ...formData, expected_date: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, discount: e.target.value })
+            }
           />
         </DialogContent>
         <DialogActions>
@@ -251,4 +277,4 @@ const PurchaseOrderItemsTable = ({ orderId }) => {
   );
 };
 
-export default PurchaseOrderItemsTable;
+export default PurchaseInvoiceItemsTable;

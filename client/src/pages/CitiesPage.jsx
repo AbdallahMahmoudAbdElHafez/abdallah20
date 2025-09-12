@@ -83,8 +83,7 @@ export default function CitiesPage() {
 
   const columns = useMemo(
     () => [
-      { accessorKey: "id", header: "ID" },
-      { accessorKey: "name", header: "Name" }
+      { accessorKey: "name", header: "المنطقه" }
     ],
     []
   );
@@ -132,12 +131,12 @@ export default function CitiesPage() {
       />
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>{editRow ? "Edit City" : "Add City"}</DialogTitle>
+        <DialogTitle>{editRow ? "تعديل" : "اضافه"}</DialogTitle>
        <DialogContent>
           <TextField
             fullWidth
             margin="dense"
-            label="Name"
+            label="المنطقه"
             value={formData.name}
              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />

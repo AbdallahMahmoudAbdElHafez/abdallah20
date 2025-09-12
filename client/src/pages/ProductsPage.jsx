@@ -69,11 +69,11 @@ export default function ProductsPage() {
 
   const columns = useMemo(
     () => [
-      { accessorKey: "id", header: "ID" },
-      { accessorKey: "name", header: "Name" },
-      { accessorKey: "price", header: "Price" },
-      { accessorKey: "cost_price", header: "Cost Price" },
-      { accessorKey: "unit", header: "Unit", Cell: ({ row }) => row.original.unit?.name || "-" },
+     
+      { accessorKey: "name", header: "اسم المنتج" },
+      { accessorKey: "price", header: "السعر" },
+      { accessorKey: "cost_price", header: "سعر التكلفة" },
+      { accessorKey: "unit", header: "الوحدة", Cell: ({ row }) => row.original.unit?.name || "-" },
     ],
     []
   );
@@ -91,8 +91,8 @@ export default function ProductsPage() {
         enableGlobalFilter
         renderRowActions={({ row }) => (
           <Box sx={{ display: "flex", gap: 1 }}>
-            <Button size="small" variant="outlined" onClick={() => handleOpenDialog(row.original)}>Edit</Button>
-            <Button size="small" color="error" variant="outlined" onClick={() => handleDelete(row.original.id)}>Delete</Button>
+            <Button size="small" variant="outlined" onClick={() => handleOpenDialog(row.original)}>تعديل</Button>
+            <Button size="small" color="error" variant="outlined" onClick={() => handleDelete(row.original.id)}>حذف</Button>
           </Box>
         )}
       />
@@ -102,10 +102,10 @@ export default function ProductsPage() {
         <DialogTitle>{editRow ? "Edit Product" : "Add Product"}</DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} mt={1} minWidth={300}>
-            <TextField label="Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-            <TextField label="Price" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
-            <TextField label="Cost Price" type="number" value={formData.cost_price} onChange={(e) => setFormData({ ...formData, cost_price: e.target.value })} />
-            <TextField select label="Unit" value={formData.unit_id} onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}>
+            <TextField label="اسم المنتج" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+            <TextField label="السعر" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
+            <TextField label="سعر التكلفة" type="number" value={formData.cost_price} onChange={(e) => setFormData({ ...formData, cost_price: e.target.value })} />
+            <TextField select label="الوحدة" value={formData.unit_id} onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}>
               <MenuItem value="">None</MenuItem>
               {units.map(u => <MenuItem key={u.id} value={u.id}>{u.name}</MenuItem>)}
             </TextField>

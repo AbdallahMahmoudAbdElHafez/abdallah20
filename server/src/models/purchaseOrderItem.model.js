@@ -6,6 +6,7 @@ export default (sequelize) => {
         id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
         purchase_order_id: { type: DataTypes.INTEGER, allowNull: false },
         product_id: { type: DataTypes.INTEGER, allowNull: false },
+        warehouse_id: { type: DataTypes.INTEGER, allowNull: false },
         batch_number: { type: DataTypes.STRING(100) },
         expiry_date: { type: DataTypes.DATE },
         quantity: { type: DataTypes.DECIMAL(18, 2), defaultValue: 0.0 },

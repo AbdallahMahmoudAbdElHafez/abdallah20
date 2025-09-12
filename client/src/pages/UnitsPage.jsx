@@ -47,11 +47,11 @@ export default function UnitsPage() {
       .then(() => setSnackbar({ open: true, message: "Unit deleted!", severity: "info" }));
   };
 
-  const columns = useMemo(() => [{ accessorKey: "id", header: "ID" }, { accessorKey: "name", header: "Name" }], []);
+  const columns = useMemo(() => [ { accessorKey: "name", header: "الوحدات" }], []);
 
   return (
-    <>
-      <Button variant="contained" sx={{ mb: 2 }} onClick={() => handleOpenDialog()}>Add Unit</Button>
+    <Box  >
+      <Button variant="contained" sx={{ mb: 2 }} onClick={() => handleOpenDialog()}>إضافه</Button>
 
       <MaterialReactTable
         columns={columns}
@@ -69,10 +69,10 @@ export default function UnitsPage() {
       />
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>{editRow ? "Edit Unit" : "Add Unit"}</DialogTitle>
+        <DialogTitle>{editRow ? "تحديث" : "إضافه"}</DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} mt={1} minWidth={300}>
-            <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <TextField label="اسم الوحدة" value={name} onChange={(e) => setName(e.target.value)} />
           </Box>
         </DialogContent>
         <DialogActions>
@@ -84,6 +84,6 @@ export default function UnitsPage() {
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
         <Alert severity={snackbar.severity} onClose={() => setSnackbar({ ...snackbar, open: false })}>{snackbar.message}</Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 }

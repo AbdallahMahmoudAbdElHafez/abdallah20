@@ -49,11 +49,11 @@ export default function CountyPage() {
       .then(() => setSnackbar({ open: true, message: "Country deleted!", severity: "info" }));
   };
 
-  const columns = useMemo(() => [{ accessorKey: "id", header: "ID" }, { accessorKey: "name", header: "Name" }], []);
+  const columns = useMemo(() => [{ accessorKey: "name", header: "اسم الدولة" }], []);
 
   return (
     <Box p={4} sx={{ direction: 'rtl' }} >
-      <Button variant="contained" sx={{ mb: 2 }} onClick={() => handleOpenDialog()}>Add Country</Button>
+      <Button variant="contained" sx={{ mb: 2 }} onClick={() => handleOpenDialog()}>إضافة</Button>
 
       <MaterialReactTable
         columns={columns}
@@ -63,8 +63,7 @@ export default function CountyPage() {
         enableSorting
         enableGlobalFilter
         enableRowActions
-        muiTableBodyCellProps={{ align: 'center', sx: { py: '2px' } }}
-        muiTableHeadCellProps={{ align: 'center' }}
+
         renderRowActions={({ row }) => (
           <Box sx={{ display: "flex", gap: 1 }}>
             <IconButton color="info" onClick={() => handleOpenDialog(row.original)}>
@@ -86,10 +85,10 @@ export default function CountyPage() {
       />
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>{editRow ? "Edit Country" : "Add Country"}</DialogTitle>
+        <DialogTitle>{editRow ? "تعديل" : "اضافه"}</DialogTitle>
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} mt={1} minWidth={300}>
-            <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <TextField label="الدوله" value={name} onChange={(e) => setName(e.target.value)} />
           </Box>
         </DialogContent>
         <DialogActions>

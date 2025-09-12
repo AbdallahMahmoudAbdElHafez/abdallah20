@@ -95,7 +95,7 @@ const PartiesPage = () => {
   };
 
   const columns = [
-    { accessorKey: "name", header: "الاسم" },
+    { accessorKey: "name", header: "العملاء/المورديين" },
     {
       accessorKey: "party_type",
       header: "النوع",
@@ -166,13 +166,13 @@ const PartiesPage = () => {
       {/* Breadcrumbs */}
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
         <Typography color="inherit">الرئيسية</Typography>
-        <Typography color="text.primary">الأطراف (Parties)</Typography>
+        <Typography color="text.primary">العملاء/المورديين (Parties)</Typography>
       </Breadcrumbs>
 
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <Typography variant="h5">الأطراف</Typography>
+        <Typography variant="h5">العملاء/المورديين</Typography>
         <Button variant="contained" onClick={() => handleOpen()}>
-          إضافة طرف جديد
+          إضافة مورد/عميل جديد
         </Button>
       </Box>
 
@@ -185,7 +185,7 @@ const PartiesPage = () => {
       {/* Add/Edit Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {editingParty ? "تعديل طرف" : "إضافة طرف جديد"}
+          {editingParty ? "تعديل " : "اضافه"}
         </DialogTitle>
         <DialogContent>
           <TextField

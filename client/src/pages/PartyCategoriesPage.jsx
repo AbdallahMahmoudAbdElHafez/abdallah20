@@ -62,20 +62,16 @@ const PartyCategoriesPage = () => {
   };
 
   const columns = [
-    {
-      accessorKey: "id",
-      header: "ID",
-      size: 50,
-    },
+
     {
       accessorKey: "name",
-      header: "Category Name",
+      header: "التصنيفات",
       Cell: ({ cell }) => (
         <Chip label={cell.getValue()} color="primary" variant="outlined" />
       ),
     },
     {
-      header: "Actions",
+      header: "الاجراءات",
       Cell: ({ row }) => (
         <Box>
           <Button
@@ -84,7 +80,7 @@ const PartyCategoriesPage = () => {
             onClick={() => handleOpen(row.original)}
             sx={{ mr: 1 }}
           >
-            Edit
+            تعديل
           </Button>
           <Button
             size="small"
@@ -92,7 +88,7 @@ const PartyCategoriesPage = () => {
             variant="outlined"
             onClick={() => handleDelete(row.original.id)}
           >
-            Delete
+            حذف
           </Button>
         </Box>
       ),
@@ -104,11 +100,11 @@ const PartyCategoriesPage = () => {
       {/* Breadcrumbs */}
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
         <Link to="/">Home</Link>
-        <Typography color="text.primary">Party Categories</Typography>
+        <Typography color="text.primary">تصنيفات العملاء</Typography>
       </Breadcrumbs>
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5">Party Categories</Typography>
+        <Typography variant="h5">تصنيفات العملاء</Typography>
         <Button variant="contained" onClick={() => handleOpen()}>
           Add Category
         </Button>
@@ -126,12 +122,12 @@ const PartyCategoriesPage = () => {
       {/* Add/Edit Dialog */}
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>
-          {editingRow ? "Edit Category" : "Add New Category"}
+          {editingRow ? "تعديل" : "اضافه"}
         </DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
-            label="Category Name"
+            label="اسم التصنيف"
             fullWidth
             value={formData.name}
             onChange={(e) =>
@@ -142,7 +138,7 @@ const PartyCategoriesPage = () => {
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button variant="contained" onClick={handleSubmit}>
-            {editingRow ? "Update" : "Add"}
+            {editingRow ? "تعديل" : "اضافه"}
           </Button>
         </DialogActions>
       </Dialog>

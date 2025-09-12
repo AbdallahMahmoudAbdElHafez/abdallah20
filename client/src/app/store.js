@@ -10,8 +10,8 @@ import PartyCategoriesreducer from "../features/partyCategories/partyCategoriesS
 import PartiesReducer from "../features/parties/partiesSlice"
 import PurchaseOrdersreducer from "../features/purchaseOrders/purchaseOrdersSlice"
 import purchaseOrderItemsReducer from '../features/purchaseOrderItems/purchaseOrderItemsSlice'
-
-
+import purchaseInvoicesReducer from '../features/purchaseInvoices/purchaseInvoicesSlice'
+import purchaseInvoiceItemsReducer from '../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice'
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -25,6 +25,8 @@ export const store = configureStore({
     parties:PartiesReducer,
     purchaseOrders:PurchaseOrdersreducer,
     purchaseOrderItems: purchaseOrderItemsReducer,
+    purchaseInvoices: purchaseInvoicesReducer,
+    purchaseInvoiceItems: purchaseInvoiceItemsReducer,
 
 
   },

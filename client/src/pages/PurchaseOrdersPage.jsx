@@ -23,9 +23,11 @@ import {
 } from "../features/purchaseOrders/purchaseOrdersSlice";
 import { fetchParties } from "../features/parties/partiesSlice"; // suppliers
 import PurchaseOrderItemsTable from "../components/PurchaseOrderItemsTable";
+import { useNavigate } from "react-router-dom";
 
 const PurchaseOrdersPage = () => {
   const dispatch = useDispatch();
+const navigate = useNavigate();
 
   const { items:orders , loading: ordersStatus } = useSelector(
     (state) => state.purchaseOrders
@@ -124,7 +126,20 @@ const { items: parties, loading: partiesStatus } = useSelector(
         </Box>
       ),
     },
-  ];
+     {
+    header: "Invoices",
+    Cell: ({ row }) => (
+      <Button
+        size="small"
+        variant="outlined"
+        onClick={() =>
+          navigate(`/purchase-invoices?purchase_order_id=${row.original.id}`)
+        }
+      >
+        View Invoices
+      </Button>
+    ),
+  }];
 
   const isLoading = ordersStatus === "loading" || partiesStatus === "loading";
 

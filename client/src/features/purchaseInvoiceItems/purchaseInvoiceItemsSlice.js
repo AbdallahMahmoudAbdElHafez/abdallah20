@@ -1,68 +1,79 @@
-// src/redux/purchaseInvoiceItemsSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import purchaseInIvoicetemsApi from "../../api/purchaseInvoiceItemsApi";
 
-
-export const fetchInvoiceItems = createAsyncThunk(
-  "purchaseInvoiceItems/fetch",
-  async (invoiceId) => {
-    const res = await axios.get(`http://localhost:5000/api/purchase-invoices/${invoiceId}/items`);
-    return { invoiceId, items: res.data };
+export const fetchItemsByOrder = createAsyncThunk(
+  "purchaseInvoiceItems/fetchByOrder",
+  async (orderId) => {
+    const res = await purchaseInIvoicetemsApi.getAllByInvoice(orderId);
+    console.log(res)
+   
+    return res.data;
   }
 );
 
-export const addInvoiceItem = createAsyncThunk(
-  "purchaseInvoiceItems/add",
-  async ({ invoiceId, item }) => {
-    const res = await axios.post(`http://localhost:5000/api/purchase-invoices/${invoiceId}/items`, item);
-    return { invoiceId, item: res.data };
+export const createItem = createAsyncThunk(
+  "purchaseInvoiceItems/create",
+  async (item) => {
+    const res = await purchaseInIvoicetemsApi.create(item);
+    return res.data;
   }
 );
 
-export const updateInvoiceItem = createAsyncThunk(
+export const updateItem = createAsyncThunk(
   "purchaseInvoiceItems/update",
-  async ({ invoiceId, id, item }) => {
-    const res = await axios.put(`http://localhost:5000/api/purchase-invoice-items/${id}`, item);
-    return { invoiceId, item: res.data };
+  async ({ id, data }) => {
+    const res = await purchaseInIvoicetemsApi.update(id, data);
+    return res.data;
   }
 );
 
-export const deleteInvoiceItem = createAsyncThunk(
+export const deleteItem = createAsyncThunk(
   "purchaseInvoiceItems/delete",
-  async ({ invoiceId, id }) => {
-    await axios.delete(`http://localhost:5000/api/purchase-invoice-items/${id}`);
-    return { invoiceId, id };
+  async (id) => {
+    await purchaseInIvoicetemsApi.delete(id);
+    return id;
   }
 );
 
 const purchaseInvoiceItemsSlice = createSlice({
   name: "purchaseInvoiceItems",
-  initialState: { byInvoice: {}, loading: false, error: null },
-  reducers: {},
+  initialState: {
+    items: [],
+    loading: false,
+    error: null,
+  },
+  reducers: {
+    clearItems: (state) => {
+      state.items = [];
+    },
+  },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchInvoiceItems.pending, (state) => { state.loading = true; })
-      .addCase(fetchInvoiceItems.fulfilled, (state, action) => {
+      .addCase(fetchItemsByOrder.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchItemsByOrder.fulfilled, (state, action) => {
         state.loading = false;
-        state.byInvoice[action.payload.invoiceId] = action.payload.items;
+        state.items = action.payload;
       })
-      .addCase(addInvoiceItem.fulfilled, (state, action) => {
-        state.byInvoice[action.payload.invoiceId].push(action.payload.item);
-      })
-      .addCase(updateInvoiceItem.fulfilled, (state, action) => {
-        const items = state.byInvoice[action.payload.invoiceId];
-        const idx = items.findIndex(i => i.id === action.payload.item.id);
-        if (idx > -1) items[idx] = action.payload.item;
-      })
-      .addCase(deleteInvoiceItem.fulfilled, (state, action) => {
-        const items = state.byInvoice[action.payload.invoiceId];
-        state.byInvoice[action.payload.invoiceId] = items.filter(i => i.id !== action.payload.id);
-      })
-      .addCase(fetchInvoiceItems.rejected, (state, action) => {
+      .addCase(fetchItemsByOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+      .addCase(createItem.fulfilled, (state, action) => {
+        state.items.push(action.payload);
+      })
+      .addCase(updateItem.fulfilled, (state, action) => {
+        const index = state.items.findIndex((i) => i.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+      })
+      .addCase(deleteItem.fulfilled, (state, action) => {
+        state.items = state.items.filter((i) => i.id !== action.payload);
       });
   },
 });
 
+export const { clearItems } = purchaseInvoiceItemsSlice.actions;
 export default purchaseInvoiceItemsSlice.reducer;

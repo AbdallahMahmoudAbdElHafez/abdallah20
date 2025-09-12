@@ -12,8 +12,9 @@ import PurchaseOrderModel from './purchaseOrder.model.js';
 import PurchaseOrderItemModel from './purchaseOrderItem.model.js';
 import PartyModel from './party.model.js';
 import partyCategoryModel from './partyCategory.model.js';
-
-
+import PurchaseInvoiceModel from './purchaseInvoice.model.js';
+import PurchaseInvoiceItemModel from './purchaseInvoiceItem.model.js';
+import InventoryTransactionModel from './inventoryTransaction.model.js';
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -33,8 +34,9 @@ const Party = PartyModel(sequelize);
 const PartyCategory = partyCategoryModel(sequelize);
 const PurchaseOrder = PurchaseOrderModel(sequelize);
 const PurchaseOrderItem = PurchaseOrderItemModel(sequelize);
-
-
+const PurchaseInvoice = PurchaseInvoiceModel(sequelize);
+const PurchaseInvoiceItem = PurchaseInvoiceItemModel(sequelize);
+const InventoryTransaction = InventoryTransactionModel(sequelize);
 // العلاقات
 // Product - Unit relationship
 Unit.hasMany(Product, { foreignKey: 'unit_id', as: 'products' });
@@ -58,12 +60,19 @@ Account.hasMany(Account, { as: "children", foreignKey: "parent_account_id" });
 // PurchaseOrder  -party relationship
 Party.hasMany(PurchaseOrder, { foreignKey: "supplier_id" });
 PurchaseOrder.belongsTo(Party, { foreignKey: "supplier_id" });
-// PurchaseOrder - PurchaseOrderItem - Product relationship
+// PurchaseOrder - PurchaseOrderItem  relationship
 PurchaseOrder.hasMany(PurchaseOrderItem, { foreignKey: "purchase_order_id", as: "items" });
 PurchaseOrderItem.belongsTo(PurchaseOrder, { foreignKey: "purchase_order_id" });
+// PurchaseOrderItem - Product relationship
 Product.hasMany(PurchaseOrderItem, { foreignKey: "product_id" });
 PurchaseOrderItem.belongsTo(Product, { foreignKey: "product_id" });
 
+// purchaseorderitem - warehouse relationship
+Warehouse.hasMany(PurchaseOrderItem, { foreignKey: "warehouse_id" });
+PurchaseOrderItem.belongsTo(Warehouse, { foreignKey: "warehouse_id" });
+// purchaseInvoiceitem - warehouse relationship
+Warehouse.hasMany(PurchaseInvoiceItem, { foreignKey: "warehouse_id" });
+PurchaseInvoiceItem.belongsTo(Warehouse, { foreignKey: "warehouse_id" });
 
 //party - party category relationship
 PartyCategory.hasMany(Party, { foreignKey: "category_id" });
@@ -76,7 +85,55 @@ Party.belongsTo(Account, { foreignKey: "account_id" })
 City.hasMany(Party, { foreignKey: "city_id" })
 Party.belongsTo(City, { foreignKey: "city_id" })
 
+// PurchaseInvoice ↔ Party (supplier)
+Party.hasMany(PurchaseInvoice, {
+  foreignKey: "supplier_id",
+  as: "invoices",
+});
+PurchaseInvoice.belongsTo(Party, {
+  foreignKey: "supplier_id",
+  as: "supplier",
+});
 
+// PurchaseInvoice ↔ PurchaseOrder
+PurchaseOrder.hasMany(PurchaseInvoice, {
+  foreignKey: "purchase_order_id",
+  as: "invoices",
+});
+PurchaseInvoice.belongsTo(PurchaseOrder, {
+  foreignKey: "purchase_order_id",
+  as: "purchase_order",
+});
+
+// ✅ PurchaseInvoice ↔ Items
+PurchaseInvoice.hasMany(PurchaseInvoiceItem, {
+  foreignKey: "purchase_invoice_id",
+  as: "items",
+});
+PurchaseInvoiceItem.belongsTo(PurchaseInvoice, {
+  foreignKey: "purchase_invoice_id",
+  as: "invoice",
+});
+
+// ✅ Product ↔ PurchaseInvoiceItem
+Product.hasMany(PurchaseInvoiceItem, {
+  foreignKey: "product_id",
+  as: "invoice_items",
+});
+PurchaseInvoiceItem.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product",
+});
+
+InventoryTransaction.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product",
+});
+
+InventoryTransaction.belongsTo(Warehouse, {
+  foreignKey: "warehouse_id",
+  as: "warehouse",
+});
 
 export {
   sequelize,
@@ -90,5 +147,8 @@ export {
   PurchaseOrder,
   PurchaseOrderItem,
   Party,
-  PartyCategory
+  PartyCategory,
+  PurchaseInvoice,
+  PurchaseInvoiceItem,
+  InventoryTransaction
 };
