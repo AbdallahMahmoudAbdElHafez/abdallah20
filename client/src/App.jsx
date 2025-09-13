@@ -13,6 +13,7 @@ import PartyCategoriesPage from "./pages/PartyCategoriesPage";
 import PartiesPage from "./pages/PartiesPage";
 import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
 import PurchaseInvoicesPage from "./pages/PurchaseInvoicesPage";
+import InventoryTransactionsPage from  './pages/InventoryTransactionsPage'
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/parties" element={<PartiesPage/>} />
         <Route path="/purchase-orders" element={<PurchaseOrdersPage/>} />
         <Route path="/purchase-invoices" element={<PurchaseInvoicesPage/>} />
+        <Route path="/inventory-transactions" element={<InventoryTransactionsPage />} />
 
 
       </Routes>

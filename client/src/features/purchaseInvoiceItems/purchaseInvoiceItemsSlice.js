@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import purchaseInIvoicetemsApi from "../../api/purchaseInvoiceItemsApi";
+import purchaseInvoiceItemsApi from "../../api/purchaseInvoiceItemsApi";
 
 export const fetchItemsByOrder = createAsyncThunk(
   "purchaseInvoiceItems/fetchByOrder",
   async (orderId) => {
-    const res = await purchaseInIvoicetemsApi.getAllByInvoice(orderId);
+    const res = await purchaseInvoiceItemsApi.getAllByInvoice(orderId);
     console.log(res)
    
     return res.data;
@@ -14,7 +14,7 @@ export const fetchItemsByOrder = createAsyncThunk(
 export const createItem = createAsyncThunk(
   "purchaseInvoiceItems/create",
   async (item) => {
-    const res = await purchaseInIvoicetemsApi.create(item);
+    const res = await purchaseInvoiceItemsApi.create(item);
     return res.data;
   }
 );
@@ -22,7 +22,7 @@ export const createItem = createAsyncThunk(
 export const updateItem = createAsyncThunk(
   "purchaseInvoiceItems/update",
   async ({ id, data }) => {
-    const res = await purchaseInIvoicetemsApi.update(id, data);
+    const res = await purchaseInvoiceItemsApi.update(id, data);
     return res.data;
   }
 );
@@ -30,7 +30,7 @@ export const updateItem = createAsyncThunk(
 export const deleteItem = createAsyncThunk(
   "purchaseInvoiceItems/delete",
   async (id) => {
-    await purchaseInIvoicetemsApi.delete(id);
+    await purchaseInvoiceItemsApi.delete(id);
     return id;
   }
 );

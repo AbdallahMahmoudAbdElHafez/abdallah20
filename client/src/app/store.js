@@ -12,6 +12,7 @@ import PurchaseOrdersreducer from "../features/purchaseOrders/purchaseOrdersSlic
 import purchaseOrderItemsReducer from '../features/purchaseOrderItems/purchaseOrderItemsSlice'
 import purchaseInvoicesReducer from '../features/purchaseInvoices/purchaseInvoicesSlice'
 import purchaseInvoiceItemsReducer from '../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice'
+import inventoryTransactionsReducer from '../features/inventoryTransactions/inventoryTransactionsSlice'
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -27,6 +28,8 @@ export const store = configureStore({
     purchaseOrderItems: purchaseOrderItemsReducer,
     purchaseInvoices: purchaseInvoicesReducer,
     purchaseInvoiceItems: purchaseInvoiceItemsReducer,
+        inventoryTransactions: inventoryTransactionsReducer,
+
 
 
   },

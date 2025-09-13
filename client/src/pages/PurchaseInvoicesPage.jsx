@@ -64,6 +64,7 @@ const PurchaseInvoicesPage = () => {
     dispatch(fetchPurchaseInvoices());
     dispatch(fetchPurchaseOrders());
     dispatch(fetchParties());
+     console.log(suppliers)
   }, [dispatch]);
 
   const handleOpenDialog = (invoice = null) => {

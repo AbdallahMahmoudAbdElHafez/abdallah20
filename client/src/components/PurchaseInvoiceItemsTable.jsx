@@ -54,6 +54,7 @@ const PurchaseInvoiceItemsTable = ({ invoiceId }) => {
       dispatch(fetchItemsByOrder(invoiceId));
       dispatch(fetchProducts());
       dispatch(fetchWarehouses());
+     
     }
     return () => {
       dispatch(clearItems());

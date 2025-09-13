@@ -44,7 +44,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           maxHeight: 500,
-          width: "50%", // عرض الجدول
+          width: "90%", // عرض الجدول
           margin: "0 auto", // يوسّط الجدول أفقياً في الصفحة
         },
       },

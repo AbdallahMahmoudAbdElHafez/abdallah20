@@ -26,7 +26,8 @@ function Navbar() {
     { label: "المخازن", path: "/warehouses" },
     { label: "الحسابات", path: "/accounts" },
     { label: "فئات العملاء/الموردين", path: "/party-categories" },
-    { label: "العملاء الموردين", path: "/parties" }
+    { label: "العملاء الموردين", path: "/parties" },
+    { label:"حركة المخازن",path:'/inventory-transactions'}
   ];
 
   return (

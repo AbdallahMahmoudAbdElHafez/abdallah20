@@ -40,7 +40,7 @@ static  async update(req, res) {
     }
   }
 
-static  async delete(req, res) {
+static  async delete(req, res,next) {
     try {
       await service.delete(req.params.id);
       response.ok(res, { message: "Deleted successfully" });
