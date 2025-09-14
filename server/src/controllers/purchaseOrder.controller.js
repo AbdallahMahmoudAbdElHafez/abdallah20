@@ -30,8 +30,7 @@ class PurchaseOrderController {
     }
     static async update(req, res, next) {
     try {
-        const purchaseOrder = await PurchaseOrderService.update(req.params.id, req.body);
-        if (!purchaseOrder) return response.notFound(res, "Purchase order not found");
+        const purchaseOrder = await PurchaseOrderService.updateWithItems(req.params.id, req.body);
         response.ok(res, purchaseOrder);
     } catch (err) {
         next(err);

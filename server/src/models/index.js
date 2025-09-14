@@ -150,5 +150,6 @@ export {
   PartyCategory,
   PurchaseInvoice,
   PurchaseInvoiceItem,
-  InventoryTransaction
+  InventoryTransaction,
+  
 };

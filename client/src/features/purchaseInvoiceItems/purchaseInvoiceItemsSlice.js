@@ -5,8 +5,6 @@ export const fetchItemsByOrder = createAsyncThunk(
   "purchaseInvoiceItems/fetchByOrder",
   async (orderId) => {
     const res = await purchaseInvoiceItemsApi.getAllByInvoice(orderId);
-    console.log(res)
-   
     return res.data;
   }
 );
@@ -14,7 +12,9 @@ export const fetchItemsByOrder = createAsyncThunk(
 export const createItem = createAsyncThunk(
   "purchaseInvoiceItems/create",
   async (item) => {
-    const res = await purchaseInvoiceItemsApi.create(item);
+    // استبعاد أي id حتى لا يحدث Duplicate Key
+    const { id, ...cleanItem } = item;
+    const res = await purchaseInvoiceItemsApi.create(cleanItem);
     return res.data;
   }
 );
