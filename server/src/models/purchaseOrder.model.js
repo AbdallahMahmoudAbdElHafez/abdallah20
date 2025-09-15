@@ -45,19 +45,7 @@ export default (sequelize) => {
     ]
   });
 
-  // 🔑 Hook لتوليد order_number بعد الإنشاء
-  PurchaseOrder.afterCreate(async (order, options) => {
-    // لو لم يتم تحديد order_number يدويًا
-    if (!order.order_number) {
-      const year = new Date().getFullYear();
-      const paddedId = String(order.id).padStart(6, '0');
-      const generated = `PO-${year}-${paddedId}`;
-      await order.update(
-        { order_number: generated },
-        { transaction: options.transaction }
-      );
-    }
-  });
+
 
   return PurchaseOrder;
 };

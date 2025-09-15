@@ -15,6 +15,8 @@ import partyCategoryModel from './partyCategory.model.js';
 import PurchaseInvoiceModel from './purchaseInvoice.model.js';
 import PurchaseInvoiceItemModel from './purchaseInvoiceItem.model.js';
 import InventoryTransactionModel from './inventoryTransaction.model.js';
+import purchaseOrderHooks from '../hooks/purchaseOrderHooks.js';
+
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -37,6 +39,9 @@ const PurchaseOrderItem = PurchaseOrderItemModel(sequelize);
 const PurchaseInvoice = PurchaseInvoiceModel(sequelize);
 const PurchaseInvoiceItem = PurchaseInvoiceItemModel(sequelize);
 const InventoryTransaction = InventoryTransactionModel(sequelize);
+
+purchaseOrderHooks(sequelize);
+
 // العلاقات
 // Product - Unit relationship
 Unit.hasMany(Product, { foreignKey: 'unit_id', as: 'products' });

@@ -28,8 +28,7 @@ import {
   Receipt as ReceiptIcon,
   Inventory as InventoryIcon,
   Business as BusinessIcon,
-  CalendarToday as CalendarIcon,
-  AttachMoney as MoneyIcon,
+  Money as MoneyIcon,
   ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import { MaterialReactTable } from "material-react-table";
@@ -54,7 +53,7 @@ export default function PurchaseInvoiceDialog({
   onClose,
   invoice,
   itemsInit = [],
-  onSave, // optional: if provided, dialog will call this instead of dispatching itself
+  onSave,
 }) {
   const dispatch = useDispatch();
   const suppliers = useSelector((s) => s.parties?.items ?? []);
@@ -87,21 +86,25 @@ export default function PurchaseInvoiceDialog({
     quantity: "",
     unit_price: "",
     discount: "",
+    batch_number: "",
+    expiry_date: "",
   });
 
-  // Load master data
   useEffect(() => {
     setLoadingMeta(true);
-    Promise.all([dispatch(fetchParties()), dispatch(fetchProducts()), dispatch(fetchWarehouses())])
-      .finally(() => setLoadingMeta(false));
+    Promise.all([
+      dispatch(fetchParties()),
+      dispatch(fetchProducts()),
+      dispatch(fetchWarehouses()),
+    ]).finally(() => setLoadingMeta(false));
   }, [dispatch]);
 
-  // Init on open / invoice change
   useEffect(() => {
     if (invoice) {
       setInvoiceHead({
         supplier_id: invoice.supplier_id ?? "",
-        invoice_date: invoice.invoice_date ?? new Date().toISOString().split("T")[0],
+        invoice_date:
+          invoice.invoice_date ?? new Date().toISOString().split("T")[0],
         due_date: invoice.due_date ?? "",
         status: invoice.status ?? "unpaid",
         subtotal: Number(invoice.subtotal) || 0,
@@ -112,7 +115,9 @@ export default function PurchaseInvoiceDialog({
         tax_amount: Number(invoice.tax_amount) || 0,
         total_amount: Number(invoice.total_amount) || 0,
       });
-      setItems((itemsInit || []).map((it) => ({ ...it, tempId: Date.now() + Math.random() })));
+      setItems(
+        (itemsInit || []).map((it) => ({ ...it, tempId: Date.now() + Math.random() }))
+      );
     } else {
       setInvoiceHead({
         supplier_id: "",
@@ -132,7 +137,6 @@ export default function PurchaseInvoiceDialog({
     setError("");
   }, [invoice, itemsInit]);
 
-  // Recalculate totals
   useEffect(() => {
     const subtotal = items.reduce((sum, it) => {
       const qty = Number(it.quantity) || 0;
@@ -143,7 +147,8 @@ export default function PurchaseInvoiceDialog({
 
     const vatAmount = subtotal * ((Number(invoiceHead.vat_rate) || 0) / 100);
     const taxAmount = subtotal * ((Number(invoiceHead.tax_rate) || 0) / 100);
-    const total = subtotal + vatAmount + taxAmount - (Number(invoiceHead.additional_discount) || 0);
+    const total =
+      subtotal + vatAmount + taxAmount - (Number(invoiceHead.additional_discount) || 0);
 
     setInvoiceHead((prev) => ({
       ...prev,
@@ -166,8 +171,12 @@ export default function PurchaseInvoiceDialog({
   const validateItemForm = () => {
     if (!itemForm.product_id) return "Please select a product";
     if (!itemForm.warehouse_id) return "Please select a warehouse";
-    if (!itemForm.quantity || Number(itemForm.quantity) <= 0) return "Quantity must be greater than 0";
-    if (itemForm.unit_price === "" || Number(itemForm.unit_price) < 0) return "Unit price must be 0 or greater";
+    if (!itemForm.quantity || Number(itemForm.quantity) <= 0)
+      return "Quantity must be greater than 0";
+    if (itemForm.unit_price === "" || Number(itemForm.unit_price) < 0)
+      return "Unit price must be 0 or greater";
+    if (!itemForm.batch_number) return "Batch number is required";
+    if (!itemForm.expiry_date) return "Expiry date is required";
     return null;
   };
 
@@ -186,7 +195,15 @@ export default function PurchaseInvoiceDialog({
       discount: itemForm.discount === "" ? 0 : Number(itemForm.discount),
     };
     setItems((prev) => [...prev, newItem]);
-    setItemForm({ product_id: "", warehouse_id: "", quantity: "", unit_price: "", discount: "" });
+    setItemForm({
+      product_id: "",
+      warehouse_id: "",
+      quantity: "",
+      unit_price: "",
+      discount: "",
+      batch_number: "",
+      expiry_date: "",
+    });
     setShowItemForm(false);
   };
 
@@ -211,7 +228,6 @@ export default function PurchaseInvoiceDialog({
     setSaving(true);
     setError("");
 
-    // Prepare payload
     const payload = {
       ...invoiceHead,
       items: items.map(({ tempId, id, ...rest }) => rest),
@@ -219,11 +235,9 @@ export default function PurchaseInvoiceDialog({
 
     try {
       if (typeof onSave === "function") {
-        // call parent-supplied handler (page might dispatch)
         await onSave(payload);
         onClose();
       } else {
-        // fallback: dialog dispatches itself
         if (invoice && invoice.id) {
           await dispatch(updatePurchaseInvoice({ id: invoice.id, data: payload })).unwrap();
         } else {
@@ -242,82 +256,38 @@ export default function PurchaseInvoiceDialog({
     {
       accessorKey: "product_id",
       header: "Product",
-      size: 200,
       Cell: ({ cell }) => {
         const product = products.find((p) => p.id === cell.getValue());
-        return (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <InventoryIcon fontSize="small" color="action" />
-            <Typography variant="body2">{product?.name || "—"}</Typography>
-          </Box>
-        );
+        return <Typography>{product?.name || "—"}</Typography>;
       },
     },
     {
       accessorKey: "warehouse_id",
       header: "Warehouse",
-      size: 150,
       Cell: ({ cell }) => {
-        const warehouse = warehouses.find((w) => w.id === cell.getValue());
-        return (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <BusinessIcon fontSize="small" color="action" />
-            <Typography variant="body2">{warehouse?.name || "—"}</Typography>
-          </Box>
-        );
+        const w = warehouses.find((x) => x.id === cell.getValue());
+        return <Typography>{w?.name || "—"}</Typography>;
       },
     },
-    {
-      accessorKey: "quantity",
-      header: "Qty",
-      size: 80,
-      Cell: ({ cell }) => (
-        <Typography variant="body2" fontWeight="medium">
-          {Number(cell.getValue()).toLocaleString()}
-        </Typography>
-      ),
-    },
-    {
-      accessorKey: "unit_price",
-      header: "Unit Price",
-      size: 100,
-      Cell: ({ cell }) => (
-        <Typography variant="body2" color="success.main" fontWeight="medium">
-          ${Number(cell.getValue()).toFixed(2)}
-        </Typography>
-      ),
-    },
-    {
-      accessorKey: "discount",
-      header: "Discount",
-      size: 100,
-      Cell: ({ cell }) => (
-        <Typography variant="body2" color="error.main">
-          ${Number(cell.getValue()).toFixed(2)}
-        </Typography>
-      ),
-    },
+    { accessorKey: "batch_number", header: "Batch #" },
+    { accessorKey: "expiry_date", header: "Expiry Date" },
+    { accessorKey: "quantity", header: "Qty" },
+    { accessorKey: "unit_price", header: "Unit Price" },
+    { accessorKey: "discount", header: "Discount" },
     {
       id: "total",
       header: "Total",
-      size: 120,
       Cell: ({ row }) => {
-        const qty = Number(row.original.quantity) || 0;
-        const price = Number(row.original.unit_price) || 0;
-        const discount = Number(row.original.discount) || 0;
-        const total = qty * price - discount;
-        return (
-          <Typography variant="body2" fontWeight="bold" color="primary.main">
-            ${total.toFixed(2)}
-          </Typography>
-        );
+        const q = Number(row.original.quantity) || 0;
+        const p = Number(row.original.unit_price) || 0;
+        const d = Number(row.original.discount) || 0;
+        return <Typography>${(q * p - d).toFixed(2)}</Typography>;
       },
     },
     {
       header: "Actions",
-      size: 80,
       Cell: ({ row }) => (
-        <IconButton color="error" size="small" onClick={() => removeItemTemp(row.original.tempId)}>
+        <IconButton color="error" onClick={() => removeItemTemp(row.original.tempId)}>
           <DeleteIcon fontSize="small" />
         </IconButton>
       ),
@@ -327,46 +297,27 @@ export default function PurchaseInvoiceDialog({
   const selectedSupplier = suppliers.find((s) => s.id === invoiceHead.supplier_id);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg" slotProps={{
-      paper: {
-        elevation: 3,
-        sx: {
-          minHeight: "80vh",
-          borderRadius: 2,
-        },
-      },
-    }}>
-      <DialogTitle sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        pb: 1,
-        background: "linear-gradient(135deg, #1976d2 0%, #1565c0 100%)",
-        color: "white",
-      }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+      <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <ReceiptIcon />
           <Typography variant="h6">
             {invoice ? "Edit Purchase Invoice" : "Create Purchase Invoice"}
           </Typography>
-          {invoice && (
-            <Chip label={`#${invoice.id}`} size="small" sx={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }} />
-          )}
         </Box>
-        <IconButton onClick={onClose} sx={{ color: "white" }}>
+        <IconButton onClick={onClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3 }}>
+      <DialogContent>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
             {error}
           </Alert>
         )}
 
-        {/* Invoice Header */}
-        <Card sx={{ mb: 3, boxShadow: 2 }}>
+        <Card sx={{ mb: 3 }}>
           <CardContent>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
@@ -375,19 +326,22 @@ export default function PurchaseInvoiceDialog({
                   fullWidth
                   label="Supplier"
                   value={invoiceHead.supplier_id}
-                  onChange={(e) => setInvoiceHead({ ...invoiceHead, supplier_id: e.target.value })}
-                  required
+                  onChange={(e) =>
+                    setInvoiceHead({ ...invoiceHead, supplier_id: e.target.value })
+                  }
                 >
                   <MenuItem value="">Select Supplier</MenuItem>
-                  {suppliers.filter((p) => p.party_type === "supplier").map((s) => (
-                    <MenuItem key={s.id} value={s.id}>
-                      {s.name}
-                    </MenuItem>
-                  ))}
+                  {suppliers
+                    .filter((p) => p.party_type === "supplier")
+                    .map((s) => (
+                      <MenuItem key={s.id} value={s.id}>
+                        {s.name}
+                      </MenuItem>
+                    ))}
                 </TextField>
                 {selectedSupplier && (
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
-                    Contact: {selectedSupplier.phone || selectedSupplier.email || "N/A"}
+                  <Typography variant="caption">
+                    Contact: {selectedSupplier.phone || "N/A"}
                   </Typography>
                 )}
               </Grid>
@@ -399,7 +353,9 @@ export default function PurchaseInvoiceDialog({
                   label="Invoice Date"
                   InputLabelProps={{ shrink: true }}
                   value={invoiceHead.invoice_date}
-                  onChange={(e) => setInvoiceHead({ ...invoiceHead, invoice_date: e.target.value })}
+                  onChange={(e) =>
+                    setInvoiceHead({ ...invoiceHead, invoice_date: e.target.value })
+                  }
                 />
               </Grid>
 
@@ -409,13 +365,13 @@ export default function PurchaseInvoiceDialog({
                   fullWidth
                   label="Status"
                   value={invoiceHead.status}
-                  onChange={(e) => setInvoiceHead({ ...invoiceHead, status: e.target.value })}
+                  onChange={(e) =>
+                    setInvoiceHead({ ...invoiceHead, status: e.target.value })
+                  }
                 >
                   {Object.entries(statusConfig).map(([key, cfg]) => (
                     <MenuItem key={key} value={key}>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Chip label={cfg.label} color={cfg.color} size="small" />
-                      </Box>
+                      {cfg.label}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -424,30 +380,24 @@ export default function PurchaseInvoiceDialog({
           </CardContent>
         </Card>
 
-        {/* Items Section */}
-        <Card sx={{ mb: 2, boxShadow: 2 }}>
+        <Card sx={{ mb: 2 }}>
           <CardContent>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-              <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <InventoryIcon color="primary" />
-                Invoice Items ({items.length})
+            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+              <Typography variant="h6">
+                <InventoryIcon /> Invoice Items ({items.length})
               </Typography>
               <Button
                 variant="outlined"
                 startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
                 onClick={() => setShowItemForm(!showItemForm)}
-                sx={{ borderRadius: 2 }}
               >
                 {showItemForm ? "Hide Form" : "Add Item"}
               </Button>
             </Box>
 
             <Collapse in={showItemForm}>
-              <Paper sx={{ p: 2, mb: 2, backgroundColor: "grey.50" }}>
-                <Typography variant="subtitle2" gutterBottom color="primary">
-                  Add New Item
-                </Typography>
-                <Grid container spacing={2} alignItems="end">
+              <Paper sx={{ p: 2, mb: 2 }}>
+                <Grid container spacing={2}>
                   <Grid item xs={12} sm={6} md={3}>
                     <TextField
                       select
@@ -472,7 +422,9 @@ export default function PurchaseInvoiceDialog({
                       fullWidth
                       label="Warehouse"
                       value={itemForm.warehouse_id}
-                      onChange={(e) => setItemForm((f) => ({ ...f, warehouse_id: e.target.value }))}
+                      onChange={(e) =>
+                        setItemForm((f) => ({ ...f, warehouse_id: e.target.value }))
+                      }
                       size="small"
                     >
                       <MenuItem value="">Select Warehouse</MenuItem>
@@ -484,15 +436,42 @@ export default function PurchaseInvoiceDialog({
                     </TextField>
                   </Grid>
 
+                  <Grid item xs={12} sm={4} md={2}>
+                    <TextField
+                      fullWidth
+                      label="Batch Number"
+                      value={itemForm.batch_number}
+                      onChange={(e) =>
+                        setItemForm((f) => ({ ...f, batch_number: e.target.value }))
+                      }
+                      size="small"
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4} md={2}>
+                    <TextField
+                      type="date"
+                      fullWidth
+                      label="Expiry Date"
+                      InputLabelProps={{ shrink: true }}
+                      value={itemForm.expiry_date}
+                      onChange={(e) =>
+                        setItemForm((f) => ({ ...f, expiry_date: e.target.value }))
+                      }
+                      size="small"
+                    />
+                  </Grid>
+
                   <Grid item xs={6} sm={3} md={1.5}>
                     <TextField
                       type="number"
                       fullWidth
                       label="Quantity"
                       value={itemForm.quantity}
-                      onChange={(e) => setItemForm((f) => ({ ...f, quantity: e.target.value }))}
+                      onChange={(e) =>
+                        setItemForm((f) => ({ ...f, quantity: e.target.value }))
+                      }
                       size="small"
-                      inputProps={{ min: 0, step: 1 }}
                     />
                   </Grid>
 
@@ -502,9 +481,10 @@ export default function PurchaseInvoiceDialog({
                       fullWidth
                       label="Unit Price"
                       value={itemForm.unit_price}
-                      onChange={(e) => setItemForm((f) => ({ ...f, unit_price: e.target.value }))}
+                      onChange={(e) =>
+                        setItemForm((f) => ({ ...f, unit_price: e.target.value }))
+                      }
                       size="small"
-                      inputProps={{ min: 0, step: 0.01 }}
                     />
                   </Grid>
 
@@ -514,9 +494,10 @@ export default function PurchaseInvoiceDialog({
                       fullWidth
                       label="Discount"
                       value={itemForm.discount}
-                      onChange={(e) => setItemForm((f) => ({ ...f, discount: e.target.value }))}
+                      onChange={(e) =>
+                        setItemForm((f) => ({ ...f, discount: e.target.value }))
+                      }
                       size="small"
-                      inputProps={{ min: 0, step: 0.01 }}
                     />
                   </Grid>
 
@@ -526,7 +507,6 @@ export default function PurchaseInvoiceDialog({
                       fullWidth
                       onClick={addItemTemp}
                       startIcon={<AddIcon />}
-                      sx={{ borderRadius: 2 }}
                     >
                       Add
                     </Button>
@@ -535,66 +515,42 @@ export default function PurchaseInvoiceDialog({
               </Paper>
             </Collapse>
 
-            {/* Items Table */}
-            <Box sx={{ minHeight: 300 }}>
-              {loadingMeta ? (
-                <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                  <CircularProgress />
-                </Box>
-              ) : (
-                <MaterialReactTable
-                  columns={itemColumns}
-                  data={items}
-                  enableStickyHeader
-                  enablePagination={false}
-                  enableBottomToolbar={false}
-                  enableTopToolbar={false}
-                  muiTableContainerProps={{
-                    sx: {
-                      maxHeight: 400,
-                      overflowY: "auto",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 1,
-                    },
-                  }}
-                />
-              )}
-            </Box>
+            {loadingMeta ? (
+              <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <MaterialReactTable
+                columns={itemColumns}
+                data={items}
+                enablePagination={false}
+                enableTopToolbar={false}
+              />
+            )}
           </CardContent>
         </Card>
 
-        {/* Invoice Summary */}
-        <Card sx={{ boxShadow: 2, background: "linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)" }}>
+        <Card>
           <CardContent>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <MoneyIcon color="primary" />
-                Invoice Summary
+              <Typography variant="h6">
+                <MoneyIcon /> Invoice Total
               </Typography>
-              <Box textAlign="right">
-                <Typography variant="caption" color="text.secondary">
-                  Total Amount
-                </Typography>
-                <Typography variant="h4" color="primary.main" fontWeight="bold">
-                  ${Number(invoiceHead.total_amount || 0).toFixed(2)}
-                </Typography>
-              </Box>
+              <Typography variant="h4" color="primary">
+                ${Number(invoiceHead.total_amount || 0).toFixed(2)}
+              </Typography>
             </Stack>
           </CardContent>
         </Card>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, gap: 1, backgroundColor: "grey.50" }}>
-        <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>
-          Cancel
-        </Button>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
         <Button
           variant="contained"
           onClick={handleSaveAll}
           disabled={saving || loadingMeta}
           startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-          sx={{ borderRadius: 2, minWidth: 120 }}
         >
           {saving ? "Saving..." : invoice ? "Update Invoice" : "Save Invoice"}
         </Button>
