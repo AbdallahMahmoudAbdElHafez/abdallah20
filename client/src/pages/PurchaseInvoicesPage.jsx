@@ -9,7 +9,7 @@ import {
   updatePurchaseInvoice,
   addPurchaseInvoice,
 } from "../features/purchaseInvoices/purchaseInvoicesSlice";
-import { fetchItemsByOrder } from "../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice";
+import { fetchItemsByInvoice } from "../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice";
 import PurchaseInvoiceDialog from "../components/PurchaseInvoiceDialog";
 
 export default function PurchaseInvoicesPage() {
@@ -33,7 +33,7 @@ export default function PurchaseInvoicesPage() {
 
   const handleEdit = async (invoice) => {
     const res = await dispatch(
-      fetchItemsByOrder(invoice.purchase_order_id)
+      fetchItemsByInvoice(invoice.id)
     ).unwrap();
     setEditingInvoice(invoice);
     setEditingItems(res);

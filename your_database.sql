@@ -26,30 +26,16 @@ DROP TABLE IF EXISTS `accounting_settings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accounting_settings` (
-  `id` int NOT NULL DEFAULT '1',
-  `sales_revenue_account_id` int DEFAULT NULL,
-  `purchases_expense_account_id` int DEFAULT NULL,
-  `inventory_account_id` int DEFAULT NULL,
-  `receivables_account_id` int DEFAULT NULL,
-  `payables_account_id` int DEFAULT NULL,
-  `discount_account_id` int DEFAULT NULL,
-  `tax_account_id` int DEFAULT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `operation_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_id` int NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `sales_revenue_account_id` (`sales_revenue_account_id`),
-  KEY `purchases_expense_account_id` (`purchases_expense_account_id`),
-  KEY `inventory_account_id` (`inventory_account_id`),
-  KEY `receivables_account_id` (`receivables_account_id`),
-  KEY `payables_account_id` (`payables_account_id`),
-  KEY `discount_account_id` (`discount_account_id`),
-  KEY `tax_account_id` (`tax_account_id`),
-  CONSTRAINT `accounting_settings_ibfk_1` FOREIGN KEY (`sales_revenue_account_id`) REFERENCES `accounts` (`id`),
-  CONSTRAINT `accounting_settings_ibfk_2` FOREIGN KEY (`purchases_expense_account_id`) REFERENCES `accounts` (`id`),
-  CONSTRAINT `accounting_settings_ibfk_3` FOREIGN KEY (`inventory_account_id`) REFERENCES `accounts` (`id`),
-  CONSTRAINT `accounting_settings_ibfk_4` FOREIGN KEY (`receivables_account_id`) REFERENCES `accounts` (`id`),
-  CONSTRAINT `accounting_settings_ibfk_5` FOREIGN KEY (`payables_account_id`) REFERENCES `accounts` (`id`),
-  CONSTRAINT `accounting_settings_ibfk_6` FOREIGN KEY (`discount_account_id`) REFERENCES `accounts` (`id`),
-  CONSTRAINT `accounting_settings_ibfk_7` FOREIGN KEY (`tax_account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `fk_accounting_settings_account` (`account_id`),
+  CONSTRAINT `fk_accounting_settings_account` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -58,6 +44,7 @@ CREATE TABLE `accounting_settings` (
 
 LOCK TABLES `accounting_settings` WRITE;
 /*!40000 ALTER TABLE `accounting_settings` DISABLE KEYS */;
+INSERT INTO `accounting_settings` VALUES (1,'purchase_inventory',24,NULL,'2025-09-16 10:45:47','2025-09-16 10:45:47'),(2,'purchase_payable',21,NULL,'2025-09-16 10:45:47','2025-09-16 10:45:47');
 /*!40000 ALTER TABLE `accounting_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -70,15 +57,15 @@ DROP TABLE IF EXISTS `accounts`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `accounts` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account_type` enum('asset','liability','equity','revenue','expense') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_type` enum('asset','liability','equity','revenue','expense') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `parent_account_id` int DEFAULT NULL,
   `opening_balance` decimal(15,2) DEFAULT '0.00',
-  `note` text COLLATE utf8mb4_unicode_ci,
+  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`),
   KEY `parent_account_id` (`parent_account_id`),
   CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`parent_account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -87,7 +74,7 @@ CREATE TABLE `accounts` (
 
 LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,''),(2,'اصول ثابته','asset',1,0.00,''),(3,'اصول متداوله','asset',1,0.00,''),(4,'آلات','asset',2,0.00,''),(5,'مباني','asset',2,0.00,''),(6,'أراضى','asset',2,0.00,''),(7,'صندوق وبنوك','asset',3,0.00,''),(8,'خزينه','asset',7,0.00,''),(9,'خزينه شركه الشحن','asset',7,0.00,''),(10,'البنك الاهلى الخاص','asset',7,0.00,''),(11,'العملاء','asset',3,0.00,''),(12,'اوراق قبض','asset',3,0.00,''),(13,'المخزون','asset',3,0.00,''),(14,'جاري الشركاء','asset',3,0.00,''),(15,'جارى هانى صلاح','asset',14,0.00,''),(16,'خصم ضرائب','asset',3,0.00,''),(17,'خصوم','liability',NULL,0.00,''),(18,'رأس مال','liability',17,0.00,''),(19,'قروض','liability',17,0.00,''),(20,'خصوم متداولة','liability',17,0.00,''),(21,'الموردين','liability',20,0.00,'');
+INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,''),(2,'اصول ثابته','asset',1,0.00,''),(3,'اصول متداوله','asset',1,0.00,''),(4,'آلات','asset',2,0.00,''),(5,'مباني','asset',2,0.00,''),(6,'أراضى','asset',2,0.00,''),(7,'صندوق وبنوك','asset',3,0.00,''),(8,'خزينه','asset',7,0.00,''),(9,'خزينه شركه الشحن','asset',7,0.00,''),(10,'البنك الاهلى الخاص','asset',7,0.00,''),(11,'العملاء','asset',3,0.00,''),(12,'اوراق قبض','asset',3,0.00,''),(13,'المخزون','asset',3,0.00,''),(14,'جاري الشركاء','asset',3,0.00,''),(15,'جارى هانى صلاح','asset',14,0.00,''),(16,'خصم ضرائب','asset',3,0.00,''),(17,'خصوم','liability',NULL,0.00,''),(18,'رأس مال','liability',17,0.00,''),(19,'قروض','liability',17,0.00,''),(20,'خصوم متداولة','liability',17,0.00,''),(21,'الموردين','liability',20,0.00,''),(24,'المخزون','asset',3,0.00,'');
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -140,7 +127,7 @@ DROP TABLE IF EXISTS `cities`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `cities` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `governate_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `governate_id` (`governate_id`),
@@ -167,7 +154,7 @@ DROP TABLE IF EXISTS `countries`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `countries` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -221,12 +208,12 @@ DROP TABLE IF EXISTS `employees`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employees` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `job_title_id` int DEFAULT NULL,
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `hire_date` date DEFAULT NULL,
-  `status` enum('ACTIVE','INACTIVE') COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVE',
+  `status` enum('ACTIVE','INACTIVE') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ACTIVE',
   `parent_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_job_title` (`job_title_id`),
@@ -254,7 +241,7 @@ DROP TABLE IF EXISTS `expense_categories`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `expense_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -279,7 +266,7 @@ DROP TABLE IF EXISTS `expenses`;
 CREATE TABLE `expenses` (
   `id` int NOT NULL AUTO_INCREMENT,
   `expense_date` date NOT NULL DEFAULT (curdate()),
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `account_id` int NOT NULL,
   `category_id` int DEFAULT NULL,
@@ -341,7 +328,7 @@ DROP TABLE IF EXISTS `governates`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `governates` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `country_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `country_id` (`country_id`),
@@ -370,9 +357,9 @@ CREATE TABLE `inventory_logs` (
   `id` int NOT NULL AUTO_INCREMENT,
   `product_id` int NOT NULL,
   `warehouse_id` int NOT NULL,
-  `action_type` enum('insert','update','delete') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `action_type` enum('insert','update','delete') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity_change` int NOT NULL,
-  `reference_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reference_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `reference_id` int DEFAULT NULL,
   `log_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -403,11 +390,11 @@ CREATE TABLE `inventory_transactions` (
   `id` int NOT NULL AUTO_INCREMENT,
   `product_id` int NOT NULL,
   `warehouse_id` int NOT NULL,
-  `transaction_type` enum('in','out') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `transaction_type` enum('in','out') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity` int NOT NULL,
   `cost_per_unit` decimal(10,2) NOT NULL,
   `transaction_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `note` text COLLATE utf8mb4_unicode_ci,
+  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
   KEY `warehouse_id` (`warehouse_id`),
@@ -434,7 +421,7 @@ DROP TABLE IF EXISTS `job_titles`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `job_titles` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `title_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -459,9 +446,14 @@ CREATE TABLE `journal_entries` (
   `id` int NOT NULL AUTO_INCREMENT,
   `entry_date` date NOT NULL DEFAULT (curdate()),
   `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reference_type_id` int NOT NULL,
+  `reference_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_journal_reference` (`reference_type_id`,`reference_id`),
+  CONSTRAINT `fk_journal_reference_type` FOREIGN KEY (`reference_type_id`) REFERENCES `reference_types` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -470,6 +462,7 @@ CREATE TABLE `journal_entries` (
 
 LOCK TABLES `journal_entries` WRITE;
 /*!40000 ALTER TABLE `journal_entries` DISABLE KEYS */;
+INSERT INTO `journal_entries` VALUES (5,'2025-09-16','Purchase Invoice #PI-2025-000074',1,56,'2025-09-16 13:18:09','2025-09-16 13:18:09');
 /*!40000 ALTER TABLE `journal_entries` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -484,17 +477,19 @@ CREATE TABLE `journal_entry_lines` (
   `id` int NOT NULL AUTO_INCREMENT,
   `journal_entry_id` int NOT NULL,
   `account_id` int NOT NULL,
-  `debit` decimal(10,2) DEFAULT '0.00',
-  `credit` decimal(10,2) DEFAULT '0.00',
+  `debit` decimal(15,2) DEFAULT '0.00',
+  `credit` decimal(15,2) DEFAULT '0.00',
   `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `journal_entry_id` (`journal_entry_id`),
-  KEY `account_id` (`account_id`),
-  CONSTRAINT `journal_entry_lines_ibfk_1` FOREIGN KEY (`journal_entry_id`) REFERENCES `journal_entries` (`id`),
-  CONSTRAINT `journal_entry_lines_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
-  CONSTRAINT `journal_entry_lines_chk_1` CHECK ((`debit` >= 0)),
-  CONSTRAINT `journal_entry_lines_chk_2` CHECK ((`credit` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `fk_line_entry` (`journal_entry_id`),
+  KEY `fk_line_account` (`account_id`),
+  CONSTRAINT `fk_line_account` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_line_entry` FOREIGN KEY (`journal_entry_id`) REFERENCES `journal_entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `chk_credit_nonneg` CHECK ((`credit` >= 0)),
+  CONSTRAINT `chk_debit_nonneg` CHECK ((`debit` >= 0))
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -503,6 +498,7 @@ CREATE TABLE `journal_entry_lines` (
 
 LOCK TABLES `journal_entry_lines` WRITE;
 /*!40000 ALTER TABLE `journal_entry_lines` DISABLE KEYS */;
+INSERT INTO `journal_entry_lines` VALUES (3,5,24,1242.60,0.00,'Inventory from purchase invoice','2025-09-16 13:18:09','2025-09-16 13:18:09'),(4,5,21,0.00,1242.60,'Payable to supplier 1','2025-09-16 13:18:09','2025-09-16 13:18:09');
 /*!40000 ALTER TABLE `journal_entry_lines` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -515,12 +511,12 @@ DROP TABLE IF EXISTS `parties`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `parties` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `party_type` enum('customer','supplier','both') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `address` text COLLATE utf8mb4_unicode_ci,
-  `tax_number` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `party_type` enum('customer','supplier','both') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `tax_number` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `city_id` int DEFAULT NULL,
   `account_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -582,7 +578,7 @@ CREATE TABLE `product_prices` (
   `price` decimal(10,2) NOT NULL,
   `start_date` date NOT NULL,
   `end_date` date DEFAULT NULL,
-  `note` text COLLATE utf8mb4_unicode_ci,
+  `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
   CONSTRAINT `product_prices_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
@@ -635,7 +631,7 @@ DROP TABLE IF EXISTS `products`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `products` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `price` decimal(10,2) NOT NULL,
   `unit_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -668,7 +664,7 @@ CREATE TABLE `purchase_invoice_items` (
   `purchase_invoice_id` int NOT NULL,
   `product_id` int NOT NULL,
   `warehouse_id` int NOT NULL,
-  `batch_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `batch_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
   `quantity` decimal(18,2) NOT NULL DEFAULT '0.00',
   `bonus_quantity` decimal(18,2) NOT NULL DEFAULT '0.00',
@@ -688,7 +684,7 @@ CREATE TABLE `purchase_invoice_items` (
   CONSTRAINT `purchase_invoice_items_chk_2` CHECK ((`unit_price` >= 0)),
   CONSTRAINT `purchase_invoice_items_chk_3` CHECK ((`discount` >= 0)),
   CONSTRAINT `purchase_invoice_items_chk_4` CHECK ((`total_price` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -699,60 +695,6 @@ LOCK TABLES `purchase_invoice_items` WRITE;
 /*!40000 ALTER TABLE `purchase_invoice_items` DISABLE KEYS */;
 /*!40000 ALTER TABLE `purchase_invoice_items` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_pii_after_insert` AFTER INSERT ON `purchase_invoice_items` FOR EACH ROW BEGIN
-  CALL recalc_purchase_invoice_totals(NEW.purchase_invoice_id);
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_pii_after_update` AFTER UPDATE ON `purchase_invoice_items` FOR EACH ROW BEGIN
-  IF (OLD.purchase_invoice_id IS NOT NULL AND OLD.purchase_invoice_id <> NEW.purchase_invoice_id) THEN
-    CALL recalc_purchase_invoice_totals(OLD.purchase_invoice_id);
-  END IF;
-  CALL recalc_purchase_invoice_totals(NEW.purchase_invoice_id);
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_pii_after_delete` AFTER DELETE ON `purchase_invoice_items` FOR EACH ROW BEGIN
-  CALL recalc_purchase_invoice_totals(OLD.purchase_invoice_id);
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `purchase_invoices`
@@ -765,10 +707,10 @@ CREATE TABLE `purchase_invoices` (
   `id` int NOT NULL AUTO_INCREMENT,
   `supplier_id` int NOT NULL,
   `purchase_order_id` int DEFAULT NULL,
-  `invoice_number` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `invoice_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `invoice_date` date NOT NULL,
   `due_date` date DEFAULT NULL,
-  `status` enum('unpaid','paid','partially_paid','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
+  `status` enum('unpaid','paid','partially_paid','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
   `subtotal` decimal(18,2) NOT NULL DEFAULT '0.00',
   `additional_discount` decimal(18,2) NOT NULL DEFAULT '0.00',
   `vat_rate` decimal(5,2) NOT NULL DEFAULT '0.00',
@@ -788,7 +730,7 @@ CREATE TABLE `purchase_invoices` (
   CONSTRAINT `purchase_invoices_chk_1` CHECK ((`additional_discount` >= 0)),
   CONSTRAINT `purchase_invoices_chk_2` CHECK ((`vat_rate` >= 0)),
   CONSTRAINT `purchase_invoices_chk_3` CHECK ((`tax_rate` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -797,108 +739,9 @@ CREATE TABLE `purchase_invoices` (
 
 LOCK TABLES `purchase_invoices` WRITE;
 /*!40000 ALTER TABLE `purchase_invoices` DISABLE KEYS */;
+INSERT INTO `purchase_invoices` VALUES (39,1,57,'PI-2025-000057','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 11:31:09','2025-09-16 11:31:09'),(40,1,58,'PI-2025-000058','2025-09-16',NULL,'unpaid',156.00,0.00,14.00,21.84,0.00,0.00,177.84,'2025-09-16 11:36:01','2025-09-16 11:36:01'),(41,1,59,'PI-2025-000059','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 11:53:20','2025-09-16 11:53:20'),(42,3,60,'PI-2025-000060','2025-09-16',NULL,'unpaid',109.00,0.00,14.00,15.26,0.00,0.00,124.26,'2025-09-16 11:55:47','2025-09-16 11:55:47'),(43,1,61,'PI-2025-000061','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 11:57:35','2025-09-16 11:57:35'),(44,3,62,'PI-2025-000062','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 12:05:00','2025-09-16 12:05:00'),(45,1,63,'PI-2025-000063','2025-09-16',NULL,'unpaid',104.00,0.00,14.00,14.56,0.00,0.00,118.56,'2025-09-16 12:12:07','2025-09-16 12:12:07'),(46,1,64,'PI-2025-000064','2025-09-16',NULL,'unpaid',208.00,0.00,14.00,29.12,0.00,0.00,237.12,'2025-09-16 12:14:13','2025-09-16 12:14:13'),(47,1,65,'PI-2025-000065','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 12:33:20','2025-09-16 12:33:20'),(48,3,66,'PI-2025-000066','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 12:39:17','2025-09-16 12:39:17'),(49,1,67,'PI-2025-000067','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 12:43:57','2025-09-16 12:43:57'),(50,1,68,'PI-2025-000068','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 12:49:49','2025-09-16 12:49:49'),(51,1,69,'PI-2025-000069','2025-09-16',NULL,'unpaid',10900.00,0.00,14.00,1526.00,0.00,0.00,12426.00,'2025-09-16 12:57:17','2025-09-16 12:57:17'),(52,1,70,'PI-2025-000070','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 13:04:42','2025-09-16 13:04:42'),(53,1,71,'PI-2025-000071','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 13:06:26','2025-09-16 13:06:26'),(54,1,72,'PI-2025-000072','2025-09-16',NULL,'unpaid',520.00,0.00,14.00,72.80,0.00,0.00,592.80,'2025-09-16 13:08:39','2025-09-16 13:08:39'),(55,1,73,'PI-2025-000073','2025-09-16',NULL,'unpaid',520.00,0.00,13.98,72.70,0.00,0.00,592.70,'2025-09-16 13:16:52','2025-09-16 13:16:52'),(56,1,74,'PI-2025-000074','2025-09-16',NULL,'unpaid',1090.00,0.00,14.00,152.60,0.00,0.00,1242.60,'2025-09-16 13:18:09','2025-09-16 13:18:09');
 /*!40000 ALTER TABLE `purchase_invoices` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_generate_invoice_number` BEFORE INSERT ON `purchase_invoices` FOR EACH ROW BEGIN
-  DECLARE seq INT;
-
-  -- احصل على آخر رقم تسلسلي لليوم نفسه
-  SELECT IFNULL(MAX(SUBSTRING_INDEX(invoice_number, '-', -1)), 0) + 1
-    INTO seq
-  FROM purchase_invoices
-  WHERE DATE(invoice_date) = NEW.invoice_date;
-
-  -- أنشئ الرقم: INV-20250912-1 مثلاً
-  SET NEW.invoice_number = CONCAT(
-      'INV-',
-      DATE_FORMAT(NEW.invoice_date, '%Y%m%d'),
-      '-',
-      seq
-  );
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_po_status_after_invoice` AFTER INSERT ON `purchase_invoices` FOR EACH ROW BEGIN
-  IF NEW.purchase_order_id IS NOT NULL THEN
-    UPDATE purchase_orders
-       SET status = 'approved'
-     WHERE id = NEW.purchase_order_id
-       AND status = 'draft';
-  END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_copy_order_items_to_invoice` AFTER INSERT ON `purchase_invoices` FOR EACH ROW BEGIN
-  IF NEW.purchase_order_id IS NOT NULL THEN
-    INSERT INTO purchase_invoice_items
-      (purchase_invoice_id, product_id, warehouse_id, batch_number,
-       expiry_date, quantity, bonus_quantity, unit_price, discount)
-    SELECT
-       NEW.id, product_id, warehouse_id, batch_number,
-       expiry_date, quantity, bonus_quantity, unit_price, discount
-    FROM purchase_order_items
-    WHERE purchase_order_id = NEW.purchase_order_id;
-  END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_pi_after_update` AFTER UPDATE ON `purchase_invoices` FOR EACH ROW BEGIN
-  IF (OLD.additional_discount <> NEW.additional_discount)
-     OR (OLD.vat_rate <> NEW.vat_rate)
-     OR (OLD.tax_rate <> NEW.tax_rate) THEN
-    CALL recalc_purchase_invoice_totals(NEW.id);
-  END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `purchase_order_items`
@@ -912,16 +755,16 @@ CREATE TABLE `purchase_order_items` (
   `purchase_order_id` int NOT NULL,
   `product_id` int NOT NULL,
   `warehouse_id` int DEFAULT NULL,
-  `batch_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `batch_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
   `quantity` decimal(18,2) NOT NULL DEFAULT '0.00',
   `bonus_quantity` decimal(18,2) NOT NULL DEFAULT '0.00',
   `unit_price` decimal(18,2) NOT NULL DEFAULT '0.00',
-  `discount` decimal(18,2) NOT NULL DEFAULT '0.00',
-  `total_price` decimal(18,2) GENERATED ALWAYS AS (((`quantity` * `unit_price`) - `discount`)) STORED,
+  `discount` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'نسبة الخصم % من 0 إلى 100',
   `expected_date` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `total_price` decimal(18,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
   KEY `idx_poi_po` (`purchase_order_id`),
   KEY `idx_poi_product` (`product_id`),
@@ -931,9 +774,9 @@ CREATE TABLE `purchase_order_items` (
   CONSTRAINT `fk_poi_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `purchase_order_items_chk_1` CHECK ((`quantity` >= 0)),
   CONSTRAINT `purchase_order_items_chk_2` CHECK ((`unit_price` >= 0)),
-  CONSTRAINT `purchase_order_items_chk_3` CHECK ((`discount` >= 0)),
+  CONSTRAINT `purchase_order_items_chk_3` CHECK (((`discount` >= 0) and (`discount` <= 100))),
   CONSTRAINT `purchase_order_items_chk_4` CHECK ((`total_price` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=119 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -942,7 +785,7 @@ CREATE TABLE `purchase_order_items` (
 
 LOCK TABLES `purchase_order_items` WRITE;
 /*!40000 ALTER TABLE `purchase_order_items` DISABLE KEYS */;
-INSERT INTO `purchase_order_items` (`id`, `purchase_order_id`, `product_id`, `warehouse_id`, `batch_number`, `expiry_date`, `quantity`, `bonus_quantity`, `unit_price`, `discount`, `expected_date`, `created_at`, `updated_at`) VALUES (4,6,5,2,'002','2025-09-25',1.00,0.00,109.00,3.00,'2025-09-19','2025-09-13 12:34:18','2025-09-13 12:34:18');
+INSERT INTO `purchase_order_items` VALUES (102,57,4,2,'001','2025-09-23',10.00,1.00,52.00,0.00,NULL,'2025-09-16 11:31:09','2025-09-16 11:31:09',0.00),(103,58,4,2,'003','2025-09-24',3.00,1.00,52.00,0.00,NULL,'2025-09-16 11:36:01','2025-09-16 11:36:01',0.00),(104,59,4,2,'002','2025-09-17',10.00,1.00,52.00,0.00,NULL,'2025-09-16 11:53:20','2025-09-16 11:53:20',0.00),(105,60,5,2,'005','2025-09-23',1.00,1.00,109.00,0.00,NULL,'2025-09-16 11:55:47','2025-09-16 11:55:47',0.00),(106,61,4,1,'002','2025-09-02',10.00,1.00,52.00,0.00,NULL,'2025-09-16 11:57:35','2025-09-16 11:57:35',0.00),(107,62,4,2,'001','2025-09-17',10.00,1.00,52.00,0.00,NULL,'2025-09-16 12:05:00','2025-09-16 12:05:00',0.00),(108,64,4,2,'002','2025-09-09',4.00,1.00,52.00,0.00,NULL,'2025-09-16 12:14:13','2025-09-16 12:14:13',0.00),(109,65,4,2,'001','2025-09-09',10.00,0.00,52.00,0.00,NULL,'2025-09-16 12:33:20','2025-09-16 12:33:20',0.00),(110,66,4,2,'001','2025-09-10',10.00,1.00,52.00,0.00,NULL,'2025-09-16 12:39:17','2025-09-16 12:39:17',0.00),(111,67,4,2,'002','2025-09-18',10.00,1.00,52.00,0.00,NULL,'2025-09-16 12:43:57','2025-09-16 12:43:57',0.00),(112,68,4,2,'002','2025-09-24',10.00,1.00,52.00,0.00,NULL,'2025-09-16 12:49:49','2025-09-16 12:49:49',0.00),(113,69,5,2,'002','2025-09-30',100.00,1.00,109.00,0.00,NULL,'2025-09-16 12:57:17','2025-09-16 12:57:17',0.00),(114,70,4,2,'001','2025-09-23',10.00,1.00,52.00,0.00,NULL,'2025-09-16 13:04:42','2025-09-16 13:04:42',0.00),(115,71,4,2,'002','2025-09-09',10.00,1.00,52.00,0.00,NULL,'2025-09-16 13:06:27','2025-09-16 13:06:27',0.00),(116,72,4,2,'002','2025-09-30',10.00,1.00,52.00,0.00,NULL,'2025-09-16 13:08:39','2025-09-16 13:08:39',0.00),(117,73,4,2,'001','2025-09-24',10.00,1.00,52.00,0.00,NULL,'2025-09-16 13:16:52','2025-09-16 13:16:52',0.00),(118,74,5,2,'022','2025-09-11',10.00,1.00,109.00,0.00,NULL,'2025-09-16 13:18:09','2025-09-16 13:18:09',0.00);
 /*!40000 ALTER TABLE `purchase_order_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -956,6 +799,23 @@ UNLOCK TABLES;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_poi_after_insert` AFTER INSERT ON `purchase_order_items` FOR EACH ROW BEGIN
   CALL recalc_purchase_order_total(NEW.purchase_order_id);
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_order_after_insert` AFTER INSERT ON `purchase_order_items` FOR EACH ROW BEGIN
+    CALL sp_update_order_totals(NEW.purchase_order_id);
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -991,8 +851,42 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_order_after_update` AFTER UPDATE ON `purchase_order_items` FOR EACH ROW BEGIN
+    CALL sp_update_order_totals(NEW.purchase_order_id);
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_poi_after_delete` AFTER DELETE ON `purchase_order_items` FOR EACH ROW BEGIN
   CALL recalc_purchase_order_total(OLD.purchase_order_id);
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_order_after_delete` AFTER DELETE ON `purchase_order_items` FOR EACH ROW BEGIN
+    CALL sp_update_order_totals(OLD.purchase_order_id);
 END */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -1010,19 +904,25 @@ DROP TABLE IF EXISTS `purchase_orders`;
 CREATE TABLE `purchase_orders` (
   `id` int NOT NULL AUTO_INCREMENT,
   `supplier_id` int NOT NULL,
-  `order_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `order_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `order_date` date NOT NULL,
-  `status` enum('draft','approved','closed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `status` enum('draft','approved','closed','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
   `total_amount` decimal(18,2) NOT NULL DEFAULT '0.00',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `subtotal` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `additional_discount` decimal(18,2) NOT NULL DEFAULT '0.00' COMMENT 'خصم إضافي على مستوى الطلب',
+  `vat_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'نسبة ضريبة القيمة المضافة المتوقعة',
+  `vat_amount` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `tax_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'أي ضريبة أخرى',
+  `tax_amount` decimal(18,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_po_supplier_number` (`supplier_id`,`order_number`),
   UNIQUE KEY `uq_po_number` (`order_number`),
   KEY `idx_po_supplier` (`supplier_id`),
   KEY `idx_po_order_date` (`order_date`),
   CONSTRAINT `fk_po_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `parties` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=75 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1031,49 +931,9 @@ CREATE TABLE `purchase_orders` (
 
 LOCK TABLES `purchase_orders` WRITE;
 /*!40000 ALTER TABLE `purchase_orders` DISABLE KEYS */;
-INSERT INTO `purchase_orders` VALUES (6,1,'PO-2025-000001','2025-09-11','approved',106.00,'2025-09-13 12:33:29','2025-09-13 12:34:18');
+INSERT INTO `purchase_orders` VALUES (57,1,'PO-2025-000057','2025-09-11','approved',592.80,'2025-09-16 11:31:09','2025-09-16 11:31:09',520.00,0.00,14.00,72.80,0.00,0.00),(58,1,'PO-2025-000058','2025-09-24','approved',177.84,'2025-09-16 11:36:01','2025-09-16 11:36:01',156.00,0.00,14.00,21.84,0.00,0.00),(59,1,'PO-2025-000059','2025-09-11','approved',592.80,'2025-09-16 11:53:20','2025-09-16 11:53:20',520.00,0.00,14.00,72.80,0.00,0.00),(60,3,'PO-2025-000060','2025-09-16','approved',124.26,'2025-09-16 11:55:47','2025-09-16 11:55:47',109.00,0.00,14.00,15.26,0.00,0.00),(61,1,'PO-2025-000061','2025-09-16','approved',592.80,'2025-09-16 11:57:35','2025-09-16 11:57:35',520.00,0.00,14.00,72.80,0.00,0.00),(62,3,'PO-2025-000062','2025-09-11','approved',592.80,'2025-09-16 12:05:00','2025-09-16 12:05:00',520.00,0.00,14.00,72.80,0.00,0.00),(63,1,'PO-2025-000063','2025-09-18','approved',118.56,'2025-09-16 12:12:07','2025-09-16 12:12:07',104.00,0.00,14.00,14.56,0.00,0.00),(64,1,'PO-2025-000064','2025-09-16','approved',237.12,'2025-09-16 12:14:13','2025-09-16 12:14:13',208.00,0.00,14.00,29.12,0.00,0.00),(65,1,'PO-2025-000065','2025-09-16','approved',592.80,'2025-09-16 12:33:20','2025-09-16 12:33:20',520.00,0.00,14.00,72.80,0.00,0.00),(66,3,'PO-2025-000066','2025-09-11','approved',592.80,'2025-09-16 12:39:17','2025-09-16 12:39:17',520.00,0.00,14.00,72.80,0.00,0.00),(67,1,'PO-2025-000067','2025-09-16','approved',592.80,'2025-09-16 12:43:56','2025-09-16 12:43:57',520.00,0.00,14.00,72.80,0.00,0.00),(68,1,'PO-2025-000068','2025-09-18','approved',592.80,'2025-09-16 12:49:49','2025-09-16 12:49:49',520.00,0.00,14.00,72.80,0.00,0.00),(69,1,'PO-2025-000069','2025-09-18','approved',12426.00,'2025-09-16 12:57:17','2025-09-16 12:57:17',10900.00,0.00,14.00,1526.00,0.00,0.00),(70,1,'PO-2025-000070','2025-09-22','approved',592.80,'2025-09-16 13:04:42','2025-09-16 13:04:42',520.00,0.00,14.00,72.80,0.00,0.00),(71,1,'PO-2025-000071','2025-09-16','approved',592.80,'2025-09-16 13:06:26','2025-09-16 13:06:27',520.00,0.00,14.00,72.80,0.00,0.00),(72,1,'PO-2025-000072','2025-09-16','approved',592.80,'2025-09-16 13:08:39','2025-09-16 13:08:39',520.00,0.00,14.00,72.80,0.00,0.00),(73,1,'PO-2025-000073','2025-09-18','approved',592.70,'2025-09-16 13:16:52','2025-09-16 13:16:52',520.00,0.00,13.98,72.70,0.00,0.00),(74,1,'PO-2025-000074','2025-09-16','approved',1242.60,'2025-09-16 13:18:09','2025-09-16 13:18:09',1090.00,0.00,14.00,152.60,0.00,0.00);
 /*!40000 ALTER TABLE `purchase_orders` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_purchase_orders_before_insert` BEFORE INSERT ON `purchase_orders` FOR EACH ROW BEGIN
-    DECLARE seq INT;
-
-    -- لو لم يُرسل order_number
-    IF NEW.order_number IS NULL OR NEW.order_number = '' THEN
-        -- احصل على آخر رقم للعام الحالي
-        SELECT
-            COALESCE(
-                MAX(
-                    CAST(SUBSTRING_INDEX(order_number, '-', -1) AS UNSIGNED)
-                ),
-                0
-            ) + 1
-        INTO seq
-        FROM purchase_orders
-        WHERE YEAR(order_date) = YEAR(CURDATE());
-
-        -- كوّن الرقم الجديد
-        SET NEW.order_number = CONCAT(
-            'PO-',
-            YEAR(CURDATE()),
-            '-',
-            LPAD(seq, 6, '0')
-        );
-    END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `purchase_payments`
@@ -1089,7 +949,7 @@ CREATE TABLE `purchase_payments` (
   `payment_date` date NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `account_id` int NOT NULL,
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `supplier_id` (`supplier_id`),
@@ -1155,7 +1015,7 @@ CREATE TABLE `purchase_return_items` (
   `purchase_invoice_item_id` int NOT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
-  `reason` text COLLATE utf8mb4_unicode_ci,
+  `reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`),
   KEY `purchase_return_id` (`purchase_return_id`),
   KEY `purchase_invoice_item_id` (`purchase_invoice_item_id`),
@@ -1255,7 +1115,7 @@ CREATE TABLE `purchase_returns` (
   `id` int NOT NULL AUTO_INCREMENT,
   `purchase_invoice_id` int NOT NULL,
   `return_date` date NOT NULL DEFAULT (curdate()),
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `tax_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
@@ -1410,6 +1270,35 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `reference_types`
+--
+
+DROP TABLE IF EXISTS `reference_types`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reference_types` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `label` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reference_types`
+--
+
+LOCK TABLES `reference_types` WRITE;
+/*!40000 ALTER TABLE `reference_types` DISABLE KEYS */;
+INSERT INTO `reference_types` VALUES (1,'purchase_invoice','فاتورة مشتريات',NULL,'2025-09-16 09:59:53','2025-09-16 09:59:53');
+/*!40000 ALTER TABLE `reference_types` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
 -- Table structure for table `sales_invoice_items`
@@ -1654,7 +1543,7 @@ CREATE TABLE `sales_invoices` (
   `discount_percent` decimal(5,2) DEFAULT '0.00',
   `extra_discount_percent` decimal(5,2) DEFAULT '0.00',
   `tax_percent` decimal(5,2) DEFAULT '0.00',
-  `bonus` text COLLATE utf8mb4_unicode_ci,
+  `bonus` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `total_amount` decimal(10,2) DEFAULT NULL,
   `account_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1866,7 +1755,7 @@ CREATE TABLE `sales_orders` (
   `id` int NOT NULL AUTO_INCREMENT,
   `party_id` int NOT NULL,
   `order_date` date NOT NULL DEFAULT (curdate()),
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `party_id` (`party_id`),
@@ -1897,7 +1786,7 @@ CREATE TABLE `sales_payments` (
   `account_id` int NOT NULL,
   `payment_date` date NOT NULL DEFAULT (curdate()),
   `amount` decimal(10,2) NOT NULL,
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `sales_invoice_id` (`sales_invoice_id`),
@@ -2014,7 +1903,7 @@ CREATE TABLE `sales_returns` (
   `id` int NOT NULL AUTO_INCREMENT,
   `sales_invoice_id` int NOT NULL,
   `return_date` date NOT NULL DEFAULT (curdate()),
-  `notes` text COLLATE utf8mb4_unicode_ci,
+  `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `sales_invoice_id` (`sales_invoice_id`),
@@ -2156,9 +2045,9 @@ DROP TABLE IF EXISTS `units`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `units` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2167,7 +2056,7 @@ CREATE TABLE `units` (
 
 LOCK TABLES `units` WRITE;
 /*!40000 ALTER TABLE `units` DISABLE KEYS */;
-INSERT INTO `units` VALUES (2,'قطعه'),(5,'عبوه');
+INSERT INTO `units` VALUES (2,'قطعه'),(5,'عبوه'),(6,'قط');
 /*!40000 ALTER TABLE `units` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2180,8 +2069,8 @@ DROP TABLE IF EXISTS `users`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `createdAt` datetime NOT NULL,
   `updatedAt` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -2516,8 +2405,8 @@ DROP TABLE IF EXISTS `warehouses`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `warehouses` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `address` text COLLATE utf8mb4_unicode_ci,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `address` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `city_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -2908,4 +2797,4 @@ USE `nurivina`;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-09-13 18:20:41
+-- Dump completed on 2025-09-16 17:21:10

@@ -11,7 +11,7 @@ class PurchaseOrderController {
     }   
     }
     static async create(req, res, next) {
-        console.log(req.body);
+       
     try {
         
         const purchaseOrder = await PurchaseOrderService.create(req.body);

@@ -14,7 +14,7 @@ import PartiesPage from "./pages/PartiesPage";
 import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
 import PurchaseInvoicesPage from "./pages/PurchaseInvoicesPage";
 import InventoryTransactionsPage from  './pages/InventoryTransactionsPage'
-
+import { JournalEntryLinesTable } from "./components/JournalEntryLinesTable";
 export default function App() {
   return (
     <BrowserRouter>
@@ -34,7 +34,7 @@ export default function App() {
         <Route path="/purchase-orders" element={<PurchaseOrdersPage/>} />
         <Route path="/purchase-invoices" element={<PurchaseInvoicesPage/>} />
         <Route path="/inventory-transactions" element={<InventoryTransactionsPage />} />
-
+          <Route path="/journal-entry-lines" element={<JournalEntryLinesTable></JournalEntryLinesTable>}/>
 
       </Routes>
     </BrowserRouter>

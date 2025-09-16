@@ -25,7 +25,7 @@ class PurchaseInvoiceItemController {
 
   static async create(req, res) {
     try {
-      console.log(req.body);
+
       const item = await PurchaseInvoiceItemService.create(req.body);
       response.ok(res, item, 201);
     } catch (error) {

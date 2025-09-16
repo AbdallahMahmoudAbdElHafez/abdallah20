@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import unitsReducer from "../features/units/unitsSlice";
 import productsReducer from "../features/products/productsSlice";
 import countriesReducer from "../features/countries/countriesSlice";
-import governatesReducer from  '../features/governates/governatesSlice';
+import governatesReducer from '../features/governates/governatesSlice';
 import citiesReducer from '../features/cities/citiesSlice';
 import warehousesReducer from "../features/warehouses/warehousesSlice";
 import accountsReducer from "../features/accounts/accountsSlice";
@@ -13,22 +13,25 @@ import purchaseOrderItemsReducer from '../features/purchaseOrderItems/purchaseOr
 import purchaseInvoicesReducer from '../features/purchaseInvoices/purchaseInvoicesSlice'
 import purchaseInvoiceItemsReducer from '../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice'
 import inventoryTransactionsReducer from '../features/inventoryTransactions/inventoryTransactionsSlice'
+import journalEntryLinesReducer from "../features/journalEntryLines/journalEntryLinesSlice";
+
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
     products: productsReducer,
     countries: countriesReducer,
     governates: governatesReducer,
-    cities:   citiesReducer,
+    cities: citiesReducer,
     warehouses: warehousesReducer,
     accounts: accountsReducer,
     partyCategories: PartyCategoriesreducer,
-    parties:PartiesReducer,
-    purchaseOrders:PurchaseOrdersreducer,
+    parties: PartiesReducer,
+    purchaseOrders: PurchaseOrdersreducer,
     purchaseOrderItems: purchaseOrderItemsReducer,
     purchaseInvoices: purchaseInvoicesReducer,
     purchaseInvoiceItems: purchaseInvoiceItemsReducer,
-        inventoryTransactions: inventoryTransactionsReducer,
+    inventoryTransactions: inventoryTransactionsReducer,
+journalEntryLines: journalEntryLinesReducer,
 
 
 

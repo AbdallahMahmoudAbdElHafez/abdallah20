@@ -1,37 +1,57 @@
+// features/purchaseInvoiceItems/purchaseInvoiceItemsSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import purchaseInvoiceItemsApi from "../../api/purchaseInvoiceItemsApi";
 
-export const fetchItemsByOrder = createAsyncThunk(
-  "purchaseInvoiceItems/fetchByOrder",
-  async (orderId) => {
-    const res = await purchaseInvoiceItemsApi.getAllByInvoice(orderId);
-    return res.data;
+// 🟢 جلب جميع العناصر حسب رقم الفاتورة
+export const fetchItemsByInvoice = createAsyncThunk(
+  "purchaseInvoiceItems/fetchByInvoice",
+  async (invoiceId, { rejectWithValue }) => {
+    try {
+      const res = await purchaseInvoiceItemsApi.getAllByInvoice(invoiceId);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
   }
 );
 
+// 🟢 إنشاء عنصر جديد
 export const createItem = createAsyncThunk(
   "purchaseInvoiceItems/create",
-  async (item) => {
-    // استبعاد أي id حتى لا يحدث Duplicate Key
-    const { id, ...cleanItem } = item;
-    const res = await purchaseInvoiceItemsApi.create(cleanItem);
-    return res.data;
+  async (item, { rejectWithValue }) => {
+    try {
+      const { id, ...cleanItem } = item; // استبعاد id لتفادي duplicate
+      const res = await purchaseInvoiceItemsApi.create(cleanItem);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
   }
 );
 
+// 🟢 تحديث عنصر
 export const updateItem = createAsyncThunk(
   "purchaseInvoiceItems/update",
-  async ({ id, data }) => {
-    const res = await purchaseInvoiceItemsApi.update(id, data);
-    return res.data;
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const res = await purchaseInvoiceItemsApi.update(id, data);
+      return res.data;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
   }
 );
 
+// 🟢 حذف عنصر
 export const deleteItem = createAsyncThunk(
   "purchaseInvoiceItems/delete",
-  async (id) => {
-    await purchaseInvoiceItemsApi.delete(id);
-    return id;
+  async (id, { rejectWithValue }) => {
+    try {
+      await purchaseInvoiceItemsApi.delete(id);
+      return id;
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || err.message);
+    }
   }
 );
 
@@ -45,30 +65,34 @@ const purchaseInvoiceItemsSlice = createSlice({
   reducers: {
     clearItems: (state) => {
       state.items = [];
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchItemsByOrder.pending, (state) => {
+      // Fetch
+      .addCase(fetchItemsByInvoice.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
-      .addCase(fetchItemsByOrder.fulfilled, (state, action) => {
+      .addCase(fetchItemsByInvoice.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
       })
-      .addCase(fetchItemsByOrder.rejected, (state, action) => {
+      .addCase(fetchItemsByInvoice.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload || action.error.message;
       })
+      // Create
       .addCase(createItem.fulfilled, (state, action) => {
         state.items.push(action.payload);
       })
+      // Update
       .addCase(updateItem.fulfilled, (state, action) => {
-        const index = state.items.findIndex((i) => i.id === action.payload.id);
-        if (index !== -1) {
-          state.items[index] = action.payload;
-        }
+        const idx = state.items.findIndex((i) => i.id === action.payload.id);
+        if (idx !== -1) state.items[idx] = action.payload;
       })
+      // Delete
       .addCase(deleteItem.fulfilled, (state, action) => {
         state.items = state.items.filter((i) => i.id !== action.payload);
       });

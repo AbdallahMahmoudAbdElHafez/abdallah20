@@ -15,6 +15,10 @@ import purchaseOrderItemRoutes from "./routes/purchaseOrderItem.routes.js";
 import purchaseInvoiceRoutes from './routes/purchaseInvoices.routes.js';
 import purchaseInvoiceItemRoutes from './routes/purchaseInvoiceItem.routes.js';
 import inventoryTransactionRoutes from './routes/inventoryTransaction.routes.js';
+import journalEntryLinesRouter from "./routes/journalEntryLine.routes.js";
+
+
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -35,5 +39,7 @@ app.use("/api/purchase-order-items", purchaseOrderItemRoutes);
 app.use("/api/purchase-invoices", purchaseInvoiceRoutes);
 app.use("/api/purchase-invoice-items", purchaseInvoiceItemRoutes);
 app.use("/api/inventory-transactions", inventoryTransactionRoutes);
+app.use("/api/journal-entry-lines", journalEntryLinesRouter);
+
 app.use(errorHandler);
 export default app;

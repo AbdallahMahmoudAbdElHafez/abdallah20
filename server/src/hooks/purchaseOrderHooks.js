@@ -6,7 +6,7 @@ import {
   PurchaseInvoiceItem,
 } from "../models/index.js";
 
-export default function setupPurchaseOrderHooks() {
+export default function purchaseOrderHooks() {
   // إنشاء فاتورة عند الموافقة على أمر الشراء
   PurchaseOrder.afterUpdate(async (order, options) => {
     if (order.changed("status") && order.status === "approved") {
