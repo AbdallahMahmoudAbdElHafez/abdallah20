@@ -16,7 +16,8 @@ import purchaseInvoiceRoutes from './routes/purchaseInvoices.routes.js';
 import purchaseInvoiceItemRoutes from './routes/purchaseInvoiceItem.routes.js';
 import inventoryTransactionRoutes from './routes/inventoryTransaction.routes.js';
 import journalEntryLinesRouter from "./routes/journalEntryLine.routes.js";
-
+import paymentRoutes from "./routes/purchasePayment.routes.js";
+import chequeRoutes from "./routes/supplierCheque.routes.js";
 
 
 const app = express();
@@ -40,6 +41,7 @@ app.use("/api/purchase-invoices", purchaseInvoiceRoutes);
 app.use("/api/purchase-invoice-items", purchaseInvoiceItemRoutes);
 app.use("/api/inventory-transactions", inventoryTransactionRoutes);
 app.use("/api/journal-entry-lines", journalEntryLinesRouter);
-
+app.use("/api/purchase-payments", paymentRoutes);
+app.use("/api/supplier-cheques", chequeRoutes);
 app.use(errorHandler);
 export default app;

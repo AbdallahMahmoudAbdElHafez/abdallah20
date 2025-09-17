@@ -15,6 +15,8 @@ import PurchaseOrdersPage from "./pages/PurchaseOrdersPage";
 import PurchaseInvoicesPage from "./pages/PurchaseInvoicesPage";
 import InventoryTransactionsPage from  './pages/InventoryTransactionsPage'
 import { JournalEntryLinesTable } from "./components/JournalEntryLinesTable";
+import SupplierChequesPage from "./pages/SupplierChequesPage";
+import PurchasePaymentsPage from "./pages/PurchasePaymentsPage";
 export default function App() {
   return (
     <BrowserRouter>
@@ -35,7 +37,8 @@ export default function App() {
         <Route path="/purchase-invoices" element={<PurchaseInvoicesPage/>} />
         <Route path="/inventory-transactions" element={<InventoryTransactionsPage />} />
           <Route path="/journal-entry-lines" element={<JournalEntryLinesTable></JournalEntryLinesTable>}/>
-
+<Route path="/supplier-cheques" element={<SupplierChequesPage />} />
+<Route path="/purchase-payments" element={<PurchasePaymentsPage />} />
       </Routes>
     </BrowserRouter>
   );

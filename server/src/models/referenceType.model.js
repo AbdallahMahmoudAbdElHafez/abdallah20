@@ -18,11 +18,8 @@ export default (sequelize) => {
     underscored: true
   });
 
-  ReferenceType.associate = (models) => {
-    ReferenceType.hasMany(models.JournalEntry, {
-      foreignKey: 'reference_type_id'
-    });
-  };
+
+
 
 
 };

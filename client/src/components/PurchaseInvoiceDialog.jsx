@@ -40,6 +40,7 @@ import {
 import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
+import PaymentDialog from "./PaymentDialog";
 
 const statusConfig = {
   unpaid: { color: "default", label: "Unpaid" },
@@ -59,6 +60,7 @@ export default function PurchaseInvoiceDialog({
   const suppliers = useSelector((s) => s.parties?.items ?? []);
   const products = useSelector((s) => s.products?.items ?? []);
   const warehouses = useSelector((s) => s.warehouses?.items ?? []);
+    const [paymentOpen, setPaymentOpen] = useState(false);
 
   const [loadingMeta, setLoadingMeta] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -545,6 +547,19 @@ export default function PurchaseInvoiceDialog({
       </DialogContent>
 
       <DialogActions>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => setPaymentOpen(true)}
+        >
+          Add Payment
+        </Button>
+
+        <PaymentDialog
+          open={paymentOpen}
+          onClose={() => setPaymentOpen(false)}
+          invoiceId={invoice.id}
+        />
         <Button onClick={onClose}>Cancel</Button>
         <Button
           variant="contained"

@@ -28,7 +28,11 @@ function Navbar() {
     { label: "فئات العملاء/الموردين", path: "/party-categories" },
     { label: "العملاء الموردين", path: "/parties" },
     { label:"حركة المخازن",path:'/inventory-transactions'},
-    {label:"القيود",path:"journal-entry-lines"}
+    {label:"القيود",path:"journal-entry-lines"},
+        { label:"مدفوعات",path:'/purchase-payments'},
+    {label:"اوراق قبض",path:"/supplier-cheques"}
+
+
   ];
 
   return (

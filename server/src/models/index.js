@@ -21,7 +21,8 @@ import JournalEntryLineModel from './journalEntryLine.model.js';
 import AccountingSettingModel from './accountingSetting.model.js';
 import purchaseOrderHooks from '../hooks/purchaseOrderHooks.js';
 import purchaseInvoiceHooks from "../hooks/purchaseInvoiceHooks.js";
-
+import PurchaseInvoicePaymentModel from "./purchaseInvoicePayment.model.js";
+import SupplierChequeModel from "./supplierCheque.model.js";
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -48,7 +49,8 @@ const ReferenceType = ReferenceTypeModel(sequelize);
 const JournalEntry = JournalEntryModel(sequelize);
 const JournalEntryLine = JournalEntryLineModel(sequelize);
 const AccountingSetting = AccountingSettingModel(sequelize);
-
+const PurchaseInvoicePayment = PurchaseInvoicePaymentModel(sequelize);
+const SupplierCheque = SupplierChequeModel(sequelize);
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize)
 
@@ -170,6 +172,15 @@ JournalEntryLine.belongsTo(JournalEntry,{
 AccountingSetting.belongsTo(Account,{
   foreignKey: 'account_id',
 })
+
+PurchaseInvoicePayment.hasMany(SupplierCheque, {
+  foreignKey: "purchase_payment_id",
+  as: "cheques",
+});
+SupplierCheque.belongsTo(PurchaseInvoicePayment, {
+  foreignKey: "purchase_payment_id",
+  as: "payment",
+});
 export {
   sequelize,
   Product,
@@ -189,6 +200,8 @@ export {
   JournalEntry,
   JournalEntryLine,
   ReferenceType,
-  AccountingSetting
+  AccountingSetting,
+  PurchaseInvoicePayment,
+  SupplierCheque
 
 };

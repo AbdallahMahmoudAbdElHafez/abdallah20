@@ -14,6 +14,8 @@ import purchaseInvoicesReducer from '../features/purchaseInvoices/purchaseInvoic
 import purchaseInvoiceItemsReducer from '../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice'
 import inventoryTransactionsReducer from '../features/inventoryTransactions/inventoryTransactionsSlice'
 import journalEntryLinesReducer from "../features/journalEntryLines/journalEntryLinesSlice";
+import purchasePaymentsReducer from '../features/purchasePayments/purchasePaymentsSlice'
+import supplierChequesReducer from '../features/supplierCheques/supplierChequesSlice'
 
 export const store = configureStore({
   reducer: {
@@ -31,8 +33,9 @@ export const store = configureStore({
     purchaseInvoices: purchaseInvoicesReducer,
     purchaseInvoiceItems: purchaseInvoiceItemsReducer,
     inventoryTransactions: inventoryTransactionsReducer,
-journalEntryLines: journalEntryLinesReducer,
-
+    journalEntryLines: journalEntryLinesReducer,
+    purchasePayments: purchasePaymentsReducer,
+supplierCheques:supplierChequesReducer
 
 
   },
