@@ -2,7 +2,9 @@
 import * as paymentService from "../services/purchasePayment.service.js";
 
 export async function createPayment(req, res, next) {
+  console.log(req.body)
   try {
+
     // يمرر الـ req.user?.id لو عندك مستخدم
     const payment = await paymentService.createPayment(req.body);
     res.status(201).json(payment);
