@@ -30,7 +30,8 @@ function Navbar() {
     { label:"حركة المخازن",path:'/inventory-transactions'},
     {label:"القيود",path:"journal-entry-lines"},
         { label:"مدفوعات",path:'/purchase-payments'},
-    {label:"اوراق قبض",path:"/supplier-cheques"}
+    {label:"اوراق قبض",path:"/supplier-cheques"},
+{label:"اضافة الحسابات",path:"/accounting-settings" }
 
 
   ];

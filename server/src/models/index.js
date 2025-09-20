@@ -21,6 +21,7 @@ import JournalEntryLineModel from './journalEntryLine.model.js';
 import AccountingSettingModel from './accountingSetting.model.js';
 import purchaseOrderHooks from '../hooks/purchaseOrderHooks.js';
 import purchaseInvoiceHooks from "../hooks/purchaseInvoiceHooks.js";
+import purchaseInvoicePaymentHooks from "../hooks/purchaseInvoicePaymentHooks.js";
 import PurchaseInvoicePaymentModel from "./purchaseInvoicePayment.model.js";
 import SupplierChequeModel from "./supplierCheque.model.js";
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
@@ -52,7 +53,8 @@ const AccountingSetting = AccountingSettingModel(sequelize);
 const PurchaseInvoicePayment = PurchaseInvoicePaymentModel(sequelize);
 const SupplierCheque = SupplierChequeModel(sequelize);
 purchaseOrderHooks(sequelize);
-purchaseInvoiceHooks(sequelize)
+purchaseInvoiceHooks(sequelize);
+purchaseInvoicePaymentHooks(sequelize)
 
 // العلاقات
 // Product - Unit relationship
@@ -160,18 +162,14 @@ JournalEntry.hasMany(JournalEntryLine, {
   foreignKey: 'journal_entry_id',
   as: 'lines'
 });
-Account.hasMany(AccountingSetting, {
-  foreignKey: 'account_id',
-});
+
 JournalEntryLine.belongsTo(Account,{
   foreignKey: 'account_id',
 })
 JournalEntryLine.belongsTo(JournalEntry,{
   foreignKey:'journal_entry_id'
 })
-AccountingSetting.belongsTo(Account,{
-  foreignKey: 'account_id',
-})
+
 
 PurchaseInvoicePayment.hasMany(SupplierCheque, {
   foreignKey: "purchase_payment_id",

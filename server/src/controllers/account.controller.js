@@ -47,6 +47,17 @@ class AccountController {
         next(err);
     }
     }
+
+      /** 🔑 أكشن جديد */
+  static async getByRoot(req, res, next) {
+    try {
+      const { rootId } = req.params;
+      const accounts = await AccountService.getChildrenByRoot(rootId);
+      response.ok(res, accounts);
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 export default AccountController;
 

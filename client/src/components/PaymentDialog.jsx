@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -11,15 +11,28 @@ import {
   Alert,
   Stack,
 } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addPayment } from "../features/purchasePayments/purchasePaymentsSlice";
+import { fetchAccounts } from "../features/accounts/accountsSlice";
 
 export default function PaymentDialog({ open, onClose, invoiceId }) {
   const dispatch = useDispatch();
+
+  // 🟢 اجلب بيانات الحسابات من الـRedux
+  const { items: allAccounts, loading: loadingAccounts } = useSelector(
+    (state) => state.accounts
+  );
+
+  // 🟢 فلترة الحسابات اللي parent بتاعها اسمه "صندوق وبنوك"
+  const paymentAccounts = allAccounts.filter(
+    (acc) => acc.parent && acc.parent.name === "صندوق وبنوك"
+  );
+
   const [form, setForm] = useState({
     amount: "",
     payment_date: new Date().toISOString().split("T")[0],
-    payment_method: "cash", // cash | cheque
+    payment_method: "cash",
+    account_id: "",
     cheque_number: "",
     cheque_bank: "",
     notes: "",
@@ -28,13 +41,23 @@ export default function PaymentDialog({ open, onClose, invoiceId }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (field) => (e) => {
+  useEffect(() => {
+    if (open) {
+      // ✅ استدعاء الـ thunk لجلب الحسابات
+      dispatch(fetchAccounts());
+    }
+  }, [open, dispatch]);
+
+  const handleChange = (field) => (e) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
-  };
 
   const handleSave = async () => {
     if (!form.amount || Number(form.amount) <= 0) {
       setError("Please enter a valid amount");
+      return;
+    }
+    if (!form.account_id) {
+      setError("Please select an account");
       return;
     }
     if (!invoiceId) {
@@ -51,8 +74,11 @@ export default function PaymentDialog({ open, onClose, invoiceId }) {
           amount: Number(form.amount),
           payment_date: form.payment_date,
           payment_method: form.payment_method,
-          cheque_number: form.payment_method === "cheque" ? form.cheque_number : null,
-          cheque_bank: form.payment_method === "cheque" ? form.cheque_bank : null,
+          account_id: Number(form.account_id),
+          cheque_number:
+            form.payment_method === "cheque" ? form.cheque_number : null,
+          cheque_bank:
+            form.payment_method === "cheque" ? form.cheque_bank : null,
           notes: form.notes,
         })
       ).unwrap();
@@ -90,15 +116,38 @@ export default function PaymentDialog({ open, onClose, invoiceId }) {
             value={form.payment_date}
             onChange={handleChange("payment_date")}
           />
+
           <TextField
             select
-            label="Method"
+            label="Payment Method"
             fullWidth
             value={form.payment_method}
             onChange={handleChange("payment_method")}
           >
             <MenuItem value="cash">Cash</MenuItem>
             <MenuItem value="cheque">Cheque</MenuItem>
+            <MenuItem value="bank_transfer">Bank Transfer</MenuItem>
+          </TextField>
+
+          {/* ✅ Dropdown الحسابات تحت "صندوق وبنوك" */}
+          <TextField
+            select
+            label="Account"
+            fullWidth
+            value={form.account_id}
+            onChange={handleChange("account_id")}
+            disabled={loadingAccounts}
+          >
+            {loadingAccounts && (
+              <MenuItem disabled>
+                <CircularProgress size={20} sx={{ mr: 1 }} /> Loading...
+              </MenuItem>
+            )}
+            {paymentAccounts.map((acc) => (
+              <MenuItem key={acc.id} value={acc.id}>
+                {acc.name}
+              </MenuItem>
+            ))}
           </TextField>
 
           {form.payment_method === "cheque" && (
@@ -128,6 +177,7 @@ export default function PaymentDialog({ open, onClose, invoiceId }) {
           />
         </Stack>
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button

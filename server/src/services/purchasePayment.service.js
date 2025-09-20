@@ -1,68 +1,60 @@
-// services/purchasePayment.service.js
-import  {
-  sequelize,
-  PurchaseInvoicePayment,
-  PurchaseInvoice,
-  Party,
-  JournalEntry,
-  JournalEntryLine,
-  ReferenceType,
-  SupplierCheque
-} from "../models/index.js";
-
+import { sequelize, PurchaseInvoicePayment, PurchaseInvoice } from "../models/index.js";
+import { createJournalEntry } from "./journal.service.js";
 
 export async function createPayment(data) {
-  // المعاملة تضمن إما إدراج كل شيء أو لا شيء
   const t = await sequelize.transaction();
   try {
-    // 1️⃣ إنشاء الدفعة
+    // 1️⃣ اجلب الفاتورة للتحقق من المبلغ
+    const invoice = await PurchaseInvoice.findByPk(data.purchase_invoice_id, { transaction: t });
+    if (!invoice) throw new Error("Invoice not found");
+
+    // اجمع ما تم دفعه سابقاً
+    const totalPaid = await PurchaseInvoicePayment.sum("amount", {
+      where: { purchase_invoice_id: invoice.id },
+      transaction: t
+    });
+
+    // احسب المبلغ المتبقي
+    const remaining = Number(invoice.total_amount) - Number(totalPaid || 0);
+    if (Number(data.amount) > remaining) {
+      throw new Error(`Payment exceeds remaining amount. Remaining: ${remaining}`);
+    }
+
+    // 2️⃣ أنشئ الدفعة
     const payment = await PurchaseInvoicePayment.create(data, { transaction: t });
 
-    // 2️⃣ احضار حساب المورد من الفاتورة
-    const invoice = await PurchaseInvoice.findByPk(data.purchase_invoice_id, {
-      include: [{ model: Party, as: "supplier" }],
-      transaction: t
-    });
-
-    if (!invoice || !invoice.supplier) {
-      throw new Error("Supplier or invoice not found");
-    }
-    const supplierAccountId = invoice.supplier.account_id;
-    if (!supplierAccountId) {
-      throw new Error("Supplier account_id is missing");
-    }
-
-    // 3️⃣ نوع المرجع (يُسهل تتبع القيد)
-    const refType = await ReferenceType.findOne({
-      where: { code: "purchase_payment" },
-      transaction: t
-    });
-
-    // 4️⃣ إنشاء قيد اليومية
-    const journal = await JournalEntry.create({
-      entry_date: data.payment_date,
-      description: `Payment for Purchase Invoice #${data.purchase_invoice_id}`,
-      reference_type_id: refType?.id ?? null,
-      reference_id: payment.id
+    // 3️⃣ أضف قيد اليومية كما في السابق
+    await createJournalEntry({
+      refCode: "purchase_invoice",
+      refId: payment.id,
+      entryDate: payment.payment_date,
+      description: `سداد فاتورة مشتريات #${invoice.id}`,
+      lines: [
+        {
+          account_id: invoice.supplier.account_id,
+          debit: data.amount,
+          credit: 0,
+          description: "تخفيض التزامات المورد"
+        },
+        {
+          account_id: data.account_id,
+          debit: 0,
+          credit: data.amount,
+          description: "خروج من الصندوق/البنك"
+        }
+      ]
     }, { transaction: t });
 
-    // 5️⃣ أسطر القيد
-    await JournalEntryLine.bulkCreate([
-      {
-        journal_entry_id: journal.id,
-        account_id: supplierAccountId,  // مدين: تقليل التزامات المورد
-        debit: data.amount,
-        credit: 0,
-        description: "Supplier payable cleared"
-      },
-      {
-        journal_entry_id: journal.id,
-        account_id: data.account_id,    // دائن: الحساب الذي دفع منه
-        debit: 0,
-        credit: data.amount,
-        description: "Cash/Bank outflow"
-      }
-    ], { transaction: t });
+    // 4️⃣ تحديث حالة الفاتورة
+    const newPaid = totalPaid + Number(data.amount);
+    const newStatus =
+      newPaid >= invoice.total_amount ? "paid"
+      : newPaid > 0 ? "partially_paid"
+      : invoice.status;
+
+    if (newStatus !== invoice.status) {
+      await invoice.update({ status: newStatus }, { transaction: t });
+    }
 
     await t.commit();
     return payment;
@@ -70,18 +62,4 @@ export async function createPayment(data) {
     await t.rollback();
     throw err;
   }
-}
-
-export async function listPayments(invoiceId) {
-  return PurchaseInvoicePayment.findAll({
-    where: { purchase_invoice_id: invoiceId },
-    include: [{ model: SupplierCheque, as: "cheques" }],
-    order: [["payment_date", "DESC"]]
-  });
-}
-
-export async function getPaymentById(id) {
-  return PurchaseInvoicePayment.findByPk(id, {
-    include: [{ model: SupplierCheque, as: "cheques" }]
-  });
 }

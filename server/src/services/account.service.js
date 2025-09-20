@@ -25,7 +25,19 @@ class AccountService {
     await account.destroy();
     return account;
   }
-
+  /** 🔑 دالة جديدة: جلب كل الحسابات تحت حساب جذر */
+  static async getChildrenByRoot(rootId) {
+    // تجيب كل الحسابات اللي parent_account_id = rootId
+    return await Account.findAll({
+      where: {
+        [Op.or]: [
+          { id: rootId },
+          { parent_account_id: rootId }
+        ]
+      },
+      order: [["name", "ASC"]],
+    });
+  }
 
 }
 

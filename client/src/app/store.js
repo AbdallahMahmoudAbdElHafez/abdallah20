@@ -16,6 +16,7 @@ import inventoryTransactionsReducer from '../features/inventoryTransactions/inve
 import journalEntryLinesReducer from "../features/journalEntryLines/journalEntryLinesSlice";
 import purchasePaymentsReducer from '../features/purchasePayments/purchasePaymentsSlice'
 import supplierChequesReducer from '../features/supplierCheques/supplierChequesSlice'
+import accountingSettingsReducer from "../features/accountingSettings/accountingSettingsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -35,7 +36,8 @@ export const store = configureStore({
     inventoryTransactions: inventoryTransactionsReducer,
     journalEntryLines: journalEntryLinesReducer,
     purchasePayments: purchasePaymentsReducer,
-supplierCheques:supplierChequesReducer
+    supplierCheques: supplierChequesReducer,
+    accountingSettings: accountingSettingsReducer,
 
 
   },

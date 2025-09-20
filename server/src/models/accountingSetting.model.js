@@ -1,16 +1,30 @@
+// server/src/models/accountingSetting.model.js
 import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
   return sequelize.define(
     "AccountingSetting",
     {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
       operation_type: {
         type: DataTypes.STRING(50),
         allowNull: false,
       },
-      account_id: {
+      scope: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
+      parent_account_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
+      },
+      default_account_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
       description: {
         type: DataTypes.STRING(255),
@@ -19,7 +33,10 @@ export default (sequelize) => {
     },
     {
       tableName: "accounting_settings",
-      timestamps: false, // سيضيف createdAt و updatedAt تلقائياً
+      underscored: true,
+      timestamps: true,
+      createdAt: "created_at",
+      updatedAt: "updated_at",
     }
   );
 };
