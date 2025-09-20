@@ -1,11 +1,14 @@
-import { sequelize, PurchaseInvoicePayment, PurchaseInvoice } from "../models/index.js";
+import { sequelize, PurchaseInvoicePayment, PurchaseInvoice,Party } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
 
 export async function createPayment(data) {
   const t = await sequelize.transaction();
   try {
     // 1️⃣ اجلب الفاتورة للتحقق من المبلغ
-    const invoice = await PurchaseInvoice.findByPk(data.purchase_invoice_id, { transaction: t });
+    const invoice = await PurchaseInvoice.findByPk(data.purchase_invoice_id, { 
+       include: [{ model: Party, as: 'supplier' }],
+      transaction: t 
+    });
     if (!invoice) throw new Error("Invoice not found");
 
     // اجمع ما تم دفعه سابقاً
@@ -20,15 +23,17 @@ export async function createPayment(data) {
       throw new Error(`Payment exceeds remaining amount. Remaining: ${remaining}`);
     }
 
+
+
     // 2️⃣ أنشئ الدفعة
     const payment = await PurchaseInvoicePayment.create(data, { transaction: t });
-
+    console.log("this my invoice", invoice);
     // 3️⃣ أضف قيد اليومية كما في السابق
     await createJournalEntry({
       refCode: "purchase_invoice",
       refId: payment.id,
       entryDate: payment.payment_date,
-      description: `سداد فاتورة مشتريات #${invoice.id}`,
+      description: `سداد فاتورة مشتريات #${invoice.invoice_number}`,
       lines: [
         {
           account_id: invoice.supplier.account_id,
@@ -49,11 +54,15 @@ export async function createPayment(data) {
     const newPaid = totalPaid + Number(data.amount);
     const newStatus =
       newPaid >= invoice.total_amount ? "paid"
-      : newPaid > 0 ? "partially_paid"
-      : invoice.status;
+        : newPaid > 0 ? "partially_paid"
+          : invoice.status;
 
     if (newStatus !== invoice.status) {
-      await invoice.update({ status: newStatus }, { transaction: t });
+      await invoice.update({ status: newStatus }, {
+        include: [{ model: Party, as: 'supplier' }], // ⬅️ هنا أهم إضافة
+
+        transaction: t
+      });
     }
 
     await t.commit();
