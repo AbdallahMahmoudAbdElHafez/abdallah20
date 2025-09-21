@@ -167,7 +167,8 @@ JournalEntryLine.belongsTo(Account,{
   foreignKey: 'account_id',
 })
 JournalEntryLine.belongsTo(JournalEntry,{
-  foreignKey:'journal_entry_id'
+  foreignKey:'journal_entry_id',
+  as:'journal_entry'
 })
 
 

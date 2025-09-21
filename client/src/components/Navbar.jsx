@@ -31,8 +31,8 @@ function Navbar() {
     {label:"القيود",path:"journal-entry-lines"},
         { label:"مدفوعات",path:'/purchase-payments'},
     {label:"اوراق قبض",path:"/supplier-cheques"},
-{label:"اضافة الحسابات",path:"/accounting-settings" }
-
+{label:"اضافة الحسابات",path:"/accounting-settings" },
+{label:"كشف حساب المورد",path:"/suppliers/:supplierId/statement"}
 
   ];
 

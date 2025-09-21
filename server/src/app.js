@@ -19,6 +19,7 @@ import journalEntryLinesRouter from "./routes/journalEntryLine.routes.js";
 import paymentRoutes from "./routes/purchasePayment.routes.js";
 import chequeRoutes from "./routes/supplierCheque.routes.js";
 import  accountingSettingRoutes  from './routes/accountingSettings.route.js';
+import supplierLedgerRoutes from './routes/supplierLedger.routes.js';
 
 const app = express();
 app.use(cors());
@@ -43,6 +44,7 @@ app.use("/api/inventory-transactions", inventoryTransactionRoutes);
 app.use("/api/journal-entry-lines", journalEntryLinesRouter);
 app.use("/api/purchase-payments", paymentRoutes);
 app.use("/api/supplier-cheques", chequeRoutes);
-app.use("/api/accounting-settings", accountingSettingRoutes)
+app.use("/api/accounting-settings", accountingSettingRoutes);
+app.use("/api/suppliers", supplierLedgerRoutes);
 app.use(errorHandler);
 export default app;

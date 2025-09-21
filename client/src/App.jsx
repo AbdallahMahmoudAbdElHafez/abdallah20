@@ -18,6 +18,7 @@ import { JournalEntryLinesTable } from "./components/JournalEntryLinesTable";
 import SupplierChequesPage from "./pages/SupplierChequesPage";
 import PurchasePaymentsPage from "./pages/PurchasePaymentsPage";
 import AccountingSettingsPage from "./pages/AccountingSettingsPage";
+import SupplierStatementPage from "./pages/SupplierStatementPage";
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/supplier-cheques" element={<SupplierChequesPage />} />
         <Route path="/purchase-payments" element={<PurchasePaymentsPage />} />
         <Route path="/accounting-settings" element={<AccountingSettingsPage />} />
+        <Route path="/suppliers/:supplierId/statement" element={<SupplierStatementPage />} />
 
       </Routes>
     </BrowserRouter>
