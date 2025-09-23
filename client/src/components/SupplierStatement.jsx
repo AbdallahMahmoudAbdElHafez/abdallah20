@@ -1,21 +1,44 @@
 import { useEffect, useState } from "react";
 import { fetchSupplierStatement } from "../api/supplierLedgerApi";
 
+// MUI & Emotion
+import  styled  from "@emotion/styled"; // إن أردت تخصيصاً إضافياً
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Typography,
+  Box,
+  Button,
+  CircularProgress,
+  TextField,
+} from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { ar } from "date-fns/locale";
+
+// Material React Table
+import {MaterialReactTable} from "material-react-table";
+
 export default function SupplierStatement({ supplierId }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [from, setFrom] = useState(null);
+  const [to, setTo] = useState(null);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const result = await fetchSupplierStatement(supplierId, { from, to });
+      const result = await fetchSupplierStatement(supplierId, {
+        from: from ? from.toISOString().slice(0, 10) : "",
+        to: to ? to.toISOString().slice(0, 10) : "",
+      });
       setData(result);
-      setLoading(false);
+      setError("");
     } catch (err) {
       setError(err.message || "حدث خطأ");
+    } finally {
       setLoading(false);
     }
   };
@@ -24,70 +47,118 @@ export default function SupplierStatement({ supplierId }) {
     loadData();
   }, [supplierId]);
 
-  if (loading) return <p>جاري التحميل...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+        <CircularProgress color="primary" />
+        <Typography sx={{ ml: 2 }}>جاري التحميل...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Typography color="error" align="center" variant="h6">
+        {error}
+      </Typography>
+    );
+  }
+
   if (!data) return null;
 
+  // إعداد أعمدة الجدول
+  const columns = [
+    { accessorKey: "date", header: "التاريخ" },
+    { accessorKey: "description", header: "الوصف" },
+    {
+      accessorKey: "debit",
+      header: "مدين",
+      Cell: ({ cell }) => Number(cell.getValue()).toFixed(2),
+    },
+    {
+      accessorKey: "credit",
+      header: "دائن",
+      Cell: ({ cell }) => Number(cell.getValue()).toFixed(2),
+    },
+    {
+      accessorKey: "running_balance",
+      header: "الرصيد",
+      Cell: ({ cell }) => Number(cell.getValue()).toFixed(2),
+    },
+  ];
+
   return (
-    <div className="p-4 border rounded-lg bg-white shadow-md">
-      <h2 className="text-xl font-bold mb-4">
-        كشف حساب: {data.supplier.name}
-      </h2>
+    <Card
+      sx={{
+        maxWidth: "100%",
+        mx: "auto",
+        p: 2,
+        boxShadow: 4,
+      }}
+    >
+      <CardHeader
+        title={
+          <Typography variant="h5" fontWeight="bold" textAlign="center">
+            كشف حساب: {data.supplier.name}
+          </Typography>
+        }
+      />
 
-      {/* فلاتر التاريخ */}
-      <div className="flex gap-2 mb-4">
-        <input
-          type="date"
-          value={from}
-          onChange={(e) => setFrom(e.target.value)}
-          className="border p-1 rounded"
+      <CardContent>
+        {/* فلاتر التاريخ */}
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ar}>
+          <Box display="flex" flexWrap="wrap" gap={2} justifyContent="center" mb={3}>
+            <DatePicker
+              label="من تاريخ"
+              value={from}
+              onChange={(newValue) => setFrom(newValue)}
+              slotProps={{ textField: { size: "small" } }}
+            />
+            <DatePicker
+              label="إلى تاريخ"
+              value={to}
+              onChange={(newValue) => setTo(newValue)}
+              slotProps={{ textField: { size: "small" } }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={loadData}
+              sx={{ height: 40 }}
+            >
+              تحديث
+            </Button>
+          </Box>
+        </LocalizationProvider>
+
+        {/* رصيد افتتاحي */}
+        <Typography variant="subtitle1" gutterBottom>
+          <strong>الرصيد الافتتاحي:</strong> {data.opening_balance.toFixed(2)}
+        </Typography>
+
+        {/* جدول الحركة */}
+        <MaterialReactTable
+          columns={columns}
+          data={data.statement}
+          enableColumnFilters={false}
+          enableDensityToggle={false}
+          enableSorting
+          muiTableProps={{ sx: { borderRadius: 2 } }}
+          muiTableBodyRowProps={{ hover: true }}
+          initialState={{ density: "comfortable" }}
         />
-        <input
-          type="date"
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
-          className="border p-1 rounded"
-        />
-        <button
-          onClick={loadData}
-          className="bg-blue-600 text-white px-3 py-1 rounded"
+
+        {/* رصيد ختامي */}
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          color="primary"
+          align="center"
+          mt={3}
         >
-          تحديث
-        </button>
-      </div>
-
-      {/* رصيد افتتاحي */}
-      <div className="mb-2">
-        <strong>الرصيد الافتتاحي:</strong> {data.opening_balance.toFixed(2)}
-      </div>
-
-      {/* جدول الحركة */}
-      <table className="min-w-full border-collapse border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border p-2">التاريخ</th>
-            <th className="border p-2">الوصف</th>
-            <th className="border p-2">مدين</th>
-            <th className="border p-2">دائن</th>
-            <th className="border p-2">الرصيد</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.statement.map((row, idx) => (
-            <tr key={idx}>
-              <td className="border p-2">{row.date}</td>
-              <td className="border p-2">{row.description}</td>
-              <td className="border p-2 text-right">{row.debit.toFixed(2)}</td>
-              <td className="border p-2 text-right">{row.credit.toFixed(2)}</td>
-              <td className="border p-2 text-right">{row.running_balance.toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="mt-4 font-bold">
-        الرصيد الختامي: {data.closing_balance.toFixed(2)}
-      </div>
-    </div>
+          الرصيد الختامي: {data.closing_balance.toFixed(2)}
+        </Typography>
+      </CardContent>
+    </Card>
   );
 }
