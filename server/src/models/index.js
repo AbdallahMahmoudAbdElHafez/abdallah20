@@ -171,7 +171,10 @@ JournalEntryLine.belongsTo(JournalEntry,{
   as:'journal_entry'
 })
 
-
+PurchaseInvoicePayment.belongsTo(PurchaseInvoice, {
+  foreignKey: "purchase_invoice_id",
+  as: "purchase_invoice",
+});
 PurchaseInvoicePayment.hasMany(SupplierCheque, {
   foreignKey: "purchase_payment_id",
   as: "cheques",

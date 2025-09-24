@@ -86,7 +86,9 @@ export default function SupplierStatement({ supplierId }) {
       Cell: ({ cell }) => Number(cell.getValue()).toFixed(2),
     },
   ];
-
+if (!data.supplier) {
+  return <div>جارِ التحميل ...</div>;
+}
   return (
     <Card
       sx={{

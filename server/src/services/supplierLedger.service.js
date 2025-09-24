@@ -1,70 +1,59 @@
-import { Op, Sequelize } from "sequelize";
-import {
-  Party,
-  PurchaseInvoice,
-  PurchaseInvoicePayment,
-  JournalEntry,
-  JournalEntryLine,
-  Account,
-} from "../models/index.js";
+import { Op } from "sequelize";
+import { PurchaseInvoice, PurchaseInvoicePayment } from "../models/index.js";
 
-/**
- * يعيد كشف حساب مورد
- * @param {number} supplierId  معرف المورد
- * @param {Date} from تاريخ البداية (اختياري)
- * @param {Date} to   تاريخ النهاية (اختياري)
- */
-export async function getSupplierStatement(supplierId, { from, to } = {}) {
-  // 1️⃣ احضر حساب المورد
-  const supplier = await Party.findByPk(supplierId);
-  console.log("Supplier:", supplier);   
-  if (!supplier) throw new Error("Supplier not found");
-  if (!supplier.account_id) throw new Error("Supplier account_id missing");
+export async function getSupplierStatement(supplierId, { from, to }) {
+  const dateFilter = {};
+  if (from && to)       dateFilter[Op.between] = [from, to];
+  else if (from)        dateFilter[Op.gte] = from;
+  else if (to)          dateFilter[Op.lte] = to;
 
-  const whereDate = {};
-  if (from || to) {
-    whereDate.entry_date = {};
-    if (from) whereDate.entry_date[Op.gte] = from;
-    if (to) whereDate.entry_date[Op.lte] = to;
-  }
-
-  // 2️⃣ اجمع القيود من دفتر اليومية
-  const lines = await JournalEntryLine.findAll({
-    where: { account_id: supplier.account_id },
-    include: [
-      {
-        model: JournalEntry,
-        as: "journal_entry",
-        attributes: ["entry_date", "description", "reference_type_id", "reference_id"],
-        where: whereDate,
-      },
-    ],
-    order: [[Sequelize.col("journal_entry.entry_date"), "ASC"]],
-  });
-
-  // 3️⃣ صياغة النتيجة وحساب الرصيد
-  let balance = 0;
-  const statement = lines.map((line) => {
-    const debit = Number(line.debit);
-    const credit = Number(line.credit);
-    balance += debit - credit;
-
-    return {
-      date: line.journal_entry.entry_date,
-      description: line.journal_entry.description,
-      debit,
-      credit,
-      running_balance: balance,
-    };
-  });
-
-  return {
-    supplier: {
-      id: supplier.id,
-      name: supplier.name,
+  // 1️⃣ الفواتير
+  const invoices = await PurchaseInvoice.findAll({
+    where: {
+      supplier_id: supplierId,
+      ...(Object.keys(dateFilter).length ? { invoice_date: dateFilter } : {}),
     },
-    opening_balance: 0, // إن كان لديك رصيد افتتاحي أضفه هنا
-    statement,
-    closing_balance: balance,
-  };
+    raw: true,
+  });
+
+  // 2️⃣ المدفوعات: نستخدم include للوصول للفواتير الخاصة بالمورد
+  const payments = await PurchaseInvoicePayment.findAll({
+    include: [{
+      model: PurchaseInvoice,
+      as: "purchase_invoice",          // تأكد أن العلاقة معرفة بهذا الاسم
+      where: { supplier_id: supplierId },
+      attributes: [],                  // لا نحتاج بيانات الفاتورة نفسها هنا
+    }],
+    where: Object.keys(dateFilter).length
+      ? { payment_date: dateFilter }
+      : {},
+    raw: true,
+  });
+
+  // 3️⃣ دمج الحركات
+  const movements = [
+    ...invoices.map(inv => ({
+      type: "invoice",
+      date: inv.invoice_date,
+      description: `فاتورة مشتريات #${inv.invoice_number}`,
+      debit: Number(inv.total_amount),
+      credit: 0,
+    })),
+    ...payments.map(pay => ({
+      type: "payment",
+      date: pay.payment_date,
+      description: `سداد دفعة لفاتورة #${pay.purchase_invoice_id}`,
+      debit: 0,
+      credit: Number(pay.amount),
+    })),
+  ].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  // 4️⃣ حساب الرصيد التراكمي
+  let balance = 0;
+  const statement = movements.map(row => {
+    balance += row.debit - row.credit;
+    return { ...row, balance };
+  });
+
+  return { supplierId, statement };
 }

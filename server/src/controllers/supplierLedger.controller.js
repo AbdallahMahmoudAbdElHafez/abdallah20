@@ -5,11 +5,7 @@ export async function getStatement(req, res, next) {
     const { from, to } = req.query;
     const supplierId = req.params.id;
 
-    const result = await getSupplierStatement(supplierId, {
-      from,
-      to,
-    });
-
+    const result = await getSupplierStatement(supplierId, { from, to });
     res.json(result);
   } catch (err) {
     next(err);
