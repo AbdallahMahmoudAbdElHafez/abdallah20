@@ -55,6 +55,7 @@ const colors = {
 
 // Create custom theme
 const theme = createTheme({
+  direction: 'rtl', // Right-to-left support
   palette: {
     mode: 'light',
     ...colors,

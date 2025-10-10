@@ -1,30 +1,26 @@
-// hooks/purchaseOrderHooks.js
 import {
   PurchaseOrder,
   PurchaseOrderItem,
   PurchaseInvoice,
   PurchaseInvoiceItem,
+  InventoryTransaction,
 } from "../models/index.js";
 
 export default function purchaseOrderHooks() {
-  // إنشاء فاتورة عند الموافقة على أمر الشراء
   PurchaseOrder.afterUpdate(async (order, options) => {
     if (order.changed("status") && order.status === "approved") {
       const t = options.transaction;
 
-      // لو فيه فاتورة بالفعل نخرج
       const existing = await PurchaseInvoice.findOne({
         where: { purchase_order_id: order.id },
         transaction: t,
       });
       if (existing) return;
 
-      // توليد رقم الفاتورة
       const year = new Date().getFullYear();
       const paddedId = String(order.id).padStart(6, "0");
       const invoiceNumber = `PI-${year}-${paddedId}`;
 
-      // إنشاء رأس الفاتورة
       const invoice = await PurchaseInvoice.create(
         {
           supplier_id: order.supplier_id,
@@ -43,7 +39,6 @@ export default function purchaseOrderHooks() {
         { transaction: t }
       );
 
-      // 🟢 نسخ العناصر من purchase_order_items إلى purchase_invoice_items
       const orderItems = await PurchaseOrderItem.findAll({
         where: { purchase_order_id: order.id },
         transaction: t,
@@ -62,12 +57,26 @@ export default function purchaseOrderHooks() {
           discount: it.discount,
           total_price: it.total_price,
         }));
+
         await PurchaseInvoiceItem.bulkCreate(invoiceItemsData, { transaction: t });
+
+        // ✅ إضافة الأصناف للمخزون
+        const inventoryData = orderItems.map((it) => ({
+          product_id: it.product_id,
+          warehouse_id: it.warehouse_id,
+          transaction_type: "in",
+          quantity: Number(it.quantity) + Number(it.bonus_quantity || 0),
+          cost_per_unit: Number(it.unit_price),
+          transaction_date: new Date(),
+          note: `Added from Purchase Invoice ${invoiceNumber}`,
+        }));
+
+
+        await InventoryTransaction.bulkCreate(inventoryData, { transaction: t });
       }
     }
   });
 
-  // توليد order_number لأمر الشراء
   PurchaseOrder.afterCreate(async (order, options) => {
     if (!order.order_number) {
       const year = new Date().getFullYear();

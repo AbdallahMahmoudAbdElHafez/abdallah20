@@ -18,21 +18,21 @@ import {
 import { fetchItemsByOrder } from "../features/purchaseOrderItems/purchaseOrderItemsSlice";
 import PurchaseOrderDialog from "../components/PurchaseOrderDialog";
 
-// Helper function to format currency
+// دالة لتنسيق العملة
 const formatCurrency = (value) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('ar-EG', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2
   }).format(Number(value) || 0);
 };
 
-// Helper function to format percentage
+// دالة لتنسيق النسبة المئوية
 const formatPercentage = (value) => {
   return `${Number(value) || 0}%`;
 };
 
-// Status color mapping
+// ألوان الحالات
 const getStatusColor = (status) => {
   const statusColors = {
     'pending': 'warning',
@@ -48,25 +48,21 @@ export default function PurchaseOrdersPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // Redux state
   const { 
     items: orders = [], 
     loading, 
     error 
   } = useSelector((state) => state.purchaseOrders);
 
-  // Local state
   const [openDialog, setOpenDialog] = useState(false);
   const [editingOrder, setEditingOrder] = useState(null);
   const [editingItems, setEditingItems] = useState([]);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Fetch orders on component mount
   useEffect(() => {
     dispatch(fetchPurchaseOrders());
   }, [dispatch]);
 
-  // Memoized handlers to prevent unnecessary re-renders
   const handleEdit = useCallback(async (order) => {
     try {
       setActionLoading(true);
@@ -75,8 +71,7 @@ export default function PurchaseOrdersPage() {
       setEditingItems(res);
       setOpenDialog(true);
     } catch (error) {
-      console.error('Failed to fetch order items:', error);
-      // You might want to show a toast notification here
+      console.error('فشل في جلب عناصر الطلب:', error);
     } finally {
       setActionLoading(false);
     }
@@ -90,10 +85,8 @@ export default function PurchaseOrdersPage() {
         data: payload 
       })).unwrap();
       setOpenDialog(false);
-      // Optionally show success message
     } catch (error) {
-      console.error('Failed to update purchase order:', error);
-      // Handle error (show toast, etc.)
+      console.error('فشل في تحديث أمر الشراء:', error);
     } finally {
       setActionLoading(false);
     }
@@ -110,10 +103,8 @@ export default function PurchaseOrdersPage() {
       setActionLoading(true);
       await dispatch(addPurchaseOrder(payload)).unwrap();
       setOpenDialog(false);
-      // Optionally show success message
     } catch (error) {
-      console.error('Failed to add purchase order:', error);
-      // Handle error (show toast, etc.)
+      console.error('فشل في إضافة أمر الشراء:', error);
     } finally {
       setActionLoading(false);
     }
@@ -129,25 +120,24 @@ export default function PurchaseOrdersPage() {
     navigate(`/purchase-invoices?purchase_order_id=${orderId}`);
   }, [navigate]);
 
-  // Memoized columns definition
   const columns = useMemo(() => [
     { 
       accessorKey: "order_number", 
-      header: "Order Number",
+      header: "رقم الطلب",
       size: 150,
     },
     { 
       accessorKey: "order_date", 
-      header: "Order Date",
+      header: "تاريخ الطلب",
       size: 120,
       Cell: ({ cell }) => {
         const date = new Date(cell.getValue());
-        return date.toLocaleDateString();
+        return date.toLocaleDateString('ar-EG');
       }
     },
     { 
       accessorKey: "status", 
-      header: "Status",
+      header: "الحالة",
       size: 120,
       Cell: ({ cell }) => (
         <Chip 
@@ -159,43 +149,43 @@ export default function PurchaseOrdersPage() {
     },
     { 
       accessorKey: "subtotal", 
-      header: "Subtotal",
+      header: "الإجمالي قبل الضريبة",
       size: 120,
       Cell: ({ cell }) => formatCurrency(cell.getValue())
     },
     { 
       accessorKey: "additional_discount", 
-      header: "Add. Discount",
+      header: "الخصم الإضافي",
       size: 130,
       Cell: ({ cell }) => formatCurrency(cell.getValue())
     },
     { 
       accessorKey: "vat_rate", 
-      header: "VAT %",
-      size: 100,
+      header: "نسبة الضريبة المضافة",
+      size: 130,
       Cell: ({ cell }) => formatPercentage(cell.getValue())
     },
     { 
       accessorKey: "vat_amount", 
-      header: "VAT Amount",
-      size: 120,
+      header: "قيمة الضريبة المضافة",
+      size: 140,
       Cell: ({ cell }) => formatCurrency(cell.getValue())
     },
     { 
       accessorKey: "tax_rate", 
-      header: "Tax %",
+      header: "نسبة الضريبة",
       size: 100,
       Cell: ({ cell }) => formatPercentage(cell.getValue())
     },
     { 
       accessorKey: "tax_amount", 
-      header: "Tax Amount",
+      header: "قيمة الضريبة",
       size: 120,
       Cell: ({ cell }) => formatCurrency(cell.getValue())
     },
     { 
       accessorKey: "total_amount", 
-      header: "Total Amount",
+      header: "الإجمالي النهائي",
       size: 140,
       Cell: ({ cell }) => (
         <Typography variant="body2" fontWeight="bold">
@@ -204,7 +194,7 @@ export default function PurchaseOrdersPage() {
       )
     },
     {
-      header: "Actions",
+      header: "العمليات",
       size: 200,
       enableColumnActions: false,
       Cell: ({ row }) => (
@@ -215,7 +205,7 @@ export default function PurchaseOrdersPage() {
             onClick={() => handleEdit(row.original)}
             disabled={actionLoading}
           >
-            Edit
+            تعديل
           </Button>
           <Button
             size="small"
@@ -223,14 +213,13 @@ export default function PurchaseOrdersPage() {
             color="secondary"
             onClick={() => handleViewInvoice(row.original.id)}
           >
-            View Invoice
+            عرض الفاتورة
           </Button>
         </Box>
       ),
     },
   ], [handleEdit, handleViewInvoice, actionLoading]);
 
-  // Loading state
   if (loading === "loading") {
     return (
       <Box sx={{ 
@@ -244,18 +233,17 @@ export default function PurchaseOrdersPage() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <Box p={2}>
         <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load purchase orders: {error}
+          فشل في تحميل أوامر الشراء: {error}
         </Alert>
         <Button 
           variant="contained" 
           onClick={() => dispatch(fetchPurchaseOrders())}
         >
-          Retry
+          إعادة المحاولة
         </Button>
       </Box>
     );
@@ -263,7 +251,6 @@ export default function PurchaseOrdersPage() {
 
   return (
     <Box p={2}>
-      {/* Header */}
       <Box sx={{ 
         display: "flex", 
         justifyContent: "space-between", 
@@ -271,18 +258,17 @@ export default function PurchaseOrdersPage() {
         mb: 3 
       }}>
         <Typography variant="h4" component="h1">
-          Purchase Orders
+          أوامر الشراء
         </Typography>
         <Button 
           variant="contained" 
           onClick={handleCreate}
           disabled={actionLoading}
         >
-          Add Purchase Order
+          إضافة أمر شراء
         </Button>
       </Box>
 
-      {/* Data Table */}
       <MaterialReactTable 
         columns={columns} 
         data={orders}
@@ -309,7 +295,6 @@ export default function PurchaseOrdersPage() {
         }}
       />
 
-      {/* Dialog */}
       {openDialog && (
         <PurchaseOrderDialog
           open={openDialog}

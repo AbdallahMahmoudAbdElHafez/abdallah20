@@ -6,10 +6,37 @@ import {
   Box,
   Menu,
   MenuItem,
-  Divider
+  Divider,
 } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+
+const navItems = [
+  { label: "الرئيسية", path: "/" },
+  { label: "لوحة التحكم", path: "/dashboard" },
+  { label: "الوحدات", path: "/units" },
+  { label: "المنتجات", path: "/products" },
+  { label: "الدول", path: "/countries" },
+  { label: "المخازن", path: "/warehouses" },
+  { label: "الحسابات", path: "/accounts" },
+  { label: "فئات العملاء/الموردين", path: "/party-categories" },
+  { label: "العملاء الموردين", path: "/parties" },
+  { label: "حركة المخازن", path: "/inventory-transactions" },
+  { label: "القيود", path: "/journal-entry-lines" },
+  { label: "مدفوعات", path: "/purchase-payments" },
+  { label: "اوراق قبض", path: "/supplier-cheques" },
+  { label: "فئات المصروفات", path: "/expense-categories" },
+  { label: "اضافة الحسابات", path: "/accounting-settings" },
+  { label: "كشف حساب المورد", path: "/suppliers/:supplierId/statement" },
+];
+
+const purchasesMenu = [
+  { label: "أوامر الشراء", path: "/purchase-orders" },
+  { label: "فواتير الشراء", path: "/purchase-invoices" },
+  { divider: true },
+  { label: "مدفوعات", path: "/purchase-payments" },
+  { label: "أوراق قبض", path: "/supplier-cheques" },
+];
 
 function Navbar() {
   const location = useLocation();
@@ -18,38 +45,20 @@ function Navbar() {
   const handleOpen = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
-  const navItems = [
-    { label: "الرئيسية", path: "/" },
-    { label: "لوحة التحكم", path: "/dashboard" },
-    { label: "الوحدات", path: "/units" },
-    { label: "المنتجات", path: "/products" },
-    { label: "الدول", path: "/countries" },
-    { label: "المخازن", path: "/warehouses" },
-    { label: "الحسابات", path: "/accounts" },
-    { label: "فئات العملاء/الموردين", path: "/party-categories" },
-    { label: "العملاء الموردين", path: "/parties" },
-    { label: "حركة المخازن", path: "/inventory-transactions" },
-    { label: "القيود", path: "/journal-entry-lines" },
-    { label: "مدفوعات", path: "/purchase-payments" },
-    { label: "اوراق قبض", path: "/supplier-cheques" },
-     { label: "فئات المصروفات", path: "/expense-categories" },
-    { label: "اضافة الحسابات", path: "/accounting-settings" },
-    { label: "كشف حساب المورد", path: "/suppliers/:supplierId/statement" }
-  ];
+  const isActive = (path) => location.pathname === path;
 
   return (
     <AppBar position="static" sx={{ bgcolor: "#1a237e" }}>
       <Toolbar sx={{ flexDirection: "row-reverse" }}>
-        {/* عنوان السيستم */}
         <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "right" }}>
           نظام إدارة الحسابات
         </Typography>
 
-        {/* زر المشتريات مع القائمة */}
+        {/* المشتريات */}
         <Box>
           <Button
             color={
-              ["/purchase-orders", "/purchase-invoices"].includes(location.pathname)
+              purchasesMenu.some((item) => isActive(item.path))
                 ? "secondary"
                 : "inherit"
             }
@@ -79,25 +88,26 @@ function Navbar() {
                   "&:hover": {
                     bgcolor: "#3949ab",
                     color: "white",
-                    transform: "translateX(-4px)"
-                  }
-                }
-              }
+                    transform: "translateX(-4px)",
+                  },
+                },
+              },
             }}
           >
-            <MenuItem component={Link} to="/purchase-orders" onClick={handleClose}>
-              أوامر الشراء
-            </MenuItem>
-            <MenuItem component={Link} to="/purchase-invoices" onClick={handleClose}>
-              فواتير الشراء
-            </MenuItem>
-            <Divider />
-            <MenuItem component={Link} to="/purchase-payments" onClick={handleClose}>
-              مدفوعات
-            </MenuItem>
-            <MenuItem component={Link} to="/supplier-cheques" onClick={handleClose}>
-              أوراق قبض
-            </MenuItem>
+            {purchasesMenu.map((item, i) =>
+              item.divider ? (
+                <Divider key={i} />
+              ) : (
+                <MenuItem
+                  key={item.path}
+                  component={Link}
+                  to={item.path}
+                  onClick={handleClose}
+                >
+                  {item.label}
+                </MenuItem>
+              )
+            )}
           </Menu>
         </Box>
 
@@ -108,10 +118,10 @@ function Navbar() {
               key={item.path}
               component={Link}
               to={item.path}
-              color={location.pathname === item.path ? "secondary" : "inherit"}
+              color={isActive(item.path) ? "secondary" : "inherit"}
               sx={{
                 ml: 1,
-                fontWeight: location.pathname === item.path ? "bold" : "normal"
+                fontWeight: isActive(item.path) ? "bold" : "normal",
               }}
             >
               {item.label}

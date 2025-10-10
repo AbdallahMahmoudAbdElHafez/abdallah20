@@ -95,33 +95,33 @@ const InventoryTransactionsPage = () => {
   const columns = [
     {
       accessorKey: "product_id",
-      header: "Product",
+      header: "المنتج",
       Cell: ({ cell }) => products.find((p) => p.id === cell.getValue())?.name || "—",
     },
     {
       accessorKey: "warehouse_id",
-      header: "Warehouse",
+      header: "المخزن",
       Cell: ({ cell }) =>
         warehouses.find((w) => w.id === cell.getValue())?.name || "—",
     },
-    { accessorKey: "transaction_type", header: "Type" },
-    { accessorKey: "quantity", header: "Quantity" },
-    { accessorKey: "cost_per_unit", header: "Cost/Unit" },
+    { accessorKey: "transaction_type", header: "النوع" },
+    { accessorKey: "quantity", header: "الكمية" },
+    { accessorKey: "cost_per_unit", header: "التكلفة للوحدة" },
     {
       accessorKey: "transaction_date",
-      header: "Date",
+      header: "تاريخ العملية",
       Cell: ({ cell }) =>
         cell.getValue()
           ? new Date(cell.getValue()).toLocaleDateString()
           : "—",
     },
-    { accessorKey: "note", header: "Note" },
+    { accessorKey: "note", header: "ملاحظات" },
     {
-      header: "Actions",
+      header: "الإجراءات",
       Cell: ({ row }) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button size="small" variant="outlined" onClick={() => handleOpen(row.original)}>
-            Edit
+            تعديل
           </Button>
           <Button
             size="small"
@@ -129,7 +129,7 @@ const InventoryTransactionsPage = () => {
             variant="outlined"
             onClick={() => handleDelete(row.original.id)}
           >
-            Delete
+            حذف
           </Button>
         </Box>
       ),
@@ -137,15 +137,15 @@ const InventoryTransactionsPage = () => {
   ];
 
   return (
-    <Box p={2}>
+    <Box p={2} dir="rtl">
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Link underline="hover" color="inherit" href="/">Home</Link>
-        <Typography color="text.primary">Inventory Transactions</Typography>
+        <Link underline="hover" color="inherit" href="/">الرئيسية</Link>
+        <Typography color="text.primary">حركات المخزون</Typography>
       </Breadcrumbs>
 
       <Box sx={{ mb: 2 }}>
         <Button variant="contained" onClick={() => handleOpen()}>
-          Add Transaction
+          إضافة حركة
         </Button>
       </Box>
 
@@ -157,12 +157,12 @@ const InventoryTransactionsPage = () => {
         <MaterialReactTable columns={columns} data={transactions} />
       )}
 
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-        <DialogTitle>{editRow ? "Edit Transaction" : "Add Transaction"}</DialogTitle>
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm" dir="rtl">
+        <DialogTitle>{editRow ? "تعديل حركة" : "إضافة حركة"}</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
           <TextField
             select
-            label="Product"
+            label="المنتج"
             value={form.product_id}
             onChange={(e) => setForm({ ...form, product_id: e.target.value })}
           >
@@ -175,7 +175,7 @@ const InventoryTransactionsPage = () => {
 
           <TextField
             select
-            label="Warehouse"
+            label="المخزن"
             value={form.warehouse_id}
             onChange={(e) => setForm({ ...form, warehouse_id: e.target.value })}
           >
@@ -188,23 +188,23 @@ const InventoryTransactionsPage = () => {
 
           <TextField
             select
-            label="Transaction Type"
+            label="نوع العملية"
             value={form.transaction_type}
             onChange={(e) => setForm({ ...form, transaction_type: e.target.value })}
           >
-            <MenuItem value="in">In</MenuItem>
-            <MenuItem value="out">Out</MenuItem>
+            <MenuItem value="in">إدخال</MenuItem>
+            <MenuItem value="out">إخراج</MenuItem>
           </TextField>
 
           <TextField
-            label="Quantity"
+            label="الكمية"
             type="number"
             value={form.quantity}
             onChange={(e) => setForm({ ...form, quantity: e.target.value })}
           />
 
           <TextField
-            label="Cost Per Unit"
+            label="التكلفة للوحدة"
             type="number"
             value={form.cost_per_unit}
             onChange={(e) => setForm({ ...form, cost_per_unit: e.target.value })}
@@ -212,23 +212,23 @@ const InventoryTransactionsPage = () => {
 
           <TextField
             type="date"
-            label="Transaction Date"
+            label="تاريخ العملية"
             InputLabelProps={{ shrink: true }}
             value={form.transaction_date}
             onChange={(e) => setForm({ ...form, transaction_date: e.target.value })}
           />
 
           <TextField
-            label="Note"
+            label="ملاحظات"
             multiline
             value={form.note}
             onChange={(e) => setForm({ ...form, note: e.target.value })}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleClose}>إلغاء</Button>
           <Button onClick={handleSave} variant="contained">
-            {editRow ? "Update" : "Save"}
+            {editRow ? "تحديث" : "حفظ"}
           </Button>
         </DialogActions>
       </Dialog>

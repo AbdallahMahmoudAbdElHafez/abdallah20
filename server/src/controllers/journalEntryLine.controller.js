@@ -6,7 +6,7 @@ export const getJournalEntries = async (req, res) => {
     const entries = await JournalEntryLine.findAll({
       include: [
         { model: Account, attributes: ["name"] },
-        { model: JournalEntry, attributes: ["entry_date", "description"], include: [ReferenceType] }
+        { model: JournalEntry, attributes: ["entry_date", "description"], include: [ReferenceType], as: 'journal_entry' }
       ],
       order: [["id", "ASC"]]
     });
