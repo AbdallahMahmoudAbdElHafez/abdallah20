@@ -3,6 +3,13 @@ import { Account, City, Party, PartyCategory } from "../models/index.js";
 
 
 class PartyService {
+  static async getSuppliersAndBoth() {
+  return await Party.findAll({
+    where: {
+      party_type: ["supplier", "both"],
+    },
+  });
+}
  static async getAll() {
     return await Party.findAll({include: [PartyCategory,Account,City]});
   }

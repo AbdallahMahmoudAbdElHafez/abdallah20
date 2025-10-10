@@ -14,6 +14,7 @@ export default (sequelize) => {
         address: { type: DataTypes.TEXT, allowNull: true },
         tax_number: { type: DataTypes.STRING(50), allowNull: true },
         city_id: { type: DataTypes.INTEGER, allowNull: true },
+        opening_balance: { type: DataTypes.DECIMAL(15, 2), allowNull: false, defaultValue: 0.00 },
         account_id: { type: DataTypes.INTEGER, allowNull: true },
         category_id: { type: DataTypes.INTEGER, allowNull: true },
         created_at: { 

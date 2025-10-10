@@ -19,6 +19,7 @@ import SupplierChequesPage from "./pages/SupplierChequesPage";
 import PurchasePaymentsPage from "./pages/PurchasePaymentsPage";
 import AccountingSettingsPage from "./pages/AccountingSettingsPage";
 import SupplierStatementPage from "./pages/SupplierStatementPage";
+import ExpenseCategoryPage from "./pages/ExpenseCategoryPage";
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="/purchase-payments" element={<PurchasePaymentsPage />} />
         <Route path="/accounting-settings" element={<AccountingSettingsPage />} />
         <Route path="/suppliers/:supplierId/statement" element={<SupplierStatementPage />} />
+        <Route path="/expense-categories" element={<ExpenseCategoryPage />} />
 
       </Routes>
     </BrowserRouter>

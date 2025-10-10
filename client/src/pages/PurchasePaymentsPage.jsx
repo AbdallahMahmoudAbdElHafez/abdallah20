@@ -1,29 +1,67 @@
 // src/pages/PurchasePaymentsPage.jsx
-import React, { useEffect } from "react";
-import { Box, Button, CircularProgress } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+} from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPaymentsByInvoice, deletePayment } from "../features/purchasePayments/purchasePaymentsSlice";
+import {
+  fetchPaymentsByInvoice,
+  deletePayment,
+  updatePayment,
+} from "../features/purchasePayments/purchasePaymentsSlice";
 
 export default function PurchasePaymentsPage() {
   const dispatch = useDispatch();
   const { byInvoice, status } = useSelector((s) => s.purchasePayments);
 
-  // في هذا المثال نعرض كل المدفوعات لجميع الفواتير
-  // backend endpoint ممكن يكون /payments/all
+  // ====== state for editing ======
+  const [editOpen, setEditOpen] = useState(false);
+  const [editData, setEditData] = useState({
+    id: "",
+    amount: "",
+    payment_date: "",
+    notes: "",
+  });
+
+  // جلب جميع المدفوعات
   useEffect(() => {
-    // لو عندك thunk fetchAllPayments استخدمه
-    // هنا نفترض إنك عامل fetchPaymentsByInvoice(null) أو تعمل thunk جديد
     dispatch(fetchPaymentsByInvoice("all"));
   }, [dispatch]);
 
-  // نجمع كل المدفوعات من جميع الفواتير
+  // دمج كل المدفوعات
   const allPayments = Object.values(byInvoice).flat();
 
+  // حذف
   const handleDelete = (id) => {
     if (window.confirm("Delete this payment?")) {
       dispatch(deletePayment(id));
     }
+  };
+
+  // فتح نافذة التعديل
+  const handleEditOpen = (row) => {
+    setEditData({
+      id: row.id,
+      amount: row.amount,
+      payment_date: row.payment_date,
+      notes: row.notes || "",
+    });
+    setEditOpen(true);
+  };
+
+  // حفظ التعديل
+  const handleEditSave = () => {
+    const { id, ...fields } = editData;
+    dispatch(updatePayment({ id, data: fields }));
+    setEditOpen(false);
   };
 
   const columns = [
@@ -36,14 +74,24 @@ export default function PurchasePaymentsPage() {
     {
       header: "Actions",
       Cell: ({ row }) => (
-        <Button
-          size="small"
-          color="error"
-          variant="outlined"
-          onClick={() => handleDelete(row.original.id)}
-        >
-          Delete
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            size="small"
+            variant="outlined"
+            color="primary"
+            onClick={() => handleEditOpen(row.original)}
+          >
+            Edit
+          </Button>
+          <Button
+            size="small"
+            color="error"
+            variant="outlined"
+            onClick={() => handleDelete(row.original.id)}
+          >
+            Delete
+          </Button>
+        </Box>
       ),
     },
   ];
@@ -59,6 +107,37 @@ export default function PurchasePaymentsPage() {
   return (
     <Box p={2}>
       <MaterialReactTable columns={columns} data={allPayments} />
+
+      {/* ===== Dialog for Editing ===== */}
+      <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth>
+        <DialogTitle>Edit Payment</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+          <TextField
+            label="Amount"
+            type="number"
+            value={editData.amount}
+            onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
+          />
+          <TextField
+            label="Payment Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={editData.payment_date?.slice(0, 10) || ""}
+            onChange={(e) => setEditData({ ...editData, payment_date: e.target.value })}
+          />
+          <TextField
+            label="Notes"
+            value={editData.notes}
+            onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+          <Button onClick={handleEditSave} variant="contained">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

@@ -36,3 +36,13 @@ export async function getPaymentDetail(req, res, next) {
     next(err);
   }
 }
+
+export async function updatePayment(req, res, next) {
+  try {
+    const updated = await paymentService.updatePayment(req.params.paymentId, req.body);
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+}
+

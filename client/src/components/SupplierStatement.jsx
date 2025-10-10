@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchSupplierStatement } from "../api/supplierLedgerApi";
-
-// MUI & Emotion
-import  styled  from "@emotion/styled"; // إن أردت تخصيصاً إضافياً
 import {
   Card,
   CardContent,
@@ -11,21 +9,21 @@ import {
   Box,
   Button,
   CircularProgress,
-  TextField,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ar } from "date-fns/locale";
+import { MaterialReactTable } from "material-react-table";
 
-// Material React Table
-import {MaterialReactTable} from "material-react-table";
-
-export default function SupplierStatement({ supplierId }) {
+export default function SupplierStatement({ supplierId, fromParam, toParam }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [from, setFrom] = useState(null);
-  const [to, setTo] = useState(null);
+  const [from, setFrom] = useState(fromParam ? new Date(fromParam) : null);
+  const [to, setTo] = useState(toParam ? new Date(toParam) : null);
+
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const loadData = async () => {
     try {
@@ -36,6 +34,15 @@ export default function SupplierStatement({ supplierId }) {
       });
       setData(result);
       setError("");
+
+      // تحديث الـ URL عشان يحفظ الفلتر
+      const params = new URLSearchParams();
+      if (from) params.set("from", from.toISOString().slice(0, 10));
+      if (to) params.set("to", to.toISOString().slice(0, 10));
+      navigate({
+        pathname: `/suppliers/${supplierId}/statement`,
+        search: params.toString(),
+      });
     } catch (err) {
       setError(err.message || "حدث خطأ");
     } finally {
@@ -44,7 +51,8 @@ export default function SupplierStatement({ supplierId }) {
   };
 
   useEffect(() => {
-    loadData();
+    if (supplierId) loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supplierId]);
 
   if (loading) {
@@ -64,48 +72,41 @@ export default function SupplierStatement({ supplierId }) {
     );
   }
 
-  if (!data) return null;
+  // حماية لو الـ API رجع null أو فارغ
+  const supplierName = data?.supplier?.name ?? "غير معروف";
+  const openingBalance = Number(data?.opening_balance ?? 0);
+  const closingBalance = Number(data?.closing_balance ?? 0);
+  const statementRows = Array.isArray(data?.statement) ? data.statement : [];
 
-  // إعداد أعمدة الجدول
   const columns = [
     { accessorKey: "date", header: "التاريخ" },
     { accessorKey: "description", header: "الوصف" },
     {
       accessorKey: "debit",
       header: "مدين",
-      Cell: ({ cell }) => Number(cell.getValue()).toFixed(2),
+      Cell: ({ cell }) => Number(cell.getValue() ?? 0).toFixed(2),
     },
     {
       accessorKey: "credit",
       header: "دائن",
-      Cell: ({ cell }) => Number(cell.getValue()).toFixed(2),
+      Cell: ({ cell }) => Number(cell.getValue() ?? 0).toFixed(2),
     },
     {
       accessorKey: "running_balance",
       header: "الرصيد",
-      Cell: ({ cell }) => Number(cell.getValue()).toFixed(2),
+      Cell: ({ cell }) => Number(cell.getValue() ?? 0).toFixed(2),
     },
   ];
-if (!data.supplier) {
-  return <div>جارِ التحميل ...</div>;
-}
+
   return (
-    <Card
-      sx={{
-        maxWidth: "100%",
-        mx: "auto",
-        p: 2,
-        boxShadow: 4,
-      }}
-    >
+    <Card sx={{ maxWidth: "100%", mx: "auto", p: 2, boxShadow: 4 }}>
       <CardHeader
         title={
           <Typography variant="h5" fontWeight="bold" textAlign="center">
-            كشف حساب: {data.supplier.name}
+            كشف حساب: {supplierName}
           </Typography>
         }
       />
-
       <CardContent>
         {/* فلاتر التاريخ */}
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ar}>
@@ -135,13 +136,13 @@ if (!data.supplier) {
 
         {/* رصيد افتتاحي */}
         <Typography variant="subtitle1" gutterBottom>
-          <strong>الرصيد الافتتاحي:</strong> {data.opening_balance.toFixed(2)}
+          <strong>الرصيد الافتتاحي:</strong> {openingBalance.toFixed(2)}
         </Typography>
 
         {/* جدول الحركة */}
         <MaterialReactTable
           columns={columns}
-          data={data.statement}
+          data={statementRows}
           enableColumnFilters={false}
           enableDensityToggle={false}
           enableSorting
@@ -158,7 +159,7 @@ if (!data.supplier) {
           align="center"
           mt={3}
         >
-          الرصيد الختامي: {data.closing_balance.toFixed(2)}
+          الرصيد الختامي: {closingBalance.toFixed(2)}
         </Typography>
       </CardContent>
     </Card>

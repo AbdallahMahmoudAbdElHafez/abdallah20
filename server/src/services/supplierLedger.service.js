@@ -1,7 +1,13 @@
 import { Op } from "sequelize";
-import { PurchaseInvoice, PurchaseInvoicePayment } from "../models/index.js";
+import { PurchaseInvoice, PurchaseInvoicePayment, Party } from "../models/index.js";
 
 export async function getSupplierStatement(supplierId, { from, to }) {
+  const supplier = await Party.findByPk(supplierId, {
+    attributes: ["id", "name", "email", "phone"],
+  });
+  if (!supplier) throw new Error("Supplier not found");
+
+  // فلتر التواريخ
   const dateFilter = {};
   if (from && to)       dateFilter[Op.between] = [from, to];
   else if (from)        dateFilter[Op.gte] = from;
@@ -16,13 +22,13 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     raw: true,
   });
 
-  // 2️⃣ المدفوعات: نستخدم include للوصول للفواتير الخاصة بالمورد
+  // 2️⃣ المدفوعات
   const payments = await PurchaseInvoicePayment.findAll({
     include: [{
       model: PurchaseInvoice,
-      as: "purchase_invoice",          // تأكد أن العلاقة معرفة بهذا الاسم
+      as: "purchase_invoice",
       where: { supplier_id: supplierId },
-      attributes: [],                  // لا نحتاج بيانات الفاتورة نفسها هنا
+      attributes: [],
     }],
     where: Object.keys(dateFilter).length
       ? { payment_date: dateFilter }
@@ -35,7 +41,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     ...invoices.map(inv => ({
       type: "invoice",
       date: inv.invoice_date,
-      description: `فاتورة مشتريات #${inv.invoice_number}`,
+      description: `فاتورة مشتريات #${inv.id}`,
       debit: Number(inv.total_amount),
       credit: 0,
     })),
@@ -48,12 +54,42 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     })),
   ].sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // 4️⃣ حساب الرصيد التراكمي
-  let balance = 0;
+  // 4️⃣ حساب الرصيد التراكمي والختامي
+  let runningBalance = 0;
   const statement = movements.map(row => {
-    balance += row.debit - row.credit;
-    return { ...row, balance };
+    runningBalance += row.debit - row.credit;
+    return { ...row, running_balance: runningBalance };
   });
 
-  return { supplierId, statement };
+  // لو تريد رصيد افتتاحي قبل الفترة (اختياري)
+ let openingBalance = 0;
+if (from) {
+  const prevInvoices = await PurchaseInvoice.sum("total_amount", {
+    where: { supplier_id: supplierId, invoice_date: { [Op.lt]: from } },
+  });
+
+  const prevPayments = await PurchaseInvoicePayment.sum("amount", {
+    where: {
+      payment_date: { [Op.lt]: from },
+    },
+    include: [{
+      model: PurchaseInvoice,
+      as: "purchase_invoice",
+      required: true,
+      where: { supplier_id: supplierId },
+      attributes: [], // ⬅ يمنع إدخال أعمدة إضافية في SELECT
+    }],
+  });
+
+  openingBalance = (prevInvoices || 0) - (prevPayments || 0);
+}
+
+  const closingBalance = openingBalance + runningBalance;
+
+  return {
+    supplier,
+    opening_balance: openingBalance,
+    closing_balance: closingBalance,
+    statement,
+  };
 }

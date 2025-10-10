@@ -20,7 +20,8 @@ import paymentRoutes from "./routes/purchasePayment.routes.js";
 import chequeRoutes from "./routes/supplierCheque.routes.js";
 import  accountingSettingRoutes  from './routes/accountingSettings.route.js';
 import supplierLedgerRoutes from './routes/supplierLedger.routes.js';
-
+import expenseCategoryRoutes from "./routes/expenseCategory.route.js";
+import expenseRoutes from "./routes/expense.route.js";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -46,5 +47,7 @@ app.use("/api/purchase-payments", paymentRoutes);
 app.use("/api/supplier-cheques", chequeRoutes);
 app.use("/api/accounting-settings", accountingSettingRoutes);
 app.use("/api/suppliers", supplierLedgerRoutes);
+app.use("/api/expense-categories", expenseCategoryRoutes);
+app.use("/api/expenses", expenseRoutes);
 app.use(errorHandler);
 export default app;

@@ -1,6 +1,15 @@
 import PartyService from "../services/party.service.js";
 import response from "../utils/response.js";
 class PartyController {
+
+    static async getSuppliers(req, res, next) {
+  try {
+    const suppliers = await PartyService.getSuppliersAndBoth();
+    response.ok(res, suppliers);
+  } catch (err) {
+    next(err);
+  }
+}
   static async getAll(req, res, next) {
     try {
         const parties = await PartyService.getAll();

@@ -17,7 +17,7 @@ import journalEntryLinesReducer from "../features/journalEntryLines/journalEntry
 import purchasePaymentsReducer from '../features/purchasePayments/purchasePaymentsSlice'
 import supplierChequesReducer from '../features/supplierCheques/supplierChequesSlice'
 import accountingSettingsReducer from "../features/accountingSettings/accountingSettingsSlice";
-
+import expenseCategoryReducer from "../features/expenseCategories/expenseCategoriesSlice";
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -38,7 +38,7 @@ export const store = configureStore({
     purchasePayments: purchasePaymentsReducer,
     supplierCheques: supplierChequesReducer,
     accountingSettings: accountingSettingsReducer,
-
+    expenseCategories: expenseCategoryReducer
 
   },
 });

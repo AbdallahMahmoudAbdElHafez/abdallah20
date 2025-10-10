@@ -24,6 +24,8 @@ import purchaseInvoiceHooks from "../hooks/purchaseInvoiceHooks.js";
 import purchaseInvoicePaymentHooks from "../hooks/purchaseInvoicePaymentHooks.js";
 import PurchaseInvoicePaymentModel from "./purchaseInvoicePayment.model.js";
 import SupplierChequeModel from "./supplierCheque.model.js";
+import ExpenseModel from "./expense.model.js";
+import ExpenseCategoryModel from "./expenseCategory.model.js";
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -52,6 +54,8 @@ const JournalEntryLine = JournalEntryLineModel(sequelize);
 const AccountingSetting = AccountingSettingModel(sequelize);
 const PurchaseInvoicePayment = PurchaseInvoicePaymentModel(sequelize);
 const SupplierCheque = SupplierChequeModel(sequelize);
+const Expense = ExpenseModel(sequelize);
+const ExpenseCategory = ExpenseCategoryModel(sequelize);
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
 purchaseInvoicePaymentHooks(sequelize)
@@ -175,6 +179,8 @@ PurchaseInvoicePayment.belongsTo(PurchaseInvoice, {
   foreignKey: "purchase_invoice_id",
   as: "purchase_invoice",
 });
+
+
 PurchaseInvoicePayment.hasMany(SupplierCheque, {
   foreignKey: "purchase_payment_id",
   as: "cheques",
@@ -183,6 +189,9 @@ SupplierCheque.belongsTo(PurchaseInvoicePayment, {
   foreignKey: "purchase_payment_id",
   as: "payment",
 });
+Expense.belongsTo(Account, { foreignKey: "account_id" });
+Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
+ExpenseCategory.hasMany(Expense, { foreignKey: "category_id" });
 export {
   sequelize,
   Product,
@@ -204,6 +213,8 @@ export {
   ReferenceType,
   AccountingSetting,
   PurchaseInvoicePayment,
-  SupplierCheque
+  SupplierCheque,
+  Expense,
+  ExpenseCategory
 
 };
