@@ -26,6 +26,7 @@ import PurchaseInvoicePaymentModel from "./purchaseInvoicePayment.model.js";
 import SupplierChequeModel from "./supplierCheque.model.js";
 import ExpenseModel from "./expense.model.js";
 import ExpenseCategoryModel from "./expenseCategory.model.js";
+import BillOfMaterialModel from './billOfMaterial.model.js';
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -56,6 +57,7 @@ const PurchaseInvoicePayment = PurchaseInvoicePaymentModel(sequelize);
 const SupplierCheque = SupplierChequeModel(sequelize);
 const Expense = ExpenseModel(sequelize);
 const ExpenseCategory = ExpenseCategoryModel(sequelize);
+const BillOfMaterial = BillOfMaterialModel(sequelize);
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
 purchaseInvoicePaymentHooks(sequelize)
@@ -215,6 +217,7 @@ export {
   PurchaseInvoicePayment,
   SupplierCheque,
   Expense,
-  ExpenseCategory
+  ExpenseCategory,
+  BillOfMaterial
 
 };

@@ -22,6 +22,8 @@ import  accountingSettingRoutes  from './routes/accountingSettings.route.js';
 import supplierLedgerRoutes from './routes/supplierLedger.routes.js';
 import expenseCategoryRoutes from "./routes/expenseCategory.route.js";
 import expenseRoutes from "./routes/expense.route.js";
+import billOfMaterialRouter from './routes/billOfMaterial.routes.js';
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -49,5 +51,6 @@ app.use("/api/accounting-settings", accountingSettingRoutes);
 app.use("/api/suppliers", supplierLedgerRoutes);
 app.use("/api/expense-categories", expenseCategoryRoutes);
 app.use("/api/expenses", expenseRoutes);
+app.use('/api/bill-of-material', billOfMaterialRouter);
 app.use(errorHandler);
 export default app;

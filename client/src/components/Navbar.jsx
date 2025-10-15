@@ -12,6 +12,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 
 const navItems = [
+  {label:"مكونات التصنيع",path:'/bill-of-material'},
   { label: "الرئيسية", path: "/" },
   { label: "لوحة التحكم", path: "/dashboard" },
   { label: "الوحدات", path: "/units" },
