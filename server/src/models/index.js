@@ -27,6 +27,12 @@ import SupplierChequeModel from "./supplierCheque.model.js";
 import ExpenseModel from "./expense.model.js";
 import ExpenseCategoryModel from "./expenseCategory.model.js";
 import BillOfMaterialModel from './billOfMaterial.model.js';
+import WarehouseTransferModel from './warehouseTransfers.model.js';
+import WarehouseTransferItemModel from "./warehouseTransferItems.model.js";
+import ExternalWorkOrderModel from './externalWorkOrder.model.js';
+import ExternalWorkOrderMaterialModel from './externalWorkOrderMaterial.model.js';
+import ExternalWorkOrderReceiptModel from './externalWorkOrderReceipt.model.js';
+
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -58,6 +64,12 @@ const SupplierCheque = SupplierChequeModel(sequelize);
 const Expense = ExpenseModel(sequelize);
 const ExpenseCategory = ExpenseCategoryModel(sequelize);
 const BillOfMaterial = BillOfMaterialModel(sequelize);
+const WarehouseTransfer = WarehouseTransferModel(sequelize);
+const WarehouseTransferItem = WarehouseTransferItemModel(sequelize);
+const ExternalWorkOrder = ExternalWorkOrderModel(sequelize);
+const ExternalWorkOrderMaterial = ExternalWorkOrderMaterialModel(sequelize);
+const ExternalWorkOrderReceipt = ExternalWorkOrderReceiptModel(sequelize);
+
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
 purchaseInvoicePaymentHooks(sequelize)
@@ -169,12 +181,12 @@ JournalEntry.hasMany(JournalEntryLine, {
   as: 'lines'
 });
 
-JournalEntryLine.belongsTo(Account,{
+JournalEntryLine.belongsTo(Account, {
   foreignKey: 'account_id',
 })
-JournalEntryLine.belongsTo(JournalEntry,{
-  foreignKey:'journal_entry_id',
-  as:'journal_entry'
+JournalEntryLine.belongsTo(JournalEntry, {
+  foreignKey: 'journal_entry_id',
+  as: 'journal_entry'
 })
 
 PurchaseInvoicePayment.belongsTo(PurchaseInvoice, {
@@ -191,6 +203,110 @@ SupplierCheque.belongsTo(PurchaseInvoicePayment, {
   foreignKey: "purchase_payment_id",
   as: "payment",
 });
+// WarehouseTransfer ↔ Warehouse (من وإلى)
+Warehouse.hasMany(WarehouseTransfer, {
+  foreignKey: "from_warehouse_id",
+  as: "transfers_from",
+});
+Warehouse.hasMany(WarehouseTransfer, {
+  foreignKey: "to_warehouse_id",
+  as: "transfers_to",
+});
+
+WarehouseTransfer.belongsTo(Warehouse, {
+  foreignKey: "from_warehouse_id",
+  as: "fromWarehouse",
+});
+WarehouseTransfer.belongsTo(Warehouse, {
+  foreignKey: "to_warehouse_id",
+  as: "toWarehouse",
+});
+WarehouseTransfer.hasMany(WarehouseTransferItem, {
+  foreignKey: "transfer_id",
+  as: "items",
+});
+WarehouseTransferItem.belongsTo(WarehouseTransfer, {
+  foreignKey: "transfer_id",
+  as: "transfer",
+});
+
+Product.hasMany(WarehouseTransferItem, {
+  foreignKey: "product_id",
+  as: "transfer_items",
+});
+WarehouseTransferItem.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product",
+});
+// External Work Orders ↔ Party (Supplier)
+Party.hasMany(ExternalWorkOrder, {
+  foreignKey: 'supplier_id',
+  as: 'external_orders',
+});
+ExternalWorkOrder.belongsTo(Party, {
+  foreignKey: 'supplier_id',
+  as: 'supplier',
+});
+
+// External Work Orders ↔ Product (final product)
+Product.hasMany(ExternalWorkOrder, {
+  foreignKey: 'product_id',
+  as: 'external_orders',
+});
+ExternalWorkOrder.belongsTo(Product, {
+  foreignKey: 'product_id',
+  as: 'product',
+});
+
+// External Work Order ↔ Materials
+ExternalWorkOrder.hasMany(ExternalWorkOrderMaterial, {
+  foreignKey: 'work_order_id',
+  as: 'materials',
+});
+ExternalWorkOrderMaterial.belongsTo(ExternalWorkOrder, {
+  foreignKey: 'work_order_id',
+  as: 'work_order',
+});
+
+// External Work Order ↔ Receipts
+ExternalWorkOrder.hasMany(ExternalWorkOrderReceipt, {
+  foreignKey: 'work_order_id',
+  as: 'receipts',
+});
+ExternalWorkOrderReceipt.belongsTo(ExternalWorkOrder, {
+  foreignKey: 'work_order_id',
+  as: 'work_order',
+});
+
+// Material ↔ Product
+Product.hasMany(ExternalWorkOrderMaterial, {
+  foreignKey: 'product_id',
+  as: 'used_in_external_orders',
+});
+ExternalWorkOrderMaterial.belongsTo(Product, {
+  foreignKey: 'product_id',
+  as: 'product',
+});
+
+// Warehouse relations for materials & receipts
+Warehouse.hasMany(ExternalWorkOrderMaterial, {
+  foreignKey: 'warehouse_id',
+  as: 'external_materials',
+});
+ExternalWorkOrderMaterial.belongsTo(Warehouse, {
+  foreignKey: 'warehouse_id',
+  as: 'warehouse',
+});
+
+Warehouse.hasMany(ExternalWorkOrderReceipt, {
+  foreignKey: 'warehouse_id',
+  as: 'external_receipts',
+});
+ExternalWorkOrderReceipt.belongsTo(Warehouse, {
+  foreignKey: 'warehouse_id',
+  as: 'warehouse',
+});
+
 Expense.belongsTo(Account, { foreignKey: "account_id" });
 Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
 ExpenseCategory.hasMany(Expense, { foreignKey: "category_id" });
@@ -218,6 +334,10 @@ export {
   SupplierCheque,
   Expense,
   ExpenseCategory,
-  BillOfMaterial
-
+  BillOfMaterial,
+  WarehouseTransfer,
+  WarehouseTransferItem,
+  ExternalWorkOrder,
+  ExternalWorkOrderMaterial,
+  ExternalWorkOrderReceipt,
 };

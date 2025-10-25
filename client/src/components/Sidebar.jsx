@@ -21,11 +21,11 @@ const navItems = [
   { label: "الوحدات", path: "/units" },
   { label: "المنتجات", path: "/products" },
   { label: "الدول", path: "/countries" },
-  { label: "المخازن", path: "/warehouses" },
+  { label: "اوامر التشغيل ", path: "/external-work-orders" },
   { label: "الحسابات", path: "/accounts" },
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
   { label: "العملاء الموردين", path: "/parties" },
-  { label: "حركة المخازن", path: "/inventory-transactions" },
+ 
   { label: "القيود", path: "/journal-entry-lines" },
   { label: "فئات المصروفات", path: "/expense-categories" },
   { label: "اضافة الحسابات", path: "/accounting-settings" },
@@ -39,10 +39,16 @@ const purchasesMenu = [
   { label: "مدفوعات", path: "/purchase-payments" },
   { label: "أوراق قبض", path: "/supplier-cheques" },
 ];
-
+const warehousesMenu = [
+ { label: "حركة المخازن", path: "/inventory-transactions" },
+  { label: "دليل المخازن", path: "/warehouses" },
+  { label: "حركة تحويل المخازن", path: "/warehouse-transfers" },
+];
 function Sidebar() {
   const location = useLocation();
   const [openPurchases, setOpenPurchases] = useState(false);
+  const [openWarehouses, setOpenWarehouses] = useState(false);
+  const toggleWarehouses = () => setOpenWarehouses(!openWarehouses);
 
   const togglePurchases = () => setOpenPurchases(!openPurchases);
   const isActive = (path) => location.pathname === path;
@@ -94,7 +100,31 @@ function Sidebar() {
             ))}
           </List>
         </Collapse>
-
+  {/* المخازن */}
+        <ListItemButton onClick={toggleWarehouses}>
+          <ListItemText primary="المخازن" />
+          {openWarehouses ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={openWarehouses} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {warehousesMenu.map((item) => (
+              <ListItemButton
+                key={item.path}
+                component={Link}
+                to={item.path}
+                sx={{
+                  pl: 4,
+                  bgcolor: isActive(item.path)
+                    ? "rgba(255,255,255,0.1)"
+                    : "transparent",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                }}
+              >
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
         <Divider sx={{ my: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
 
         {/* باقي الروابط */}

@@ -1,27 +1,43 @@
-import * as service from '../services/externalWorkOrder.service.js';
+import ExternalWorkOrdersService from '../services/externalWorkOrders.service.js';
 
-export const getAll = async (req, res) => {
-  const data = await service.getAll();
-  res.json(data);
-};
+class ExternalWorkOrdersController {
+  static async getAll(req, res) {
+    try {
+      const data = await ExternalWorkOrdersService.getAll();
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
 
-export const getById = async (req, res) => {
-  const data = await service.getById(req.params.id);
-  if (!data) return res.status(404).json({ message: 'Not found' });
-  res.json(data);
-};
+  static async create(req, res) {
+    try {
+      const data = await ExternalWorkOrdersService.create(req.body);
+      res.status(201).json(data);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
 
-export const create = async (req, res) => {
-  const data = await service.create(req.body);
-  res.status(201).json(data);
-};
+  static async receive(req, res) {
+    try {
+      const { id } = req.params;
+      const data = await ExternalWorkOrdersService.receive(id, req.body.receipts);
+      res.json(data);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
 
-export const update = async (req, res) => {
-  const data = await service.update(req.params.id, req.body);
-  res.json(data);
-};
+  static async delete(req, res) {
+    try {
+      const { id } = req.params;
+      await ExternalWorkOrdersService.delete(id);
+      res.json({ message: 'Deleted successfully' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+}
 
-export const remove = async (req, res) => {
-  await service.remove(req.params.id);
-  res.status(204).end();
-};
+export default ExternalWorkOrdersController;

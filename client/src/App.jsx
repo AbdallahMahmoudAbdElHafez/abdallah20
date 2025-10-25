@@ -22,6 +22,9 @@ import SupplierStatementPage from "./pages/SupplierStatementPage";
 import ExpenseCategoryPage from "./pages/ExpenseCategoryPage";
 import BillOfMaterialsPage from "./pages/BillOfMaterialsPage";
 import { Box } from "@mui/material";
+import WarehouseTransfersPage from "./pages/WarehouseTransfersPage";
+import ExternalWorkOrderPage from "./pages/ExternalWorkOrdersPage";
+
 const drawerWidth = 240;
 
 export default function App() {
@@ -52,6 +55,8 @@ export default function App() {
         <Route path="/suppliers/:supplierId/statement" element={<SupplierStatementPage />} />
         <Route path="/expense-categories" element={<ExpenseCategoryPage />} />
         <Route path="/bill-of-material" element={<BillOfMaterialsPage/>} />
+         <Route path="/warehouse-transfers" element={<WarehouseTransfersPage/>} />
+      <Route path="/external-work-orders" element={<ExternalWorkOrderPage />} />
       </Routes>
       </Box>
     

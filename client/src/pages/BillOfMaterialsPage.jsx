@@ -110,6 +110,13 @@ export default function BillOfMaterialsPage() {
           products.find((p) => p.id === cell.getValue())?.name ||
           cell.getValue(),
       },
+      {
+      header: "سعر التكلفة",
+      Cell: ({ row }) => {
+        const mat = products.find((p) => p.id === row.original.material_id);
+        return mat ? mat.cost_price : "-";
+      },
+    },
       { accessorKey: "quantity_per_unit", header: "الكمية لكل وحدة" },
     ],
     [products]

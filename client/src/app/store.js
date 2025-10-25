@@ -19,6 +19,8 @@ import supplierChequesReducer from '../features/supplierCheques/supplierChequesS
 import accountingSettingsReducer from "../features/accountingSettings/accountingSettingsSlice";
 import expenseCategoryReducer from "../features/expenseCategories/expenseCategoriesSlice";
 import billOfMaterialsReducer from "../features/billOfMaterials/billOfMaterialsSlice";
+import warehouseTransfersReducer from "../features/warehouseTransfers/warehouseTransfersSlice";
+import externalWorkOrdersReducer from "../features/externalWorkOrders/externalWorkOrderSlice";
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -41,6 +43,7 @@ export const store = configureStore({
     accountingSettings: accountingSettingsReducer,
     expenseCategories: expenseCategoryReducer,
     billOfMaterials: billOfMaterialsReducer,
-
+    warehouseTransfers: warehouseTransfersReducer,
+      externalWorkOrders: externalWorkOrdersReducer,
   },
 });

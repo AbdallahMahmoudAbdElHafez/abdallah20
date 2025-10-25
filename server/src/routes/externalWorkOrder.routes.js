@@ -1,12 +1,11 @@
 import express from 'express';
-import * as controller from '../controllers/externalWorkOrder.controller.js';
+import ExternalWorkOrdersController from '../controllers/externalWorkOrder.controller.js';
 
 const router = express.Router();
 
-router.get('/', controller.getAll);
-router.get('/:id', controller.getById);
-router.post('/', controller.create);
-router.put('/:id', controller.update);
-router.delete('/:id', controller.remove);
+router.get('/', ExternalWorkOrdersController.getAll);
+router.post('/', ExternalWorkOrdersController.create);
+router.post('/:id/receive', ExternalWorkOrdersController.receive);
+router.delete('/:id', ExternalWorkOrdersController.delete);
 
 export default router;

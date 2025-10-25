@@ -1,14 +1,14 @@
-// src/models/externalWorkOrder.model.js
+// src/models/externalWorkOrderMaterial.model.js
 import { DataTypes } from 'sequelize';
 
 export default (sequelize) => {
-  const ExternalWorkOrder = sequelize.define('external_work_order', {
+  const ExternalWorkOrderMaterial = sequelize.define('external_work_order_material', {
     id: {
       type: DataTypes.INTEGER.UNSIGNED,
       autoIncrement: true,
       primaryKey: true,
     },
-    supplier_id: {
+    work_order_id: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
@@ -16,27 +16,22 @@ export default (sequelize) => {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
-    order_date: {
-      type: DataTypes.DATE,
+    warehouse_id: {
+      type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
     },
     quantity: {
       type: DataTypes.DECIMAL(12, 3),
       allowNull: false,
     },
-    status: {
-      type: DataTypes.ENUM('open', 'in_progress', 'completed', 'cancelled'),
-      defaultValue: 'open',
+    cost_per_unit: {
+      type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
-    note: {
-      type: DataTypes.TEXT,
-    },
   }, {
-    tableName: 'external_work_orders',
+    tableName: 'external_work_order_materials',
     timestamps: false,
   });
 
-  return ExternalWorkOrder;
+  return ExternalWorkOrderMaterial;
 };
