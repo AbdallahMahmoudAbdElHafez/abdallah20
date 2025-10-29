@@ -260,21 +260,21 @@ ExternalWorkOrder.belongsTo(Product, {
 
 // External Work Order ↔ Materials
 ExternalWorkOrder.hasMany(ExternalWorkOrderMaterial, {
-  foreignKey: 'work_order_id',
+  foreignKey: 'external_work_order_id',
   as: 'materials',
 });
 ExternalWorkOrderMaterial.belongsTo(ExternalWorkOrder, {
-  foreignKey: 'work_order_id',
+  foreignKey: 'external_work_order_id',
   as: 'work_order',
 });
 
 // External Work Order ↔ Receipts
 ExternalWorkOrder.hasMany(ExternalWorkOrderReceipt, {
-  foreignKey: 'work_order_id',
+  foreignKey: 'external_work_order_id',
   as: 'receipts',
 });
 ExternalWorkOrderReceipt.belongsTo(ExternalWorkOrder, {
-  foreignKey: 'work_order_id',
+  foreignKey: 'external_work_order_id',
   as: 'work_order',
 });
 

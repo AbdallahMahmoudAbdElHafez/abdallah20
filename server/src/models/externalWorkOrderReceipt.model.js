@@ -8,7 +8,7 @@ export default (sequelize) => {
       autoIncrement: true,
       primaryKey: true,
     },
-    work_order_id: {
+    external_work_order_id: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
@@ -16,11 +16,11 @@ export default (sequelize) => {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
-    received_quantity: {
+    quantity: {
       type: DataTypes.DECIMAL(12, 3),
       allowNull: false,
     },
-    receive_date: {
+    receipt_date: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,

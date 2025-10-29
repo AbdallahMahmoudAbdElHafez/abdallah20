@@ -11,7 +11,10 @@ class ExternalWorkOrdersController {
   }
 
   static async create(req, res) {
+      console.log(req.body);
+
     try {
+
       const data = await ExternalWorkOrdersService.create(req.body);
       res.status(201).json(data);
     } catch (err) {

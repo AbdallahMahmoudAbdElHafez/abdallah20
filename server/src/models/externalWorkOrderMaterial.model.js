@@ -8,7 +8,7 @@ export default (sequelize) => {
       autoIncrement: true,
       primaryKey: true,
     },
-    work_order_id: {
+    external_work_order_id: {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },

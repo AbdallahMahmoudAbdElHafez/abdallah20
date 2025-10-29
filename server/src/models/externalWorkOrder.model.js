@@ -16,20 +16,22 @@ export default (sequelize) => {
       type: DataTypes.INTEGER.UNSIGNED,
       allowNull: false,
     },
-    order_date: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      defaultValue: DataTypes.NOW,
-    },
+
     quantity: {
       type: DataTypes.DECIMAL(12, 3),
       allowNull: false,
     },
-    status: {
-      type: DataTypes.ENUM('open', 'in_progress', 'completed', 'cancelled'),
-      defaultValue: 'open',
-      allowNull: false,
-    },
+status: {
+  type: DataTypes.ENUM('pending', 'in_progress', 'completed', 'cancelled'),
+  defaultValue: 'pending',
+  allowNull: false,
+},
+order_date: {
+  type: DataTypes.DATE,
+  allowNull: true,
+  defaultValue: DataTypes.NOW,
+},
+
     note: {
       type: DataTypes.TEXT,
     },
