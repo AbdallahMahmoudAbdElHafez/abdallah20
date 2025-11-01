@@ -21,6 +21,10 @@ import expenseCategoryReducer from "../features/expenseCategories/expenseCategor
 import billOfMaterialsReducer from "../features/billOfMaterials/billOfMaterialsSlice";
 import warehouseTransfersReducer from "../features/warehouseTransfers/warehouseTransfersSlice";
 import externalWorkOrdersReducer from "../features/externalWorkOrders/externalWorkOrderSlice";
+import productCostsReducer from "../features/productCosts/productCostsSlice";
+import processingOrdersReducer from "../features/processingOrders/processingOrdersSlice";
+import processingOrderItemsReducer from "../features/processingOrderItems/processingOrderItemsSlice";
+import processingOrderCostsReducer from "../features/processingOrderCosts/processingOrderCostsSlice";
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -45,5 +49,9 @@ export const store = configureStore({
     billOfMaterials: billOfMaterialsReducer,
     warehouseTransfers: warehouseTransfersReducer,
       externalWorkOrders: externalWorkOrdersReducer,
+    productCosts: productCostsReducer,
+    processingOrders: processingOrdersReducer,
+    processingOrderItems: processingOrderItemsReducer,
+    processingOrderCosts: processingOrderCostsReducer,
   },
 });

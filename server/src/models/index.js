@@ -29,10 +29,7 @@ import ExpenseCategoryModel from "./expenseCategory.model.js";
 import BillOfMaterialModel from './billOfMaterial.model.js';
 import WarehouseTransferModel from './warehouseTransfers.model.js';
 import WarehouseTransferItemModel from "./warehouseTransferItems.model.js";
-import ExternalWorkOrderModel from './externalWorkOrder.model.js';
-import ExternalWorkOrderMaterialModel from './externalWorkOrderMaterial.model.js';
-import ExternalWorkOrderReceiptModel from './externalWorkOrderReceipt.model.js';
-
+import ProductCostModel from './productCosts.model.js';
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -66,9 +63,7 @@ const ExpenseCategory = ExpenseCategoryModel(sequelize);
 const BillOfMaterial = BillOfMaterialModel(sequelize);
 const WarehouseTransfer = WarehouseTransferModel(sequelize);
 const WarehouseTransferItem = WarehouseTransferItemModel(sequelize);
-const ExternalWorkOrder = ExternalWorkOrderModel(sequelize);
-const ExternalWorkOrderMaterial = ExternalWorkOrderMaterialModel(sequelize);
-const ExternalWorkOrderReceipt = ExternalWorkOrderReceiptModel(sequelize);
+const ProductCost = ProductCostModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -238,74 +233,21 @@ WarehouseTransferItem.belongsTo(Product, {
   foreignKey: "product_id",
   as: "product",
 });
-// External Work Orders ↔ Party (Supplier)
-Party.hasMany(ExternalWorkOrder, {
-  foreignKey: 'supplier_id',
-  as: 'external_orders',
-});
-ExternalWorkOrder.belongsTo(Party, {
-  foreignKey: 'supplier_id',
-  as: 'supplier',
+
+
+
+
+
+Product.hasMany(ProductCost, {
+  foreignKey: 'product_id',
+  as: 'costs',
 });
 
-// External Work Orders ↔ Product (final product)
-Product.hasMany(ExternalWorkOrder, {
-  foreignKey: 'product_id',
-  as: 'external_orders',
-});
-ExternalWorkOrder.belongsTo(Product, {
+ProductCost.belongsTo(Product, {
   foreignKey: 'product_id',
   as: 'product',
 });
 
-// External Work Order ↔ Materials
-ExternalWorkOrder.hasMany(ExternalWorkOrderMaterial, {
-  foreignKey: 'external_work_order_id',
-  as: 'materials',
-});
-ExternalWorkOrderMaterial.belongsTo(ExternalWorkOrder, {
-  foreignKey: 'external_work_order_id',
-  as: 'work_order',
-});
-
-// External Work Order ↔ Receipts
-ExternalWorkOrder.hasMany(ExternalWorkOrderReceipt, {
-  foreignKey: 'external_work_order_id',
-  as: 'receipts',
-});
-ExternalWorkOrderReceipt.belongsTo(ExternalWorkOrder, {
-  foreignKey: 'external_work_order_id',
-  as: 'work_order',
-});
-
-// Material ↔ Product
-Product.hasMany(ExternalWorkOrderMaterial, {
-  foreignKey: 'product_id',
-  as: 'used_in_external_orders',
-});
-ExternalWorkOrderMaterial.belongsTo(Product, {
-  foreignKey: 'product_id',
-  as: 'product',
-});
-
-// Warehouse relations for materials & receipts
-Warehouse.hasMany(ExternalWorkOrderMaterial, {
-  foreignKey: 'warehouse_id',
-  as: 'external_materials',
-});
-ExternalWorkOrderMaterial.belongsTo(Warehouse, {
-  foreignKey: 'warehouse_id',
-  as: 'warehouse',
-});
-
-Warehouse.hasMany(ExternalWorkOrderReceipt, {
-  foreignKey: 'warehouse_id',
-  as: 'external_receipts',
-});
-ExternalWorkOrderReceipt.belongsTo(Warehouse, {
-  foreignKey: 'warehouse_id',
-  as: 'warehouse',
-});
 
 Expense.belongsTo(Account, { foreignKey: "account_id" });
 Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
@@ -337,7 +279,7 @@ export {
   BillOfMaterial,
   WarehouseTransfer,
   WarehouseTransferItem,
-  ExternalWorkOrder,
-  ExternalWorkOrderMaterial,
-  ExternalWorkOrderReceipt,
+
+  ProductCost,
+
 };

@@ -19,9 +19,10 @@ const navItems = [
   { label: "الرئيسية", path: "/" },
   { label: "لوحة التحكم", path: "/dashboard" },
   { label: "الوحدات", path: "/units" },
-  { label: "المنتجات", path: "/products" },
+ 
   { label: "الدول", path: "/countries" },
   { label: "اوامر التشغيل ", path: "/external-work-orders" },
+   { label: "1اوامر التشغيل ", path: "/processing-orders" },
   { label: "الحسابات", path: "/accounts" },
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
   { label: "العملاء الموردين", path: "/parties" },
@@ -32,7 +33,12 @@ const navItems = [
   { label: "مكونات التصنيع", path: "/bill-of-material" },
   { label: "كشف حساب المورد", path: "/suppliers/:supplierId/statement" },
 ];
+const productsMenu = [
+   { label: "المنتجات", path: "/products" },
+  { label: "تكلفة المنتجات", path: "/product-costs" },
+  
 
+];
 const purchasesMenu = [
   { label: "أوامر الشراء", path: "/purchase-orders" },
   { label: "فواتير الشراء", path: "/purchase-invoices" },
@@ -75,6 +81,31 @@ function Sidebar() {
       </Toolbar>
       <Divider sx={{ bgcolor: "rgba(255,255,255,0.2)" }} />
       <List>
+          {/* اداراة المنتجات */}
+        <ListItemButton onClick={togglePurchases}>
+          <ListItemText primary="ادارة المنتجات" />
+          {openPurchases ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={openPurchases} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {productsMenu.map((item) => (
+              <ListItemButton
+                key={item.path}
+                component={Link}
+                to={item.path}
+                sx={{
+                  pl: 4,
+                  bgcolor: isActive(item.path)
+                    ? "rgba(255,255,255,0.1)"
+                    : "transparent",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                }}
+              >
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
         {/* المشتريات */}
         <ListItemButton onClick={togglePurchases}>
           <ListItemText primary="المشتريات" />
