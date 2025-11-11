@@ -20,11 +20,10 @@ import accountingSettingsReducer from "../features/accountingSettings/accounting
 import expenseCategoryReducer from "../features/expenseCategories/expenseCategoriesSlice";
 import billOfMaterialsReducer from "../features/billOfMaterials/billOfMaterialsSlice";
 import warehouseTransfersReducer from "../features/warehouseTransfers/warehouseTransfersSlice";
-import externalWorkOrdersReducer from "../features/externalWorkOrders/externalWorkOrderSlice";
 import productCostsReducer from "../features/productCosts/productCostsSlice";
-import processingOrdersReducer from "../features/processingOrders/processingOrdersSlice";
-import processingOrderItemsReducer from "../features/processingOrderItems/processingOrderItemsSlice";
-import processingOrderCostsReducer from "../features/processingOrderCosts/processingOrderCostsSlice";
+import processesReducer from "../features/processes/processesSlice";
+import externalJobOrdersReducer from "../features/externalJobOrders/externalJobOrdersSlice";
+import currentInventoryReducer from "../features/currentInventory/currentInventorySlice";
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -48,10 +47,9 @@ export const store = configureStore({
     expenseCategories: expenseCategoryReducer,
     billOfMaterials: billOfMaterialsReducer,
     warehouseTransfers: warehouseTransfersReducer,
-      externalWorkOrders: externalWorkOrdersReducer,
     productCosts: productCostsReducer,
-    processingOrders: processingOrdersReducer,
-    processingOrderItems: processingOrderItemsReducer,
-    processingOrderCosts: processingOrderCostsReducer,
+    processes: processesReducer,
+    externalJobOrders: externalJobOrdersReducer,
+    currentInventory: currentInventoryReducer,
   },
 });

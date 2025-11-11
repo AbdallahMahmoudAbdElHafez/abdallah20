@@ -27,6 +27,8 @@ import warehouseTransfersRoutes from './routes/warehouseTransfers.routes.js';
 import warehouseTransferItemsRoutes from './routes/warehouseTransferItems.routes.js';
 import productCostRoutes from './routes/productCosts.routes.js';
 import processesRoutes from './routes/processes.routes.js';
+import externalJobOrdersRoutes from './routes/externalJobOrders.routes.js';
+import currentInventoryRoutes from "./routes/currentInventory.routes.js";
 
 const app = express();
 app.use(cors());
@@ -60,5 +62,8 @@ app.use("/api/warehouse-transfers", warehouseTransfersRoutes);
 app.use("/api/warehouse-transfer-items", warehouseTransferItemsRoutes);
 app.use("/api/product-costs", productCostRoutes);
 app.use('/api/processes', processesRoutes);
+app.use('/api/external-job-orders', externalJobOrdersRoutes);
+app.use("/api/current-inventory", currentInventoryRoutes);
+
 app.use(errorHandler);
 export default app;

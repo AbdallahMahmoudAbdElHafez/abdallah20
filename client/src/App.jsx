@@ -23,9 +23,9 @@ import ExpenseCategoryPage from "./pages/ExpenseCategoryPage";
 import BillOfMaterialsPage from "./pages/BillOfMaterialsPage";
 import { Box } from "@mui/material";
 import WarehouseTransfersPage from "./pages/WarehouseTransfersPage";
-import ExternalWorkOrderPage from "./pages/ExternalWorkOrdersPage";
-import ProductCostsPage from "./pages/ProductCostsPage";
-import ProcessingOrdersPage from "./pages/processingOrdersPage";
+import ProcessesPage from "./pages/processesPage";
+import ExternalJobOrdersPage from "./pages/externalJobOrdersPage";
+import CurrentInventoryPage from "./pages/CurrentInventoryPage";
 
 const drawerWidth = 240;
 
@@ -58,9 +58,9 @@ export default function App() {
         <Route path="/expense-categories" element={<ExpenseCategoryPage />} />
         <Route path="/bill-of-material" element={<BillOfMaterialsPage/>} />
          <Route path="/warehouse-transfers" element={<WarehouseTransfersPage/>} />
-         <Route path="/product-costs" element={<ProductCostsPage/>} />
-         <Route path="/processing-orders" element={<ProcessingOrdersPage/>} />
-      <Route path="/external-work-orders" element={<ExternalWorkOrderPage />} />
+         <Route path="/processes" element={<ProcessesPage />} />
+         <Route path="/external-job-orders" element={<ExternalJobOrdersPage />} />
+    <Route path="/current-inventory" element={<CurrentInventoryPage />} />
       </Routes>
       </Box>
     

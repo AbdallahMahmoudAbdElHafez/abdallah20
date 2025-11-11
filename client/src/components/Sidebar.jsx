@@ -21,12 +21,12 @@ const navItems = [
   { label: "الوحدات", path: "/units" },
  
   { label: "الدول", path: "/countries" },
-  { label: "اوامر التشغيل ", path: "/external-work-orders" },
-   { label: "1اوامر التشغيل ", path: "/processing-orders" },
+  { label: "اوامر التشغيل ", path: "/external-job-orders" },
+
   { label: "الحسابات", path: "/accounts" },
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
   { label: "العملاء الموردين", path: "/parties" },
- 
+  { label: "العمليات", path: "/processes" },
   { label: "القيود", path: "/journal-entry-lines" },
   { label: "فئات المصروفات", path: "/expense-categories" },
   { label: "اضافة الحسابات", path: "/accounting-settings" },
@@ -47,6 +47,7 @@ const purchasesMenu = [
 ];
 const warehousesMenu = [
  { label: "حركة المخازن", path: "/inventory-transactions" },
+ { label: "المخازن الحالية", path: "/current-inventory" },
   { label: "دليل المخازن", path: "/warehouses" },
   { label: "حركة تحويل المخازن", path: "/warehouse-transfers" },
 ];

@@ -1,12 +1,12 @@
 // src/models/processes.model.js
 import { DataTypes } from 'sequelize';
-import sequelize from '../config/database.js'; // ملف الاتصال بـ Sequelize
 
-const Process = sequelize.define(
-  'Process',
-  {
-    id: {
-      type: DataTypes.INTEGER,
+export default (sequelize) => {
+  return sequelize.define(
+    'Process',
+    {
+      id: {
+        type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
     },
@@ -23,6 +23,6 @@ const Process = sequelize.define(
     tableName: 'processes',
     timestamps: false,
   }
-);
-
-export default Process;
+)
+}
+;

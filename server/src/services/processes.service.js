@@ -1,5 +1,5 @@
 // src/services/processes.service.js
-import Process from '../models/processes.model.js';
+import { Process } from "../models/index.js";
 
 const ProcessService = {
   getAll: async () => {

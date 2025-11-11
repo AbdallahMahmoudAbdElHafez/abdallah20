@@ -22,6 +22,7 @@ import AccountingSettingModel from './accountingSetting.model.js';
 import purchaseOrderHooks from '../hooks/purchaseOrderHooks.js';
 import purchaseInvoiceHooks from "../hooks/purchaseInvoiceHooks.js";
 import purchaseInvoicePaymentHooks from "../hooks/purchaseInvoicePaymentHooks.js";
+import inventoryTransactionHooks from "../hooks/inventoryTransactionHooks.js";
 import PurchaseInvoicePaymentModel from "./purchaseInvoicePayment.model.js";
 import SupplierChequeModel from "./supplierCheque.model.js";
 import ExpenseModel from "./expense.model.js";
@@ -30,6 +31,10 @@ import BillOfMaterialModel from './billOfMaterial.model.js';
 import WarehouseTransferModel from './warehouseTransfers.model.js';
 import WarehouseTransferItemModel from "./warehouseTransferItems.model.js";
 import ProductCostModel from './productCosts.model.js';
+import ProcessModel from './processes.model.js';
+import ExternalJobOrderModel from './externalJobOrders.model.js';
+import CurrentInventoryModel from "./currentInventory.model.js";
+
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -64,10 +69,16 @@ const BillOfMaterial = BillOfMaterialModel(sequelize);
 const WarehouseTransfer = WarehouseTransferModel(sequelize);
 const WarehouseTransferItem = WarehouseTransferItemModel(sequelize);
 const ProductCost = ProductCostModel(sequelize);
+const Process = ProcessModel(sequelize);
+const ExternalJobOrder = ExternalJobOrderModel(sequelize);
+const CurrentInventory = CurrentInventoryModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
 purchaseInvoicePaymentHooks(sequelize)
+InventoryTransaction.addHook("afterCreate", inventoryTransactionHooks.afterCreate);
+InventoryTransaction.addHook("afterBulkCreate", inventoryTransactionHooks.afterBulkCreate);
+
 
 // العلاقات
 // Product - Unit relationship
@@ -248,6 +259,30 @@ ProductCost.belongsTo(Product, {
   as: 'product',
 });
 
+ExternalJobOrder.belongsTo(Party, {
+  foreignKey: 'party_id',
+  as: 'party',
+});
+
+// ExternalJobOrder ↔ Product
+ExternalJobOrder.belongsTo(Product, {
+  foreignKey: 'product_id',
+  as: 'product',
+});
+
+
+
+// ExternalJobOrder ↔ Process
+ExternalJobOrder.belongsTo(Process, {
+  foreignKey: 'process_id',
+  as: 'process',
+});
+
+// ExternalJobOrder ↔ Warehouse
+ExternalJobOrder.belongsTo(Warehouse, {
+  foreignKey: 'warehouse_id',
+  as: 'warehouse',
+});
 
 Expense.belongsTo(Account, { foreignKey: "account_id" });
 Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
@@ -281,5 +316,8 @@ export {
   WarehouseTransferItem,
 
   ProductCost,
+  Process,
+  ExternalJobOrder,
+   CurrentInventory
 
 };
