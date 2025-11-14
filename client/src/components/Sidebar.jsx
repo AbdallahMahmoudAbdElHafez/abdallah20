@@ -47,9 +47,9 @@ const purchasesMenu = [
 ];
 const warehousesMenu = [
  { label: "حركة المخازن", path: "/inventory-transactions" },
- { label: "المخازن الحالية", path: "/current-inventory" },
+ { label: "ارصدة المخازن", path: "/current-inventory" },
   { label: "دليل المخازن", path: "/warehouses" },
-  { label: "حركة تحويل المخازن", path: "/warehouse-transfers" },
+  { label: "التحويل من مخزن الى مخزن", path: "/warehouse-transfers" },
 ];
 function Sidebar() {
   const location = useLocation();

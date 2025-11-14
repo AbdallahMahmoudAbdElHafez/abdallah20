@@ -34,6 +34,7 @@ import ProductCostModel from './productCosts.model.js';
 import ProcessModel from './processes.model.js';
 import ExternalJobOrderModel from './externalJobOrders.model.js';
 import CurrentInventoryModel from "./currentInventory.model.js";
+import DepartmentModel from "./departments.model.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -72,6 +73,7 @@ const ProductCost = ProductCostModel(sequelize);
 const Process = ProcessModel(sequelize);
 const ExternalJobOrder = ExternalJobOrderModel(sequelize);
 const CurrentInventory = CurrentInventoryModel(sequelize);
+const Department = DepartmentModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -283,7 +285,15 @@ ExternalJobOrder.belongsTo(Warehouse, {
   foreignKey: 'warehouse_id',
   as: 'warehouse',
 });
-
+// Department ↔ Employees
+//Department.hasMany(Employee, {
+  //foreignKey: "department_id",
+  //as: "employees",
+//});
+//Employee.belongsTo(Department, {
+ // foreignKey: "department_id",
+ // as: "department",
+//});
 Expense.belongsTo(Account, { foreignKey: "account_id" });
 Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
 ExpenseCategory.hasMany(Expense, { foreignKey: "category_id" });
@@ -314,10 +324,11 @@ export {
   BillOfMaterial,
   WarehouseTransfer,
   WarehouseTransferItem,
-
   ProductCost,
   Process,
   ExternalJobOrder,
-   CurrentInventory
+  CurrentInventory,
+  Department,
+
 
 };

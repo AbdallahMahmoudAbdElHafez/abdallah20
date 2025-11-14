@@ -233,6 +233,31 @@ INSERT INTO `current_inventory` VALUES (1,8,1,56,'2025-11-08 22:30:38');
 UNLOCK TABLES;
 
 --
+-- Table structure for table `departments`
+--
+
+DROP TABLE IF EXISTS `departments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `departments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(150) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `departments`
+--
+
+LOCK TABLES `departments` WRITE;
+/*!40000 ALTER TABLE `departments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `departments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `employees`
 --
 
@@ -243,6 +268,7 @@ CREATE TABLE `employees` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `job_title_id` int DEFAULT NULL,
+  `department_id` int DEFAULT NULL,
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `hire_date` date DEFAULT NULL,
@@ -251,6 +277,8 @@ CREATE TABLE `employees` (
   PRIMARY KEY (`id`),
   KEY `fk_job_title` (`job_title_id`),
   KEY `fk_parent_employee` (`parent_id`),
+  KEY `fk_department_id` (`department_id`),
+  CONSTRAINT `fk_department_id` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`),
   CONSTRAINT `fk_job_title` FOREIGN KEY (`job_title_id`) REFERENCES `job_titles` (`id`),
   CONSTRAINT `fk_parent_employee` FOREIGN KEY (`parent_id`) REFERENCES `employees` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -3071,4 +3099,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-11  2:33:20
+-- Dump completed on 2025-11-14 21:22:41
