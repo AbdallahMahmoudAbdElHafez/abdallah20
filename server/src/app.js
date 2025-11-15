@@ -29,7 +29,9 @@ import productCostRoutes from './routes/productCosts.routes.js';
 import processesRoutes from './routes/processes.routes.js';
 import externalJobOrdersRoutes from './routes/externalJobOrders.routes.js';
 import currentInventoryRoutes from "./routes/currentInventory.routes.js";
-
+import jobTitlesRoutes from "./routes/jobTitles.routes.js";
+import departmentsRoutes from "./routes/departments.routes.js";
+import employeeRoutes from "./routes/employees.routes.js";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -64,6 +66,8 @@ app.use("/api/product-costs", productCostRoutes);
 app.use('/api/processes', processesRoutes);
 app.use('/api/external-job-orders', externalJobOrdersRoutes);
 app.use("/api/current-inventory", currentInventoryRoutes);
-
+app.use("/api/job-titles", jobTitlesRoutes);
+app.use("/api/departments", departmentsRoutes);
+app.use("/api/employees", employeeRoutes);
 app.use(errorHandler);
 export default app;

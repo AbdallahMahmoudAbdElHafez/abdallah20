@@ -39,6 +39,13 @@ const productsMenu = [
   
 
 ];
+const companyInfoMenu = [
+   { label: "الاقسام", path: "/departments" },
+  { label: "المسميات الوظيفيه", path: "/job-titles" },
+  { label: "الموظفين", path: "/employees" },
+  
+
+];
 const purchasesMenu = [
   { label: "أوامر الشراء", path: "/purchase-orders" },
   { label: "فواتير الشراء", path: "/purchase-invoices" },
@@ -55,6 +62,9 @@ function Sidebar() {
   const location = useLocation();
   const [openPurchases, setOpenPurchases] = useState(false);
   const [openWarehouses, setOpenWarehouses] = useState(false);
+    const [openCompanyInfo, setOpenCompanyInfo] = useState(false);
+
+  const toggleCompanyInfo = () => setOpenCompanyInfo(!openCompanyInfo);
   const toggleWarehouses = () => setOpenWarehouses(!openWarehouses);
 
   const togglePurchases = () => setOpenPurchases(!openPurchases);
@@ -82,6 +92,31 @@ function Sidebar() {
       </Toolbar>
       <Divider sx={{ bgcolor: "rgba(255,255,255,0.2)" }} />
       <List>
+           {/* بيانات الشركه */}
+        <ListItemButton onClick={toggleCompanyInfo}>
+          <ListItemText primary="بيانات الشركه" />
+          {openCompanyInfo ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={openCompanyInfo} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {companyInfoMenu.map((item) => (
+              <ListItemButton
+                key={item.path}
+                component={Link}
+                to={item.path}
+                sx={{
+                  pl: 4,
+                  bgcolor: isActive(item.path)
+                    ? "rgba(255,255,255,0.1)"
+                    : "transparent",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                }}
+              >
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
           {/* اداراة المنتجات */}
         <ListItemButton onClick={togglePurchases}>
           <ListItemText primary="ادارة المنتجات" />

@@ -35,7 +35,9 @@ import ProcessModel from './processes.model.js';
 import ExternalJobOrderModel from './externalJobOrders.model.js';
 import CurrentInventoryModel from "./currentInventory.model.js";
 import DepartmentModel from "./departments.model.js";
+import jobTitleModel from "./jobTitles.model.js";
 
+import employeeModel from "./employees.model.js";
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -74,7 +76,8 @@ const Process = ProcessModel(sequelize);
 const ExternalJobOrder = ExternalJobOrderModel(sequelize);
 const CurrentInventory = CurrentInventoryModel(sequelize);
 const Department = DepartmentModel(sequelize);
-
+const JobTitle = jobTitleModel(sequelize);
+const Employee = employeeModel(sequelize);
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
 purchaseInvoicePaymentHooks(sequelize)
@@ -285,15 +288,26 @@ ExternalJobOrder.belongsTo(Warehouse, {
   foreignKey: 'warehouse_id',
   as: 'warehouse',
 });
-// Department ↔ Employees
-//Department.hasMany(Employee, {
-  //foreignKey: "department_id",
-  //as: "employees",
-//});
-//Employee.belongsTo(Department, {
- // foreignKey: "department_id",
- // as: "department",
-//});
+Employee.belongsTo(JobTitle, {
+  foreignKey: "job_title_id",
+  as: "job_title",
+});
+
+Employee.belongsTo(Department, {
+  foreignKey: "department_id",
+  as: "department",
+});
+
+Employee.belongsTo(Employee, {
+  foreignKey: "parent_id",
+  as: "parent_employee",
+});
+
+Employee.hasMany(Employee, {
+  foreignKey: "parent_id",
+  as: "children",
+});
+
 Expense.belongsTo(Account, { foreignKey: "account_id" });
 Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
 ExpenseCategory.hasMany(Expense, { foreignKey: "category_id" });
@@ -329,6 +343,8 @@ export {
   ExternalJobOrder,
   CurrentInventory,
   Department,
+  JobTitle,
+Employee
 
 
 };

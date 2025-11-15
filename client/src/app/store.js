@@ -24,6 +24,9 @@ import productCostsReducer from "../features/productCosts/productCostsSlice";
 import processesReducer from "../features/processes/processesSlice";
 import externalJobOrdersReducer from "../features/externalJobOrders/externalJobOrdersSlice";
 import currentInventoryReducer from "../features/currentInventory/currentInventorySlice";
+import DepartmentsReducer from "../features/departments/departmentsSlice";
+import jobTitlesReducer from "../features/jobTitles/jobTitlesSlice";
+import employeesReducer from "../features/employees/employeesSlice";
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -51,5 +54,8 @@ export const store = configureStore({
     processes: processesReducer,
     externalJobOrders: externalJobOrdersReducer,
     currentInventory: currentInventoryReducer,
+    departments: DepartmentsReducer,
+    jobTitles: jobTitlesReducer,
+    employees: employeesReducer,
   },
 });

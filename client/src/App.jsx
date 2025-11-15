@@ -26,6 +26,9 @@ import WarehouseTransfersPage from "./pages/WarehouseTransfersPage";
 import ProcessesPage from "./pages/processesPage";
 import ExternalJobOrdersPage from "./pages/externalJobOrdersPage";
 import CurrentInventoryPage from "./pages/CurrentInventoryPage";
+import DepartmentsPage from "./pages/DepartmentsPage";
+import JobTitlesPage from "./pages/JobTitlesPage";
+import EmployeesPage from "./pages/EmployeesPage";
 
 const drawerWidth = 240;
 
@@ -61,6 +64,9 @@ export default function App() {
          <Route path="/processes" element={<ProcessesPage />} />
          <Route path="/external-job-orders" element={<ExternalJobOrdersPage />} />
     <Route path="/current-inventory" element={<CurrentInventoryPage />} />
+    <Route path="/departments" element={<DepartmentsPage/>}/>
+    <Route path="/job-titles" element={<JobTitlesPage/>}/>
+    <Route path="/employees" element={<EmployeesPage/>}/>
       </Routes>
       </Box>
     
