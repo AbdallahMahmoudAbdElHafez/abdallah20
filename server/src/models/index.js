@@ -36,8 +36,9 @@ import ExternalJobOrderModel from './externalJobOrders.model.js';
 import CurrentInventoryModel from "./currentInventory.model.js";
 import DepartmentModel from "./departments.model.js";
 import jobTitleModel from "./jobTitles.model.js";
-
 import employeeModel from "./employees.model.js";
+import IssueVoucherTypesModel from "./issueVoucherTypes.model.js";
+
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -78,6 +79,8 @@ const CurrentInventory = CurrentInventoryModel(sequelize);
 const Department = DepartmentModel(sequelize);
 const JobTitle = jobTitleModel(sequelize);
 const Employee = employeeModel(sequelize);
+const IssueVoucherType = IssueVoucherTypesModel(sequelize);
+
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
 purchaseInvoicePaymentHooks(sequelize)
@@ -344,7 +347,8 @@ export {
   CurrentInventory,
   Department,
   JobTitle,
-Employee
+  Employee,
+  IssueVoucherType
 
 
 };
