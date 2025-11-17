@@ -245,7 +245,7 @@ CREATE TABLE `departments` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -254,6 +254,7 @@ CREATE TABLE `departments` (
 
 LOCK TABLES `departments` WRITE;
 /*!40000 ALTER TABLE `departments` DISABLE KEYS */;
+INSERT INTO `departments` VALUES (1,'الحسابات','2025-11-15 20:56:52'),(2,'المبيعات','2025-11-15 20:57:01'),(3,'المشتريات','2025-11-15 20:57:11'),(4,'Owner','2025-11-15 20:57:29');
 /*!40000 ALTER TABLE `departments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -517,6 +518,143 @@ LOCK TABLES `inventory_transactions` WRITE;
 /*!40000 ALTER TABLE `inventory_transactions` DISABLE KEYS */;
 INSERT INTO `inventory_transactions` VALUES (7,4,2,'out',55,2.00,'2025-10-25 07:20:00','تحويل إلى مخزن مخزن اسكندريه','adjustment',NULL),(8,5,2,'out',109,3.00,'2025-10-25 07:20:00','تحويل إلى مخزن مخزن اسكندريه','adjustment',NULL),(9,4,3,'in',55,2.00,'2025-10-25 07:20:00','تحويل من مخزن المخزن الرئيسي','adjustment',NULL),(10,5,3,'in',109,3.00,'2025-10-25 07:20:00','تحويل من مخزن المخزن الرئيسي','adjustment',NULL),(11,7,3,'out',20,20.00,'2025-11-08 09:41:00','تحويل إلى  المخزن الرئيس','adjustment',NULL),(12,7,1,'in',20,20.00,'2025-11-08 09:41:00','تحويل من مخزن مخزن اسكندريه','adjustment',NULL),(13,8,6,'in',3,22.70,'2025-11-08 22:15:27','Added from Purchase Invoice PI-2025-000086','adjustment',NULL),(14,8,1,'in',56,22.70,'2025-11-08 22:30:38','Added from Purchase Invoice PI-2025-000087','adjustment',NULL);
 /*!40000 ALTER TABLE `inventory_transactions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `issue_voucher_items`
+--
+
+DROP TABLE IF EXISTS `issue_voucher_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `issue_voucher_items` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `voucher_id` int NOT NULL,
+  `product_id` int NOT NULL,
+  `warehouse_id` int NOT NULL,
+  `batch_number` varchar(100) DEFAULT NULL,
+  `expiry_date` date DEFAULT NULL,
+  `quantity` decimal(12,3) NOT NULL,
+  `unit_price` decimal(12,2) DEFAULT '0.00',
+  `cost_per_unit` decimal(12,2) DEFAULT '0.00',
+  `note` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_ivi_voucher` (`voucher_id`),
+  KEY `fk_ivi_product` (`product_id`),
+  KEY `fk_ivi_warehouse` (`warehouse_id`),
+  CONSTRAINT `fk_ivi_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  CONSTRAINT `fk_ivi_voucher` FOREIGN KEY (`voucher_id`) REFERENCES `issue_vouchers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ivi_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `issue_voucher_items`
+--
+
+LOCK TABLES `issue_voucher_items` WRITE;
+/*!40000 ALTER TABLE `issue_voucher_items` DISABLE KEYS */;
+/*!40000 ALTER TABLE `issue_voucher_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `issue_voucher_type_accounts`
+--
+
+DROP TABLE IF EXISTS `issue_voucher_type_accounts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `issue_voucher_type_accounts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `issue_voucher_type_id` int NOT NULL,
+  `account_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_ivta_type` (`issue_voucher_type_id`),
+  KEY `fk_ivta_account` (`account_id`),
+  CONSTRAINT `fk_ivta_account` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ivta_type` FOREIGN KEY (`issue_voucher_type_id`) REFERENCES `issue_voucher_types` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `issue_voucher_type_accounts`
+--
+
+LOCK TABLES `issue_voucher_type_accounts` WRITE;
+/*!40000 ALTER TABLE `issue_voucher_type_accounts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `issue_voucher_type_accounts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `issue_voucher_types`
+--
+
+DROP TABLE IF EXISTS `issue_voucher_types`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `issue_voucher_types` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `description` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `issue_voucher_types`
+--
+
+LOCK TABLES `issue_voucher_types` WRITE;
+/*!40000 ALTER TABLE `issue_voucher_types` DISABLE KEYS */;
+/*!40000 ALTER TABLE `issue_voucher_types` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `issue_vouchers`
+--
+
+DROP TABLE IF EXISTS `issue_vouchers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `issue_vouchers` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `voucher_no` varchar(100) NOT NULL,
+  `type_id` int DEFAULT NULL,
+  `party_id` int DEFAULT NULL,
+  `employee_id` int DEFAULT NULL,
+  `warehouse_id` int NOT NULL,
+  `issued_by` int DEFAULT NULL,
+  `approved_by` int DEFAULT NULL,
+  `status` enum('draft','approved','posted','cancelled') NOT NULL DEFAULT 'draft',
+  `issue_date` date NOT NULL,
+  `note` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `voucher_no` (`voucher_no`),
+  KEY `fk_iv_type` (`type_id`),
+  KEY `fk_iv_party` (`party_id`),
+  KEY `fk_iv_warehouse` (`warehouse_id`),
+  KEY `fk_iv_employee` (`employee_id`),
+  CONSTRAINT `fk_iv_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
+  CONSTRAINT `fk_iv_party` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`),
+  CONSTRAINT `fk_iv_type` FOREIGN KEY (`type_id`) REFERENCES `issue_voucher_types` (`id`),
+  CONSTRAINT `fk_iv_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `issue_vouchers`
+--
+
+LOCK TABLES `issue_vouchers` WRITE;
+/*!40000 ALTER TABLE `issue_vouchers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `issue_vouchers` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -3099,4 +3237,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-14 21:22:41
+-- Dump completed on 2025-11-17 22:51:55
