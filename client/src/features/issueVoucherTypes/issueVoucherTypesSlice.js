@@ -1,6 +1,6 @@
 // src/store/issueVoucherTypesSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import issueVoucherTypesApi from "../api/issueVoucherTypesApi";
+import issueVoucherTypesApi from "../../api/issueVoucherTypesApi";
 
 export const fetchIssueVoucherTypes = createAsyncThunk(
   "issueVoucherTypes/fetchAll",

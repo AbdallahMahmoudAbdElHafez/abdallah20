@@ -38,7 +38,9 @@ import DepartmentModel from "./departments.model.js";
 import jobTitleModel from "./jobTitles.model.js";
 import employeeModel from "./employees.model.js";
 import IssueVoucherTypesModel from "./issueVoucherTypes.model.js";
-
+import IssueVoucherTypeAccountsModel from "./issueVoucherTypeAccounts.model.js";
+import IssueVoucherModel from './issueVouchers.model.js';
+import IssueVoucherItemModel from './issueVoucherItems.model.js';
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -80,6 +82,9 @@ const Department = DepartmentModel(sequelize);
 const JobTitle = jobTitleModel(sequelize);
 const Employee = employeeModel(sequelize);
 const IssueVoucherType = IssueVoucherTypesModel(sequelize);
+const IssueVoucherTypeAccount = IssueVoucherTypeAccountsModel(sequelize);
+const IssueVoucher = IssueVoucherModel(sequelize);
+const IssueVoucherItem = IssueVoucherItemModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -157,14 +162,8 @@ PurchaseInvoice.belongsTo(PurchaseOrder, {
 });
 
 // ✅ PurchaseInvoice ↔ Items
-PurchaseInvoice.hasMany(PurchaseInvoiceItem, {
-  foreignKey: "purchase_invoice_id",
-  as: "items",
-});
-PurchaseInvoiceItem.belongsTo(PurchaseInvoice, {
-  foreignKey: "purchase_invoice_id",
-  as: "invoice",
-});
+PurchaseInvoice.hasMany(PurchaseInvoiceItem, { foreignKey: "purchase_invoice_id", as: "items", });
+PurchaseInvoiceItem.belongsTo(PurchaseInvoice, { foreignKey: "purchase_invoice_id", as: "invoice", });
 
 // ✅ Product ↔ PurchaseInvoiceItem
 Product.hasMany(PurchaseInvoiceItem, {
@@ -301,16 +300,105 @@ Employee.belongsTo(Department, {
   as: "department",
 });
 
-Employee.belongsTo(Employee, {
-  foreignKey: "parent_id",
-  as: "parent_employee",
+Employee.belongsTo(Employee, { foreignKey: "parent_id", as: "parent_employee", });
+Employee.hasMany(Employee, { foreignKey: "parent_id", as: "children", });
+
+IssueVoucherType.hasMany(IssueVoucherTypeAccount, { foreignKey: "issue_voucher_type_id", as: "accounts", onDelete: "CASCADE", });
+Account.hasMany(IssueVoucherTypeAccount, { foreignKey: "account_id", as: "voucher_types", onDelete: "CASCADE", });
+IssueVoucherTypeAccount.belongsTo(IssueVoucherType, { foreignKey: "issue_voucher_type_id", as: "type", onDelete: "CASCADE", });
+IssueVoucherTypeAccount.belongsTo(Account, {foreignKey: "account_id", as: "account", onDelete: "CASCADE",});
+// === علاقات Issue Voucher ===
+
+// IssueVoucher ↔ IssueVoucherType
+IssueVoucherType.hasMany(IssueVoucher, {
+  foreignKey: "type_id",
+  as: "vouchers"
+});
+IssueVoucher.belongsTo(IssueVoucherType, {
+  foreignKey: "type_id",
+  as: "type"
 });
 
-Employee.hasMany(Employee, {
-  foreignKey: "parent_id",
-  as: "children",
+// IssueVoucher ↔ Party
+Party.hasMany(IssueVoucher, {
+  foreignKey: "party_id",
+  as: "issue_vouchers"
+});
+IssueVoucher.belongsTo(Party, {
+  foreignKey: "party_id",
+  as: "party"
 });
 
+// IssueVoucher ↔ Employee (موظف مسؤول عن الإصدار)
+Employee.hasMany(IssueVoucher, {
+  foreignKey: "employee_id",
+  as: "responsible_vouchers"
+});
+IssueVoucher.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "responsible_employee"
+});
+
+// IssueVoucher ↔ Warehouse
+Warehouse.hasMany(IssueVoucher, {
+  foreignKey: "warehouse_id",
+  as: "issue_vouchers"
+});
+IssueVoucher.belongsTo(Warehouse, {
+  foreignKey: "warehouse_id",
+  as: "warehouse"
+});
+
+// IssueVoucher ↔ Employee (issued_by - الذي أصدر السند)
+Employee.hasMany(IssueVoucher, {
+  foreignKey: "issued_by",
+  as: "issued_vouchers"
+});
+IssueVoucher.belongsTo(Employee, {
+  foreignKey: "issued_by",
+  as: "issuer"
+});
+
+// IssueVoucher ↔ Employee (approved_by - الذي وافق على السند)
+Employee.hasMany(IssueVoucher, {
+  foreignKey: "approved_by",
+  as: "approved_vouchers"
+});
+IssueVoucher.belongsTo(Employee, {
+  foreignKey: "approved_by",
+  as: "approver"
+});
+// العلاقات الجديدة
+// IssueVoucher ↔ IssueVoucherItem
+IssueVoucher.hasMany(IssueVoucherItem, {
+  foreignKey: "voucher_id",
+  as: "items",
+  onDelete: "CASCADE"
+});
+IssueVoucherItem.belongsTo(IssueVoucher, {
+  foreignKey: "voucher_id",
+  as: "voucher"
+});
+
+// IssueVoucherItem ↔ Product
+Product.hasMany(IssueVoucherItem, {
+  foreignKey: "product_id",
+  as: "issue_voucher_items"
+});
+IssueVoucherItem.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product"
+});
+
+// IssueVoucherItem ↔ Warehouse
+Warehouse.hasMany(IssueVoucherItem, {
+  foreignKey: "warehouse_id",
+  as: "issue_voucher_items"
+});
+IssueVoucherItem.belongsTo(Warehouse, {
+  foreignKey: "warehouse_id",
+  as: "warehouse"
+});
 Expense.belongsTo(Account, { foreignKey: "account_id" });
 Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
 ExpenseCategory.hasMany(Expense, { foreignKey: "category_id" });
@@ -348,7 +436,10 @@ export {
   Department,
   JobTitle,
   Employee,
-  IssueVoucherType
+  IssueVoucherType,
+  IssueVoucherTypeAccount,
+  IssueVoucher,
+  IssueVoucherItem,
 
 
 };

@@ -29,6 +29,8 @@ import CurrentInventoryPage from "./pages/CurrentInventoryPage";
 import DepartmentsPage from "./pages/DepartmentsPage";
 import JobTitlesPage from "./pages/JobTitlesPage";
 import EmployeesPage from "./pages/EmployeesPage";
+import IssueVoucherTypesPage from "./pages/IssueVoucherTypesPage";
+import IssueVouchersPage from "./pages/issueVouchersPage";
 
 const drawerWidth = 240;
 
@@ -38,38 +40,40 @@ export default function App() {
       <Sidebar />
       <Box sx={{ mr: `${drawerWidth}px` }}>
 
-  <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/units" element={<UnitsPage />} />
-        <Route path="/products" element={<ProductsPage />} />"
-        <Route path="/countries" element={<CountriesPage />} />
-        <Route path="/governates" element={<GovernatesPage />} />
-        <Route path="/cities" element={<CitiesPage />} />
-        <Route path="/warehouses" element={<WarehousesPage />} />
-        <Route path="/accounts" element={<AccountsPage />} />
-        <Route path="/party-categories" element={<PartyCategoriesPage />} />
-        <Route path="/parties" element={<PartiesPage />} />
-        <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
-        <Route path="/purchase-invoices" element={<PurchaseInvoicesPage />} />
-        <Route path="/inventory-transactions" element={<InventoryTransactionsPage />} />
-        <Route path="/journal-entry-lines" element={<JournalEntryLinesTable></JournalEntryLinesTable>} />
-        <Route path="/supplier-cheques" element={<SupplierChequesPage />} />
-        <Route path="/purchase-payments" element={<PurchasePaymentsPage />} />
-        <Route path="/accounting-settings" element={<AccountingSettingsPage />} />
-        <Route path="/suppliers/:supplierId/statement" element={<SupplierStatementPage />} />
-        <Route path="/expense-categories" element={<ExpenseCategoryPage />} />
-        <Route path="/bill-of-material" element={<BillOfMaterialsPage/>} />
-         <Route path="/warehouse-transfers" element={<WarehouseTransfersPage/>} />
-         <Route path="/processes" element={<ProcessesPage />} />
-         <Route path="/external-job-orders" element={<ExternalJobOrdersPage />} />
-    <Route path="/current-inventory" element={<CurrentInventoryPage />} />
-    <Route path="/departments" element={<DepartmentsPage/>}/>
-    <Route path="/job-titles" element={<JobTitlesPage/>}/>
-    <Route path="/employees" element={<EmployeesPage/>}/>
-      </Routes>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/units" element={<UnitsPage />} />
+          <Route path="/products" element={<ProductsPage />} />"
+          <Route path="/countries" element={<CountriesPage />} />
+          <Route path="/governates" element={<GovernatesPage />} />
+          <Route path="/cities" element={<CitiesPage />} />
+          <Route path="/warehouses" element={<WarehousesPage />} />
+          <Route path="/accounts" element={<AccountsPage />} />
+          <Route path="/party-categories" element={<PartyCategoriesPage />} />
+          <Route path="/parties" element={<PartiesPage />} />
+          <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+          <Route path="/purchase-invoices" element={<PurchaseInvoicesPage />} />
+          <Route path="/inventory-transactions" element={<InventoryTransactionsPage />} />
+          <Route path="/journal-entry-lines" element={<JournalEntryLinesTable></JournalEntryLinesTable>} />
+          <Route path="/supplier-cheques" element={<SupplierChequesPage />} />
+          <Route path="/purchase-payments" element={<PurchasePaymentsPage />} />
+          <Route path="/accounting-settings" element={<AccountingSettingsPage />} />
+          <Route path="/suppliers/:supplierId/statement" element={<SupplierStatementPage />} />
+          <Route path="/expense-categories" element={<ExpenseCategoryPage />} />
+          <Route path="/bill-of-material" element={<BillOfMaterialsPage />} />
+          <Route path="/warehouse-transfers" element={<WarehouseTransfersPage />} />
+          <Route path="/processes" element={<ProcessesPage />} />
+          <Route path="/external-job-orders" element={<ExternalJobOrdersPage />} />
+          <Route path="/current-inventory" element={<CurrentInventoryPage />} />
+          <Route path="/departments" element={<DepartmentsPage />} />
+          <Route path="/job-titles" element={<JobTitlesPage />} />
+          <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/issue-voucher-types" element={<IssueVoucherTypesPage />} />
+           <Route path="/issue-vouchers" element={<IssueVouchersPage />} />
+        </Routes>
       </Box>
-    
+
     </BrowserRouter>
   );
 }
