@@ -143,7 +143,7 @@ export default function EmployeesPage() {
           <TextField
             fullWidth
             label="الاسم"
-            value={form.name}
+            value={form.name || ""}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             margin="dense"
           />
@@ -152,7 +152,7 @@ export default function EmployeesPage() {
             select
             fullWidth
             label="الوظيفة"
-            value={form.job_title_id}
+            value={form.job_title_id || ""}
             onChange={(e) =>
               setForm({ ...form, job_title_id: e.target.value })
             }
@@ -169,7 +169,7 @@ export default function EmployeesPage() {
             select
             fullWidth
             label="القسم"
-            value={form.department_id}
+            value={form.department_id || ""}
             onChange={(e) =>
               setForm({ ...form, department_id: e.target.value })
             }
@@ -186,7 +186,7 @@ export default function EmployeesPage() {
             select
             fullWidth
             label="المدير المباشر"
-            value={form.parent_id}
+            value={form.parent_id || ""}
             onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
             margin="dense"
           >
@@ -201,7 +201,7 @@ export default function EmployeesPage() {
           <TextField
             fullWidth
             label="الهاتف"
-            value={form.phone}
+            value={form.phone || ""}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
             margin="dense"
           />

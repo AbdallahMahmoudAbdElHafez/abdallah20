@@ -22,7 +22,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip
+  CircularProgress
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -33,10 +33,24 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { useDispatch, useSelector } from 'react-redux';
 import { createIssueVoucher, updateIssueVoucher } from '../features/issueVouchers/issueVouchersSlice';
 
+// استيراد الـ actions للبيانات الثابتة
+import { fetchProducts } from '../features/products/productsSlice';
+import { fetchWarehouses } from '../features/warehouses/warehousesSlice';
+import { fetchEmployees } from '../features/employees/employeesSlice';
+import { fetchParties } from '../features/parties/partiesSlice';
+import { fetchIssueVoucherTypes } from '../features/issueVoucherTypes/issueVoucherTypesSlice';
+
 const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const dispatch = useDispatch();
-  const { loading } = useSelector(state => state.issueVouchers);
   
+  // الحصول على البيانات من الـ store
+  const { loading: vouchersLoading } = useSelector(state => state.issueVouchers);
+  const { items: products, loading: productsLoading } = useSelector(state => state.products);
+  const { items: warehouses, loading: warehousesLoading } = useSelector(state => state.warehouses);
+  const { list: employees, loading: employeesLoading } = useSelector(state => state.employees);
+  const { items: parties, loading: partiesLoading } = useSelector(state => state.parties);
+  const { list: voucherTypes, loading: voucherTypesLoading } = useSelector(state => state.issueVoucherTypes);
+
   const [formData, setFormData] = useState({
     voucher_no: '',
     type_id: '',
@@ -60,12 +74,16 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     note: ''
   });
 
-  // البيانات الثابتة (ستأتي من API)
-  const [voucherTypes, setVoucherTypes] = useState([]);
-  const [parties, setParties] = useState([]);
-  const [employees, setEmployees] = useState([]);
-  const [warehouses, setWarehouses] = useState([]);
-  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    if (open) {
+      // تحميل البيانات الثابتة عند فتح النموذج
+      dispatch(fetchProducts());
+      dispatch(fetchWarehouses());
+      dispatch(fetchEmployees());
+      dispatch(fetchParties());
+      dispatch(fetchIssueVoucherTypes());
+    }
+  }, [open, dispatch]);
 
   useEffect(() => {
     if (voucher && editMode) {
@@ -88,29 +106,11 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     }
   }, [voucher, editMode]);
 
-  useEffect(() => {
-    // تحميل البيانات الثابتة (ستأتي من APIs منفصلة)
-    // هذا مثال - ستحتاج لاستدعاء APIs حقيقية
-    const loadStaticData = async () => {
-      // محاكاة تحميل البيانات
-      setVoucherTypes([{ id: 1, name: 'Normal Issue' }, { id: 2, name: 'Return Issue' }]);
-      setParties([{ id: 1, name: 'Party 1' }, { id: 2, name: 'Party 2' }]);
-      setEmployees([{ id: 1, name: 'Employee 1' }, { id: 2, name: 'Employee 2' }]);
-      setWarehouses([{ id: 1, name: 'Warehouse 1' }, { id: 2, name: 'Warehouse 2' }]);
-      setProducts([{ id: 1, name: 'Product 1' }, { id: 2, name: 'Product 2' }]);
-    };
-    
-    if (open) {
-      loadStaticData();
-    }
-  }, [open]);
-
   const handleFormChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-    // مسح الخطأ عند التعديل
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -135,11 +135,14 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       return;
     }
 
+    const selectedProduct = products.find(p => p.id === currentItem.product_id);
+    const selectedWarehouse = warehouses.find(w => w.id === currentItem.warehouse_id);
+
     const newItem = {
       id: Date.now(), // مؤقت لحين الحفظ
       ...currentItem,
-      product: products.find(p => p.id === currentItem.product_id),
-      warehouse: warehouses.find(w => w.id === currentItem.warehouse_id)
+      product: selectedProduct,
+      warehouse: selectedWarehouse
     };
 
     setItems(prev => [...prev, newItem]);
@@ -183,7 +186,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
         product_id: item.product_id,
         warehouse_id: item.warehouse_id,
         batch_number: item.batch_number,
-        expiry_date: item.expiry_date,
+        expiry_date: item.expiry_date ? item.expiry_date.toISOString().split('T')[0] : null, // إصلاح هنا
         quantity: parseFloat(item.quantity),
         unit_price: parseFloat(item.unit_price || 0),
         cost_per_unit: parseFloat(item.cost_per_unit || 0),
@@ -206,6 +209,32 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const totalAmount = items.reduce((sum, item) => {
     return sum + (parseFloat(item.quantity) * parseFloat(item.unit_price || 0));
   }, 0);
+
+  // دالة لتحويل التاريخ إلى تنسيق قابل للعرض
+  const formatDate = (date) => {
+    if (!date) return '-';
+    if (typeof date === 'string') return date;
+    if (date instanceof Date) {
+      return date.toLocaleDateString('en-CA'); // YYYY-MM-DD
+    }
+    return '-';
+  };
+
+  // دالة للتحقق من التحميل
+  const isLoading = productsLoading || warehousesLoading || employeesLoading || partiesLoading || voucherTypesLoading;
+
+  if (isLoading) {
+    return (
+      <Dialog open={open} onClose={onClose}>
+        <DialogContent>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+            <CircularProgress />
+            <Typography sx={{ ml: 2 }}>Loading data...</Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
@@ -265,6 +294,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 label="Party"
                 onChange={(e) => handleFormChange('party_id', e.target.value)}
               >
+                <MenuItem value="">None</MenuItem>
                 {parties.map(party => (
                   <MenuItem key={party.id} value={party.id}>
                     {party.name}
@@ -282,6 +312,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 label="Employee"
                 onChange={(e) => handleFormChange('employee_id', e.target.value)}
               >
+                <MenuItem value="">None</MenuItem>
                 {employees.map(emp => (
                   <MenuItem key={emp.id} value={emp.id}>
                     {emp.name}
@@ -349,7 +380,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
           <Grid item xs={12}>
             <Paper sx={{ p: 2, mb: 2 }}>
               <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} md={2}>
+                <Grid item xs={12} md={3}>
                   <FormControl fullWidth error={!!errors.product_id}>
                     <InputLabel>Product</InputLabel>
                     <Select
@@ -397,7 +428,12 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                     label="Expiry"
                     value={currentItem.expiry_date}
                     onChange={(date) => handleItemChange('expiry_date', date)}
-                    slotProps={{ textField: { fullWidth: true } }}
+                    slotProps={{ 
+                      textField: { 
+                        fullWidth: true,
+                        error: !!errors.expiry_date 
+                      } 
+                    }}
                   />
                 </Grid>
 
@@ -430,15 +466,6 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                     type="number"
                     value={currentItem.cost_per_unit}
                     onChange={(e) => handleItemChange('cost_per_unit', e.target.value)}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={2}>
-                  <TextField
-                    fullWidth
-                    label="Item Note"
-                    value={currentItem.note}
-                    onChange={(e) => handleItemChange('note', e.target.value)}
                   />
                 </Grid>
 
@@ -475,14 +502,14 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 <TableBody>
                   {items.map((item, index) => (
                     <TableRow key={item.id || index}>
-                      <TableCell>{item.product?.name}</TableCell>
-                      <TableCell>{item.warehouse?.name}</TableCell>
-                      <TableCell>{item.batch_number}</TableCell>
-                      <TableCell>{item.expiry_date}</TableCell>
+                      <TableCell>{item.product?.name || 'N/A'}</TableCell>
+                      <TableCell>{item.warehouse?.name || 'N/A'}</TableCell>
+                      <TableCell>{item.batch_number || '-'}</TableCell>
+                      <TableCell>{formatDate(item.expiry_date)}</TableCell> {/* إصلاح هنا */}
                       <TableCell align="right">{item.quantity}</TableCell>
-                      <TableCell align="right">{item.unit_price}</TableCell>
+                      <TableCell align="right">{item.unit_price || '0.00'}</TableCell>
                       <TableCell align="right">
-                        {(item.quantity * item.unit_price).toFixed(2)}
+                        {((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)}
                       </TableCell>
                       <TableCell>
                         <IconButton
@@ -519,15 +546,15 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose} disabled={loading}>
+        <Button onClick={onClose} disabled={vouchersLoading}>
           Cancel
         </Button>
         <Button
           onClick={handleSubmit}
           variant="contained"
-          disabled={loading}
+          disabled={vouchersLoading}
         >
-          {loading ? 'Saving...' : (editMode ? 'Update' : 'Create')}
+          {vouchersLoading ? 'Saving...' : (editMode ? 'Update' : 'Create')}
         </Button>
       </DialogActions>
     </Dialog>
