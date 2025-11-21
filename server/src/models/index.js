@@ -41,6 +41,8 @@ import IssueVoucherTypesModel from "./issueVoucherTypes.model.js";
 import IssueVoucherTypeAccountsModel from "./issueVoucherTypeAccounts.model.js";
 import IssueVoucherModel from './issueVouchers.model.js';
 import IssueVoucherItemModel from './issueVoucherItems.model.js';
+import PurchaseReturnModel from "./purchaseReturns.model.js";
+
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
@@ -85,6 +87,7 @@ const IssueVoucherType = IssueVoucherTypesModel(sequelize);
 const IssueVoucherTypeAccount = IssueVoucherTypeAccountsModel(sequelize);
 const IssueVoucher = IssueVoucherModel(sequelize);
 const IssueVoucherItem = IssueVoucherItemModel(sequelize);
+const PurchaseReturn = PurchaseReturnModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -399,6 +402,19 @@ IssueVoucherItem.belongsTo(Warehouse, {
   foreignKey: "warehouse_id",
   as: "warehouse"
 });
+
+// === PurchaseInvoice ↔ PurchaseReturn ===
+PurchaseInvoice.hasMany(PurchaseReturn, {
+  foreignKey: "purchase_invoice_id",
+  as: "returns",
+  onDelete: "RESTRICT"
+});
+PurchaseReturn.belongsTo(PurchaseInvoice, {
+  foreignKey: "purchase_invoice_id",
+  as: "invoice",
+  onDelete: "RESTRICT"
+});
+
 Expense.belongsTo(Account, { foreignKey: "account_id" });
 Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
 ExpenseCategory.hasMany(Expense, { foreignKey: "category_id" });
@@ -440,6 +456,7 @@ export {
   IssueVoucherTypeAccount,
   IssueVoucher,
   IssueVoucherItem,
+PurchaseReturn,
 
 
 };

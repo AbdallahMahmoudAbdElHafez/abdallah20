@@ -35,6 +35,8 @@ import employeeRoutes from "./routes/employees.routes.js";
 import issueVoucherTypesRoutes from './routes/issueVoucherTypes.routes.js';
 import issueVoucherTypeAccountsRoutes from "./routes/issueVoucherTypeAccounts.routes.js";
 import issueVouchersRoutes from "./routes/issueVouchers.routes.js";
+import purchaseReturnsRoutes from "./routes/purchaseReturns.routes.js";
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -75,5 +77,7 @@ app.use("/api/employees", employeeRoutes);
 app.use('/api/issue-voucher-types', issueVoucherTypesRoutes);
 app.use('/api/issue-voucher-type-accounts', issueVoucherTypeAccountsRoutes);
 app.use('/api/issue-vouchers', issueVouchersRoutes);
+app.use("/api/purchase-returns", purchaseReturnsRoutes);
+
 app.use(errorHandler);
 export default app;
