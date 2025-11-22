@@ -1,4 +1,4 @@
-import PurchaseReturn from "../models/purchaseReturns.model.js";
+import { PurchaseReturn } from "../models/index.js";
 
 export default {
   getAll: async () => {

@@ -19,7 +19,7 @@ const navItems = [
   { label: "الرئيسية", path: "/" },
   { label: "لوحة التحكم", path: "/dashboard" },
   { label: "الوحدات", path: "/units" },
- 
+
   { label: "الدول", path: "/countries" },
   { label: "اوامر التشغيل ", path: "/external-job-orders" },
 
@@ -34,16 +34,16 @@ const navItems = [
   { label: "كشف حساب المورد", path: "/suppliers/:supplierId/statement" },
 ];
 const productsMenu = [
-   { label: "المنتجات", path: "/products" },
+  { label: "المنتجات", path: "/products" },
   { label: "تكلفة المنتجات", path: "/product-costs" },
-  
+
 
 ];
 const companyInfoMenu = [
-   { label: "الاقسام", path: "/departments" },
+  { label: "الاقسام", path: "/departments" },
   { label: "المسميات الوظيفيه", path: "/job-titles" },
   { label: "الموظفين", path: "/employees" },
-  
+
 
 ];
 const purchasesMenu = [
@@ -51,10 +51,11 @@ const purchasesMenu = [
   { label: "فواتير الشراء", path: "/purchase-invoices" },
   { label: "مدفوعات", path: "/purchase-payments" },
   { label: "أوراق قبض", path: "/supplier-cheques" },
+  { label: "مرتجعات", path: "/purchase-returns" },
 ];
 const warehousesMenu = [
- { label: "حركة المخازن", path: "/inventory-transactions" },
- { label: "ارصدة المخازن", path: "/current-inventory" },
+  { label: "حركة المخازن", path: "/inventory-transactions" },
+  { label: "ارصدة المخازن", path: "/current-inventory" },
   { label: "دليل المخازن", path: "/warehouses" },
   { label: "التحويل من مخزن الى مخزن", path: "/warehouse-transfers" },
   { label: "انواع سندات الصرف", path: "/issue-voucher-types" },
@@ -64,7 +65,7 @@ function Sidebar() {
   const location = useLocation();
   const [openPurchases, setOpenPurchases] = useState(false);
   const [openWarehouses, setOpenWarehouses] = useState(false);
-    const [openCompanyInfo, setOpenCompanyInfo] = useState(false);
+  const [openCompanyInfo, setOpenCompanyInfo] = useState(false);
 
   const toggleCompanyInfo = () => setOpenCompanyInfo(!openCompanyInfo);
   const toggleWarehouses = () => setOpenWarehouses(!openWarehouses);
@@ -94,7 +95,7 @@ function Sidebar() {
       </Toolbar>
       <Divider sx={{ bgcolor: "rgba(255,255,255,0.2)" }} />
       <List>
-           {/* بيانات الشركه */}
+        {/* بيانات الشركه */}
         <ListItemButton onClick={toggleCompanyInfo}>
           <ListItemText primary="بيانات الشركه" />
           {openCompanyInfo ? <ExpandLess /> : <ExpandMore />}
@@ -119,7 +120,7 @@ function Sidebar() {
             ))}
           </List>
         </Collapse>
-          {/* اداراة المنتجات */}
+        {/* اداراة المنتجات */}
         <ListItemButton onClick={togglePurchases}>
           <ListItemText primary="ادارة المنتجات" />
           {openPurchases ? <ExpandLess /> : <ExpandMore />}
@@ -169,7 +170,7 @@ function Sidebar() {
             ))}
           </List>
         </Collapse>
-  {/* المخازن */}
+        {/* المخازن */}
         <ListItemButton onClick={toggleWarehouses}>
           <ListItemText primary="المخازن" />
           {openWarehouses ? <ExpandLess /> : <ExpandMore />}

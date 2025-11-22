@@ -31,6 +31,7 @@ import JobTitlesPage from "./pages/JobTitlesPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import IssueVoucherTypesPage from "./pages/IssueVoucherTypesPage";
 import IssueVouchersPage from "./pages/issueVouchersPage";
+import PurchaseReturnsPage from "./pages/purchaseReturnsPage";
 
 const drawerWidth = 240;
 
@@ -70,7 +71,8 @@ export default function App() {
           <Route path="/job-titles" element={<JobTitlesPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
           <Route path="/issue-voucher-types" element={<IssueVoucherTypesPage />} />
-           <Route path="/issue-vouchers" element={<IssueVouchersPage />} />
+          <Route path="/issue-vouchers" element={<IssueVouchersPage />} />
+          <Route path="/purchase-returns" element={<PurchaseReturnsPage />} />
         </Routes>
       </Box>
 

@@ -18,7 +18,7 @@ import inventoryTransactionRoutes from './routes/inventoryTransaction.routes.js'
 import journalEntryLinesRouter from "./routes/journalEntryLine.routes.js";
 import paymentRoutes from "./routes/purchasePayment.routes.js";
 import chequeRoutes from "./routes/supplierCheque.routes.js";
-import  accountingSettingRoutes  from './routes/accountingSettings.route.js';
+import accountingSettingRoutes from './routes/accountingSettings.route.js';
 import supplierLedgerRoutes from './routes/supplierLedger.routes.js';
 import expenseCategoryRoutes from "./routes/expenseCategory.route.js";
 import expenseRoutes from "./routes/expense.route.js";
@@ -36,6 +36,7 @@ import issueVoucherTypesRoutes from './routes/issueVoucherTypes.routes.js';
 import issueVoucherTypeAccountsRoutes from "./routes/issueVoucherTypeAccounts.routes.js";
 import issueVouchersRoutes from "./routes/issueVouchers.routes.js";
 import purchaseReturnsRoutes from "./routes/purchaseReturns.routes.js";
+import purchaseReturnItemsRoutes from "./routes/purchaseReturnItems.routes.js";
 
 const app = express();
 app.use(cors());
@@ -78,6 +79,7 @@ app.use('/api/issue-voucher-types', issueVoucherTypesRoutes);
 app.use('/api/issue-voucher-type-accounts', issueVoucherTypeAccountsRoutes);
 app.use('/api/issue-vouchers', issueVouchersRoutes);
 app.use("/api/purchase-returns", purchaseReturnsRoutes);
+app.use("/api/purchase-return-items", purchaseReturnItemsRoutes);
 
 app.use(errorHandler);
 export default app;

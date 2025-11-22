@@ -30,6 +30,7 @@ import employeesReducer from "../features/employees/employeesSlice";
 import issueVoucherTypesReducer from "../features/issueVoucherTypes/issueVoucherTypesSlice";
 import issueVoucherTypeAccountsReducer from "../features/issueVoucherTypeAccounts/issueVoucherTypeAccountsSlice";
 import issueVouchersReducer from "../features/issueVouchers/issueVouchersSlice";
+import purchaseReturnsReducer from "../features/purchaseReturns/purchaseReturnsSlice";
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -63,5 +64,6 @@ export const store = configureStore({
     issueVoucherTypes: issueVoucherTypesReducer,
     issueVoucherTypeAccounts: issueVoucherTypeAccountsReducer,
     issueVouchers: issueVouchersReducer,
+    purchaseReturns: purchaseReturnsReducer,
   },
 });

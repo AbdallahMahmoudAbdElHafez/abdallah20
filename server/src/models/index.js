@@ -42,6 +42,7 @@ import IssueVoucherTypeAccountsModel from "./issueVoucherTypeAccounts.model.js";
 import IssueVoucherModel from './issueVouchers.model.js';
 import IssueVoucherItemModel from './issueVoucherItems.model.js';
 import PurchaseReturnModel from "./purchaseReturns.model.js";
+import PurchaseReturnItemModel from "./purchaseReturnItems.model.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -88,6 +89,7 @@ const IssueVoucherTypeAccount = IssueVoucherTypeAccountsModel(sequelize);
 const IssueVoucher = IssueVoucherModel(sequelize);
 const IssueVoucherItem = IssueVoucherItemModel(sequelize);
 const PurchaseReturn = PurchaseReturnModel(sequelize);
+const PurchaseReturnItem = PurchaseReturnItemModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -309,7 +311,7 @@ Employee.hasMany(Employee, { foreignKey: "parent_id", as: "children", });
 IssueVoucherType.hasMany(IssueVoucherTypeAccount, { foreignKey: "issue_voucher_type_id", as: "accounts", onDelete: "CASCADE", });
 Account.hasMany(IssueVoucherTypeAccount, { foreignKey: "account_id", as: "voucher_types", onDelete: "CASCADE", });
 IssueVoucherTypeAccount.belongsTo(IssueVoucherType, { foreignKey: "issue_voucher_type_id", as: "type", onDelete: "CASCADE", });
-IssueVoucherTypeAccount.belongsTo(Account, {foreignKey: "account_id", as: "account", onDelete: "CASCADE",});
+IssueVoucherTypeAccount.belongsTo(Account, { foreignKey: "account_id", as: "account", onDelete: "CASCADE", });
 // === علاقات Issue Voucher ===
 
 // IssueVoucher ↔ IssueVoucherType
@@ -415,6 +417,37 @@ PurchaseReturn.belongsTo(PurchaseInvoice, {
   onDelete: "RESTRICT"
 });
 
+// === PurchaseReturn ↔ PurchaseReturnItem ===
+PurchaseReturn.hasMany(PurchaseReturnItem, {
+  foreignKey: "purchase_return_id",
+  as: "items",
+  onDelete: "CASCADE"
+});
+PurchaseReturnItem.belongsTo(PurchaseReturn, {
+  foreignKey: "purchase_return_id",
+  as: "purchase_return"
+});
+
+// === PurchaseReturnItem ↔ PurchaseInvoiceItem ===
+PurchaseInvoiceItem.hasMany(PurchaseReturnItem, {
+  foreignKey: "purchase_invoice_item_id",
+  as: "return_items"
+});
+PurchaseReturnItem.belongsTo(PurchaseInvoiceItem, {
+  foreignKey: "purchase_invoice_item_id",
+  as: "invoice_item"
+});
+
+// === PurchaseReturnItem ↔ Product ===
+Product.hasMany(PurchaseReturnItem, {
+  foreignKey: "product_id",
+  as: "return_items"
+});
+PurchaseReturnItem.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product"
+});
+
 Expense.belongsTo(Account, { foreignKey: "account_id" });
 Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
 ExpenseCategory.hasMany(Expense, { foreignKey: "category_id" });
@@ -456,7 +489,8 @@ export {
   IssueVoucherTypeAccount,
   IssueVoucher,
   IssueVoucherItem,
-PurchaseReturn,
+  PurchaseReturn,
+  PurchaseReturnItem,
 
 
 };

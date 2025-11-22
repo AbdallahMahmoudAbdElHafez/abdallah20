@@ -1303,7 +1303,7 @@ DROP TABLE IF EXISTS `purchase_return_items`;
 CREATE TABLE `purchase_return_items` (
   `id` int NOT NULL AUTO_INCREMENT,
   `purchase_return_id` int NOT NULL,
-  `purchase_invoice_item_id` int NOT NULL,
+  `purchase_invoice_item_id` int DEFAULT NULL,
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
   `reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -1312,7 +1312,7 @@ CREATE TABLE `purchase_return_items` (
   KEY `purchase_invoice_item_id` (`purchase_invoice_item_id`),
   KEY `product_id` (`product_id`),
   CONSTRAINT `purchase_return_items_ibfk_1` FOREIGN KEY (`purchase_return_id`) REFERENCES `purchase_returns` (`id`),
-  CONSTRAINT `purchase_return_items_ibfk_2` FOREIGN KEY (`purchase_invoice_item_id`) REFERENCES `purchase_invoice_items` (`id`),
+  CONSTRAINT `purchase_return_items_ibfk_2` FOREIGN KEY (`purchase_invoice_item_id`) REFERENCES `purchase_invoice_items` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `purchase_return_items_ibfk_3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1404,7 +1404,8 @@ DROP TABLE IF EXISTS `purchase_returns`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `purchase_returns` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `purchase_invoice_id` int NOT NULL,
+  `supplier_id` int NOT NULL,
+  `purchase_invoice_id` int DEFAULT NULL,
   `return_date` date NOT NULL DEFAULT (curdate()),
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1412,6 +1413,8 @@ CREATE TABLE `purchase_returns` (
   `tax_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
   KEY `purchase_invoice_id` (`purchase_invoice_id`),
+  KEY `fk_pr_supplier` (`supplier_id`),
+  CONSTRAINT `fk_pr_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `parties` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `purchase_returns_ibfk_1` FOREIGN KEY (`purchase_invoice_id`) REFERENCES `purchase_invoices` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -3237,4 +3240,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-17 22:51:55
+-- Dump completed on 2025-11-23  1:10:31
