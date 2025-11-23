@@ -6,7 +6,7 @@ export default (sequelize) => {
         {
             id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
             purchase_return_id: { type: DataTypes.INTEGER, allowNull: false },
-            purchase_invoice_item_id: { type: DataTypes.INTEGER, allowNull: false },
+            purchase_invoice_item_id: { type: DataTypes.INTEGER, allowNull: true },
             product_id: { type: DataTypes.INTEGER, allowNull: false },
             quantity: { type: DataTypes.INTEGER, allowNull: false },
             reason: { type: DataTypes.TEXT },

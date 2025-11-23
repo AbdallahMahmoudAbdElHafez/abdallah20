@@ -417,6 +417,11 @@ PurchaseReturn.belongsTo(PurchaseInvoice, {
   onDelete: "RESTRICT"
 });
 
+PurchaseReturn.belongsTo(Party, {
+  foreignKey: "supplier_id",
+  as: "supplier"
+});
+
 // === PurchaseReturn ↔ PurchaseReturnItem ===
 PurchaseReturn.hasMany(PurchaseReturnItem, {
   foreignKey: "purchase_return_id",
@@ -435,7 +440,9 @@ PurchaseInvoiceItem.hasMany(PurchaseReturnItem, {
 });
 PurchaseReturnItem.belongsTo(PurchaseInvoiceItem, {
   foreignKey: "purchase_invoice_item_id",
-  as: "invoice_item"
+  as: "invoice_item",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE"
 });
 
 // === PurchaseReturnItem ↔ Product ===

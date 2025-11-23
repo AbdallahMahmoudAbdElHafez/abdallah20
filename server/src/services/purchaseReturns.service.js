@@ -2,11 +2,11 @@ import { PurchaseReturn } from "../models/index.js";
 
 export default {
   getAll: async () => {
-    return await PurchaseReturn.findAll();
+    return await PurchaseReturn.findAll({ include: ["supplier", "invoice"] });
   },
 
   getById: async (id) => {
-    return await PurchaseReturn.findByPk(id);
+    return await PurchaseReturn.findByPk(id, { include: ["supplier", "invoice"] });
   },
 
   create: async (data) => {

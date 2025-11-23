@@ -33,6 +33,7 @@ import {
 import { fetchPurchaseInvoices } from "../features/purchaseInvoices/purchaseInvoicesSlice";
 import { fetchItemsByInvoice } from "../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice";
 import { createPurchaseReturnItem } from "../features/purchaseReturnItems/PurchaseReturnItemsSlice";
+import { fetchParties } from "../features/parties/partiesSlice";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 
 // دالة لتنسيق العملة
@@ -61,11 +62,19 @@ export default function PurchaseReturnsPage() {
         items: invoiceItems = []
     } = useSelector((state) => state.purchaseInvoiceItems);
 
+    const {
+        items: parties = []
+    } = useSelector((state) => state.parties);
+
+    // Filter only suppliers
+    const suppliers = useMemo(() => parties.filter(p => p.party_type === 'supplier' || p.party_type === 'both'), [parties]);
+
     const [open, setOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [editingReturn, setEditingReturn] = useState(null);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [formData, setFormData] = useState({
+        supplier_id: "",
         purchase_invoice_id: "",
         return_date: new Date().toISOString().split('T')[0],
         notes: "",
@@ -79,13 +88,15 @@ export default function PurchaseReturnsPage() {
     useEffect(() => {
         dispatch(fetchPurchaseReturns());
         dispatch(fetchPurchaseInvoices());
+        dispatch(fetchParties());
     }, [dispatch]);
 
     const handleOpen = (returnItem = null) => {
         if (returnItem) {
             setEditingReturn(returnItem);
             setFormData({
-                purchase_invoice_id: returnItem.purchase_invoice_id,
+                supplier_id: returnItem.supplier_id,
+                purchase_invoice_id: returnItem.purchase_invoice_id || "",
                 return_date: new Date(returnItem.return_date).toISOString().split('T')[0],
                 notes: returnItem.notes || "",
                 total_amount: returnItem.total_amount,
@@ -95,6 +106,7 @@ export default function PurchaseReturnsPage() {
         } else {
             setEditingReturn(null);
             setFormData({
+                supplier_id: "",
                 purchase_invoice_id: "",
                 return_date: new Date().toISOString().split('T')[0],
                 notes: "",
@@ -113,7 +125,12 @@ export default function PurchaseReturnsPage() {
     };
 
     const handleInvoiceChange = (invoiceId) => {
-        setFormData({ ...formData, purchase_invoice_id: invoiceId });
+        const invoice = invoices.find(i => i.id === invoiceId);
+        setFormData({
+            ...formData,
+            purchase_invoice_id: invoiceId,
+            supplier_id: invoice ? invoice.supplier_id : formData.supplier_id
+        });
         dispatch(fetchItemsByInvoice(invoiceId));
         setSelectedItems({});
     };
@@ -141,16 +158,21 @@ export default function PurchaseReturnsPage() {
 
     const handleSave = async () => {
         let returnId;
+        const dataToSend = {
+            ...formData,
+            purchase_invoice_id: formData.purchase_invoice_id || null
+        };
+
         if (editingReturn) {
-            const res = await dispatch(updatePurchaseReturn({ id: editingReturn.id, data: formData }));
+            const res = await dispatch(updatePurchaseReturn({ id: editingReturn.id, data: dataToSend }));
             returnId = res.payload.id;
         } else {
-            const res = await dispatch(addPurchaseReturn(formData));
+            const res = await dispatch(addPurchaseReturn(dataToSend));
             returnId = res.payload.id;
         }
 
         // Create return items
-        if (returnId) {
+        if (returnId && formData.purchase_invoice_id) {
             const promises = Object.entries(selectedItems)
                 .filter(([_, data]) => data.isSelected && data.quantity > 0)
                 .map(([itemId, data]) => {
@@ -190,9 +212,15 @@ export default function PurchaseReturnsPage() {
             size: 80,
         },
         {
+            accessorKey: "supplier.name",
+            header: "المورد",
+            size: 150,
+        },
+        {
             accessorKey: "purchase_invoice_id",
             header: "رقم الفاتورة",
             size: 120,
+            Cell: ({ cell }) => cell.getValue() || "بدون فاتورة"
         },
         {
             accessorKey: "return_date",
@@ -331,26 +359,43 @@ export default function PurchaseReturnsPage() {
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField
                                 select
-                                label="رقم فاتورة الشراء"
-                                value={formData.purchase_invoice_id}
-                                onChange={(e) => handleInvoiceChange(e.target.value)}
+                                label="المورد"
+                                value={formData.supplier_id}
+                                onChange={(e) => setFormData({ ...formData, supplier_id: e.target.value })}
                                 fullWidth
+                                required
                             >
-                                {invoices.map((invoice) => (
-                                    <MenuItem key={invoice.id} value={invoice.id}>
-                                        {invoice.id} - {invoice.supplier_name || `فاتورة ${invoice.id}`}
+                                {suppliers.map((supplier) => (
+                                    <MenuItem key={supplier.id} value={supplier.id}>
+                                        {supplier.name}
                                     </MenuItem>
                                 ))}
                             </TextField>
                             <TextField
-                                label="تاريخ المرتجع"
-                                type="date"
-                                value={formData.return_date}
-                                onChange={(e) => setFormData({ ...formData, return_date: e.target.value })}
+                                select
+                                label="رقم فاتورة الشراء (اختياري)"
+                                value={formData.purchase_invoice_id}
+                                onChange={(e) => handleInvoiceChange(e.target.value)}
                                 fullWidth
-                                InputLabelProps={{ shrink: true }}
-                            />
+                            >
+                                <MenuItem value="">بدون فاتورة</MenuItem>
+                                {invoices
+                                    .filter(inv => !formData.supplier_id || inv.supplier_id === formData.supplier_id)
+                                    .map((invoice) => (
+                                        <MenuItem key={invoice.id} value={invoice.id}>
+                                            {invoice.id} - {invoice.supplier_name || `فاتورة ${invoice.id}`}
+                                        </MenuItem>
+                                    ))}
+                            </TextField>
                         </Box>
+                        <TextField
+                            label="تاريخ المرتجع"
+                            type="date"
+                            value={formData.return_date}
+                            onChange={(e) => setFormData({ ...formData, return_date: e.target.value })}
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                        />
 
                         {/* Invoice Items Table */}
                         {formData.purchase_invoice_id && (
@@ -367,7 +412,7 @@ export default function PurchaseReturnsPage() {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {invoiceItems.map((item) => (
+                                        {(invoiceItems || []).map((item) => (
                                             <TableRow key={item.id}>
                                                 <TableCell padding="checkbox">
                                                     <Checkbox
@@ -389,7 +434,7 @@ export default function PurchaseReturnsPage() {
                                                 </TableCell>
                                             </TableRow>
                                         ))}
-                                        {invoiceItems.length === 0 && (
+                                        {(invoiceItems || []).length === 0 && (
                                             <TableRow>
                                                 <TableCell colSpan={4} align="center">
                                                     لا توجد عناصر لهذه الفاتورة

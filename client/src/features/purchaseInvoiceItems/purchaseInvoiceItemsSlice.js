@@ -77,7 +77,7 @@ const purchaseInvoiceItemsSlice = createSlice({
       })
       .addCase(fetchItemsByInvoice.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.items = action.payload || [];
       })
       .addCase(fetchItemsByInvoice.rejected, (state, action) => {
         state.loading = false;
