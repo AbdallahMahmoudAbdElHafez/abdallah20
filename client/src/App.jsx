@@ -32,6 +32,8 @@ import EmployeesPage from "./pages/EmployeesPage";
 import IssueVoucherTypesPage from "./pages/IssueVoucherTypesPage";
 import IssueVouchersPage from "./pages/issueVouchersPage";
 import PurchaseReturnsPage from "./pages/purchaseReturnsPage";
+import ExpensesPage from "./pages/ExpensesPage";
+import SalesOrdersPage from "./pages/salesOrdersPage";
 
 const drawerWidth = 240;
 
@@ -73,6 +75,8 @@ export default function App() {
           <Route path="/issue-voucher-types" element={<IssueVoucherTypesPage />} />
           <Route path="/issue-vouchers" element={<IssueVouchersPage />} />
           <Route path="/purchase-returns" element={<PurchaseReturnsPage />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
+          <Route path="/sales-orders" element={<SalesOrdersPage />} />
         </Routes>
       </Box>
 

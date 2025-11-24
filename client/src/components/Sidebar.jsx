@@ -22,7 +22,8 @@ const navItems = [
 
   { label: "الدول", path: "/countries" },
   { label: "اوامر التشغيل ", path: "/external-job-orders" },
-
+  { label: "المصروفات", path: "/expenses" },
+  { label: "أوامر البيع", path: "/sales-orders" },
   { label: "الحسابات", path: "/accounts" },
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
   { label: "العملاء الموردين", path: "/parties" },

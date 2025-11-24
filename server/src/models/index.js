@@ -25,7 +25,7 @@ import purchaseInvoicePaymentHooks from "../hooks/purchaseInvoicePaymentHooks.js
 import inventoryTransactionHooks from "../hooks/inventoryTransactionHooks.js";
 import PurchaseInvoicePaymentModel from "./purchaseInvoicePayment.model.js";
 import SupplierChequeModel from "./supplierCheque.model.js";
-import ExpenseModel from "./expense.model.js";
+import ExpenseModel from "./expenses.model.js";
 import ExpenseCategoryModel from "./expenseCategory.model.js";
 import BillOfMaterialModel from './billOfMaterial.model.js';
 import WarehouseTransferModel from './warehouseTransfers.model.js';
@@ -43,6 +43,8 @@ import IssueVoucherModel from './issueVouchers.model.js';
 import IssueVoucherItemModel from './issueVoucherItems.model.js';
 import PurchaseReturnModel from "./purchaseReturns.model.js";
 import PurchaseReturnItemModel from "./purchaseReturnItems.model.js";
+import SalesOrderModel from "./salesOrders.model.js";
+import SalesOrderItemModel from "./salesOrderItems.model.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -90,6 +92,8 @@ const IssueVoucher = IssueVoucherModel(sequelize);
 const IssueVoucherItem = IssueVoucherItemModel(sequelize);
 const PurchaseReturn = PurchaseReturnModel(sequelize);
 const PurchaseReturnItem = PurchaseReturnItemModel(sequelize);
+const SalesOrder = SalesOrderModel(sequelize);
+const SalesOrderItem = SalesOrderItemModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -460,9 +464,39 @@ PurchaseReturnItem.belongsTo(Product, {
   as: "product"
 });
 
-Expense.belongsTo(Account, { foreignKey: "account_id" });
-Expense.belongsTo(ExpenseCategory, { foreignKey: "category_id" });
-ExpenseCategory.hasMany(Expense, { foreignKey: "category_id" });
+// === Sales Order Associations ===
+SalesOrder.belongsTo(Party, { foreignKey: "party_id", as: "party" });
+Party.hasMany(SalesOrder, { foreignKey: "party_id", as: "sales_orders" });
+
+SalesOrder.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
+Warehouse.hasMany(SalesOrder, { foreignKey: "warehouse_id", as: "sales_orders" });
+
+SalesOrder.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
+Employee.hasMany(SalesOrder, { foreignKey: "employee_id", as: "sales_orders" });
+
+SalesOrder.hasMany(SalesOrderItem, { foreignKey: "sales_order_id", as: "items", onDelete: "CASCADE" });
+SalesOrderItem.belongsTo(SalesOrder, { foreignKey: "sales_order_id", as: "sales_order" });
+
+SalesOrderItem.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+Product.hasMany(SalesOrderItem, { foreignKey: "product_id", as: "sales_order_items" });
+
+SalesOrderItem.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
+Warehouse.hasMany(SalesOrderItem, { foreignKey: "warehouse_id", as: "sales_order_items" });
+
+
+// Expense Associations
+Expense.belongsTo(Account, { as: 'debitAccount', foreignKey: 'debit_account_id' });
+Expense.belongsTo(Account, { as: 'creditAccount', foreignKey: 'credit_account_id' });
+Expense.belongsTo(City, { foreignKey: 'city_id', as: 'city' });
+Expense.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' });
+Expense.belongsTo(Party, { foreignKey: 'party_id', as: 'party' });
+
+Account.hasMany(Expense, { foreignKey: 'debit_account_id', as: 'debitExpenses' });
+Account.hasMany(Expense, { foreignKey: 'credit_account_id', as: 'creditExpenses' });
+City.hasMany(Expense, { foreignKey: 'city_id', as: 'expenses' });
+Employee.hasMany(Expense, { foreignKey: 'employee_id', as: 'expenses' });
+Party.hasMany(Expense, { foreignKey: 'party_id', as: 'partyExpenses' });
+
 export {
   sequelize,
   Product,
@@ -503,6 +537,8 @@ export {
   IssueVoucherItem,
   PurchaseReturn,
   PurchaseReturnItem,
+  SalesOrder,
+  SalesOrderItem,
 
 
 };

@@ -1,3 +1,4 @@
+
 import { configureStore } from "@reduxjs/toolkit";
 import unitsReducer from "../features/units/unitsSlice";
 import productsReducer from "../features/products/productsSlice";
@@ -31,6 +32,9 @@ import issueVoucherTypesReducer from "../features/issueVoucherTypes/issueVoucher
 import issueVoucherTypeAccountsReducer from "../features/issueVoucherTypeAccounts/issueVoucherTypeAccountsSlice";
 import issueVouchersReducer from "../features/issueVouchers/issueVouchersSlice";
 import purchaseReturnsReducer from "../features/purchaseReturns/purchaseReturnsSlice";
+import expensesReducer from "../features/expenses/expensesSlice";
+import salesOrdersReducer from "../features/salesOrders/salesOrdersSlice";
+import salesOrderItemsReducer from "../features/salesOrderItems/salesOrderItemsSlice";
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -65,5 +69,8 @@ export const store = configureStore({
     issueVoucherTypeAccounts: issueVoucherTypeAccountsReducer,
     issueVouchers: issueVouchersReducer,
     purchaseReturns: purchaseReturnsReducer,
+    expenses: expensesReducer,
+    salesOrders: salesOrdersReducer,
+    salesOrderItems: salesOrderItemsReducer,
   },
 });
