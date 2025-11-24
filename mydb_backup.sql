@@ -295,30 +295,6 @@ LOCK TABLES `employees` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `expense_categories`
---
-
-DROP TABLE IF EXISTS `expense_categories`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `expense_categories` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `expense_categories`
---
-
-LOCK TABLES `expense_categories` WRITE;
-/*!40000 ALTER TABLE `expense_categories` DISABLE KEYS */;
-/*!40000 ALTER TABLE `expense_categories` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `expenses`
 --
 
@@ -328,17 +304,17 @@ DROP TABLE IF EXISTS `expenses`;
 CREATE TABLE `expenses` (
   `id` int NOT NULL AUTO_INCREMENT,
   `expense_date` date NOT NULL DEFAULT (curdate()),
-  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` decimal(10,2) NOT NULL,
-  `account_id` int NOT NULL,
-  `category_id` int DEFAULT NULL,
+  `debit_account_id` int NOT NULL,
+  `credit_account_id` int NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `account_id` (`account_id`),
-  KEY `category_id` (`category_id`),
-  CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
-  CONSTRAINT `expenses_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `expense_categories` (`id`),
-  CONSTRAINT `expenses_chk_1` CHECK ((`amount` > 0))
+  KEY `idx_exp_debit` (`debit_account_id`),
+  KEY `idx_exp_credit` (`credit_account_id`),
+  CONSTRAINT `fk_exp_credit` FOREIGN KEY (`credit_account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_exp_debit` FOREIGN KEY (`debit_account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `expenses_chk_amount` CHECK ((`amount` > 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -350,36 +326,6 @@ LOCK TABLES `expenses` WRITE;
 /*!40000 ALTER TABLE `expenses` DISABLE KEYS */;
 /*!40000 ALTER TABLE `expenses` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `after_insert_expense_generate_journal_entry` AFTER INSERT ON `expenses` FOR EACH ROW BEGIN
-    -- 1. إضافة رأس القيد
-    INSERT INTO journal_entries (entry_date, description)
-    VALUES (NEW.expense_date, CONCAT('قيد مصروف: ', NEW.description));
-
-    -- 2. الحصول على ID القيد الجديد
-    SET @entry_id = LAST_INSERT_ID();
-
-    -- 3. إدخال القيد المدين (مصروف)
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (@entry_id, NEW.category_id, NEW.amount, 0, CONCAT('مصروف: ', NEW.description));
-
-    -- 4. إدخال القيد الدائن (الحساب المدفوع منه)
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (@entry_id, NEW.account_id, 0, NEW.amount, CONCAT('دفع من: ', NEW.description));
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `external_job_orders`
@@ -1405,6 +1351,7 @@ DROP TABLE IF EXISTS `purchase_returns`;
 CREATE TABLE `purchase_returns` (
   `id` int NOT NULL AUTO_INCREMENT,
   `supplier_id` int NOT NULL,
+  `warehouse_id` int NOT NULL,
   `purchase_invoice_id` int DEFAULT NULL,
   `return_date` date NOT NULL DEFAULT (curdate()),
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
@@ -1414,7 +1361,9 @@ CREATE TABLE `purchase_returns` (
   PRIMARY KEY (`id`),
   KEY `purchase_invoice_id` (`purchase_invoice_id`),
   KEY `fk_pr_supplier` (`supplier_id`),
+  KEY `fk_pr_warehouse` (`warehouse_id`),
   CONSTRAINT `fk_pr_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `parties` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_pr_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `purchase_returns_ibfk_1` FOREIGN KEY (`purchase_invoice_id`) REFERENCES `purchase_invoices` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -2559,36 +2508,6 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = @saved_cs_client;
 
 --
--- Temporary view structure for view `view_monthly_expense_summary`
---
-
-DROP TABLE IF EXISTS `view_monthly_expense_summary`;
-/*!50001 DROP VIEW IF EXISTS `view_monthly_expense_summary`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_monthly_expense_summary` AS SELECT 
- 1 AS `month`,
- 1 AS `category`,
- 1 AS `payment_account`,
- 1 AS `total_amount`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_monthly_expenses_summary`
---
-
-DROP TABLE IF EXISTS `view_monthly_expenses_summary`;
-/*!50001 DROP VIEW IF EXISTS `view_monthly_expenses_summary`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_monthly_expenses_summary` AS SELECT 
- 1 AS `month`,
- 1 AS `category`,
- 1 AS `account`,
- 1 AS `total`*/;
-SET character_set_client = @saved_cs_client;
-
---
 -- Temporary view structure for view `view_monthly_profit_summary`
 --
 
@@ -3052,42 +2971,6 @@ DELIMITER ;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
--- Final view structure for view `view_monthly_expense_summary`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_monthly_expense_summary`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_monthly_expense_summary` AS select date_format(`e`.`expense_date`,'%Y-%m') AS `month`,`ec`.`name` AS `category`,`a`.`name` AS `payment_account`,sum(`e`.`amount`) AS `total_amount` from ((`expenses` `e` left join `expense_categories` `ec` on((`e`.`category_id` = `ec`.`id`))) join `accounts` `a` on((`e`.`account_id` = `a`.`id`))) group by date_format(`e`.`expense_date`,'%Y-%m'),`ec`.`name`,`a`.`name` order by `month` desc,`category` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_monthly_expenses_summary`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_monthly_expenses_summary`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_monthly_expenses_summary` AS select date_format(`e`.`expense_date`,'%Y-%m') AS `month`,`c`.`name` AS `category`,`a`.`name` AS `account`,sum(`e`.`amount`) AS `total` from ((`expenses` `e` join `expense_categories` `c` on((`e`.`category_id` = `c`.`id`))) join `accounts` `a` on((`e`.`account_id` = `a`.`id`))) group by `month`,`c`.`name`,`a`.`name` order by `month` desc */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
 -- Final view structure for view `view_monthly_profit_summary`
 --
 
@@ -3240,4 +3123,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-23  2:58:38
+-- Dump completed on 2025-11-24  3:25:08

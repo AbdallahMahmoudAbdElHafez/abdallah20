@@ -5,6 +5,7 @@ export default (sequelize) => {
     {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
       supplier_id: { type: DataTypes.INTEGER, allowNull: false },
+      warehouse_id: { type: DataTypes.INTEGER, allowNull: false },
       purchase_invoice_id: { type: DataTypes.INTEGER, allowNull: true },
       return_date: { type: DataTypes.DATEONLY, allowNull: false, defaultValue: sequelize.literal("CURDATE()") },
       notes: { type: DataTypes.TEXT },

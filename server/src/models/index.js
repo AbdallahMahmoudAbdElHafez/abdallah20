@@ -422,6 +422,11 @@ PurchaseReturn.belongsTo(Party, {
   as: "supplier"
 });
 
+PurchaseReturn.belongsTo(Warehouse, {
+  foreignKey: "warehouse_id",
+  as: "warehouse"
+});
+
 // === PurchaseReturn ↔ PurchaseReturnItem ===
 PurchaseReturn.hasMany(PurchaseReturnItem, {
   foreignKey: "purchase_return_id",

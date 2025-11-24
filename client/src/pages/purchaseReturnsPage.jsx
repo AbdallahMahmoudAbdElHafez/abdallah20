@@ -20,7 +20,8 @@ import {
     TableHead,
     TableRow,
     Checkbox,
-    Paper
+    Paper,
+    Autocomplete
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,6 +35,8 @@ import { fetchPurchaseInvoices } from "../features/purchaseInvoices/purchaseInvo
 import { fetchItemsByInvoice } from "../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice";
 import { createPurchaseReturnItem } from "../features/purchaseReturnItems/PurchaseReturnItemsSlice";
 import { fetchParties } from "../features/parties/partiesSlice";
+import { fetchProducts } from "../features/products/productsSlice";
+import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 
 // دالة لتنسيق العملة
@@ -66,6 +69,14 @@ export default function PurchaseReturnsPage() {
         items: parties = []
     } = useSelector((state) => state.parties);
 
+    const {
+        items: products = []
+    } = useSelector((state) => state.products);
+
+    const {
+        items: warehouses = []
+    } = useSelector((state) => state.warehouses);
+
     // Filter only suppliers
     const suppliers = useMemo(() => parties.filter(p => p.party_type === 'supplier' || p.party_type === 'both'), [parties]);
 
@@ -75,6 +86,7 @@ export default function PurchaseReturnsPage() {
     const [itemToDelete, setItemToDelete] = useState(null);
     const [formData, setFormData] = useState({
         supplier_id: "",
+        warehouse_id: "",
         purchase_invoice_id: "",
         return_date: new Date().toISOString().split('T')[0],
         notes: "",
@@ -85,10 +97,20 @@ export default function PurchaseReturnsPage() {
     // State for selected items to return
     const [selectedItems, setSelectedItems] = useState({}); // { itemId: { isSelected: true, quantity: 1 } }
 
+    // State for manual items (without invoice)
+    const [manualItems, setManualItems] = useState([]);
+    const [manualItemInput, setManualItemInput] = useState({
+        product: null,
+        quantity: ""
+    });
+
     useEffect(() => {
         dispatch(fetchPurchaseReturns());
         dispatch(fetchPurchaseInvoices());
         dispatch(fetchParties());
+        dispatch(fetchParties());
+        dispatch(fetchProducts());
+        dispatch(fetchWarehouses());
     }, [dispatch]);
 
     const handleOpen = (returnItem = null) => {
@@ -96,6 +118,7 @@ export default function PurchaseReturnsPage() {
             setEditingReturn(returnItem);
             setFormData({
                 supplier_id: returnItem.supplier_id,
+                warehouse_id: returnItem.warehouse_id || "",
                 purchase_invoice_id: returnItem.purchase_invoice_id || "",
                 return_date: new Date(returnItem.return_date).toISOString().split('T')[0],
                 notes: returnItem.notes || "",
@@ -107,6 +130,7 @@ export default function PurchaseReturnsPage() {
             setEditingReturn(null);
             setFormData({
                 supplier_id: "",
+                warehouse_id: "",
                 purchase_invoice_id: "",
                 return_date: new Date().toISOString().split('T')[0],
                 notes: "",
@@ -114,6 +138,8 @@ export default function PurchaseReturnsPage() {
                 tax_amount: ""
             });
             setSelectedItems({});
+            setManualItems([]);
+            setManualItemInput({ product: null, quantity: "" });
         }
         setOpen(true);
     };
@@ -122,14 +148,18 @@ export default function PurchaseReturnsPage() {
         setOpen(false);
         setEditingReturn(null);
         setSelectedItems({});
+        setManualItems([]);
+        setManualItemInput({ product: null, quantity: "" });
     };
 
     const handleInvoiceChange = (invoiceId) => {
         const invoice = invoices.find(i => i.id === invoiceId);
         setFormData({
             ...formData,
+            ...formData,
             purchase_invoice_id: invoiceId,
-            supplier_id: invoice ? invoice.supplier_id : formData.supplier_id
+            supplier_id: invoice ? invoice.supplier_id : formData.supplier_id,
+            warehouse_id: invoice ? invoice.warehouse_id : formData.warehouse_id
         });
         dispatch(fetchItemsByInvoice(invoiceId));
         setSelectedItems({});
@@ -156,6 +186,23 @@ export default function PurchaseReturnsPage() {
         }));
     };
 
+    const handleAddManualItem = () => {
+        if (manualItemInput.product && manualItemInput.quantity > 0) {
+            setManualItems(prev => [
+                ...prev,
+                {
+                    product: manualItemInput.product,
+                    quantity: Number(manualItemInput.quantity)
+                }
+            ]);
+            setManualItemInput({ product: null, quantity: "" });
+        }
+    };
+
+    const handleRemoveManualItem = (index) => {
+        setManualItems(prev => prev.filter((_, i) => i !== index));
+    };
+
     const handleSave = async () => {
         let returnId;
         const dataToSend = {
@@ -172,19 +219,34 @@ export default function PurchaseReturnsPage() {
         }
 
         // Create return items
-        if (returnId && formData.purchase_invoice_id) {
-            const promises = Object.entries(selectedItems)
-                .filter(([_, data]) => data.isSelected && data.quantity > 0)
-                .map(([itemId, data]) => {
-                    const item = invoiceItems.find(i => i.id === Number(itemId));
+        if (returnId) {
+            let promises = [];
+
+            if (formData.purchase_invoice_id) {
+                promises = Object.entries(selectedItems)
+                    .filter(([_, data]) => data.isSelected && data.quantity > 0)
+                    .map(([itemId, data]) => {
+                        const item = invoiceItems.find(i => i.id === Number(itemId));
+                        return dispatch(createPurchaseReturnItem({
+                            purchase_return_id: returnId,
+                            purchase_invoice_item_id: Number(itemId),
+                            product_id: item.product_id,
+                            quantity: data.quantity,
+                            reason: ""
+                        }));
+                    });
+            } else {
+                // Manual items
+                promises = manualItems.map(item => {
                     return dispatch(createPurchaseReturnItem({
                         purchase_return_id: returnId,
-                        purchase_invoice_item_id: Number(itemId),
-                        product_id: item.product_id,
-                        quantity: data.quantity,
-                        reason: "" // Optional: Add reason field if needed
+                        purchase_invoice_item_id: null,
+                        product_id: item.product.id,
+                        quantity: item.quantity,
+                        reason: ""
                     }));
                 });
+            }
 
             await Promise.all(promises);
         }
@@ -221,6 +283,11 @@ export default function PurchaseReturnsPage() {
             header: "رقم الفاتورة",
             size: 120,
             Cell: ({ cell }) => cell.getValue() || "بدون فاتورة"
+        },
+        {
+            accessorKey: "warehouse.name",
+            header: "المخزن",
+            size: 150,
         },
         {
             accessorKey: "return_date",
@@ -389,6 +456,20 @@ export default function PurchaseReturnsPage() {
                             </TextField>
                         </Box>
                         <TextField
+                            select
+                            label="المخزن"
+                            value={formData.warehouse_id}
+                            onChange={(e) => setFormData({ ...formData, warehouse_id: e.target.value })}
+                            fullWidth
+                            required
+                        >
+                            {warehouses.map((warehouse) => (
+                                <MenuItem key={warehouse.id} value={warehouse.id}>
+                                    {warehouse.name}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
                             label="تاريخ المرتجع"
                             type="date"
                             value={formData.return_date}
@@ -398,7 +479,7 @@ export default function PurchaseReturnsPage() {
                         />
 
                         {/* Invoice Items Table */}
-                        {formData.purchase_invoice_id && (
+                        {formData.purchase_invoice_id ? (
                             <TableContainer component={Paper} variant="outlined">
                                 <Table size="small">
                                     <TableHead>
@@ -444,6 +525,65 @@ export default function PurchaseReturnsPage() {
                                     </TableBody>
                                 </Table>
                             </TableContainer>
+                        ) : (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <Autocomplete
+                                        options={products}
+                                        getOptionLabel={(option) => option.name || ""}
+                                        value={manualItemInput.product}
+                                        onChange={(_, newValue) => setManualItemInput({ ...manualItemInput, product: newValue })}
+                                        renderInput={(params) => <TextField {...params} label="المنتج" />}
+                                        fullWidth
+                                    />
+                                    <TextField
+                                        label="الكمية"
+                                        type="number"
+                                        value={manualItemInput.quantity}
+                                        onChange={(e) => setManualItemInput({ ...manualItemInput, quantity: e.target.value })}
+                                        sx={{ width: '150px' }}
+                                    />
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleAddManualItem}
+                                        disabled={!manualItemInput.product || !manualItemInput.quantity}
+                                    >
+                                        إضافة
+                                    </Button>
+                                </Box>
+
+                                <TableContainer component={Paper} variant="outlined">
+                                    <Table size="small">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>المنتج</TableCell>
+                                                <TableCell>الكمية</TableCell>
+                                                <TableCell width={50}></TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {manualItems.map((item, index) => (
+                                                <TableRow key={index}>
+                                                    <TableCell>{item.product?.name}</TableCell>
+                                                    <TableCell>{item.quantity}</TableCell>
+                                                    <TableCell>
+                                                        <IconButton size="small" color="error" onClick={() => handleRemoveManualItem(index)}>
+                                                            <DeleteIcon />
+                                                        </IconButton>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {manualItems.length === 0 && (
+                                                <TableRow>
+                                                    <TableCell colSpan={3} align="center">
+                                                        لم يتم إضافة منتجات
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
                         )}
 
                         <Box sx={{ display: 'flex', gap: 2 }}>
