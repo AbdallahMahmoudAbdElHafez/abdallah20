@@ -124,6 +124,34 @@ DELIMITER ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
+-- Table structure for table `batches`
+--
+
+DROP TABLE IF EXISTS `batches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `batches` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_id` int NOT NULL,
+  `batch_number` varchar(100) NOT NULL,
+  `expiry_date` date NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `product_id` (`product_id`),
+  CONSTRAINT `batches_ibfk_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `batches`
+--
+
+LOCK TABLES `batches` WRITE;
+/*!40000 ALTER TABLE `batches` DISABLE KEYS */;
+INSERT INTO `batches` VALUES (1,4,'001','2028-01-11'),(2,7,'003','2028-01-25');
+/*!40000 ALTER TABLE `batches` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `bill_of_materials`
 --
 
@@ -167,7 +195,7 @@ CREATE TABLE `cities` (
   PRIMARY KEY (`id`),
   KEY `governate_id` (`governate_id`),
   CONSTRAINT `cities_ibfk_1` FOREIGN KEY (`governate_id`) REFERENCES `governates` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -176,7 +204,7 @@ CREATE TABLE `cities` (
 
 LOCK TABLES `cities` WRITE;
 /*!40000 ALTER TABLE `cities` DISABLE KEYS */;
-INSERT INTO `cities` VALUES (1,'المنصوره',3),(3,'القاهره',3),(4,'الاسكندريه',4),(5,'الدقي',3),(6,'المنزله',2);
+INSERT INTO `cities` VALUES (1,'المنصوره',3),(3,'القاهره',3),(4,'الاسكندريه',4),(5,'الدقي',3),(6,'المنزله',2),(7,'دمياط',7),(8,'المنصوره',2),(9,'طلخا',2),(10,'منية النصر',2);
 /*!40000 ALTER TABLE `cities` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -222,7 +250,7 @@ CREATE TABLE `current_inventory` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `current_inventory_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `current_inventory_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -231,7 +259,7 @@ CREATE TABLE `current_inventory` (
 
 LOCK TABLES `current_inventory` WRITE;
 /*!40000 ALTER TABLE `current_inventory` DISABLE KEYS */;
-INSERT INTO `current_inventory` VALUES (1,8,1,56,'2025-11-08 22:30:38');
+INSERT INTO `current_inventory` VALUES (1,8,1,56,'2025-11-08 22:30:38'),(2,4,2,20002699,'2025-11-25 14:07:14'),(3,7,1,29992999,'2025-11-25 16:18:04');
 /*!40000 ALTER TABLE `current_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -248,7 +276,7 @@ CREATE TABLE `departments` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -257,7 +285,7 @@ CREATE TABLE `departments` (
 
 LOCK TABLES `departments` WRITE;
 /*!40000 ALTER TABLE `departments` DISABLE KEYS */;
-INSERT INTO `departments` VALUES (1,'الحسابات','2025-11-15 20:56:52'),(2,'المبيعات','2025-11-15 20:57:01'),(3,'المشتريات','2025-11-15 20:57:11'),(4,'Owner','2025-11-15 20:57:29');
+INSERT INTO `departments` VALUES (1,'الحسابات','2025-11-15 20:56:52'),(2,'المبيعات','2025-11-15 20:57:01'),(3,'المشتريات','2025-11-15 20:57:11'),(4,'Owner','2025-11-15 20:57:29'),(5,'قسم المبيعات 1','2025-11-25 13:29:01');
 /*!40000 ALTER TABLE `departments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -397,7 +425,7 @@ CREATE TABLE `governates` (
   PRIMARY KEY (`id`),
   KEY `country_id` (`country_id`),
   CONSTRAINT `governates_ibfk_1` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -406,7 +434,7 @@ CREATE TABLE `governates` (
 
 LOCK TABLES `governates` WRITE;
 /*!40000 ALTER TABLE `governates` DISABLE KEYS */;
-INSERT INTO `governates` VALUES (2,'الدقهلية',1),(3,'القاهره',1),(4,'الاسكندريه',1),(5,'الشرقيه',1);
+INSERT INTO `governates` VALUES (2,'الدقهلية',1),(3,'القاهره',1),(4,'الاسكندريه',1),(5,'الشرقيه',1),(7,'دمياط',1),(8,'البحر الأحمر',1),(9,'الغربيه',1),(10,'البحيره',1),(11,'كفر الشيخ',1);
 /*!40000 ALTER TABLE `governates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -431,7 +459,7 @@ CREATE TABLE `inventory_logs` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `inventory_logs_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `inventory_logs_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -441,6 +469,37 @@ CREATE TABLE `inventory_logs` (
 LOCK TABLES `inventory_logs` WRITE;
 /*!40000 ALTER TABLE `inventory_logs` DISABLE KEYS */;
 /*!40000 ALTER TABLE `inventory_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `inventory_transaction_batches`
+--
+
+DROP TABLE IF EXISTS `inventory_transaction_batches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_transaction_batches` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `inventory_transaction_id` int NOT NULL,
+  `batch_id` int NOT NULL,
+  `quantity` int NOT NULL,
+  `cost_per_unit` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `inventory_transaction_id` (`inventory_transaction_id`),
+  KEY `batch_id` (`batch_id`),
+  CONSTRAINT `itb_ibfk_batch` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`),
+  CONSTRAINT `itb_ibfk_transaction` FOREIGN KEY (`inventory_transaction_id`) REFERENCES `inventory_transactions` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `inventory_transaction_batches`
+--
+
+LOCK TABLES `inventory_transaction_batches` WRITE;
+/*!40000 ALTER TABLE `inventory_transaction_batches` DISABLE KEYS */;
+INSERT INTO `inventory_transaction_batches` VALUES (1,16,2,200,55.00);
+/*!40000 ALTER TABLE `inventory_transaction_batches` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -466,7 +525,7 @@ CREATE TABLE `inventory_transactions` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `inventory_transactions_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `inventory_transactions_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -475,7 +534,7 @@ CREATE TABLE `inventory_transactions` (
 
 LOCK TABLES `inventory_transactions` WRITE;
 /*!40000 ALTER TABLE `inventory_transactions` DISABLE KEYS */;
-INSERT INTO `inventory_transactions` VALUES (7,4,2,'out',55,2.00,'2025-10-25 07:20:00','تحويل إلى مخزن مخزن اسكندريه','adjustment',NULL),(8,5,2,'out',109,3.00,'2025-10-25 07:20:00','تحويل إلى مخزن مخزن اسكندريه','adjustment',NULL),(9,4,3,'in',55,2.00,'2025-10-25 07:20:00','تحويل من مخزن المخزن الرئيسي','adjustment',NULL),(10,5,3,'in',109,3.00,'2025-10-25 07:20:00','تحويل من مخزن المخزن الرئيسي','adjustment',NULL),(11,7,3,'out',20,20.00,'2025-11-08 09:41:00','تحويل إلى  المخزن الرئيس','adjustment',NULL),(12,7,1,'in',20,20.00,'2025-11-08 09:41:00','تحويل من مخزن مخزن اسكندريه','adjustment',NULL),(13,8,6,'in',3,22.70,'2025-11-08 22:15:27','Added from Purchase Invoice PI-2025-000086','adjustment',NULL),(14,8,1,'in',56,22.70,'2025-11-08 22:30:38','Added from Purchase Invoice PI-2025-000087','adjustment',NULL);
+INSERT INTO `inventory_transactions` VALUES (7,4,2,'out',55,2.00,'2025-10-25 07:20:00','تحويل إلى مخزن مخزن اسكندريه','adjustment',NULL),(8,5,2,'out',109,3.00,'2025-10-25 07:20:00','تحويل إلى مخزن مخزن اسكندريه','adjustment',NULL),(9,4,3,'in',55,2.00,'2025-10-25 07:20:00','تحويل من مخزن المخزن الرئيسي','adjustment',NULL),(10,5,3,'in',109,3.00,'2025-10-25 07:20:00','تحويل من مخزن المخزن الرئيسي','adjustment',NULL),(11,7,3,'out',20,20.00,'2025-11-08 09:41:00','تحويل إلى  المخزن الرئيس','adjustment',NULL),(12,7,1,'in',20,20.00,'2025-11-08 09:41:00','تحويل من مخزن مخزن اسكندريه','adjustment',NULL),(13,8,6,'in',3,22.70,'2025-11-08 22:15:27','Added from Purchase Invoice PI-2025-000086','adjustment',NULL),(14,8,1,'in',56,22.70,'2025-11-08 22:30:38','Added from Purchase Invoice PI-2025-000087','adjustment',NULL),(15,4,2,'in',2699,55.00,'2025-11-25 00:00:00','','adjustment',NULL),(16,7,1,'in',2999,109.00,'2025-11-25 00:00:00','','adjustment',NULL);
 /*!40000 ALTER TABLE `inventory_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -955,7 +1014,7 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   KEY `unit_id` (`unit_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -964,7 +1023,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (4,'Nurivina Argan Oil 100ml',290.00,2,'2025-08-12 14:25:50',52.00),(5,'Nurivina Argan Oil Hair Serum 100ml',390.00,2,'2025-08-12 14:26:24',110.00),(6,'Nurivina Omega Anti-Hair Loss Shampoo 220ml',220.00,2,'2025-08-12 14:27:01',44.40),(7,'Nurivina Argan oil Leave in Conditioner 220ml',240.00,2,'2025-08-12 14:27:35',40.00),(8,'Nurivina whitening Cream 50gm',210.00,2,'2025-08-12 14:29:09',22.70),(10,'Nurivana Anti-Hair loss Shampoo Bottle 220Ml',6.00,5,'2025-10-15 12:51:02',6.00),(11,'Nurivina Anti-Hair Loss Shampoo Sticker',2.00,6,'2025-10-15 12:52:12',2.00),(12,'Nurivina Anti-Hair Loss Shampoo Cap',3.00,2,'2025-10-15 12:52:57',3.00);
+INSERT INTO `products` VALUES (4,'Nurivina Argan Oil 100ml',330.00,2,'2025-08-12 14:25:50',0.00),(5,'Nurivina Argan Oil Hair Serum 100ml',430.00,2,'2025-08-12 14:26:24',0.00),(6,'Nurivina Omega Anti-Hair Loss Shampoo 220ml',250.00,2,'2025-08-12 14:27:01',0.00),(7,'Nurivina Argan oil Leave in Conditioner 220ml',270.00,2,'2025-08-12 14:27:35',0.00),(8,'Nurivina whitening Cream 50gm',240.00,2,'2025-08-12 14:29:09',0.00),(10,'Nurivana Anti-Hair loss Shampoo Bottle 220Ml',6.00,5,'2025-10-15 12:51:02',6.00),(11,'Nurivina Anti-Hair Loss Shampoo Sticker',2.00,6,'2025-10-15 12:52:12',2.00),(12,'Nurivina Anti-Hair Loss Shampoo Cap',3.00,2,'2025-10-15 12:52:57',3.00),(13,'Nurivina Anti-Hair Loss Spray 100ml',520.00,2,'2025-11-25 13:42:37',0.00);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1581,7 +1640,7 @@ CREATE TABLE `sales_invoice_items` (
   CONSTRAINT `fk_si_items_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_invoice_items_ibfk_1` FOREIGN KEY (`sales_invoice_id`) REFERENCES `sales_invoices` (`id`),
   CONSTRAINT `sales_invoice_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1590,204 +1649,9 @@ CREATE TABLE `sales_invoice_items` (
 
 LOCK TABLES `sales_invoice_items` WRITE;
 /*!40000 ALTER TABLE `sales_invoice_items` DISABLE KEYS */;
+INSERT INTO `sales_invoice_items` VALUES (2,10,4,20,290.00,0.00,0.00,0.00,2,0);
 /*!40000 ALTER TABLE `sales_invoice_items` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_inventory_after_sales_invoice` AFTER INSERT ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE wh_id INT;
-  
-  -- حدد المخزن (مثلاً من إعدادات النظام أو تخصيص لاحقًا)
-  SET wh_id = 1; -- مؤقتًا
-
-  UPDATE current_inventory
-  SET quantity = quantity - NEW.quantity
-  WHERE product_id = NEW.product_id AND warehouse_id = wh_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_log_after_sales_invoice` AFTER INSERT ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE wh_id INT;
-
-  SET wh_id = 1; -- مؤقتًا
-
-  INSERT INTO inventory_logs (
-    product_id,
-    warehouse_id,
-    action_type,
-    quantity_change,
-    reference_type,
-    reference_id
-  )
-  VALUES (
-    NEW.product_id,
-    wh_id,
-    'delete',
-    -NEW.quantity,
-    'sales_invoice',
-    NEW.sales_invoice_id
-  );
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_sales_invoice_total` AFTER INSERT ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE subtotal DECIMAL(10,2) DEFAULT 0;
-  DECLARE disc DECIMAL(5,2);
-  DECLARE extra DECIMAL(5,2);
-  DECLARE tax DECIMAL(5,2);
-  DECLARE total DECIMAL(10,2);
-
-  -- حساب مجموع السطور بعد الخصومات الفردية
-  SELECT SUM(
-    quantity * price *
-    (1 - discount_percent / 100) *
-    (1 - extra_discount_percent / 100)
-  )
-  INTO subtotal
-  FROM sales_invoice_items
-  WHERE sales_invoice_id = NEW.sales_invoice_id;
-
-  -- جلب خصومات الفاتورة والضريبة
-  SELECT discount_percent, extra_discount_percent, tax_percent
-  INTO disc, extra, tax
-  FROM sales_invoices
-  WHERE id = NEW.sales_invoice_id;
-
-  -- تطبيق الخصومات والضريبة
-  SET total = subtotal *
-              (1 - disc / 100) *
-              (1 - extra / 100) *
-              (1 + tax / 100);
-
-  -- تحديث إجمالي الفاتورة
-  UPDATE sales_invoices
-  SET total_amount = ROUND(total, 2)
-  WHERE id = NEW.sales_invoice_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_sales_invoice_total_on_update` AFTER UPDATE ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE subtotal DECIMAL(10,2) DEFAULT 0;
-  DECLARE disc DECIMAL(5,2);
-  DECLARE extra DECIMAL(5,2);
-  DECLARE tax DECIMAL(5,2);
-  DECLARE total DECIMAL(10,2);
-
-  SELECT SUM(
-    quantity * price *
-    (1 - discount_percent / 100) *
-    (1 - extra_discount_percent / 100)
-  )
-  INTO subtotal
-  FROM sales_invoice_items
-  WHERE sales_invoice_id = NEW.sales_invoice_id;
-
-  SELECT discount_percent, extra_discount_percent, tax_percent
-  INTO disc, extra, tax
-  FROM sales_invoices
-  WHERE id = NEW.sales_invoice_id;
-
-  SET total = subtotal *
-              (1 - disc / 100) *
-              (1 - extra / 100) *
-              (1 + tax / 100);
-
-  UPDATE sales_invoices
-  SET total_amount = ROUND(total, 2)
-  WHERE id = NEW.sales_invoice_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_sales_invoice_total_on_delete` AFTER DELETE ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE subtotal DECIMAL(10,2) DEFAULT 0;
-  DECLARE disc DECIMAL(5,2);
-  DECLARE extra DECIMAL(5,2);
-  DECLARE tax DECIMAL(5,2);
-  DECLARE total DECIMAL(10,2);
-
-  SELECT SUM(
-    quantity * price *
-    (1 - discount_percent / 100) *
-    (1 - extra_discount_percent / 100)
-  )
-  INTO subtotal
-  FROM sales_invoice_items
-  WHERE sales_invoice_id = OLD.sales_invoice_id;
-
-  SELECT discount_percent, extra_discount_percent, tax_percent
-  INTO disc, extra, tax
-  FROM sales_invoices
-  WHERE id = OLD.sales_invoice_id;
-
-  SET total = IFNULL(subtotal, 0) *
-              (1 - disc / 100) *
-              (1 - extra / 100) *
-              (1 + tax / 100);
-
-  UPDATE sales_invoices
-  SET total_amount = ROUND(total, 2)
-  WHERE id = OLD.sales_invoice_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `sales_invoices`
@@ -1805,7 +1669,6 @@ CREATE TABLE `sales_invoices` (
   `invoice_date` date NOT NULL DEFAULT (curdate()),
   `due_date` date DEFAULT NULL,
   `shipping_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `bonus` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `account_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `employee_id` int DEFAULT NULL,
@@ -1829,7 +1692,7 @@ CREATE TABLE `sales_invoices` (
   CONSTRAINT `sales_invoices_ibfk_1` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`),
   CONSTRAINT `sales_invoices_ibfk_2` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`),
   CONSTRAINT `sales_invoices_ibfk_3` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1838,151 +1701,9 @@ CREATE TABLE `sales_invoices` (
 
 LOCK TABLES `sales_invoices` WRITE;
 /*!40000 ALTER TABLE `sales_invoices` DISABLE KEYS */;
+INSERT INTO `sales_invoices` VALUES (10,'INV-1-1764071204142','unpaid',1,3,'2025-11-25',NULL,0.00,NULL,'2025-11-25 11:46:44',NULL,2,5800.00,1160.00,0.00,0.00,0.00,0.00,4640.00);
 /*!40000 ALTER TABLE `sales_invoices` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_after_insert_sales_invoice` AFTER INSERT ON `sales_invoices` FOR EACH ROW BEGIN
-    DECLARE entry_id INT;
-    DECLARE sales_account INT;
-    DECLARE receivable_account INT;
-    DECLARE discount_account INT;
-    DECLARE tax_account INT;
-
-    -- جلب إعدادات الحسابات
-    SELECT
-        sales_revenue_account_id,
-        receivables_account_id,
-        discount_account_id,
-        tax_account_id
-    INTO
-        sales_account,
-        receivable_account,
-        discount_account,
-        tax_account
-    FROM accounting_settings
-    WHERE id = 1;
-
-    -- رأس القيد
-    INSERT INTO journal_entries (entry_date, description)
-    VALUES (NEW.invoice_date, CONCAT('فاتورة بيع #', NEW.id));
-    SET entry_id = LAST_INSERT_ID();
-
-    -- قيد دائن: المبيعات
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (entry_id, sales_account, 0, NEW.total_amount, 'إثبات المبيعات');
-
-    -- قيد مدين: العميل (مدينون)
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (entry_id, receivable_account, NEW.total_amount, 0, 'إثبات مديونية العميل');
-
-    -- خصم إن وجد
-    IF NEW.discount_amount > 0 THEN
-        INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-        VALUES (entry_id, discount_account, NEW.discount_amount, 0, 'خصم على الفاتورة');
-    END IF;
-
-    -- ضريبة إن وجدت
-    IF NEW.tax_amount > 0 THEN
-        INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-        VALUES (entry_id, tax_account, 0, NEW.tax_amount, 'ضريبة مبيعات');
-    END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_after_update_sales_invoice` AFTER UPDATE ON `sales_invoices` FOR EACH ROW BEGIN
-    -- أولًا: التصريحات
-    DECLARE entry_id INT;
-    DECLARE sales_account INT;
-    DECLARE receivable_account INT;
-    DECLARE discount_account INT;
-    DECLARE tax_account INT;
-
-    -- جلب إعدادات الحسابات
-    SELECT
-        sales_revenue_account_id,
-        receivables_account_id,
-        discount_account_id,
-        tax_account_id
-    INTO
-        sales_account,
-        receivable_account,
-        discount_account,
-        tax_account
-    FROM accounting_settings
-    WHERE id = 1;
-
-    -- حذف القيد القديم
-    DELETE FROM journal_entries
-    WHERE description = CONCAT('فاتورة بيع #', OLD.id);
-
-    -- إضافة القيد الجديد
-    INSERT INTO journal_entries (entry_date, description)
-    VALUES (NEW.invoice_date, CONCAT('فاتورة بيع #', NEW.id));
-    SET entry_id = LAST_INSERT_ID();
-
-    -- قيد دائن: المبيعات
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (entry_id, sales_account, 0, NEW.total_amount, 'إثبات المبيعات');
-
-    -- قيد مدين: حساب العميل (مدينون)
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (entry_id, receivable_account, NEW.total_amount, 0, 'إثبات مديونية العميل');
-
-    -- خصم إن وجد
-    IF NEW.discount_amount > 0 THEN
-        INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-        VALUES (entry_id, discount_account, NEW.discount_amount, 0, 'خصم على الفاتورة');
-    END IF;
-
-    -- ضريبة إن وجدت
-    IF NEW.tax_amount > 0 THEN
-        INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-        VALUES (entry_id, tax_account, 0, NEW.tax_amount, 'ضريبة مبيعات');
-    END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_after_delete_sales_invoice` AFTER DELETE ON `sales_invoices` FOR EACH ROW BEGIN
-    DELETE FROM journal_entries
-    WHERE description = CONCAT('فاتورة بيع #', OLD.id);
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `sales_order_items`
@@ -2009,7 +1730,7 @@ CREATE TABLE `sales_order_items` (
   CONSTRAINT `fk_so_items_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_order_items_ibfk_1` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`),
   CONSTRAINT `sales_order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2018,6 +1739,7 @@ CREATE TABLE `sales_order_items` (
 
 LOCK TABLES `sales_order_items` WRITE;
 /*!40000 ALTER TABLE `sales_order_items` DISABLE KEYS */;
+INSERT INTO `sales_order_items` VALUES (1,2,4,8,290.00,0.00,0.00,0.00,0,3),(2,3,5,5,390.00,0.00,0.00,0.00,0,2),(3,1,4,20,290.00,0.00,0.00,0.00,0,2),(4,4,4,100,290.00,0.00,0.00,0.00,0,2);
 /*!40000 ALTER TABLE `sales_order_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2051,7 +1773,7 @@ CREATE TABLE `sales_orders` (
   CONSTRAINT `fk_sales_orders_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `fk_sales_orders_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_orders_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2060,7 +1782,7 @@ CREATE TABLE `sales_orders` (
 
 LOCK TABLES `sales_orders` WRITE;
 /*!40000 ALTER TABLE `sales_orders` DISABLE KEYS */;
-INSERT INTO `sales_orders` VALUES (1,3,'pending',2,NULL,'2025-11-24','','2025-11-24 15:46:09',47750.00,18431.50,14.00,4104.59,0.00,0.00,33423.09);
+INSERT INTO `sales_orders` VALUES (1,3,'approved',2,NULL,'2025-11-24','','2025-11-24 15:46:09',5800.00,1160.00,0.00,0.00,0.00,0.00,4640.00),(2,3,'approved',3,NULL,'2025-11-25','','2025-11-25 10:12:25',2320.00,580.00,0.00,0.00,0.00,0.00,1740.00),(3,3,'approved',2,NULL,'2025-11-25','','2025-11-25 10:50:38',1950.00,487.50,0.00,0.00,0.00,0.00,1462.50),(4,3,'approved',2,NULL,'2025-11-25','','2025-11-25 11:01:53',29000.00,7250.00,0.00,0.00,0.00,0.00,21750.00);
 /*!40000 ALTER TABLE `sales_orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2758,7 +2480,7 @@ CREATE TABLE `warehouses` (
 
 LOCK TABLES `warehouses` WRITE;
 /*!40000 ALTER TABLE `warehouses` DISABLE KEYS */;
-INSERT INTO `warehouses` VALUES (1,'المخزن الرئيس','شارع اداب',4,'2025-08-20 09:17:31'),(2,'المخزن الرئيسي','شارع ادابي',3,'2025-08-20 09:24:44'),(3,'مخزن اسكندريه','الاسكندرية',4,'2025-08-20 09:27:00'),(5,'dsd','sdsd',4,'2025-08-20 09:45:54'),(6,'المخزن الأسطوري','في أحلامك',1,'2025-09-01 13:23:52');
+INSERT INTO `warehouses` VALUES (1,'مخزن دمياط','دمياط',7,'2025-08-20 09:17:31'),(2,'المخزن الرئيسي','المنصوره',3,'2025-08-20 09:24:44'),(3,'مخزن الاسكندريه','الاسكندرية',4,'2025-08-20 09:27:00'),(6,'المخزن الأسطوري','في أحلامك',1,'2025-09-01 13:23:52');
 /*!40000 ALTER TABLE `warehouses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -3080,4 +2802,4 @@ USE `nurivina`;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-24 18:27:37
+-- Dump completed on 2025-11-25 18:28:00
