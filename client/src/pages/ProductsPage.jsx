@@ -36,6 +36,7 @@ import {
   Analytics as AnalyticsIcon,
 } from "@mui/icons-material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { fetchProducts, addProduct, updateProduct, deleteProduct } from "../features/products/productsSlice";
 import { fetchUnits } from "../features/units/unitsSlice";
 
@@ -58,14 +59,14 @@ const useProductFormValidation = (initialData = {}) => {
         if (value.trim().length < 2) return "اسم المنتج يجب أن يكون أكثر من حرف واحد";
         if (value.trim().length > 100) return "اسم المنتج يجب أن يكون أقل من 100 حرف";
         return "";
-      
+
       case 'price':
         if (!value || value === "") return "السعر مطلوب";
         const price = parseFloat(value);
         if (isNaN(price) || price < 0) return "السعر يجب أن يكون رقم موجب";
         if (price > 999999) return "السعر كبير جداً";
         return "";
-      
+
       case 'cost_price':
         if (!value || value === "") return "سعر التكلفة مطلوب";
         const costPrice = parseFloat(value);
@@ -75,11 +76,11 @@ const useProductFormValidation = (initialData = {}) => {
           return "سعر التكلفة لا يجب أن يكون أكبر من سعر البيع";
         }
         return "";
-      
+
       case 'unit_id':
         if (!value || value === "") return "الوحدة مطلوبة";
         return "";
-      
+
       default:
         return "";
     }
@@ -98,11 +99,11 @@ const useProductFormValidation = (initialData = {}) => {
   const handleFieldChange = useCallback((fieldName, value) => {
     const newData = { ...formData, [fieldName]: value };
     setFormData(newData);
-    
+
     if (touched[fieldName]) {
       const error = validateField(fieldName, value, newData);
       setErrors(prev => ({ ...prev, [fieldName]: error }));
-      
+
       // Re-validate cost_price if price changes
       if (fieldName === 'price' && touched.cost_price) {
         const costError = validateField('cost_price', formData.cost_price, newData);
@@ -204,7 +205,7 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, title, message, loading 
 const ProfitMargin = ({ price, costPrice }) => {
   const profit = parseFloat(price || 0) - parseFloat(costPrice || 0);
   const margin = parseFloat(costPrice || 0) > 0 ? (profit / parseFloat(costPrice || 0)) * 100 : 0;
-  
+
   const getColor = () => {
     if (margin < 10) return 'error';
     if (margin < 25) return 'warning';
@@ -233,7 +234,7 @@ export default function ProductsPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [editRow, setEditRow] = useState(null);
   const [saving, setSaving] = useState(false);
-  
+
   // Confirmation dialog
   const [confirmDialog, setConfirmDialog] = useState({
     open: false,
@@ -291,7 +292,7 @@ export default function ProductsPage() {
     }
 
     // Check for duplicates
-    const isDuplicate = products.some(product => 
+    const isDuplicate = products.some(product =>
       product.name.toLowerCase().trim() === productForm.formData.name.toLowerCase().trim() &&
       (!editRow || product.id !== editRow.id)
     );
@@ -349,14 +350,14 @@ export default function ProductsPage() {
   // Calculate statistics
   const stats = useMemo(() => {
     const totalProducts = products.length;
-    const averagePrice = products.length > 0 
-      ? products.reduce((sum, p) => sum + parseFloat(p.price || 0), 0) / products.length 
+    const averagePrice = products.length > 0
+      ? products.reduce((sum, p) => sum + parseFloat(p.price || 0), 0) / products.length
       : 0;
-    const averageCostPrice = products.length > 0 
-      ? products.reduce((sum, p) => sum + parseFloat(p.cost_price || 0), 0) / products.length 
+    const averageCostPrice = products.length > 0
+      ? products.reduce((sum, p) => sum + parseFloat(p.cost_price || 0), 0) / products.length
       : 0;
-    const averageMargin = averageCostPrice > 0 
-      ? ((averagePrice - averageCostPrice) / averageCostPrice) * 100 
+    const averageMargin = averageCostPrice > 0
+      ? ((averagePrice - averageCostPrice) / averageCostPrice) * 100
       : 0;
     const recentlyAdded = products.filter(product => {
       const weekAgo = new Date();
@@ -379,11 +380,11 @@ export default function ProductsPage() {
       header: "الرقم التسلسلي",
       size: 100,
       Cell: ({ cell }) => (
-        <Chip 
-          label={`#${cell.getValue()}`} 
-          size="small" 
-          color="primary" 
-          variant="outlined" 
+        <Chip
+          label={`#${cell.getValue()}`}
+          size="small"
+          color="primary"
+          variant="outlined"
         />
       ),
     },
@@ -429,9 +430,9 @@ export default function ProductsPage() {
       accessorKey: "profit_margin",
       header: "هامش الربح",
       Cell: ({ row }) => (
-        <ProfitMargin 
-          price={row.original.price} 
-          costPrice={row.original.cost_price} 
+        <ProfitMargin
+          price={row.original.price}
+          costPrice={row.original.cost_price}
         />
       ),
     },
@@ -441,9 +442,9 @@ export default function ProductsPage() {
       Cell: ({ row }) => {
         const unit = row.original.unit;
         return unit ? (
-          <Chip 
-            label={unit.name} 
-            size="small" 
+          <Chip
+            label={unit.name}
+            size="small"
             variant="outlined"
             icon={<CategoryIcon />}
           />
@@ -459,9 +460,9 @@ export default function ProductsPage() {
   return (
     <Box sx={{ p: 3, maxWidth: 1400, mx: 'auto' }}>
       {/* Header */}
-      <Card 
-        sx={{ 
-          mb: 3, 
+      <Card
+        sx={{
+          mb: 3,
           background: theme.mixins.gradientHeader,
           color: 'black',
         }}
@@ -561,6 +562,7 @@ export default function ProductsPage() {
       {/* Table */}
       <Card>
         <MaterialReactTable
+          {...defaultTableProps}
           columns={columns}
           data={products}
           state={{ isLoading: loading }}
@@ -597,20 +599,7 @@ export default function ProductsPage() {
               </Tooltip>
             </Stack>
           )}
-          muiTableContainerProps={{ sx: { maxHeight: 600 } }}
-          muiTopToolbarProps={{
-            sx: { 
-              backgroundColor: 'grey.50',
-              '& .MuiTextField-root .MuiInputBase-root': { backgroundColor: 'black' },
-            },
-          }}
-          muiTableHeadCellProps={{
-            sx: { backgroundColor: 'primary.main', color: 'black', fontWeight: 'bold' },
-          }}
-          initialState={{
-            pagination: { pageSize: 10 },
-            sorting: [{ id: 'id', desc: true }],
-          }}
+
           localization={{
             noRecordsToDisplay: 'لا توجد منتجات للعرض',
             search: 'البحث...',
@@ -619,16 +608,16 @@ export default function ProductsPage() {
       </Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog 
-        open={openDialog} 
+      <Dialog
+        open={openDialog}
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
         PaperProps={{ sx: { borderRadius: 2 } }}
       >
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
+        <DialogTitle sx={{
+          display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
           ...theme.mixins.gradientHeader,
           color: 'white',
@@ -732,9 +721,9 @@ export default function ProductsPage() {
             {/* Profit Margin Preview */}
             {productForm.formData.price && productForm.formData.cost_price && (
               <Grid item xs={12}>
-                <Box sx={{ 
-                  p: 2, 
-                  backgroundColor: 'grey.50', 
+                <Box sx={{
+                  p: 2,
+                  backgroundColor: 'grey.50',
                   borderRadius: 1,
                   display: 'flex',
                   alignItems: 'center',
@@ -743,9 +732,9 @@ export default function ProductsPage() {
                   <Typography variant="subtitle2">
                     هامش الربح المتوقع:
                   </Typography>
-                  <ProfitMargin 
-                    price={productForm.formData.price} 
-                    costPrice={productForm.formData.cost_price} 
+                  <ProfitMargin
+                    price={productForm.formData.price}
+                    costPrice={productForm.formData.cost_price}
                   />
                 </Box>
               </Grid>
@@ -753,8 +742,8 @@ export default function ProductsPage() {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2, gap: 1 }}>
-          <Button 
-            onClick={handleCloseDialog} 
+          <Button
+            onClick={handleCloseDialog}
             disabled={saving}
             variant="outlined"
           >

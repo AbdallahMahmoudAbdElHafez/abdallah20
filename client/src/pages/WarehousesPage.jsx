@@ -18,6 +18,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 
 import {
     fetchWarehouses,
@@ -92,12 +93,12 @@ const WarehousesPage = () => {
     };
 
     const columns = [
-        { accessorKey: "id", header: "ID" },
-        { accessorKey: "name", header: "Name" },
-        { accessorKey: "address", header: "Address" },
+        { accessorKey: "id", header: "الرقم التعريفي" },
+        { accessorKey: "name", header: "اسم المخزن" },
+        { accessorKey: "address", header: "العنوان" },
         {
             accessorKey: "city.name",
-            header: "City",
+            header: "المدينة",
         },
     ];
 
@@ -106,22 +107,23 @@ const WarehousesPage = () => {
             {/* Breadcrumbs */}
             <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
                 <Link underline="hover" color="inherit" onClick={() => navigate("/")}>
-                    Home
+                    الرئيسية
                 </Link>
                 <Link underline="hover" color="inherit" onClick={() => navigate("/countries")}>
-                    Countries
+                    البلاد
                 </Link>
                 <Link underline="hover" color="inherit" onClick={() => navigate(-2)}>
-                    Governates
+                    المحافظات
                 </Link>
                 <Link underline="hover" color="inherit" onClick={() => navigate(-1)}>
-                    Cities
+                    المدن
                 </Link>
-                <Typography color="text.primary">Warehouses</Typography>
+                <Typography color="text.primary">المخازن</Typography>
             </Breadcrumbs>
 
             {/* Table */}
             <MaterialReactTable
+                {...defaultTableProps}
                 columns={columns}
                 data={warehouses || []}
                 state={{ isLoading: loading }}
@@ -136,7 +138,7 @@ const WarehousesPage = () => {
                             variant="outlined"
                             onClick={() => handleOpenDialog(row.original)}
                         >
-                            Edit
+                            تعديل
                         </Button>
                         <Button
                             size="small"
@@ -144,37 +146,37 @@ const WarehousesPage = () => {
                             variant="outlined"
                             onClick={() => handleDelete(row.original.id)}
                         >
-                            Delete
+                            حذف
                         </Button>
                     </Box>
                 )}
                 renderTopToolbarCustomActions={() => (
                     <Button variant="contained" onClick={() => handleOpenDialog()}>
-                        Add Warehouse
+                        إضافة مخزن
                     </Button>
                 )}
             />
 
             {/* Dialog */}
             <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth>
-                <DialogTitle>{editWarehouse ? "Edit Warehouse" : "Add Warehouse"}</DialogTitle>
+                <DialogTitle>{editWarehouse ? "تعديل المخزن" : "إضافة مخزن"}</DialogTitle>
                 <DialogContent>
                     <TextField
                         fullWidth
                         margin="dense"
-                        label="Name"
+                        label="اسم المخزن"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
                     <TextField
                         fullWidth
                         margin="dense"
-                        label="Address"
+                        label="العنوان"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                     />
                     <FormControl fullWidth margin="dense">
-                        <InputLabel id="city-label">City</InputLabel>
+                        <InputLabel id="city-label">المدينة</InputLabel>
                         <Select
                             labelId="city-label"
                             value={selectedCity}
@@ -189,9 +191,9 @@ const WarehousesPage = () => {
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog}>Cancel</Button>
+                    <Button onClick={handleCloseDialog}>إلغاء</Button>
                     <Button variant="contained" onClick={handleSave}>
-                        Save
+                        حفظ
                     </Button>
                 </DialogActions>
             </Dialog>

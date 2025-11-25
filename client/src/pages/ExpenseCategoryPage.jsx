@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 
 export default function ExpenseCategoryPage() {
   const dispatch = useDispatch();

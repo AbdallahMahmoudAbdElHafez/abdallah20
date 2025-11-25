@@ -19,10 +19,10 @@ const navItems = [
   { label: "الرئيسية", path: "/" },
   { label: "لوحة التحكم", path: "/dashboard" },
   { label: "الوحدات", path: "/units" },
-
   { label: "الدول", path: "/countries" },
   { label: "اوامر التشغيل ", path: "/external-job-orders" },
   { label: "المصروفات", path: "/expenses" },
+  { label: "فواتير البيع", path: "/sales-invoices" },
   { label: "أوامر البيع", path: "/sales-orders" },
   { label: "الحسابات", path: "/accounts" },
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
@@ -30,7 +30,6 @@ const navItems = [
   { label: "العمليات", path: "/processes" },
   { label: "القيود", path: "/journal-entry-lines" },
   { label: "فئات المصروفات", path: "/expense-categories" },
-  { label: "اضافة الحسابات", path: "/accounting-settings" },
   { label: "مكونات التصنيع", path: "/bill-of-material" },
   { label: "كشف حساب المورد", path: "/suppliers/:supplierId/statement" },
 ];

@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCheques, deleteCheque } from "../features/supplierCheques/supplierChequesSlice";
 

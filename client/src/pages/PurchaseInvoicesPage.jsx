@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, CircularProgress } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -57,12 +58,12 @@ export default function PurchaseInvoicesPage() {
   };
 
   const columns = [
-    { accessorKey: "invoice_number", header: "Invoice Number" },
-    { accessorKey: "invoice_date", header: "Invoice Date" },
-    { accessorKey: "status", header: "Status" },
-    { accessorKey: "total_amount", header: "Total Amount" },
+    { accessorKey: "invoice_number", header: "رقم الفاتورة" },
+    { accessorKey: "invoice_date", header: "تاريخ الفاتورة" },
+    { accessorKey: "status", header: "الحالة" },
+    { accessorKey: "total_amount", header: "الإجمالي" },
     {
-      header: "Actions",
+      header: "إجراءات",
       Cell: ({ row }) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button
@@ -70,7 +71,7 @@ export default function PurchaseInvoicesPage() {
             variant="outlined"
             onClick={() => handleEdit(row.original)}
           >
-            Edit
+            تعديل
           </Button>
           <Button
             size="small"
@@ -80,7 +81,7 @@ export default function PurchaseInvoicesPage() {
               navigate(`/purchase-orders?order_id=${row.original.purchase_order_id}`)
             }
           >
-            View Order
+            عرض الطلب
           </Button>
         </Box>
       ),
@@ -99,7 +100,7 @@ export default function PurchaseInvoicesPage() {
     <Box p={2}>
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Button variant="contained" onClick={handleCreate}>
-          Add Purchase Invoice
+          إضافة فاتورة شراء
         </Button>
       </Box>
 

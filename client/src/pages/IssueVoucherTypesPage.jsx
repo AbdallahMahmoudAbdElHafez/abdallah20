@@ -1,6 +1,7 @@
 // src/pages/IssueVoucherTypesPage.jsx
 import { useEffect, useMemo, useState } from "react";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchIssueVoucherTypes,

@@ -21,6 +21,7 @@ import {
   Select,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import axios from "axios";
 
 export default function ExternalJobOrdersPage() {
@@ -116,27 +117,27 @@ export default function ExternalJobOrdersPage() {
     await fetchMaterials(product_id);
   };
 
-const handleSubmit = (e) => {
-  e.preventDefault();
-  const cleanData = {
-    ...form,
-    party_id: parseInt(form.party_id) || null,
-    product_id: parseInt(form.product_id) || null,
-    process_id: form.process_id ? parseInt(form.process_id) : null,
-    warehouse_id: parseInt(form.warehouse_id) || null,
-    order_quantity: form.order_quantity ? parseFloat(form.order_quantity) : null,
-    produced_quantity: form.produced_quantity
-      ? parseFloat(form.produced_quantity)
-      : null,
-    cost_estimate: form.cost_estimate ? parseFloat(form.cost_estimate) : 0,
-    cost_actual: form.cost_actual ? parseFloat(form.cost_actual) : 0,
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const cleanData = {
+      ...form,
+      party_id: parseInt(form.party_id) || null,
+      product_id: parseInt(form.product_id) || null,
+      process_id: form.process_id ? parseInt(form.process_id) : null,
+      warehouse_id: parseInt(form.warehouse_id) || null,
+      order_quantity: form.order_quantity ? parseFloat(form.order_quantity) : null,
+      produced_quantity: form.produced_quantity
+        ? parseFloat(form.produced_quantity)
+        : null,
+      cost_estimate: form.cost_estimate ? parseFloat(form.cost_estimate) : 0,
+      cost_actual: form.cost_actual ? parseFloat(form.cost_actual) : 0,
+    };
+
+    if (editId) dispatch(updateJobOrder({ id: editId, data: cleanData }));
+    else dispatch(addJobOrder(cleanData));
+
+    setOpen(false);
   };
-
-  if (editId) dispatch(updateJobOrder({ id: editId, data: cleanData }));
-  else dispatch(addJobOrder(cleanData));
-
-  setOpen(false);
-};
 
 
   const handleDelete = (id) => {

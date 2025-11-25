@@ -24,36 +24,42 @@ import { useDispatch, useSelector } from "react-redux";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import {
-    fetchSalesOrders,
-    addSalesOrder,
-    updateSalesOrder,
-    deleteSalesOrder,
-} from "../features/salesOrders/salesOrdersSlice";
-import { fetchSalesOrderItems } from "../features/salesOrderItems/salesOrderItemsSlice";
+    fetchSalesInvoices,
+    addSalesInvoice,
+    updateSalesInvoice,
+    deleteSalesInvoice,
+} from "../features/salesInvoices/salesInvoicesSlice";
+import { fetchSalesInvoiceItems } from "../features/salesInvoiceItems/salesInvoiceItemsSlice";
 import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
 import { fetchProducts } from "../features/products/productsSlice";
-import { addSalesInvoice } from "../features/salesInvoices/salesInvoicesSlice";
+import { fetchAccounts } from "../features/accounts/accountsSlice";
+import { fetchSalesOrders } from "../features/salesOrders/salesOrdersSlice";
 
-export default function SalesOrdersPage() {
+export default function SalesInvoicesPage() {
     const dispatch = useDispatch();
-    const { items: orders, loading } = useSelector((state) => state.salesOrders);
+    const { items: invoices, loading } = useSelector((state) => state.salesInvoices);
     const { items: parties } = useSelector((state) => state.parties);
     const { items: warehouses } = useSelector((state) => state.warehouses);
     const { list: employees } = useSelector((state) => state.employees);
     const { items: products } = useSelector((state) => state.products);
+    const { items: accounts } = useSelector((state) => state.accounts);
+    const { items: salesOrders } = useSelector((state) => state.salesOrders);
 
     const [open, setOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
-    const [originalStatus, setOriginalStatus] = useState(null); // Track original status
     const [formData, setFormData] = useState({
+        invoice_number: "",
         party_id: "",
+        sales_order_id: "",
         warehouse_id: "",
         employee_id: "",
-        order_date: new Date().toISOString().split("T")[0],
-        status: "pending",
-        notes: "",
+        account_id: "",
+        invoice_date: new Date().toISOString().split("T")[0],
+        due_date: "",
+        status: "unpaid",
+        shipping_amount: 0,
         items: [],
         subtotal: 0,
         additional_discount_percent: 0,
@@ -66,11 +72,13 @@ export default function SalesOrdersPage() {
     });
 
     useEffect(() => {
-        dispatch(fetchSalesOrders());
+        dispatch(fetchSalesInvoices());
         dispatch(fetchParties());
         dispatch(fetchWarehouses());
         dispatch(fetchEmployees());
         dispatch(fetchProducts());
+        dispatch(fetchAccounts());
+        dispatch(fetchSalesOrders());
     }, [dispatch]);
 
     // Calculation Logic
@@ -85,7 +93,8 @@ export default function SalesOrdersPage() {
         const discountPercent = Number(formData.additional_discount_percent) || 0;
         const additionalDiscount = (itemsSubtotal * discountPercent) / 100;
 
-        const taxableAmount = itemsSubtotal - additionalDiscount;
+        const shippingAmount = Number(formData.shipping_amount) || 0;
+        const taxableAmount = itemsSubtotal - additionalDiscount + shippingAmount;
 
         const vatRate = Number(formData.vat_rate) || 0;
         const vatAmount = (taxableAmount * vatRate) / 100;
@@ -107,27 +116,31 @@ export default function SalesOrdersPage() {
         formData.items,
         formData.additional_discount_percent,
         formData.vat_rate,
-        formData.tax_rate
+        formData.tax_rate,
+        formData.shipping_amount
     ]);
 
-    const handleOpen = async (order = null) => {
-        if (order) {
-            setEditingId(order.id);
-            setOriginalStatus(order.status); // Save original status
-            const itemsRes = await dispatch(fetchSalesOrderItems({ sales_order_id: order.id })).unwrap();
+    const handleOpen = async (invoice = null) => {
+        if (invoice) {
+            setEditingId(invoice.id);
+            const itemsRes = await dispatch(fetchSalesInvoiceItems({ sales_invoice_id: invoice.id })).unwrap();
 
             let percent = 0;
-            if (Number(order.subtotal) > 0) {
-                percent = (Number(order.additional_discount) / Number(order.subtotal)) * 100;
+            if (Number(invoice.subtotal) > 0) {
+                percent = (Number(invoice.additional_discount) / Number(invoice.subtotal)) * 100;
             }
 
             setFormData({
-                party_id: order.party_id,
-                warehouse_id: order.warehouse_id || "",
-                employee_id: order.employee_id || "",
-                order_date: order.order_date,
-                status: order.status,
-                notes: order.notes || "",
+                invoice_number: invoice.invoice_number,
+                party_id: invoice.party_id,
+                sales_order_id: invoice.sales_order_id || "",
+                warehouse_id: invoice.warehouse_id || "",
+                employee_id: invoice.employee_id || "",
+                account_id: invoice.account_id || "",
+                invoice_date: invoice.invoice_date,
+                due_date: invoice.due_date || "",
+                status: invoice.status,
+                shipping_amount: invoice.shipping_amount,
                 items: itemsRes.map(item => ({
                     ...item,
                     product_id: item.product_id,
@@ -135,26 +148,30 @@ export default function SalesOrdersPage() {
                     price: item.price,
                     discount: item.discount,
                     tax_percent: item.tax_percent,
+                    bonus: item.bonus
                 })),
-                subtotal: order.subtotal,
+                subtotal: invoice.subtotal,
                 additional_discount_percent: percent.toFixed(2),
-                additional_discount: order.additional_discount,
-                vat_rate: order.vat_rate,
-                vat_amount: order.vat_amount,
-                tax_rate: order.tax_rate,
-                tax_amount: order.tax_amount,
-                total_amount: order.total_amount,
+                additional_discount: invoice.additional_discount,
+                vat_rate: invoice.vat_rate,
+                vat_amount: invoice.vat_amount,
+                tax_rate: invoice.tax_rate,
+                tax_amount: invoice.tax_amount,
+                total_amount: invoice.total_amount,
             });
         } else {
             setEditingId(null);
-            setOriginalStatus(null); // Reset for new order
             setFormData({
+                invoice_number: "",
                 party_id: "",
+                sales_order_id: "",
                 warehouse_id: "",
                 employee_id: "",
-                order_date: new Date().toISOString().split("T")[0],
-                status: "pending",
-                notes: "",
+                account_id: "",
+                invoice_date: new Date().toISOString().split("T")[0],
+                due_date: "",
+                status: "unpaid",
+                shipping_amount: 0,
                 items: [],
                 subtotal: 0,
                 additional_discount_percent: 0,
@@ -231,89 +248,33 @@ export default function SalesOrdersPage() {
         // Sanitize optional fields
         if (payload.warehouse_id === "") payload.warehouse_id = null;
         if (payload.employee_id === "") payload.employee_id = null;
+        if (payload.account_id === "") payload.account_id = null;
+        if (payload.sales_order_id === "") payload.sales_order_id = null;
+        if (payload.due_date === "") payload.due_date = null;
 
         // Remove the helper field before sending
         delete payload.additional_discount_percent;
 
-        // Check if status is being changed to 'approved'
-        const isApproving = payload.status === 'approved' && originalStatus !== 'approved';
-
         if (editingId) {
-            await dispatch(updateSalesOrder({ id: editingId, data: payload }));
-
-            // Create invoice automatically if order is approved
-            if (isApproving) {
-                await createInvoiceFromOrder(editingId, payload);
-            }
+            await dispatch(updateSalesInvoice({ id: editingId, data: payload }));
         } else {
-            const createdOrder = await dispatch(addSalesOrder(payload)).unwrap();
-
-            // Create invoice automatically if new order is approved
-            if (payload.status === 'approved' && createdOrder.id) {
-                await createInvoiceFromOrder(createdOrder.id, payload);
-            }
+            await dispatch(addSalesInvoice(payload));
         }
-        dispatch(fetchSalesOrders());
+        dispatch(fetchSalesInvoices());
         handleClose();
     };
 
-    const createInvoiceFromOrder = async (orderId, orderData) => {
-        try {
-            // Generate invoice number (you can customize this format)
-            const invoiceNumber = `INV-${orderId}-${Date.now()}`;
-
-            const invoicePayload = {
-                invoice_number: invoiceNumber,
-                sales_order_id: orderId,
-                party_id: orderData.party_id,
-                warehouse_id: orderData.warehouse_id,
-                employee_id: orderData.employee_id,
-                account_id: null, // Can be set based on your business logic
-                invoice_date: new Date().toISOString().split("T")[0],
-                due_date: null, // Can be calculated based on payment terms
-                status: 'unpaid',
-                shipping_amount: 0,
-                items: orderData.items.map(item => {
-                    // Clean the item data - remove database-specific fields
-                    const { id, sales_order_id, sales_invoice_id, ...cleanItem } = item;
-                    return {
-                        product_id: cleanItem.product_id,
-                        quantity: cleanItem.quantity,
-                        price: cleanItem.price,
-                        discount: cleanItem.discount || 0,
-                        tax_percent: cleanItem.tax_percent || 0,
-                        tax_amount: cleanItem.tax_amount || 0,
-                        warehouse_id: cleanItem.warehouse_id,
-                        bonus: cleanItem.bonus || 0
-                    };
-                }),
-                subtotal: orderData.subtotal,
-                additional_discount: orderData.additional_discount,
-                vat_rate: orderData.vat_rate,
-                vat_amount: orderData.vat_amount,
-                tax_rate: orderData.tax_rate,
-                tax_amount: orderData.tax_amount,
-                total_amount: orderData.total_amount
-            };
-
-            await dispatch(addSalesInvoice(invoicePayload)).unwrap();
-            alert('تم إنشاء الفاتورة تلقائياً بنجاح!');
-        } catch (error) {
-            console.error('Error creating invoice:', error);
-            alert('حدث خطأ أثناء إنشاء الفاتورة: ' + error.message);
-        }
-    };
-
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this order?")) {
-            await dispatch(deleteSalesOrder(id));
-            dispatch(fetchSalesOrders());
+        if (window.confirm("Are you sure you want to delete this invoice?")) {
+            await dispatch(deleteSalesInvoice(id));
+            dispatch(fetchSalesInvoices());
         }
     };
 
     const columns = [
         { accessorKey: "id", header: "الرقم التعريفي" },
-        { accessorKey: "order_date", header: "التاريخ" },
+        { accessorKey: "invoice_number", header: "رقم الفاتورة" },
+        { accessorKey: "invoice_date", header: "التاريخ" },
         {
             header: "العميل",
             accessorFn: (row) => row.party?.name ?? "غير متوفر",
@@ -339,14 +300,21 @@ export default function SalesOrdersPage() {
     return (
         <Box p={2}>
             <Button variant="contained" onClick={() => handleOpen()} sx={{ mb: 2 }}>
-                Add Sales Order
+                Add Sales Invoice
             </Button>
-            <MaterialReactTable {...defaultTableProps} columns={columns} data={orders} />
+            <MaterialReactTable {...defaultTableProps} columns={columns} data={invoices} />
 
             <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-                <DialogTitle>{editingId ? "Edit Sales Order" : "Add Sales Order"}</DialogTitle>
+                <DialogTitle>{editingId ? "Edit Sales Invoice" : "Add Sales Invoice"}</DialogTitle>
                 <DialogContent>
                     <Box display="flex" gap={2} mb={2} mt={1}>
+                        <TextField
+                            label="Invoice Number"
+                            name="invoice_number"
+                            fullWidth
+                            value={formData.invoice_number}
+                            onChange={handleChange}
+                        />
                         <TextField
                             select
                             label="Party"
@@ -359,16 +327,39 @@ export default function SalesOrdersPage() {
                                 <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
                             ))}
                         </TextField>
+                    </Box>
+                    <Box display="flex" gap={2} mb={2}>
                         <TextField
-                            label="Date"
+                            label="Invoice Date"
                             type="date"
-                            name="order_date"
+                            name="invoice_date"
                             fullWidth
-                            value={formData.order_date}
+                            value={formData.invoice_date}
+                            onChange={handleChange}
+                        />
+                        <TextField
+                            label="Due Date"
+                            type="date"
+                            name="due_date"
+                            fullWidth
+                            value={formData.due_date}
                             onChange={handleChange}
                         />
                     </Box>
                     <Box display="flex" gap={2} mb={2}>
+                        <TextField
+                            select
+                            label="Sales Order"
+                            name="sales_order_id"
+                            fullWidth
+                            value={formData.sales_order_id}
+                            onChange={handleChange}
+                        >
+                            <MenuItem value=""><em>None</em></MenuItem>
+                            {salesOrders.map((so) => (
+                                <MenuItem key={so.id} value={so.id}>Order #{so.id}</MenuItem>
+                            ))}
+                        </TextField>
                         <TextField
                             select
                             label="Warehouse"
@@ -382,6 +373,8 @@ export default function SalesOrdersPage() {
                                 <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>
                             ))}
                         </TextField>
+                    </Box>
+                    <Box display="flex" gap={2} mb={2}>
                         <TextField
                             select
                             label="Employee"
@@ -395,30 +388,42 @@ export default function SalesOrdersPage() {
                                 <MenuItem key={e.id} value={e.id}>{e.name}</MenuItem>
                             ))}
                         </TextField>
+                        <TextField
+                            select
+                            label="Account"
+                            name="account_id"
+                            fullWidth
+                            value={formData.account_id}
+                            onChange={handleChange}
+                        >
+                            <MenuItem value=""><em>None</em></MenuItem>
+                            {accounts.map((a) => (
+                                <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>
+                            ))}
+                        </TextField>
                     </Box>
-                    <TextField
-                        select
-                        label="Status"
-                        name="status"
-                        fullWidth
-                        value={formData.status}
-                        onChange={handleChange}
-                        sx={{ mb: 2 }}
-                    >
-                        {['pending', 'approved', 'partial', 'completed', 'cancelled'].map((s) => (
-                            <MenuItem key={s} value={s}>{s}</MenuItem>
-                        ))}
-                    </TextField>
-                    <TextField
-                        label="Notes"
-                        name="notes"
-                        fullWidth
-                        multiline
-                        rows={2}
-                        value={formData.notes}
-                        onChange={handleChange}
-                        sx={{ mb: 2 }}
-                    />
+                    <Box display="flex" gap={2} mb={2}>
+                        <TextField
+                            select
+                            label="Status"
+                            name="status"
+                            fullWidth
+                            value={formData.status}
+                            onChange={handleChange}
+                        >
+                            {['unpaid', 'paid', 'partial', 'cancelled'].map((s) => (
+                                <MenuItem key={s} value={s}>{s}</MenuItem>
+                            ))}
+                        </TextField>
+                        <TextField
+                            label="Shipping Amount"
+                            name="shipping_amount"
+                            type="number"
+                            fullWidth
+                            value={formData.shipping_amount}
+                            onChange={handleChange}
+                        />
+                    </Box>
 
                     <Typography variant="h6">Items</Typography>
                     <Paper variant="outlined" sx={{ mb: 2 }}>
@@ -529,6 +534,10 @@ export default function SalesOrdersPage() {
                                 sx={{ width: 100 }}
                             />
                             <Typography>Amount: {formData.additional_discount}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                            <Typography>Shipping:</Typography>
+                            <Typography fontWeight="bold">{formData.shipping_amount}</Typography>
                         </Box>
                         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                             <TextField

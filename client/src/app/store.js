@@ -35,6 +35,10 @@ import purchaseReturnsReducer from "../features/purchaseReturns/purchaseReturnsS
 import expensesReducer from "../features/expenses/expensesSlice";
 import salesOrdersReducer from "../features/salesOrders/salesOrdersSlice";
 import salesOrderItemsReducer from "../features/salesOrderItems/salesOrderItemsSlice";
+import salesInvoicesReducer from "../features/salesInvoices/salesInvoicesSlice";
+import salesInvoiceItemsReducer from "../features/salesInvoiceItems/salesInvoiceItemsSlice";
+import batchesReducer from "../features/batches/batchesSlice";
+
 export const store = configureStore({
   reducer: {
     units: unitsReducer,
@@ -72,5 +76,8 @@ export const store = configureStore({
     expenses: expensesReducer,
     salesOrders: salesOrdersReducer,
     salesOrderItems: salesOrderItemsReducer,
+    salesInvoices: salesInvoicesReducer,
+    salesInvoiceItems: salesInvoiceItemsReducer,
+    batches: batchesReducer,
   },
 });

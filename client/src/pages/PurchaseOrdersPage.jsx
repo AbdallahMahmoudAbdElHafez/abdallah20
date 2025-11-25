@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { 
-  Box, 
-  Button, 
-  CircularProgress, 
+import {
+  Box,
+  Button,
+  CircularProgress,
   Alert,
   Typography,
   Chip
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -47,11 +48,11 @@ const getStatusColor = (status) => {
 export default function PurchaseOrdersPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
-  const { 
-    items: orders = [], 
-    loading, 
-    error 
+
+  const {
+    items: orders = [],
+    loading,
+    error
   } = useSelector((state) => state.purchaseOrders);
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -80,9 +81,9 @@ export default function PurchaseOrdersPage() {
   const handleUpdate = useCallback(async (payload) => {
     try {
       setActionLoading(true);
-      await dispatch(updatePurchaseOrder({ 
-        id: editingOrder.id, 
-        data: payload 
+      await dispatch(updatePurchaseOrder({
+        id: editingOrder.id,
+        data: payload
       })).unwrap();
       setOpenDialog(false);
     } catch (error) {
@@ -121,13 +122,13 @@ export default function PurchaseOrdersPage() {
   }, [navigate]);
 
   const columns = useMemo(() => [
-    { 
-      accessorKey: "order_number", 
+    {
+      accessorKey: "order_number",
       header: "رقم الطلب",
       size: 150,
     },
-    { 
-      accessorKey: "order_date", 
+    {
+      accessorKey: "order_date",
       header: "تاريخ الطلب",
       size: 120,
       Cell: ({ cell }) => {
@@ -135,56 +136,56 @@ export default function PurchaseOrdersPage() {
         return date.toLocaleDateString('ar-EG');
       }
     },
-    { 
-      accessorKey: "status", 
+    {
+      accessorKey: "status",
       header: "الحالة",
       size: 120,
       Cell: ({ cell }) => (
-        <Chip 
-          label={cell.getValue()} 
+        <Chip
+          label={cell.getValue()}
           color={getStatusColor(cell.getValue())}
           size="small"
         />
       )
     },
-    { 
-      accessorKey: "subtotal", 
+    {
+      accessorKey: "subtotal",
       header: "الإجمالي قبل الضريبة",
       size: 120,
       Cell: ({ cell }) => formatCurrency(cell.getValue())
     },
-    { 
-      accessorKey: "additional_discount", 
+    {
+      accessorKey: "additional_discount",
       header: "الخصم الإضافي",
       size: 130,
       Cell: ({ cell }) => formatCurrency(cell.getValue())
     },
-    { 
-      accessorKey: "vat_rate", 
+    {
+      accessorKey: "vat_rate",
       header: "نسبة الضريبة المضافة",
       size: 130,
       Cell: ({ cell }) => formatPercentage(cell.getValue())
     },
-    { 
-      accessorKey: "vat_amount", 
+    {
+      accessorKey: "vat_amount",
       header: "قيمة الضريبة المضافة",
       size: 140,
       Cell: ({ cell }) => formatCurrency(cell.getValue())
     },
-    { 
-      accessorKey: "tax_rate", 
+    {
+      accessorKey: "tax_rate",
       header: "نسبة الضريبة",
       size: 100,
       Cell: ({ cell }) => formatPercentage(cell.getValue())
     },
-    { 
-      accessorKey: "tax_amount", 
+    {
+      accessorKey: "tax_amount",
       header: "قيمة الضريبة",
       size: 120,
       Cell: ({ cell }) => formatCurrency(cell.getValue())
     },
-    { 
-      accessorKey: "total_amount", 
+    {
+      accessorKey: "total_amount",
       header: "الإجمالي النهائي",
       size: 140,
       Cell: ({ cell }) => (
@@ -222,9 +223,9 @@ export default function PurchaseOrdersPage() {
 
   if (loading === "loading") {
     return (
-      <Box sx={{ 
-        display: "flex", 
-        justifyContent: "center", 
+      <Box sx={{
+        display: "flex",
+        justifyContent: "center",
         alignItems: "center",
         minHeight: "400px"
       }}>
@@ -239,8 +240,8 @@ export default function PurchaseOrdersPage() {
         <Alert severity="error" sx={{ mb: 2 }}>
           فشل في تحميل أوامر الشراء: {error}
         </Alert>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={() => dispatch(fetchPurchaseOrders())}
         >
           إعادة المحاولة
@@ -251,17 +252,17 @@ export default function PurchaseOrdersPage() {
 
   return (
     <Box p={2}>
-      <Box sx={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
+      <Box sx={{
+        display: "flex",
+        justifyContent: "space-between",
         alignItems: "center",
-        mb: 3 
+        mb: 3
       }}>
         <Typography variant="h4" component="h1">
           أوامر الشراء
         </Typography>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           onClick={handleCreate}
           disabled={actionLoading}
         >
@@ -269,8 +270,8 @@ export default function PurchaseOrdersPage() {
         </Button>
       </Box>
 
-      <MaterialReactTable 
-        columns={columns} 
+      <MaterialReactTable
+        columns={columns}
         data={orders}
         enableRowSelection={false}
         enableColumnFilters

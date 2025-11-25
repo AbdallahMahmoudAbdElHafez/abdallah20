@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { MaterialReactTable } from 'material-react-table';
+import { defaultTableProps } from "../config/tableConfig";
 import { Box, Button, IconButton, Typography } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 import {

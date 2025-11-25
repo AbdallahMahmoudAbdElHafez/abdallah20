@@ -20,6 +20,7 @@ import {
   Chip,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { Link } from "react-router-dom";
 
 const PartyCategoriesPage = () => {

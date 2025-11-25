@@ -14,6 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchInventoryTransactions,
@@ -23,6 +24,9 @@ import {
 } from "../features/inventoryTransactions/inventoryTransactionsSlice";
 import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
+import { fetchBatches } from "../features/batches/batchesSlice";
+import { AddCircle as AddCircleIcon, RemoveCircle as RemoveCircleIcon } from "@mui/icons-material";
+import { IconButton, Grid } from "@mui/material";
 
 const InventoryTransactionsPage = () => {
   const dispatch = useDispatch();
@@ -31,6 +35,7 @@ const InventoryTransactionsPage = () => {
   );
   const { items: products } = useSelector((s) => s.products);
   const { items: warehouses } = useSelector((s) => s.warehouses);
+  const { items: batchesList } = useSelector((s) => s.batches);
 
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -42,12 +47,14 @@ const InventoryTransactionsPage = () => {
     cost_per_unit: 0,
     transaction_date: "",
     note: "",
+    batches: [],
   });
 
   useEffect(() => {
     dispatch(fetchInventoryTransactions());
     dispatch(fetchProducts());
     dispatch(fetchWarehouses());
+    dispatch(fetchBatches());
   }, [dispatch]);
 
   const handleOpen = (row = null) => {
@@ -55,23 +62,25 @@ const InventoryTransactionsPage = () => {
     setForm(
       row
         ? {
-            product_id: row.product_id,
-            warehouse_id: row.warehouse_id,
-            transaction_type: row.transaction_type,
-            quantity: row.quantity,
-            cost_per_unit: row.cost_per_unit,
-            transaction_date: row.transaction_date?.slice(0, 10) || "",
-            note: row.note || "",
-          }
+          product_id: row.product_id,
+          warehouse_id: row.warehouse_id,
+          transaction_type: row.transaction_type,
+          quantity: row.quantity,
+          cost_per_unit: row.cost_per_unit,
+          transaction_date: row.transaction_date?.slice(0, 10) || "",
+          note: row.note || "",
+          batches: row.transaction_batches || [],
+        }
         : {
-            product_id: "",
-            warehouse_id: "",
-            transaction_type: "in",
-            quantity: 0,
-            cost_per_unit: 0,
-            transaction_date: "",
-            note: "",
-          }
+          product_id: "",
+          warehouse_id: "",
+          transaction_type: "in",
+          quantity: 0,
+          cost_per_unit: 0,
+          transaction_date: "",
+          note: "",
+          batches: [],
+        }
     );
     setOpen(true);
   };
@@ -224,6 +233,112 @@ const InventoryTransactionsPage = () => {
             value={form.note}
             onChange={(e) => setForm({ ...form, note: e.target.value })}
           />
+
+          <Typography variant="h6" sx={{ mt: 2 }}>التشغيلات</Typography>
+          {form.batches.map((batch, index) => (
+            <Grid container spacing={2} key={index} alignItems="center">
+              {form.transaction_type === "in" ? (
+                <>
+                  <Grid item xs={3}>
+                    <TextField
+                      label="رقم التشغيلة"
+                      value={batch.batch_number || ""}
+                      onChange={(e) => {
+                        const newBatches = [...form.batches];
+                        newBatches[index].batch_number = e.target.value;
+                        setForm({ ...form, batches: newBatches });
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                  <Grid item xs={3}>
+                    <TextField
+                      type="date"
+                      label="تاريخ الانتهاء"
+                      InputLabelProps={{ shrink: true }}
+                      value={batch.expiry_date || ""}
+                      onChange={(e) => {
+                        const newBatches = [...form.batches];
+                        newBatches[index].expiry_date = e.target.value;
+                        setForm({ ...form, batches: newBatches });
+                      }}
+                      fullWidth
+                    />
+                  </Grid>
+                </>
+              ) : (
+                <Grid item xs={6}>
+                  <TextField
+                    select
+                    label="اختر التشغيلة"
+                    value={batch.batch_id || ""}
+                    onChange={(e) => {
+                      const newBatches = [...form.batches];
+                      newBatches[index].batch_id = e.target.value;
+                      setForm({ ...form, batches: newBatches });
+                    }}
+                    fullWidth
+                  >
+                    {batchesList
+                      .filter((b) => b.product_id === form.product_id)
+                      .map((b) => (
+                        <MenuItem key={b.id} value={b.id}>
+                          {b.batch_number} (ينتهي: {b.expiry_date})
+                        </MenuItem>
+                      ))}
+                  </TextField>
+                </Grid>
+              )}
+              <Grid item xs={2}>
+                <TextField
+                  label="الكمية"
+                  type="number"
+                  value={batch.quantity || 0}
+                  onChange={(e) => {
+                    const newBatches = [...form.batches];
+                    newBatches[index].quantity = Number(e.target.value);
+                    setForm({ ...form, batches: newBatches });
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <TextField
+                  label="التكلفة"
+                  type="number"
+                  value={batch.cost_per_unit || 0}
+                  onChange={(e) => {
+                    const newBatches = [...form.batches];
+                    newBatches[index].cost_per_unit = Number(e.target.value);
+                    setForm({ ...form, batches: newBatches });
+                  }}
+                  fullWidth
+                />
+              </Grid>
+              <Grid item xs={1}>
+                <IconButton
+                  color="error"
+                  onClick={() => {
+                    const newBatches = form.batches.filter((_, i) => i !== index);
+                    setForm({ ...form, batches: newBatches });
+                  }}
+                >
+                  <RemoveCircleIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
+          ))}
+          <Button
+            startIcon={<AddCircleIcon />}
+            onClick={() =>
+              setForm({
+                ...form,
+                batches: [...form.batches, { batch_number: "", expiry_date: "", quantity: 0, cost_per_unit: 0 }],
+              })
+            }
+          >
+            إضافة تشغيلة
+          </Button>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>إلغاء</Button>

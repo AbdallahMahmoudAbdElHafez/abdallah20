@@ -1,10 +1,10 @@
-import axios from "axios";
+import axiosClient from "./axiosClient";
 
-const API_URL = "/api/inventory-transactions";
+const API_URL = "/inventory-transactions";
 
-export const fetchInventoryTransactionsApi = () => axios.get(API_URL);
-export const addInventoryTransactionApi = (data) => axios.post(API_URL, data);
+export const fetchInventoryTransactionsApi = () => axiosClient.get(API_URL);
+export const addInventoryTransactionApi = (data) => axiosClient.post(API_URL, data);
 export const updateInventoryTransactionApi = (id, data) =>
-  axios.put(`${API_URL}/${id}`, data);
+  axiosClient.put(`${API_URL}/${id}`, data);
 export const deleteInventoryTransactionApi = (id) =>
-  axios.delete(`${API_URL}/${id}`);
+  axiosClient.delete(`${API_URL}/${id}`);

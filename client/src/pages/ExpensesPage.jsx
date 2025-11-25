@@ -11,6 +11,7 @@ import {
     CircularProgress,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
 import {
     fetchExpenses,
@@ -112,31 +113,31 @@ export default function ExpensesPage() {
     };
 
     const columns = [
-        { accessorKey: "id", header: "ID" },
-        { accessorKey: "expense_date", header: "Date" },
-        { accessorKey: "description", header: "Description" },
-        { accessorKey: "amount", header: "Amount" },
-        { accessorKey: "debitAccount.name", header: "Debit Account" },
-        { accessorKey: "creditAccount.name", header: "Credit Account" },
+        { accessorKey: "id", header: "الرقم التعريفي" },
+        { accessorKey: "expense_date", header: "التاريخ" },
+        { accessorKey: "description", header: "الوصف" },
+        { accessorKey: "amount", header: "المبلغ" },
+        { accessorKey: "debitAccount.name", header: "حساب المدين" },
+        { accessorKey: "creditAccount.name", header: "حساب الدائن" },
         {
-            header: "City",
-            accessorFn: (row) => row.city?.name ?? "N/A",
+            header: "المدينة",
+            accessorFn: (row) => row.city?.name ?? "غير متوفر",
         },
         {
-            header: "Employee",
-            accessorFn: (row) => row.employee?.name ?? "N/A",
+            header: "الموظف",
+            accessorFn: (row) => row.employee?.name ?? "غير متوفر",
         },
         {
-            header: "Party",
-            accessorFn: (row) => row.party?.name ?? "N/A",
+            header: "الطرف",
+            accessorFn: (row) => row.party?.name ?? "غير متوفر",
         },
         {
-            header: "Actions",
+            header: "إجراءات",
             Cell: ({ row }) => (
                 <Box>
-                    <Button onClick={() => handleOpen(row.original)}>Edit</Button>
+                    <Button onClick={() => handleOpen(row.original)}>تعديل</Button>
                     <Button color="error" onClick={() => handleDelete(row.original.id)}>
-                        Delete
+                        حذف
                     </Button>
                 </Box>
             ),
@@ -148,16 +149,16 @@ export default function ExpensesPage() {
     return (
         <Box p={2}>
             <Button variant="contained" onClick={() => handleOpen()} sx={{ mb: 2 }}>
-                Add Expense
+                إضافة مصروف
             </Button>
-            <MaterialReactTable columns={columns} data={expenses} />
+            <MaterialReactTable {...defaultTableProps} columns={columns} data={expenses} />
 
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>{editingId ? "Edit Expense" : "Add Expense"}</DialogTitle>
+                <DialogTitle>{editingId ? "تعديل المصروف" : "إضافة مصروف"}</DialogTitle>
                 <DialogContent>
                     <TextField
                         margin="dense"
-                        label="Date"
+                        label="التاريخ"
                         type="date"
                         name="expense_date"
                         fullWidth
@@ -166,7 +167,7 @@ export default function ExpensesPage() {
                     />
                     <TextField
                         margin="dense"
-                        label="Description"
+                        label="الوصف"
                         name="description"
                         fullWidth
                         value={formData.description}
@@ -174,7 +175,7 @@ export default function ExpensesPage() {
                     />
                     <TextField
                         margin="dense"
-                        label="Amount"
+                        label="المبلغ"
                         type="number"
                         name="amount"
                         fullWidth
@@ -184,7 +185,7 @@ export default function ExpensesPage() {
                     <TextField
                         select
                         margin="dense"
-                        label="Debit Account"
+                        label="حساب المدين"
                         name="debit_account_id"
                         fullWidth
                         value={formData.debit_account_id}
@@ -199,7 +200,7 @@ export default function ExpensesPage() {
                     <TextField
                         select
                         margin="dense"
-                        label="Credit Account"
+                        label="حساب الدائن"
                         name="credit_account_id"
                         fullWidth
                         value={formData.credit_account_id}
@@ -214,13 +215,13 @@ export default function ExpensesPage() {
                     <TextField
                         select
                         margin="dense"
-                        label="City"
+                        label="المدينة"
                         name="city_id"
                         fullWidth
                         value={formData.city_id}
                         onChange={handleChange}
                     >
-                        <MenuItem value=""><em>None</em></MenuItem>
+                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
                         {cities.map((city) => (
                             <MenuItem key={city.id} value={city.id}>
                                 {city.name}
@@ -230,13 +231,13 @@ export default function ExpensesPage() {
                     <TextField
                         select
                         margin="dense"
-                        label="Employee"
+                        label="الموظف"
                         name="employee_id"
                         fullWidth
                         value={formData.employee_id}
                         onChange={handleChange}
                     >
-                        <MenuItem value=""><em>None</em></MenuItem>
+                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
                         {employees.map((emp) => (
                             <MenuItem key={emp.id} value={emp.id}>
                                 {emp.name}
@@ -246,13 +247,13 @@ export default function ExpensesPage() {
                     <TextField
                         select
                         margin="dense"
-                        label="Party"
+                        label="الطرف"
                         name="party_id"
                         fullWidth
                         value={formData.party_id}
                         onChange={handleChange}
                     >
-                        <MenuItem value=""><em>None</em></MenuItem>
+                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
                         {parties.map((party) => (
                             <MenuItem key={party.id} value={party.id}>
                                 {party.name}
@@ -261,9 +262,9 @@ export default function ExpensesPage() {
                     </TextField>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={handleClose}>إلغاء</Button>
                     <Button onClick={handleSubmit} variant="contained">
-                        Save
+                        حفظ
                     </Button>
                 </DialogActions>
             </Dialog>

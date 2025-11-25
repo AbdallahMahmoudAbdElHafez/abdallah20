@@ -8,6 +8,7 @@ import {
 } from "../features/jobTitles/jobTitlesSlice";
 
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import {
   Button,
   Dialog,

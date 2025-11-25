@@ -1,4 +1,4 @@
-import { InventoryTransaction, Product, Warehouse } from "../models/index.js";
+import { InventoryTransaction, Product, Warehouse, InventoryTransactionBatches, Batches } from "../models/index.js";
 import CurrentInventoryService from "./currentInventory.service.js";
 
 class InventoryTransactionService {
@@ -7,6 +7,11 @@ class InventoryTransactionService {
       include: [
         { model: Product, as: "product" },
         { model: Warehouse, as: "warehouse" },
+        {
+          model: InventoryTransactionBatches,
+          as: "transaction_batches",
+          include: [{ model: Batches, as: "batch" }]
+        }
       ],
       order: [["transaction_date", "DESC"]],
     });
@@ -17,6 +22,11 @@ class InventoryTransactionService {
       include: [
         { model: Product, as: "product" },
         { model: Warehouse, as: "warehouse" },
+        {
+          model: InventoryTransactionBatches,
+          as: "transaction_batches",
+          include: [{ model: Batches, as: "batch" }]
+        }
       ],
     });
   }
@@ -33,6 +43,35 @@ class InventoryTransactionService {
       data.warehouse_id,
       quantityChange
     );
+
+    if (data.batches && data.batches.length > 0) {
+      for (const batchData of data.batches) {
+        let batchId = batchData.batch_id;
+
+        // If no ID but number/expiry provided (for IN transactions), find or create batch
+        if (!batchId && batchData.batch_number && batchData.expiry_date) {
+          const [batch] = await Batches.findOrCreate({
+            where: {
+              product_id: data.product_id,
+              batch_number: batchData.batch_number
+            },
+            defaults: {
+              expiry_date: batchData.expiry_date
+            }
+          });
+          batchId = batch.id;
+        }
+
+        if (batchId) {
+          await InventoryTransactionBatches.create({
+            inventory_transaction_id: trx.id,
+            batch_id: batchId,
+            quantity: batchData.quantity,
+            cost_per_unit: batchData.cost_per_unit || data.cost_per_unit
+          });
+        }
+      }
+    }
 
     return trx;
   }

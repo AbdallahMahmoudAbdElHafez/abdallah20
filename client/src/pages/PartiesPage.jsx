@@ -11,6 +11,7 @@ import { fetchAccounts } from "../features/accounts/accountsSlice";
 import { fetchPartyCategories } from "../features/partyCategories/partyCategoriesSlice";
 
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import {
   Button,
   Dialog,
@@ -108,8 +109,8 @@ const PartiesPage = () => {
               cell.getValue() === "customer"
                 ? "primary"
                 : cell.getValue() === "supplier"
-                ? "secondary"
-                : "success"
+                  ? "secondary"
+                  : "success"
             }
           />
         );

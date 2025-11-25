@@ -1,4 +1,4 @@
-// server/src/models/index.js
+
 import { Sequelize } from 'sequelize';
 import { env } from '../config/env.js';
 import ProductModel from './product.model.js';
@@ -45,6 +45,10 @@ import PurchaseReturnModel from "./purchaseReturns.model.js";
 import PurchaseReturnItemModel from "./purchaseReturnItems.model.js";
 import SalesOrderModel from "./salesOrders.model.js";
 import SalesOrderItemModel from "./salesOrderItems.model.js";
+import SalesInvoiceModel from "./salesInvoices.model.js";
+import SalesInvoiceItemModel from "./salesInvoiceItems.model.js";
+import BatchesModel from "./batches.model.js";
+import InventoryTransactionBatchesModel from "./inventoryTransactionBatches.model.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -94,6 +98,10 @@ const PurchaseReturn = PurchaseReturnModel(sequelize);
 const PurchaseReturnItem = PurchaseReturnItemModel(sequelize);
 const SalesOrder = SalesOrderModel(sequelize);
 const SalesOrderItem = SalesOrderItemModel(sequelize);
+const SalesInvoice = SalesInvoiceModel(sequelize);
+const SalesInvoiceItem = SalesInvoiceItemModel(sequelize);
+const Batches = BatchesModel(sequelize);
+const InventoryTransactionBatches = InventoryTransactionBatchesModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -483,6 +491,42 @@ Product.hasMany(SalesOrderItem, { foreignKey: "product_id", as: "sales_order_ite
 SalesOrderItem.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
 Warehouse.hasMany(SalesOrderItem, { foreignKey: "warehouse_id", as: "sales_order_items" });
 
+// === Sales Invoice Associations ===
+SalesInvoice.belongsTo(Party, { foreignKey: "party_id", as: "party" });
+Party.hasMany(SalesInvoice, { foreignKey: "party_id", as: "sales_invoices" });
+
+SalesInvoice.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
+Warehouse.hasMany(SalesInvoice, { foreignKey: "warehouse_id", as: "sales_invoices" });
+
+SalesInvoice.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
+Employee.hasMany(SalesInvoice, { foreignKey: "employee_id", as: "sales_invoices" });
+
+SalesInvoice.belongsTo(Account, { foreignKey: "account_id", as: "account" });
+Account.hasMany(SalesInvoice, { foreignKey: "account_id", as: "sales_invoices" });
+
+SalesInvoice.belongsTo(SalesOrder, { foreignKey: "sales_order_id", as: "sales_order" });
+SalesOrder.hasMany(SalesInvoice, { foreignKey: "sales_order_id", as: "invoices" });
+
+SalesInvoice.hasMany(SalesInvoiceItem, { foreignKey: "sales_invoice_id", as: "items", onDelete: "CASCADE" });
+SalesInvoiceItem.belongsTo(SalesInvoice, { foreignKey: "sales_invoice_id", as: "sales_invoice" });
+
+SalesInvoiceItem.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+Product.hasMany(SalesInvoiceItem, { foreignKey: "product_id", as: "sales_invoice_items" });
+
+SalesInvoiceItem.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
+Warehouse.hasMany(SalesInvoiceItem, { foreignKey: "warehouse_id", as: "sales_invoice_items" });
+
+// Batches Associations
+Product.hasMany(Batches, { foreignKey: "product_id", as: "batches" });
+Batches.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+
+// Inventory Transaction Batches Associations
+InventoryTransaction.hasMany(InventoryTransactionBatches, { foreignKey: "inventory_transaction_id", as: "transaction_batches" });
+InventoryTransactionBatches.belongsTo(InventoryTransaction, { foreignKey: "inventory_transaction_id", as: "transaction" });
+
+Batches.hasMany(InventoryTransactionBatches, { foreignKey: "batch_id", as: "transaction_batches" });
+InventoryTransactionBatches.belongsTo(Batches, { foreignKey: "batch_id", as: "batch" });
+
 
 // Expense Associations
 Expense.belongsTo(Account, { as: 'debitAccount', foreignKey: 'debit_account_id' });
@@ -539,6 +583,10 @@ export {
   PurchaseReturnItem,
   SalesOrder,
   SalesOrderItem,
+  SalesInvoice,
+  SalesInvoiceItem,
+  Batches,
+  InventoryTransactionBatches,
 
 
 };

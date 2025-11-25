@@ -69,7 +69,7 @@ const theme = createTheme({
     },
     divider: '#e2e8f0',
   },
-  
+
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
@@ -140,13 +140,13 @@ const theme = createTheme({
       letterSpacing: '0.05em',
     },
   },
-  
+
   shape: {
     borderRadius: 8,
   },
-  
+
   spacing: 8,
-  
+
   shadows: [
     'none',
     '0px 1px 3px rgba(0, 0, 0, 0.08), 0px 1px 2px rgba(0, 0, 0, 0.12)',
@@ -174,7 +174,7 @@ const theme = createTheme({
     '0px 80px 168px rgba(0, 0, 0, 0.08), 0px 80px 88px rgba(0, 0, 0, 0.12)',
     '0px 84px 176px rgba(0, 0, 0, 0.08), 0px 84px 92px rgba(0, 0, 0, 0.12)',
   ],
-  
+
   components: {
     // Button customizations
     MuiButton: {
@@ -222,7 +222,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Card customizations
     MuiCard: {
       styleOverrides: {
@@ -236,7 +236,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Paper customizations
     MuiPaper: {
       styleOverrides: {
@@ -254,7 +254,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Dialog customizations
     MuiDialog: {
       styleOverrides: {
@@ -264,7 +264,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // DialogTitle customizations
     MuiDialogTitle: {
       styleOverrides: {
@@ -275,7 +275,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // TextField customizations
     MuiTextField: {
       styleOverrides: {
@@ -295,7 +295,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Chip customizations
     MuiChip: {
       styleOverrides: {
@@ -310,7 +310,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Table customizations
     MuiTableHead: {
       styleOverrides: {
@@ -321,30 +321,12 @@ const theme = createTheme({
             fontSize: '0.875rem',
             textTransform: 'none',
             borderBottom: '2px solid #e2e8f0',
-          },
-        },
-      },
-    },
-    
-    MuiTableCell: {
-      styleOverrides: {
-        root: {
-          borderBottom: '1px solid #f1f5f9',
-          padding: '12px 16px',
-        },
-      },
-    },
-    
-    MuiTableRow: {
-      styleOverrides: {
-        root: {
-          '&:hover': {
             backgroundColor: '#f8fafc',
           },
         },
       },
     },
-    
+
     // IconButton customizations
     MuiIconButton: {
       styleOverrides: {
@@ -356,7 +338,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // AppBar customizations
     MuiAppBar: {
       styleOverrides: {
@@ -366,7 +348,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Drawer customizations
     MuiDrawer: {
       styleOverrides: {
@@ -377,7 +359,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Menu customizations
     MuiMenu: {
       styleOverrides: {
@@ -389,7 +371,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // MenuItem customizations
     MuiMenuItem: {
       styleOverrides: {
@@ -408,7 +390,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Alert customizations
     MuiAlert: {
       styleOverrides: {
@@ -438,7 +420,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     // Loading/Progress customizations
     MuiCircularProgress: {
       styleOverrides: {
@@ -447,7 +429,7 @@ const theme = createTheme({
         },
       },
     },
-    
+
     MuiLinearProgress: {
       styleOverrides: {
         root: {

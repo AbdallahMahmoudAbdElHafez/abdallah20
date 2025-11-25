@@ -20,6 +20,7 @@ import {
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { MaterialReactTable } from 'material-react-table';
+import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchIssueVouchers,
@@ -35,7 +36,7 @@ import IssueVoucherDetails from '../components/IssueVoucherDetails';
 const IssueVouchersPage = () => {
   const dispatch = useDispatch();
   const { vouchers, loading, error, success } = useSelector(state => state.issueVouchers);
-  
+
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState(null);

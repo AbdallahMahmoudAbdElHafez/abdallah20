@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchGovernates, addGovernate, updateGovernate, deleteGovernate } from "../features/governates/governatesSlice";
 import { fetchCountries } from "../features/countries/countriesSlice";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import { useLocation, Link as RouterLink } from "react-router-dom";
 import { useNavigate } from "react-router-dom"; // <--- استيراد
 import { Delete, Edit } from "@mui/icons-material";
@@ -146,7 +147,7 @@ export default function GovernatesPage() {
             margin="dense"
             label="Name"
             value={formData.name}
-             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
 
           <FormControl fullWidth margin="dense">
@@ -154,7 +155,7 @@ export default function GovernatesPage() {
             <Select
               labelId="country-label"
               value={formData.country_id || ""}
-     
+
               onChange={(e) => {
                 const val = e.target.value;
                 // تحديث state بالـ country الجديد

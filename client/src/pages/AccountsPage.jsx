@@ -13,6 +13,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { defaultTableProps } from "../config/tableConfig";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -84,34 +85,34 @@ const AccountsPage = () => {
   };
 
   const columns = [
-    { accessorKey: "id", header: "ID" },
-    { accessorKey: "name", header: "Name" },
-    { accessorKey: "account_type", header: "Type" },
+    { accessorKey: "id", header: "الرقم التعريفي" },
+    { accessorKey: "name", header: "اسم الحساب" },
+    { accessorKey: "account_type", header: "نوع الحساب" },
     {
       accessorKey: "parent_account_id",
-      header: "Parent Account",
+      header: "الحساب الرئيسي",
       Cell: ({ cell }) => {
         const parent = accounts.find((a) => a.id === cell.getValue());
         return parent ? parent.name : "-";
       },
     },
-    { accessorKey: "opening_balance", header: "Opening Balance" },
-    { accessorKey: "note", header: "Note" },
+    { accessorKey: "opening_balance", header: "الرصيد الافتتاحي" },
+    { accessorKey: "note", header: "ملاحظات" },
   ];
 
   return (
     <Box p={3}>
       {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Link to="/">Home</Link>
-        <Typography color="text.primary">Accounts</Typography>
+        <Link to="/">الرئيسية</Link>
+        <Typography color="text.primary">دليل الحسابات</Typography>
       </Breadcrumbs>
 
       {/* Title */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Typography variant="h5">Accounts</Typography>
+        <Typography variant="h5">دليل الحسابات</Typography>
         <Button variant="contained" onClick={() => handleOpenDialog()}>
-          Add Account
+          إضافة حساب
         </Button>
       </Box>
 
@@ -122,6 +123,7 @@ const AccountsPage = () => {
         </Box>
       ) : (
         <MaterialReactTable
+          {...defaultTableProps}
           columns={columns}
           data={accounts}
           enableRowActions
@@ -132,7 +134,7 @@ const AccountsPage = () => {
                 variant="outlined"
                 onClick={() => handleOpenDialog(row.original)}
               >
-                Edit
+                تعديل
               </Button>
               <Button
                 size="small"
@@ -140,7 +142,7 @@ const AccountsPage = () => {
                 variant="outlined"
                 onClick={() => handleDelete(row.original.id)}
               >
-                Delete
+                حذف
               </Button>
             </Box>
           )}
@@ -150,12 +152,12 @@ const AccountsPage = () => {
       {/* Dialog Add/Edit */}
       <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth>
         <DialogTitle>
-          {editingAccount ? "Edit Account" : "Add Account"}
+          {editingAccount ? "تعديل الحساب" : "إضافة حساب"}
         </DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
-            label="Name"
+            label="اسم الحساب"
             fullWidth
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -171,11 +173,11 @@ const AccountsPage = () => {
             }
             sx={{ mt: 2 }}
           >
-            <MenuItem value="asset">Asset</MenuItem>
-            <MenuItem value="liability">Liability</MenuItem>
-            <MenuItem value="equity">Equity</MenuItem>
-            <MenuItem value="revenue">Revenue</MenuItem>
-            <MenuItem value="expense">Expense</MenuItem>
+            <MenuItem value="asset">أصول</MenuItem>
+            <MenuItem value="liability">خصوم</MenuItem>
+            <MenuItem value="equity">حقوق ملكية</MenuItem>
+            <MenuItem value="revenue">إيرادات</MenuItem>
+            <MenuItem value="expense">مصروفات</MenuItem>
           </Select>
 
           {/* Parent Account */}
@@ -193,7 +195,7 @@ const AccountsPage = () => {
             displayEmpty
           >
             <MenuItem value="">
-              <em>No Parent</em>
+              <em>لا يوجد حساب رئيسي</em>
             </MenuItem>
             {accounts.map((acc) => (
               <MenuItem key={acc.id} value={acc.id}>
@@ -205,7 +207,7 @@ const AccountsPage = () => {
           {/* Opening Balance */}
           <TextField
             margin="dense"
-            label="Opening Balance"
+            label="الرصيد الافتتاحي"
             type="number"
             fullWidth
             value={formData.opening_balance}
@@ -218,7 +220,7 @@ const AccountsPage = () => {
           {/* Note */}
           <TextField
             margin="dense"
-            label="Note"
+            label="ملاحظات"
             fullWidth
             multiline
             rows={3}
@@ -229,9 +231,9 @@ const AccountsPage = () => {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog}>إلغاء</Button>
           <Button variant="contained" onClick={handleSubmit}>
-            {editingAccount ? "Update" : "Add"}
+            {editingAccount ? "تحديث" : "إضافة"}
           </Button>
         </DialogActions>
       </Dialog>

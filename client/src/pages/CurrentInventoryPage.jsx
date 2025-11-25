@@ -21,6 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
+import { defaultTableProps } from "../config/tableConfig";
 import axios from "axios";
 
 export default function CurrentInventoryPage() {
@@ -107,6 +108,7 @@ export default function CurrentInventoryPage() {
 
       <Box mt={3}>
         <MaterialReactTable
+          {...defaultTableProps}
           columns={columns}
           data={items}
           enableColumnActions={false}

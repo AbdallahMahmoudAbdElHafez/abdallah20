@@ -34,6 +34,7 @@ import IssueVouchersPage from "./pages/issueVouchersPage";
 import PurchaseReturnsPage from "./pages/purchaseReturnsPage";
 import ExpensesPage from "./pages/ExpensesPage";
 import SalesOrdersPage from "./pages/salesOrdersPage";
+import SalesInvoicesPage from "./pages/salesInvoicesPage";
 
 const drawerWidth = 240;
 
@@ -42,12 +43,11 @@ export default function App() {
     <BrowserRouter>
       <Sidebar />
       <Box sx={{ mr: `${drawerWidth}px` }}>
-
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/units" element={<UnitsPage />} />
-          <Route path="/products" element={<ProductsPage />} />"
+          <Route path="/products" element={<ProductsPage />} />
           <Route path="/countries" element={<CountriesPage />} />
           <Route path="/governates" element={<GovernatesPage />} />
           <Route path="/cities" element={<CitiesPage />} />
@@ -77,9 +77,9 @@ export default function App() {
           <Route path="/purchase-returns" element={<PurchaseReturnsPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/sales-orders" element={<SalesOrdersPage />} />
+          <Route path="/sales-invoices" element={<SalesInvoicesPage />} />
         </Routes>
       </Box>
-
     </BrowserRouter>
   );
 }

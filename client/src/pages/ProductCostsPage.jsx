@@ -13,6 +13,7 @@ import {
 } from '../features/productCosts/productCostsSlice';
 import api from '../api/axiosClient';
 import { MaterialReactTable } from 'material-react-table';
+import { defaultTableProps } from "../config/tableConfig";
 
 export default function ProductCostsPage() {
   const dispatch = useDispatch();
