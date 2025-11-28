@@ -106,8 +106,7 @@ const InventoryTransactionBatches = InventoryTransactionBatchesModel(sequelize);
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
 purchaseInvoicePaymentHooks(sequelize)
-InventoryTransaction.addHook("afterCreate", inventoryTransactionHooks.afterCreate);
-InventoryTransaction.addHook("afterBulkCreate", inventoryTransactionHooks.afterBulkCreate);
+
 
 
 // العلاقات

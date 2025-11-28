@@ -32,17 +32,10 @@ class InventoryTransactionService {
   }
 
   static async create(data) {
+    if (data.source_id === "") data.source_id = null;
     const trx = await InventoryTransaction.create(data);
 
-    const quantityChange = data.transaction_type === "in"
-      ? data.quantity
-      : -data.quantity;
-
-    await CurrentInventoryService.createOrUpdate(
-      data.product_id,
-      data.warehouse_id,
-      quantityChange
-    );
+    let totalQuantity = 0;
 
     if (data.batches && data.batches.length > 0) {
       for (const batchData of data.batches) {
@@ -67,38 +60,90 @@ class InventoryTransactionService {
             inventory_transaction_id: trx.id,
             batch_id: batchId,
             quantity: batchData.quantity,
-            cost_per_unit: batchData.cost_per_unit || data.cost_per_unit
+            cost_per_unit: batchData.cost_per_unit || 0
           });
+          totalQuantity += Number(batchData.quantity);
         }
       }
+    }
+
+    // If no batches, maybe we should throw error? 
+    // But for now, if totalQuantity is 0, we just don't update current inventory or update with 0.
+    // Assuming data.quantity might be passed for validation but we use calculated totalQuantity.
+
+    const quantityChange = data.transaction_type === "in"
+      ? totalQuantity
+      : -totalQuantity;
+
+    if (totalQuantity > 0) {
+      await CurrentInventoryService.createOrUpdate(
+        data.product_id,
+        data.warehouse_id,
+        quantityChange
+      );
     }
 
     return trx;
   }
 
   static async update(id, data) {
-    const trx = await InventoryTransaction.findByPk(id);
+    if (data.source_id === "") data.source_id = null;
+    const trx = await InventoryTransaction.findByPk(id, {
+      include: [{ model: InventoryTransactionBatches, as: "transaction_batches" }]
+    });
     if (!trx) throw new Error("Transaction not found");
 
-    // احسب الفرق بين الكمية القديمة والجديدة
-    const oldQty = trx.quantity;
+    // Calculate old quantity from batches
+    let oldQty = 0;
+    if (trx.transaction_batches) {
+      oldQty = trx.transaction_batches.reduce((sum, b) => sum + Number(b.quantity), 0);
+    }
     const oldType = trx.transaction_type;
 
+    // Update transaction header
     await trx.update(data);
 
-    // نحسب التغير في الكمية بناء على النوع الجديد
+    // Handle batches update - simplified: remove old, add new
+    // In a real app, we might want to be smarter to preserve IDs or handle partial updates
+    await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id } });
+
+    let newQty = 0;
+    if (data.batches && data.batches.length > 0) {
+      for (const batchData of data.batches) {
+        let batchId = batchData.batch_id;
+        if (!batchId && batchData.batch_number && batchData.expiry_date) {
+          const [batch] = await Batches.findOrCreate({
+            where: { product_id: data.product_id || trx.product_id, batch_number: batchData.batch_number },
+            defaults: { expiry_date: batchData.expiry_date }
+          });
+          batchId = batch.id;
+        }
+
+        if (batchId) {
+          await InventoryTransactionBatches.create({
+            inventory_transaction_id: trx.id,
+            batch_id: batchId,
+            quantity: batchData.quantity,
+            cost_per_unit: batchData.cost_per_unit || 0
+          });
+          newQty += Number(batchData.quantity);
+        }
+      }
+    }
+
+    // Calculate difference
     let qtyDiff = 0;
 
     if (oldType === "in") qtyDiff -= oldQty;
     else if (oldType === "out") qtyDiff += oldQty;
 
-    if (data.transaction_type === "in") qtyDiff += data.quantity;
-    else if (data.transaction_type === "out") qtyDiff -= data.quantity;
+    if (data.transaction_type === "in") qtyDiff += newQty;
+    else if (data.transaction_type === "out") qtyDiff -= newQty;
 
     if (qtyDiff !== 0) {
       await CurrentInventoryService.createOrUpdate(
-        data.product_id,
-        data.warehouse_id,
+        data.product_id || trx.product_id,
+        data.warehouse_id || trx.warehouse_id,
         qtyDiff
       );
     }
@@ -107,18 +152,30 @@ class InventoryTransactionService {
   }
 
   static async remove(id) {
-    const trx = await InventoryTransaction.findByPk(id);
+    const trx = await InventoryTransaction.findByPk(id, {
+      include: [{ model: InventoryTransactionBatches, as: "transaction_batches" }]
+    });
     if (!trx) throw new Error("Transaction not found");
+
+    let quantity = 0;
+    if (trx.transaction_batches) {
+      quantity = trx.transaction_batches.reduce((sum, b) => sum + Number(b.quantity), 0);
+    }
 
     // عند الحذف نرجع الكمية إلى ما كانت عليه
     const qtyChange =
-      trx.transaction_type === "in" ? -trx.quantity : trx.quantity;
+      trx.transaction_type === "in" ? -quantity : quantity;
 
-    await CurrentInventoryService.createOrUpdate(
-      trx.product_id,
-      trx.warehouse_id,
-      qtyChange
-    );
+    if (quantity > 0) {
+      await CurrentInventoryService.createOrUpdate(
+        trx.product_id,
+        trx.warehouse_id,
+        qtyChange
+      );
+    }
+
+    // Delete associated batches first
+    await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id } });
 
     await trx.destroy();
     return true;

@@ -58,21 +58,37 @@ export default function purchaseOrderHooks() {
           total_price: it.total_price,
         }));
 
-        await PurchaseInvoiceItem.bulkCreate(invoiceItemsData, { transaction: t });
+        const createdItems = await PurchaseInvoiceItem.bulkCreate(invoiceItemsData, { transaction: t });
 
-        // ✅ إضافة الأصناف للمخزون
-        const inventoryData = orderItems.map((it) => ({
-          product_id: it.product_id,
-          warehouse_id: it.warehouse_id,
-          transaction_type: "in",
-          quantity: Number(it.quantity) + Number(it.bonus_quantity || 0),
-          cost_per_unit: Number(it.unit_price),
-          transaction_date: new Date(),
-          note: `Added from Purchase Invoice ${invoiceNumber}`,
-        }));
+        // ✅ إضافة الأصناف للمخزون باستخدام Service لضمان تحديث الرصيد والباتشات
+        // نحتاج لاستيراد Service أولاً
+        const InventoryTransactionService = (await import("../services/inventoryTransaction.service.js")).default;
 
+        for (const it of createdItems) {
+          const totalQty = Number(it.quantity) + Number(it.bonus_quantity || 0);
 
-        await InventoryTransaction.bulkCreate(inventoryData, { transaction: t });
+          // تجهيز بيانات الباتش
+          const batches = [];
+          if (it.batch_number && it.expiry_date) {
+            batches.push({
+              batch_number: it.batch_number,
+              expiry_date: it.expiry_date,
+              quantity: totalQty,
+              cost_per_unit: Number(it.unit_price)
+            });
+          }
+
+          await InventoryTransactionService.create({
+            product_id: it.product_id,
+            warehouse_id: it.warehouse_id,
+            transaction_type: "in",
+            transaction_date: new Date(),
+            note: `Added from Purchase Invoice ${invoiceNumber}`,
+            source_type: 'purchase',
+            source_id: it.id, // Use Item ID
+            batches: batches
+          }); // Service handles CurrentInventory update
+        }
       }
     }
   });

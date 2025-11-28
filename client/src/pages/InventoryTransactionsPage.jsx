@@ -43,10 +43,10 @@ const InventoryTransactionsPage = () => {
     product_id: "",
     warehouse_id: "",
     transaction_type: "in",
-    quantity: 0,
-    cost_per_unit: 0,
     transaction_date: "",
     note: "",
+    source_type: "adjustment",
+    source_id: "",
     batches: [],
   });
 
@@ -65,20 +65,20 @@ const InventoryTransactionsPage = () => {
           product_id: row.product_id,
           warehouse_id: row.warehouse_id,
           transaction_type: row.transaction_type,
-          quantity: row.quantity,
-          cost_per_unit: row.cost_per_unit,
           transaction_date: row.transaction_date?.slice(0, 10) || "",
           note: row.note || "",
+          source_type: row.source_type || "adjustment",
+          source_id: row.source_id || "",
           batches: row.transaction_batches || [],
         }
         : {
           product_id: "",
           warehouse_id: "",
           transaction_type: "in",
-          quantity: 0,
-          cost_per_unit: 0,
           transaction_date: "",
           note: "",
+          source_type: "adjustment",
+          source_id: "",
           batches: [],
         }
     );
@@ -91,10 +91,15 @@ const InventoryTransactionsPage = () => {
   };
 
   const handleSave = () => {
+    const dataToSave = {
+      ...form,
+      source_id: form.source_id === "" ? null : form.source_id,
+    };
+
     if (editRow) {
-      dispatch(updateInventoryTransaction({ id: editRow.id, data: form }));
+      dispatch(updateInventoryTransaction({ id: editRow.id, data: dataToSave }));
     } else {
-      dispatch(addInventoryTransaction(form));
+      dispatch(addInventoryTransaction(dataToSave));
     }
     handleClose();
   };
@@ -114,8 +119,13 @@ const InventoryTransactionsPage = () => {
         warehouses.find((w) => w.id === cell.getValue())?.name || "—",
     },
     { accessorKey: "transaction_type", header: "النوع" },
-    { accessorKey: "quantity", header: "الكمية" },
-    { accessorKey: "cost_per_unit", header: "التكلفة للوحدة" },
+    {
+      accessorKey: "quantity",
+      header: "الكمية",
+      Cell: ({ row }) => row.original.transaction_batches?.reduce((sum, b) => sum + Number(b.quantity), 0) || 0
+    },
+    { accessorKey: "source_type", header: "المصدر" },
+    { accessorKey: "source_id", header: "رقم المصدر" },
     {
       accessorKey: "transaction_date",
       header: "تاريخ العملية",
@@ -163,7 +173,7 @@ const InventoryTransactionsPage = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <MaterialReactTable columns={columns} data={transactions} />
+        <MaterialReactTable {...defaultTableProps} columns={columns} data={transactions} />
       )}
 
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm" dir="rtl">
@@ -206,17 +216,22 @@ const InventoryTransactionsPage = () => {
           </TextField>
 
           <TextField
-            label="الكمية"
-            type="number"
-            value={form.quantity}
-            onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-          />
+            select
+            label="نوع المصدر"
+            value={form.source_type}
+            onChange={(e) => setForm({ ...form, source_type: e.target.value })}
+          >
+            <MenuItem value="purchase">مشتريات</MenuItem>
+            <MenuItem value="manufacturing">تصنيع</MenuItem>
+            <MenuItem value="transfer">تحويل</MenuItem>
+            <MenuItem value="adjustment">تسوية</MenuItem>
+          </TextField>
 
           <TextField
-            label="التكلفة للوحدة"
+            label="رقم المصدر"
             type="number"
-            value={form.cost_per_unit}
-            onChange={(e) => setForm({ ...form, cost_per_unit: e.target.value })}
+            value={form.source_id}
+            onChange={(e) => setForm({ ...form, source_id: e.target.value })}
           />
 
           <TextField

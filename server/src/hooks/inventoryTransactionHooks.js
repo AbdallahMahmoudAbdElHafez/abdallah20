@@ -2,33 +2,11 @@
 import CurrentInventoryService from "../services/currentInventory.service.js";
 
 const inventoryTransactionHooks = {
-  // بعد إنشاء عملية واحدة
-  async afterCreate(transaction, options) {
-    const qtyChange = transaction.transaction_type === "in"
-      ? transaction.quantity
-      : -transaction.quantity;
+  // Logic moved to Service because 'quantity' is no longer in InventoryTransaction table
+  // and we need to sum up batches which are created after the transaction.
 
-    await CurrentInventoryService.createOrUpdate(
-      transaction.product_id,
-      transaction.warehouse_id,
-      qtyChange
-    );
-  },
-
-  // بعد إنشاء عمليات متعددة دفعة واحدة
-  async afterBulkCreate(transactions, options) {
-    for (const trx of transactions) {
-      const qtyChange = trx.transaction_type === "in"
-        ? trx.quantity
-        : -trx.quantity;
-
-      await CurrentInventoryService.createOrUpdate(
-        trx.product_id,
-        trx.warehouse_id,
-        qtyChange
-      );
-    }
-  },
+  // afterCreate(transaction, options) { ... },
+  // afterBulkCreate(transactions, options) { ... }
 };
 
 export default inventoryTransactionHooks;
