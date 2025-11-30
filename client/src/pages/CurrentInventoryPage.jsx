@@ -82,11 +82,11 @@ export default function CurrentInventoryPage() {
   const columns = [
     { accessorKey: "id", header: "ID" },
     {
-      accessorFn: (row) => resolveName(products, row.product_id),
+      accessorFn: (row) => row.product?.name || row.product_id,
       header: "المنتج",
     },
     {
-      accessorFn: (row) => resolveName(warehouses, row.warehouse_id),
+      accessorFn: (row) => row.warehouse?.name || row.warehouse_id,
       header: "المخزن",
     },
     { accessorKey: "quantity", header: "الكمية" },

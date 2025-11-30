@@ -1,8 +1,13 @@
-import { CurrentInventory } from "../models/index.js";
+import { CurrentInventory, Product, Warehouse } from "../models/index.js";
 
 const CurrentInventoryService = {
   getAll: async () => {
-    return await CurrentInventory.findAll();
+    return await CurrentInventory.findAll({
+      include: [
+        { model: Product, as: "product", attributes: ["id", "name"] },
+        { model: Warehouse, as: "warehouse", attributes: ["id", "name"] },
+      ],
+    });
   },
 
   getById: async (id) => {

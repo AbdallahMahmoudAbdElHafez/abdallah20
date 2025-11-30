@@ -526,6 +526,10 @@ InventoryTransactionBatches.belongsTo(InventoryTransaction, { foreignKey: "inven
 Batches.hasMany(InventoryTransactionBatches, { foreignKey: "batch_id", as: "transaction_batches" });
 InventoryTransactionBatches.belongsTo(Batches, { foreignKey: "batch_id", as: "batch" });
 
+// Current Inventory Associations
+CurrentInventory.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+CurrentInventory.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
+
 
 // Expense Associations
 Expense.belongsTo(Account, { as: 'debitAccount', foreignKey: 'debit_account_id' });
