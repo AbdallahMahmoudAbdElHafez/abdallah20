@@ -86,7 +86,7 @@ export default function CurrentInventoryPage() {
       header: "المنتج",
     },
     {
-      accessorFn: (row) => row.warehouse?.name || row.warehouse_id,
+      accessorFn: (row) => resolveName(warehouses, row.warehouse_id),
       header: "المخزن",
     },
     { accessorKey: "quantity", header: "الكمية" },

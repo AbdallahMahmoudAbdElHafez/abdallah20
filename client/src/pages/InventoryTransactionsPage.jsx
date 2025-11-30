@@ -124,6 +124,25 @@ const InventoryTransactionsPage = () => {
       header: "الكمية",
       Cell: ({ row }) => row.original.transaction_batches?.reduce((sum, b) => sum + Number(b.quantity), 0) || 0
     },
+    {
+      header: "رقم التشغيلة",
+      Cell: ({ row }) => {
+        const batches = row.original.transaction_batches || [];
+        if (batches.length === 0) return "—";
+        return batches.map(b => b.batch_number || b.batch?.batch_number || "—").join(", ");
+      }
+    },
+    {
+      header: "تاريخ الانتهاء",
+      Cell: ({ row }) => {
+        const batches = row.original.transaction_batches || [];
+        if (batches.length === 0) return "—";
+        return batches.map(b => {
+          const date = b.expiry_date || b.batch?.expiry_date;
+          return date ? new Date(date).toLocaleDateString() : "—";
+        }).join(", ");
+      }
+    },
     { accessorKey: "source_type", header: "المصدر" },
     { accessorKey: "source_id", header: "رقم المصدر" },
     {
