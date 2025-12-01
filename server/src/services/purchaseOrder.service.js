@@ -21,6 +21,7 @@ class PurchaseOrderService {
       quantity: Number(it.quantity),
       unit_price: Number(it.unit_price),
       discount: Number(it.discount || 0), // discount كنسبة مئوية لكل item
+      expiry_date: it.expiry_date || null,
     }));
 
     const additionalDiscount = Number(data.additional_discount || 0); // قيمة خصم إضافي ثابتة (بالعملة)
@@ -66,6 +67,7 @@ class PurchaseOrderService {
       quantity: Number(it.quantity),
       unit_price: Number(it.unit_price),
       discount: Number(it.discount || 0),
+      expiry_date: it.expiry_date || null,
     }));
 
     const additionalDiscount = Number(data.additional_discount || 0);
