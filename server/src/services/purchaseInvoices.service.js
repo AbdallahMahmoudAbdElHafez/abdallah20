@@ -1,4 +1,5 @@
 import { PurchaseInvoice, Party, PurchaseOrder } from "../models/index.js";
+import { Op } from "sequelize";
 
 
 class PurchaseInvoiceService {
@@ -29,6 +30,27 @@ class PurchaseInvoiceService {
   }
 
   static async create(data) {
+    // Auto-generate invoice_number if not provided
+    if (!data.invoice_number) {
+      const year = new Date().getFullYear();
+      const lastInvoice = await PurchaseInvoice.findOne({
+        where: {
+          invoice_number: {
+            [Op.like]: `PI-${year}-%`
+          }
+        },
+        order: [['id', 'DESC']]
+      });
+
+      let nextNumber = 1;
+      if (lastInvoice) {
+        const lastNumber = parseInt(lastInvoice.invoice_number.split('-')[2]);
+        nextNumber = lastNumber + 1;
+      }
+
+      data.invoice_number = `PI-${year}-${String(nextNumber).padStart(6, '0')}`;
+    }
+
     return await PurchaseInvoice.create(data);
   }
 

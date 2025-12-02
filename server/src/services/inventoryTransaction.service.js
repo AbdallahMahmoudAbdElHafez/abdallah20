@@ -31,18 +31,18 @@ class InventoryTransactionService {
     });
   }
 
-  static async create(data) {
+  static async create(data, options = {}) {
     if (data.source_id === "") data.source_id = null;
-    const trx = await InventoryTransaction.create(data);
+    const trx = await InventoryTransaction.create(data, options);
 
     let totalQuantity = 0;
 
     if (data.batches && data.batches.length > 0) {
       for (const batchData of data.batches) {
-        let batchId = batchData.batch_id;
+        let batchId = null;
 
-        // If no ID but number/expiry provided (for IN transactions), find or create batch
-        if (!batchId && batchData.batch_number && batchData.expiry_date) {
+        // If batch_number and expiry_date provided, find or create batch
+        if (batchData.batch_number && batchData.expiry_date) {
           const [batch] = await Batches.findOrCreate({
             where: {
               product_id: data.product_id,
@@ -50,20 +50,23 @@ class InventoryTransactionService {
             },
             defaults: {
               expiry_date: batchData.expiry_date
-            }
+            },
+            ...options
           });
           batchId = batch.id;
+        } else if (batchData.batch_id) {
+          // Use provided batch_id if available
+          batchId = batchData.batch_id;
         }
 
-        if (batchId) {
-          await InventoryTransactionBatches.create({
-            inventory_transaction_id: trx.id,
-            batch_id: batchId,
-            quantity: batchData.quantity,
-            cost_per_unit: batchData.cost_per_unit || 0
-          });
-          totalQuantity += Number(batchData.quantity);
-        }
+        // Always create InventoryTransactionBatches record (batch_id can be null)
+        await InventoryTransactionBatches.create({
+          inventory_transaction_id: trx.id,
+          batch_id: batchId,
+          quantity: batchData.quantity,
+          cost_per_unit: batchData.cost_per_unit || 0
+        }, options);
+        totalQuantity += Number(batchData.quantity);
       }
     }
 
@@ -79,17 +82,19 @@ class InventoryTransactionService {
       await CurrentInventoryService.createOrUpdate(
         data.product_id,
         data.warehouse_id,
-        quantityChange
+        quantityChange,
+        options
       );
     }
 
     return trx;
   }
 
-  static async update(id, data) {
+  static async update(id, data, options = {}) {
     if (data.source_id === "") data.source_id = null;
     const trx = await InventoryTransaction.findByPk(id, {
-      include: [{ model: InventoryTransactionBatches, as: "transaction_batches" }]
+      include: [{ model: InventoryTransactionBatches, as: "transaction_batches" }],
+      ...options
     });
     if (!trx) throw new Error("Transaction not found");
 
@@ -101,33 +106,36 @@ class InventoryTransactionService {
     const oldType = trx.transaction_type;
 
     // Update transaction header
-    await trx.update(data);
+    await trx.update(data, options);
 
     // Handle batches update - simplified: remove old, add new
     // In a real app, we might want to be smarter to preserve IDs or handle partial updates
-    await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id } });
+    await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id }, ...options });
 
     let newQty = 0;
     if (data.batches && data.batches.length > 0) {
       for (const batchData of data.batches) {
-        let batchId = batchData.batch_id;
-        if (!batchId && batchData.batch_number && batchData.expiry_date) {
+        let batchId = null;
+
+        if (batchData.batch_number && batchData.expiry_date) {
           const [batch] = await Batches.findOrCreate({
             where: { product_id: data.product_id || trx.product_id, batch_number: batchData.batch_number },
-            defaults: { expiry_date: batchData.expiry_date }
+            defaults: { expiry_date: batchData.expiry_date },
+            ...options
           });
           batchId = batch.id;
+        } else if (batchData.batch_id) {
+          batchId = batchData.batch_id;
         }
 
-        if (batchId) {
-          await InventoryTransactionBatches.create({
-            inventory_transaction_id: trx.id,
-            batch_id: batchId,
-            quantity: batchData.quantity,
-            cost_per_unit: batchData.cost_per_unit || 0
-          });
-          newQty += Number(batchData.quantity);
-        }
+        // Always create InventoryTransactionBatches record (batch_id can be null)
+        await InventoryTransactionBatches.create({
+          inventory_transaction_id: trx.id,
+          batch_id: batchId,
+          quantity: batchData.quantity,
+          cost_per_unit: batchData.cost_per_unit || 0
+        }, options);
+        newQty += Number(batchData.quantity);
       }
     }
 
@@ -144,16 +152,18 @@ class InventoryTransactionService {
       await CurrentInventoryService.createOrUpdate(
         data.product_id || trx.product_id,
         data.warehouse_id || trx.warehouse_id,
-        qtyDiff
+        qtyDiff,
+        options
       );
     }
 
     return trx;
   }
 
-  static async remove(id) {
+  static async remove(id, options = {}) {
     const trx = await InventoryTransaction.findByPk(id, {
-      include: [{ model: InventoryTransactionBatches, as: "transaction_batches" }]
+      include: [{ model: InventoryTransactionBatches, as: "transaction_batches" }],
+      ...options
     });
     if (!trx) throw new Error("Transaction not found");
 
@@ -170,14 +180,15 @@ class InventoryTransactionService {
       await CurrentInventoryService.createOrUpdate(
         trx.product_id,
         trx.warehouse_id,
-        qtyChange
+        qtyChange,
+        options
       );
     }
 
     // Delete associated batches first
-    await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id } });
+    await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id }, ...options });
 
-    await trx.destroy();
+    await trx.destroy(options);
     return true;
   }
 }

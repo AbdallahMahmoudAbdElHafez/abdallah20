@@ -67,16 +67,13 @@ export default function purchaseOrderHooks() {
         for (const it of createdItems) {
           const totalQty = Number(it.quantity) + Number(it.bonus_quantity || 0);
 
-          // تجهيز بيانات الباتش
-          const batches = [];
-          if (it.batch_number && it.expiry_date) {
-            batches.push({
-              batch_number: it.batch_number,
-              expiry_date: it.expiry_date,
-              quantity: totalQty,
-              cost_per_unit: Number(it.unit_price)
-            });
-          }
+          // تجهيز بيانات الباتش - دائماً نرسل batch حتى بدون batch_number/expiry_date
+          const batches = [{
+            batch_number: it.batch_number || null,
+            expiry_date: it.expiry_date || null,
+            quantity: totalQty,
+            cost_per_unit: Number(it.unit_price)
+          }];
 
           await InventoryTransactionService.create({
             product_id: it.product_id,
@@ -87,7 +84,7 @@ export default function purchaseOrderHooks() {
             source_type: 'purchase',
             source_id: it.id, // Use Item ID
             batches: batches
-          }); // Service handles CurrentInventory update
+          }, { transaction: t }); // Service handles CurrentInventory update
         }
       }
     }

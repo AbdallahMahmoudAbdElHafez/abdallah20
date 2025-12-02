@@ -78,7 +78,7 @@ export default {
                         source_type: 'sales_invoice',
                         source_id: invoice.id,
                         batches: batches
-                    });
+                    }, { transaction });
                 }
             }
 
@@ -118,7 +118,7 @@ export default {
                 // But for now, let's just call it.
             });
             for (const trx of oldTransactions) {
-                await InventoryTransactionService.remove(trx.id);
+                await InventoryTransactionService.remove(trx.id, { transaction });
             }
 
             // Update the invoice
@@ -159,7 +159,7 @@ export default {
                             source_type: 'sales_invoice',
                             source_id: invoice.id,
                             batches: batches
-                        });
+                        }, { transaction });
                     }
                 }
             }

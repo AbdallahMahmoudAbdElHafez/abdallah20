@@ -9,9 +9,9 @@ export async function getSupplierStatement(supplierId, { from, to }) {
 
   // فلتر التواريخ
   const dateFilter = {};
-  if (from && to)       dateFilter[Op.between] = [from, to];
-  else if (from)        dateFilter[Op.gte] = from;
-  else if (to)          dateFilter[Op.lte] = to;
+  if (from && to) dateFilter[Op.between] = [from, to];
+  else if (from) dateFilter[Op.gte] = from;
+  else if (to) dateFilter[Op.lte] = to;
 
   // 1️⃣ الفواتير
   const invoices = await PurchaseInvoice.findAll({
@@ -41,7 +41,9 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     ...invoices.map(inv => ({
       type: "invoice",
       date: inv.invoice_date,
-      description: `فاتورة مشتريات #${inv.id}`,
+      description: inv.invoice_type === 'opening'
+        ? `رصيد افتتاحي (فاتورة #${inv.invoice_number})`
+        : `فاتورة مشتريات #${inv.invoice_number}`,
       debit: Number(inv.total_amount),
       credit: 0,
     })),
@@ -62,27 +64,27 @@ export async function getSupplierStatement(supplierId, { from, to }) {
   });
 
   // لو تريد رصيد افتتاحي قبل الفترة (اختياري)
- let openingBalance = 0;
-if (from) {
-  const prevInvoices = await PurchaseInvoice.sum("total_amount", {
-    where: { supplier_id: supplierId, invoice_date: { [Op.lt]: from } },
-  });
+  let openingBalance = 0;
+  if (from) {
+    const prevInvoices = await PurchaseInvoice.sum("total_amount", {
+      where: { supplier_id: supplierId, invoice_date: { [Op.lt]: from } },
+    });
 
-  const prevPayments = await PurchaseInvoicePayment.sum("amount", {
-    where: {
-      payment_date: { [Op.lt]: from },
-    },
-    include: [{
-      model: PurchaseInvoice,
-      as: "purchase_invoice",
-      required: true,
-      where: { supplier_id: supplierId },
-      attributes: [], // ⬅ يمنع إدخال أعمدة إضافية في SELECT
-    }],
-  });
+    const prevPayments = await PurchaseInvoicePayment.sum("amount", {
+      where: {
+        payment_date: { [Op.lt]: from },
+      },
+      include: [{
+        model: PurchaseInvoice,
+        as: "purchase_invoice",
+        required: true,
+        where: { supplier_id: supplierId },
+        attributes: [], // ⬅ يمنع إدخال أعمدة إضافية في SELECT
+      }],
+    });
 
-  openingBalance = (prevInvoices || 0) - (prevPayments || 0);
-}
+    openingBalance = (prevInvoices || 0) - (prevPayments || 0);
+  }
 
   const closingBalance = openingBalance + runningBalance;
 

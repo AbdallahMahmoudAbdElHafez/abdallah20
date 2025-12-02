@@ -60,7 +60,7 @@ export default function PurchaseInvoiceDialog({
   const suppliers = useSelector((s) => s.parties?.items ?? []);
   const products = useSelector((s) => s.products?.items ?? []);
   const warehouses = useSelector((s) => s.warehouses?.items ?? []);
-    const [paymentOpen, setPaymentOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   const [loadingMeta, setLoadingMeta] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -71,6 +71,8 @@ export default function PurchaseInvoiceDialog({
     supplier_id: "",
     invoice_date: "",
     due_date: "",
+    payment_terms: "",
+    invoice_type: "normal",
     status: "unpaid",
     subtotal: 0,
     additional_discount: 0,
@@ -108,6 +110,8 @@ export default function PurchaseInvoiceDialog({
         invoice_date:
           invoice.invoice_date ?? new Date().toISOString().split("T")[0],
         due_date: invoice.due_date ?? "",
+        payment_terms: invoice.payment_terms ?? "",
+        invoice_type: invoice.invoice_type ?? "normal",
         status: invoice.status ?? "unpaid",
         subtotal: Number(invoice.subtotal) || 0,
         additional_discount: Number(invoice.additional_discount) || 0,
@@ -125,6 +129,8 @@ export default function PurchaseInvoiceDialog({
         supplier_id: "",
         invoice_date: new Date().toISOString().split("T")[0],
         due_date: "",
+        payment_terms: "",
+        invoice_type: "normal",
         status: "unpaid",
         subtotal: 0,
         additional_discount: 0,
@@ -177,8 +183,7 @@ export default function PurchaseInvoiceDialog({
       return "Quantity must be greater than 0";
     if (itemForm.unit_price === "" || Number(itemForm.unit_price) < 0)
       return "Unit price must be 0 or greater";
-    if (!itemForm.batch_number) return "Batch number is required";
-    if (!itemForm.expiry_date) return "Expiry date is required";
+    // batch_number and expiry_date are optional
     return null;
   };
 
@@ -222,9 +227,19 @@ export default function PurchaseInvoiceDialog({
       setError("Please select an invoice date");
       return;
     }
-    if (items.length === 0) {
-      setError("Please add at least one item");
-      return;
+
+    // For opening balance invoices, items are not required but total_amount is
+    if (invoiceHead.invoice_type === "opening") {
+      if (!invoiceHead.total_amount || Number(invoiceHead.total_amount) <= 0) {
+        setError("Please enter a total amount for opening balance");
+        return;
+      }
+    } else {
+      // For normal invoices, items are required
+      if (items.length === 0) {
+        setError("Please add at least one item");
+        return;
+      }
     }
 
     setSaving(true);
@@ -232,6 +247,7 @@ export default function PurchaseInvoiceDialog({
 
     const payload = {
       ...invoiceHead,
+      due_date: invoiceHead.due_date || null,
       items: items.map(({ tempId, id, ...rest }) => rest),
     };
 
@@ -363,6 +379,46 @@ export default function PurchaseInvoiceDialog({
 
               <Grid item xs={12} md={3}>
                 <TextField
+                  type="date"
+                  fullWidth
+                  label="Due Date"
+                  InputLabelProps={{ shrink: true }}
+                  value={invoiceHead.due_date}
+                  onChange={(e) =>
+                    setInvoiceHead({ ...invoiceHead, due_date: e.target.value })
+                  }
+                />
+              </Grid>
+
+              <Grid item xs={12} md={3}>
+                <TextField
+                  fullWidth
+                  label="Payment Terms"
+                  value={invoiceHead.payment_terms}
+                  onChange={(e) =>
+                    setInvoiceHead({ ...invoiceHead, payment_terms: e.target.value })
+                  }
+                  placeholder="e.g., Net 30"
+                />
+              </Grid>
+
+              <Grid item xs={12} md={3}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Invoice Type"
+                  value={invoiceHead.invoice_type}
+                  onChange={(e) =>
+                    setInvoiceHead({ ...invoiceHead, invoice_type: e.target.value })
+                  }
+                >
+                  <MenuItem value="normal">Normal</MenuItem>
+                  <MenuItem value="opening">Opening Balance</MenuItem>
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12} md={3}>
+                <TextField
                   select
                   fullWidth
                   label="Status"
@@ -382,155 +438,187 @@ export default function PurchaseInvoiceDialog({
           </CardContent>
         </Card>
 
-        <Card sx={{ mb: 2 }}>
-          <CardContent>
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-              <Typography variant="h6">
-                <InventoryIcon /> Invoice Items ({items.length})
-              </Typography>
-              <Button
-                variant="outlined"
-                startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
-                onClick={() => setShowItemForm(!showItemForm)}
-              >
-                {showItemForm ? "Hide Form" : "Add Item"}
-              </Button>
-            </Box>
-
-            <Collapse in={showItemForm}>
-              <Paper sx={{ p: 2, mb: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Product"
-                      value={itemForm.product_id}
-                      onChange={(e) => handleItemProductChange(e.target.value)}
-                      size="small"
-                    >
-                      <MenuItem value="">Select Product</MenuItem>
-                      {products.map((p) => (
-                        <MenuItem key={p.id} value={p.id}>
-                          {p.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6} md={2}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Warehouse"
-                      value={itemForm.warehouse_id}
-                      onChange={(e) =>
-                        setItemForm((f) => ({ ...f, warehouse_id: e.target.value }))
-                      }
-                      size="small"
-                    >
-                      <MenuItem value="">Select Warehouse</MenuItem>
-                      {warehouses.map((w) => (
-                        <MenuItem key={w.id} value={w.id}>
-                          {w.name}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Grid>
-
-                  <Grid item xs={12} sm={4} md={2}>
-                    <TextField
-                      fullWidth
-                      label="Batch Number"
-                      value={itemForm.batch_number}
-                      onChange={(e) =>
-                        setItemForm((f) => ({ ...f, batch_number: e.target.value }))
-                      }
-                      size="small"
-                    />
-                  </Grid>
-
-                  <Grid item xs={12} sm={4} md={2}>
-                    <TextField
-                      type="date"
-                      fullWidth
-                      label="Expiry Date"
-                      InputLabelProps={{ shrink: true }}
-                      value={itemForm.expiry_date}
-                      onChange={(e) =>
-                        setItemForm((f) => ({ ...f, expiry_date: e.target.value }))
-                      }
-                      size="small"
-                    />
-                  </Grid>
-
-                  <Grid item xs={6} sm={3} md={1.5}>
-                    <TextField
-                      type="number"
-                      fullWidth
-                      label="Quantity"
-                      value={itemForm.quantity}
-                      onChange={(e) =>
-                        setItemForm((f) => ({ ...f, quantity: e.target.value }))
-                      }
-                      size="small"
-                    />
-                  </Grid>
-
-                  <Grid item xs={6} sm={3} md={1.5}>
-                    <TextField
-                      type="number"
-                      fullWidth
-                      label="Unit Price"
-                      value={itemForm.unit_price}
-                      onChange={(e) =>
-                        setItemForm((f) => ({ ...f, unit_price: e.target.value }))
-                      }
-                      size="small"
-                    />
-                  </Grid>
-
-                  <Grid item xs={6} sm={3} md={1.5}>
-                    <TextField
-                      type="number"
-                      fullWidth
-                      label="Discount"
-                      value={itemForm.discount}
-                      onChange={(e) =>
-                        setItemForm((f) => ({ ...f, discount: e.target.value }))
-                      }
-                      size="small"
-                    />
-                  </Grid>
-
-                  <Grid item xs={6} sm={3} md={1.5}>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={addItemTemp}
-                      startIcon={<AddIcon />}
-                    >
-                      Add
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Paper>
-            </Collapse>
-
-            {loadingMeta ? (
-              <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                <CircularProgress />
+        {/* === Items Section (Only for Normal Invoices) === */}
+        {invoiceHead.invoice_type === "normal" ? (
+          <Card sx={{ mb: 2 }}>
+            <CardContent>
+              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                <Typography variant="h6">
+                  <InventoryIcon /> Invoice Items ({items.length})
+                </Typography>
+                <Button
+                  variant="outlined"
+                  startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
+                  onClick={() => setShowItemForm(!showItemForm)}
+                >
+                  {showItemForm ? "Hide Form" : "Add Item"}
+                </Button>
               </Box>
-            ) : (
-              <MaterialReactTable
-                columns={itemColumns}
-                data={items}
-                enablePagination={false}
-                enableTopToolbar={false}
-              />
-            )}
-          </CardContent>
-        </Card>
+
+              <Collapse in={showItemForm}>
+                <Paper sx={{ p: 2, mb: 2 }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Product"
+                        value={itemForm.product_id}
+                        onChange={(e) => handleItemProductChange(e.target.value)}
+                        size="small"
+                      >
+                        <MenuItem value="">Select Product</MenuItem>
+                        {products.map((p) => (
+                          <MenuItem key={p.id} value={p.id}>
+                            {p.name}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={2}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="Warehouse"
+                        value={itemForm.warehouse_id}
+                        onChange={(e) =>
+                          setItemForm((f) => ({ ...f, warehouse_id: e.target.value }))
+                        }
+                        size="small"
+                      >
+                        <MenuItem value="">Select Warehouse</MenuItem>
+                        {warehouses.map((w) => (
+                          <MenuItem key={w.id} value={w.id}>
+                            {w.name}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12} sm={4} md={2}>
+                      <TextField
+                        fullWidth
+                        label="Batch Number"
+                        value={itemForm.batch_number}
+                        onChange={(e) =>
+                          setItemForm((f) => ({ ...f, batch_number: e.target.value }))
+                        }
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sm={4} md={2}>
+                      <TextField
+                        type="date"
+                        fullWidth
+                        label="Expiry Date"
+                        InputLabelProps={{ shrink: true }}
+                        value={itemForm.expiry_date}
+                        onChange={(e) =>
+                          setItemForm((f) => ({ ...f, expiry_date: e.target.value }))
+                        }
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid item xs={6} sm={3} md={1.5}>
+                      <TextField
+                        type="number"
+                        fullWidth
+                        label="Quantity"
+                        value={itemForm.quantity}
+                        onChange={(e) =>
+                          setItemForm((f) => ({ ...f, quantity: e.target.value }))
+                        }
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid item xs={6} sm={3} md={1.5}>
+                      <TextField
+                        type="number"
+                        fullWidth
+                        label="Unit Price"
+                        value={itemForm.unit_price}
+                        onChange={(e) =>
+                          setItemForm((f) => ({ ...f, unit_price: e.target.value }))
+                        }
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid item xs={6} sm={3} md={1.5}>
+                      <TextField
+                        type="number"
+                        fullWidth
+                        label="Discount"
+                        value={itemForm.discount}
+                        onChange={(e) =>
+                          setItemForm((f) => ({ ...f, discount: e.target.value }))
+                        }
+                        size="small"
+                      />
+                    </Grid>
+
+                    <Grid item xs={6} sm={3} md={1.5}>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={addItemTemp}
+                        startIcon={<AddIcon />}
+                      >
+                        Add
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Collapse>
+
+              {loadingMeta ? (
+                <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <MaterialReactTable
+                  columns={itemColumns}
+                  data={items}
+                  enablePagination={false}
+                  enableTopToolbar={false}
+                />
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          // === Opening Balance Input (Only for Opening Invoices) ===
+          <Card sx={{ mb: 2 }}>
+            <CardContent>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  <MoneyIcon /> Opening Balance
+                </Typography>
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  For opening balance invoices, enter the total amount directly. Items are not required.
+                </Alert>
+              </Box>
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <TextField
+                    type="number"
+                    fullWidth
+                    label="Total Amount"
+                    value={invoiceHead.total_amount}
+                    onChange={(e) =>
+                      setInvoiceHead({ ...invoiceHead, total_amount: Number(e.target.value) })
+                    }
+                    inputProps={{ min: 0, step: 0.01 }}
+                    helperText="Enter the opening balance amount"
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardContent>
@@ -558,7 +646,7 @@ export default function PurchaseInvoiceDialog({
         <PaymentDialog
           open={paymentOpen}
           onClose={() => setPaymentOpen(false)}
-          invoiceId={invoice.id}
+          invoiceId={invoice?.id}
         />
         <Button onClick={onClose}>Cancel</Button>
         <Button

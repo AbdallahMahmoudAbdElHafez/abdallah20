@@ -18,14 +18,14 @@ const CurrentInventoryService = {
     return await CurrentInventory.findOne({ where: { product_id, warehouse_id } });
   },
 
-  createOrUpdate: async (product_id, warehouse_id, quantityChange) => {
-    const record = await CurrentInventory.findOne({ where: { product_id, warehouse_id } });
+  createOrUpdate: async (product_id, warehouse_id, quantityChange, options = {}) => {
+    const record = await CurrentInventory.findOne({ where: { product_id, warehouse_id }, ...options });
     if (record) {
-      record.quantity += quantityChange;
-      await record.save();
+      record.quantity = Number(record.quantity) + Number(quantityChange);
+      await record.save(options);
       return record;
     } else {
-      return await CurrentInventory.create({ product_id, warehouse_id, quantity: quantityChange });
+      return await CurrentInventory.create({ product_id, warehouse_id, quantity: quantityChange }, options);
     }
   },
 

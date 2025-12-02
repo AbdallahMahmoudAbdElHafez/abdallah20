@@ -9,6 +9,12 @@ export default (sequelize) => {
         invoice_number: { type: DataTypes.STRING(100), allowNull: false },
         invoice_date: { type: DataTypes.DATEONLY, allowNull: false },
         due_date: { type: DataTypes.DATEONLY, allowNull: true },
+        payment_terms: { type: DataTypes.STRING(100), allowNull: true },
+        invoice_type: {
+            type: DataTypes.ENUM("normal", "opening"),
+            allowNull: false,
+            defaultValue: "normal"
+        },
         status: {
             type: DataTypes.ENUM("unpaid", "paid", "partially_paid", "cancelled"),
             defaultValue: "unpaid"
