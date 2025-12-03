@@ -67,7 +67,7 @@ CREATE TABLE `accounts` (
   PRIMARY KEY (`id`),
   KEY `parent_account_id` (`parent_account_id`),
   CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`parent_account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -121,6 +121,34 @@ DELIMITER ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
+-- Table structure for table `batches`
+--
+
+DROP TABLE IF EXISTS `batches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `batches` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `product_id` int NOT NULL,
+  `batch_number` varchar(100) NOT NULL,
+  `expiry_date` date NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `product_id` (`product_id`),
+  CONSTRAINT `batches_ibfk_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `batches`
+--
+
+LOCK TABLES `batches` WRITE;
+/*!40000 ALTER TABLE `batches` DISABLE KEYS */;
+INSERT INTO `batches` VALUES (10,4,'BATCH-TEST-1764670898867','2026-12-31'),(11,10,'002','2025-12-25'),(12,12,'004','2028-10-02'),(13,4,'BATCH-TEST-1764671623214','2026-12-31');
+/*!40000 ALTER TABLE `batches` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `bill_of_materials`
 --
 
@@ -146,7 +174,6 @@ CREATE TABLE `bill_of_materials` (
 
 LOCK TABLES `bill_of_materials` WRITE;
 /*!40000 ALTER TABLE `bill_of_materials` DISABLE KEYS */;
-INSERT INTO `bill_of_materials` VALUES (1,6,10,1.000),(2,6,11,1.000),(4,7,10,1.000),(5,7,12,1.000),(6,7,11,1.000);
 /*!40000 ALTER TABLE `bill_of_materials` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -164,7 +191,7 @@ CREATE TABLE `cities` (
   PRIMARY KEY (`id`),
   KEY `governate_id` (`governate_id`),
   CONSTRAINT `cities_ibfk_1` FOREIGN KEY (`governate_id`) REFERENCES `governates` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -173,7 +200,7 @@ CREATE TABLE `cities` (
 
 LOCK TABLES `cities` WRITE;
 /*!40000 ALTER TABLE `cities` DISABLE KEYS */;
-INSERT INTO `cities` VALUES (1,'المنصوره',3),(3,'القاهره',3),(4,'الاسكندريه',4),(5,'الدقي',3),(6,'المنزله',2);
+INSERT INTO `cities` VALUES (1,'المنصوره',3),(3,'القاهره',3),(4,'الاسكندريه',4),(5,'الدقي',3),(6,'المنزله',2),(7,'دمياط',7),(8,'المنصوره',2),(9,'طلخا',2),(10,'منية النصر',2);
 /*!40000 ALTER TABLE `cities` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -188,7 +215,7 @@ CREATE TABLE `countries` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -219,7 +246,7 @@ CREATE TABLE `current_inventory` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `current_inventory_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `current_inventory_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -228,7 +255,7 @@ CREATE TABLE `current_inventory` (
 
 LOCK TABLES `current_inventory` WRITE;
 /*!40000 ALTER TABLE `current_inventory` DISABLE KEYS */;
-INSERT INTO `current_inventory` VALUES (1,8,1,56,'2025-11-08 22:30:38');
+INSERT INTO `current_inventory` VALUES (8,10,8,2990,'2025-12-03 01:35:51'),(9,12,8,3000,'2025-12-02 10:41:11'),(10,11,8,3000,'2025-12-02 10:41:11');
 /*!40000 ALTER TABLE `current_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -245,7 +272,7 @@ CREATE TABLE `departments` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -254,7 +281,7 @@ CREATE TABLE `departments` (
 
 LOCK TABLES `departments` WRITE;
 /*!40000 ALTER TABLE `departments` DISABLE KEYS */;
-INSERT INTO `departments` VALUES (1,'الحسابات','2025-11-15 20:56:52'),(2,'المبيعات','2025-11-15 20:57:01'),(3,'المشتريات','2025-11-15 20:57:11'),(4,'Owner','2025-11-15 20:57:29');
+INSERT INTO `departments` VALUES (1,'الحسابات','2025-11-15 20:56:52'),(2,'المبيعات','2025-11-15 20:57:01'),(3,'المشتريات','2025-11-15 20:57:11'),(4,'Owner','2025-11-15 20:57:29'),(5,'قسم المبيعات 1','2025-11-25 13:29:01');
 /*!40000 ALTER TABLE `departments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -304,18 +331,27 @@ DROP TABLE IF EXISTS `expenses`;
 CREATE TABLE `expenses` (
   `id` int NOT NULL AUTO_INCREMENT,
   `expense_date` date NOT NULL DEFAULT (curdate()),
-  `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` decimal(10,2) NOT NULL,
   `debit_account_id` int NOT NULL,
   `credit_account_id` int NOT NULL,
+  `city_id` int DEFAULT NULL,
+  `employee_id` int DEFAULT NULL,
+  `party_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_exp_debit` (`debit_account_id`),
   KEY `idx_exp_credit` (`credit_account_id`),
+  KEY `fk_exp_city` (`city_id`),
+  KEY `fk_exp_employee` (`employee_id`),
+  KEY `fk_exp_party` (`party_id`),
+  CONSTRAINT `fk_exp_city` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_exp_credit` FOREIGN KEY (`credit_account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_exp_debit` FOREIGN KEY (`debit_account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_exp_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_exp_party` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `expenses_chk_amount` CHECK ((`amount` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -324,6 +360,7 @@ CREATE TABLE `expenses` (
 
 LOCK TABLES `expenses` WRITE;
 /*!40000 ALTER TABLE `expenses` DISABLE KEYS */;
+INSERT INTO `expenses` VALUES (1,'2025-11-24','',1000.00,8,21,4,NULL,3,'2025-11-24 14:27:13');
 /*!40000 ALTER TABLE `expenses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -366,7 +403,6 @@ CREATE TABLE `external_job_orders` (
 
 LOCK TABLES `external_job_orders` WRITE;
 /*!40000 ALTER TABLE `external_job_orders` DISABLE KEYS */;
-INSERT INTO `external_job_orders` VALUES (1,3,6,1,6,'planned','2025-11-05','2025-11-30',150.000,140.000,150.00,139.00,'658'),(2,3,6,1,2,'planned','2025-11-14','2025-11-13',150.000,140.000,150.00,140.00,'255'),(3,3,6,1,2,'planned','2025-11-01','2025-11-22',150.000,140.000,150.00,140.00,'2556');
 /*!40000 ALTER TABLE `external_job_orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -384,7 +420,7 @@ CREATE TABLE `governates` (
   PRIMARY KEY (`id`),
   KEY `country_id` (`country_id`),
   CONSTRAINT `governates_ibfk_1` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -393,7 +429,7 @@ CREATE TABLE `governates` (
 
 LOCK TABLES `governates` WRITE;
 /*!40000 ALTER TABLE `governates` DISABLE KEYS */;
-INSERT INTO `governates` VALUES (2,'الدقهلية',1),(3,'القاهره',1),(4,'الاسكندريه',1),(5,'الشرقيه',1);
+INSERT INTO `governates` VALUES (2,'الدقهلية',1),(3,'القاهره',1),(4,'الاسكندريه',1),(5,'الشرقيه',1),(7,'دمياط',1),(8,'البحر الأحمر',1),(9,'الغربيه',1),(10,'البحيره',1),(11,'كفر الشيخ',1);
 /*!40000 ALTER TABLE `governates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -418,7 +454,7 @@ CREATE TABLE `inventory_logs` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `inventory_logs_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `inventory_logs_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -428,6 +464,37 @@ CREATE TABLE `inventory_logs` (
 LOCK TABLES `inventory_logs` WRITE;
 /*!40000 ALTER TABLE `inventory_logs` DISABLE KEYS */;
 /*!40000 ALTER TABLE `inventory_logs` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `inventory_transaction_batches`
+--
+
+DROP TABLE IF EXISTS `inventory_transaction_batches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_transaction_batches` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `inventory_transaction_id` int NOT NULL,
+  `batch_id` int DEFAULT NULL,
+  `quantity` int NOT NULL,
+  `cost_per_unit` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `inventory_transaction_id` (`inventory_transaction_id`),
+  KEY `batch_id` (`batch_id`),
+  CONSTRAINT `itb_ibfk_batch` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`),
+  CONSTRAINT `itb_ibfk_transaction` FOREIGN KEY (`inventory_transaction_id`) REFERENCES `inventory_transactions` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `inventory_transaction_batches`
+--
+
+LOCK TABLES `inventory_transaction_batches` WRITE;
+/*!40000 ALTER TABLE `inventory_transaction_batches` DISABLE KEYS */;
+INSERT INTO `inventory_transaction_batches` VALUES (19,44,NULL,3000,6.00),(20,45,NULL,3000,3.00),(21,46,NULL,3000,2.00),(22,47,NULL,10,6.00);
+/*!40000 ALTER TABLE `inventory_transaction_batches` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -442,18 +509,16 @@ CREATE TABLE `inventory_transactions` (
   `product_id` int NOT NULL,
   `warehouse_id` int NOT NULL,
   `transaction_type` enum('in','out') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `quantity` int NOT NULL,
-  `cost_per_unit` decimal(10,2) NOT NULL,
   `transaction_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `source_type` enum('purchase','manufacturing','transfer','adjustment') COLLATE utf8mb4_unicode_ci DEFAULT 'adjustment',
+  `source_type` enum('purchase','manufacturing','transfer','adjustment','sales_invoice','sales_return','purchase_return') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'adjustment',
   `source_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `inventory_transactions_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `inventory_transactions_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -462,7 +527,7 @@ CREATE TABLE `inventory_transactions` (
 
 LOCK TABLES `inventory_transactions` WRITE;
 /*!40000 ALTER TABLE `inventory_transactions` DISABLE KEYS */;
-INSERT INTO `inventory_transactions` VALUES (7,4,2,'out',55,2.00,'2025-10-25 07:20:00','تحويل إلى مخزن مخزن اسكندريه','adjustment',NULL),(8,5,2,'out',109,3.00,'2025-10-25 07:20:00','تحويل إلى مخزن مخزن اسكندريه','adjustment',NULL),(9,4,3,'in',55,2.00,'2025-10-25 07:20:00','تحويل من مخزن المخزن الرئيسي','adjustment',NULL),(10,5,3,'in',109,3.00,'2025-10-25 07:20:00','تحويل من مخزن المخزن الرئيسي','adjustment',NULL),(11,7,3,'out',20,20.00,'2025-11-08 09:41:00','تحويل إلى  المخزن الرئيس','adjustment',NULL),(12,7,1,'in',20,20.00,'2025-11-08 09:41:00','تحويل من مخزن مخزن اسكندريه','adjustment',NULL),(13,8,6,'in',3,22.70,'2025-11-08 22:15:27','Added from Purchase Invoice PI-2025-000086','adjustment',NULL),(14,8,1,'in',56,22.70,'2025-11-08 22:30:38','Added from Purchase Invoice PI-2025-000087','adjustment',NULL);
+INSERT INTO `inventory_transactions` VALUES (44,10,8,'in','2025-12-02 10:41:11','Added from Purchase Invoice PI-2025-000116','purchase',53),(45,12,8,'in','2025-12-02 10:41:11','Added from Purchase Invoice PI-2025-000116','purchase',54),(46,11,8,'in','2025-12-02 10:41:11','Added from Purchase Invoice PI-2025-000116','purchase',55),(47,10,8,'out','2025-12-03 00:00:00','Sales Invoice #INV-1764725751306-147','sales_invoice',13);
 /*!40000 ALTER TABLE `inventory_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -701,7 +766,7 @@ CREATE TABLE `journal_entries` (
   UNIQUE KEY `uq_journal_reference` (`reference_type_id`,`reference_id`),
   KEY `idx_journal_reference` (`reference_type_id`,`reference_id`),
   CONSTRAINT `fk_journal_reference_type` FOREIGN KEY (`reference_type_id`) REFERENCES `reference_types` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -710,7 +775,7 @@ CREATE TABLE `journal_entries` (
 
 LOCK TABLES `journal_entries` WRITE;
 /*!40000 ALTER TABLE `journal_entries` DISABLE KEYS */;
-INSERT INTO `journal_entries` VALUES (12,'2025-09-24','سداد فاتورة مشتريات #PI-2025-000080',1,13,'2025-09-24 09:38:13','2025-09-24 09:38:13'),(13,'2025-10-15','سداد فاتورة مشتريات #PI-2025-000082',1,14,'2025-10-15 15:06:35','2025-10-15 15:06:35'),(14,'2025-10-15','سداد فاتورة مشتريات #PI-2025-000082',1,15,'2025-10-15 15:07:51','2025-10-15 15:07:51');
+INSERT INTO `journal_entries` VALUES (12,'2025-09-24','سداد فاتورة مشتريات #PI-2025-000080',1,13,'2025-09-24 09:38:13','2025-09-24 09:38:13'),(13,'2025-10-15','سداد فاتورة مشتريات #PI-2025-000082',1,14,'2025-10-15 15:06:35','2025-10-15 15:06:35'),(14,'2025-10-15','سداد فاتورة مشتريات #PI-2025-000082',1,15,'2025-10-15 15:07:51','2025-10-15 15:07:51'),(15,'2025-12-02','سداد فاتورة مشتريات #PI-2025-000116',1,16,'2025-12-02 10:41:42','2025-12-02 10:41:42'),(16,'2025-12-02','سداد فاتورة مشتريات #PI-2025-000116',1,17,'2025-12-02 10:42:18','2025-12-02 10:42:18'),(17,'2025-12-02','سداد فاتورة مشتريات #PI-2025-000117',1,18,'2025-12-02 12:30:35','2025-12-02 12:30:35');
 /*!40000 ALTER TABLE `journal_entries` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -737,7 +802,7 @@ CREATE TABLE `journal_entry_lines` (
   CONSTRAINT `fk_line_entry` FOREIGN KEY (`journal_entry_id`) REFERENCES `journal_entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chk_credit_nonneg` CHECK ((`credit` >= 0)),
   CONSTRAINT `chk_debit_nonneg` CHECK ((`debit` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -746,7 +811,7 @@ CREATE TABLE `journal_entry_lines` (
 
 LOCK TABLES `journal_entry_lines` WRITE;
 /*!40000 ALTER TABLE `journal_entry_lines` DISABLE KEYS */;
-INSERT INTO `journal_entry_lines` VALUES (17,12,21,100.00,0.00,'تخفيض التزامات المورد','2025-09-24 09:38:13','2025-09-24 09:38:13'),(18,12,8,0.00,100.00,'خروج من الصندوق/البنك','2025-09-24 09:38:13','2025-09-24 09:38:13'),(19,13,21,200.00,0.00,'تخفيض التزامات المورد','2025-10-15 15:06:35','2025-10-15 15:06:35'),(20,13,8,0.00,200.00,'خروج من الصندوق/البنك','2025-10-15 15:06:35','2025-10-15 15:06:35'),(21,14,21,300.00,0.00,'تخفيض التزامات المورد','2025-10-15 15:07:51','2025-10-15 15:07:51'),(22,14,8,0.00,300.00,'خروج من الصندوق/البنك','2025-10-15 15:07:51','2025-10-15 15:07:51');
+INSERT INTO `journal_entry_lines` VALUES (17,12,21,100.00,0.00,'تخفيض التزامات المورد','2025-09-24 09:38:13','2025-09-24 09:38:13'),(18,12,8,0.00,100.00,'خروج من الصندوق/البنك','2025-09-24 09:38:13','2025-09-24 09:38:13'),(19,13,21,200.00,0.00,'تخفيض التزامات المورد','2025-10-15 15:06:35','2025-10-15 15:06:35'),(20,13,8,0.00,200.00,'خروج من الصندوق/البنك','2025-10-15 15:06:35','2025-10-15 15:06:35'),(21,14,21,300.00,0.00,'تخفيض التزامات المورد','2025-10-15 15:07:51','2025-10-15 15:07:51'),(22,14,8,0.00,300.00,'خروج من الصندوق/البنك','2025-10-15 15:07:51','2025-10-15 15:07:51'),(23,15,21,15000.00,0.00,'تخفيض التزامات المورد','2025-12-02 10:41:42','2025-12-02 10:41:42'),(24,15,8,0.00,15000.00,'خروج من الصندوق/البنك','2025-12-02 10:41:42','2025-12-02 10:41:42'),(25,16,21,2000.00,0.00,'تخفيض التزامات المورد','2025-12-02 10:42:18','2025-12-02 10:42:18'),(26,16,8,0.00,2000.00,'خروج من الصندوق/البنك','2025-12-02 10:42:18','2025-12-02 10:42:18'),(27,17,21,200.00,0.00,'تخفيض التزامات المورد','2025-12-02 12:30:35','2025-12-02 12:30:35'),(28,17,8,0.00,200.00,'خروج من الصندوق/البنك','2025-12-02 12:30:35','2025-12-02 12:30:35');
 /*!40000 ALTER TABLE `journal_entry_lines` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -777,7 +842,7 @@ CREATE TABLE `parties` (
   CONSTRAINT `parties_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`),
   CONSTRAINT `parties_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
   CONSTRAINT `parties_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `party_categories` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -786,7 +851,7 @@ CREATE TABLE `parties` (
 
 LOCK TABLES `parties` WRITE;
 /*!40000 ALTER TABLE `parties` DISABLE KEYS */;
-INSERT INTO `parties` VALUES (1,'هاجر وشروقه','supplier','','','','',4,21,0.00,'2025-08-20 12:44:24',2),(3,'ECC','supplier','','','','',3,21,0.00,'2025-08-26 09:39:55',6),(4,'عباس الضو','customer','0500','','','',1,21,0.00,'2025-09-02 14:26:46',2);
+INSERT INTO `parties` VALUES (1,'هاجر وشروقه','supplier','','','','',4,21,0.00,'2025-08-20 12:44:24',2),(3,'ECC','supplier','','','','',3,21,0.00,'2025-08-26 09:39:55',6),(4,'عباس الضو','customer','0500','','','',1,21,0.00,'2025-09-02 14:26:46',2),(5,'Attractive pack','supplier','','','','',8,21,0.00,'2025-11-29 12:32:50',6);
 /*!40000 ALTER TABLE `parties` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -801,7 +866,7 @@ CREATE TABLE `party_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -942,7 +1007,7 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   KEY `unit_id` (`unit_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -951,7 +1016,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (4,'Nurivina Argan Oil 100ml',290.00,2,'2025-08-12 14:25:50',52.00),(5,'Nurivina Argan Oil Hair Serum 100ml',390.00,2,'2025-08-12 14:26:24',110.00),(6,'Nurivina Omega Anti-Hair Loss Shampoo 220ml',220.00,2,'2025-08-12 14:27:01',44.40),(7,'Nurivina Argan oil Leave in Conditioner 220ml',240.00,2,'2025-08-12 14:27:35',40.00),(8,'Nurivina whitening Cream 50gm',210.00,2,'2025-08-12 14:29:09',22.70),(10,'Nurivana Anti-Hair loss Shampoo Bottle 220Ml',6.00,5,'2025-10-15 12:51:02',6.00),(11,'Nurivina Anti-Hair Loss Shampoo Sticker',2.00,6,'2025-10-15 12:52:12',2.00),(12,'Nurivina Anti-Hair Loss Shampoo Cap',3.00,2,'2025-10-15 12:52:57',3.00);
+INSERT INTO `products` VALUES (4,'Nurivina Argan Oil 100ml',330.00,2,'2025-08-12 14:25:50',0.00),(5,'Nurivina Argan Oil Hair Serum 100ml',430.00,2,'2025-08-12 14:26:24',0.00),(6,'Nurivina Omega Anti-Hair Loss Shampoo 220ml',250.00,2,'2025-08-12 14:27:01',0.00),(7,'Nurivina Argan oil Leave in Conditioner 220ml',270.00,2,'2025-08-12 14:27:35',0.00),(8,'Nurivina whitening Cream 50gm',240.00,2,'2025-08-12 14:29:09',0.00),(10,'Nurivana Anti-Hair loss Shampoo Bottle 220Ml',6.00,5,'2025-10-15 12:51:02',6.00),(11,'Nurivina Anti-Hair Loss Shampoo Sticker',2.00,6,'2025-10-15 12:52:12',2.00),(12,'Nurivina Anti-Hair Loss Shampoo Cap',3.00,2,'2025-10-15 12:52:57',3.00),(13,'Nurivina Anti-Hair Loss Spray 100ml',520.00,2,'2025-11-25 13:42:37',0.00);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -987,7 +1052,7 @@ CREATE TABLE `purchase_invoice_items` (
   CONSTRAINT `purchase_invoice_items_chk_2` CHECK ((`unit_price` >= 0)),
   CONSTRAINT `purchase_invoice_items_chk_3` CHECK ((`discount` >= 0)),
   CONSTRAINT `purchase_invoice_items_chk_4` CHECK ((`total_price` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -996,7 +1061,7 @@ CREATE TABLE `purchase_invoice_items` (
 
 LOCK TABLES `purchase_invoice_items` WRITE;
 /*!40000 ALTER TABLE `purchase_invoice_items` DISABLE KEYS */;
-INSERT INTO `purchase_invoice_items` (`id`, `purchase_invoice_id`, `product_id`, `warehouse_id`, `batch_number`, `expiry_date`, `quantity`, `bonus_quantity`, `unit_price`, `discount`, `created_at`, `updated_at`) VALUES (20,63,4,2,'003','2025-10-30',10.00,5.00,52.00,0.00,'2025-10-15 15:03:30','2025-10-15 15:03:30'),(21,63,5,2,'002','2025-10-31',10.00,0.00,109.00,0.00,'2025-10-15 15:03:30','2025-10-15 15:03:30'),(22,64,8,6,'002','2025-11-06',1.00,2.00,22.70,0.00,'2025-11-08 22:15:27','2025-11-08 22:15:27'),(23,65,8,1,'003','2025-11-28',55.00,1.00,22.70,0.00,'2025-11-08 22:30:38','2025-11-08 22:30:38');
+INSERT INTO `purchase_invoice_items` (`id`, `purchase_invoice_id`, `product_id`, `warehouse_id`, `batch_number`, `expiry_date`, `quantity`, `bonus_quantity`, `unit_price`, `discount`, `created_at`, `updated_at`) VALUES (53,87,10,8,'',NULL,3000.00,0.00,6.00,0.00,'2025-12-02 10:41:11','2025-12-02 10:41:11'),(54,87,12,8,'',NULL,3000.00,0.00,3.00,0.00,'2025-12-02 10:41:11','2025-12-02 10:41:11'),(55,87,11,8,'',NULL,3000.00,0.00,2.00,0.00,'2025-12-02 10:41:11','2025-12-02 10:41:11');
 /*!40000 ALTER TABLE `purchase_invoice_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1024,7 +1089,7 @@ CREATE TABLE `purchase_invoice_payments` (
   CONSTRAINT `fk_payment_account` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_payment_invoice` FOREIGN KEY (`purchase_invoice_id`) REFERENCES `purchase_invoices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `purchase_invoice_payments_chk_1` CHECK ((`amount` > 0))
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1033,7 +1098,7 @@ CREATE TABLE `purchase_invoice_payments` (
 
 LOCK TABLES `purchase_invoice_payments` WRITE;
 /*!40000 ALTER TABLE `purchase_invoice_payments` DISABLE KEYS */;
-INSERT INTO `purchase_invoice_payments` VALUES (13,62,'2025-09-24','cash',8,100.00,NULL,NULL,'2025-09-24 09:38:13','2025-09-24 09:38:13'),(14,63,'2025-10-15','cash',8,200.00,NULL,NULL,'2025-10-15 15:06:35','2025-10-15 15:06:35'),(15,63,'2025-10-15','cash',8,300.00,NULL,NULL,'2025-10-15 15:07:51','2025-10-15 15:07:51');
+INSERT INTO `purchase_invoice_payments` VALUES (16,87,'2025-12-02','cash',8,15000.00,NULL,NULL,'2025-12-02 10:41:42','2025-12-02 10:41:42'),(17,87,'2025-12-02','cheque',8,2000.00,NULL,NULL,'2025-12-02 10:42:18','2025-12-02 10:42:18'),(18,91,'2025-12-02','cash',8,200.00,NULL,NULL,'2025-12-02 12:30:35','2025-12-02 12:30:35');
 /*!40000 ALTER TABLE `purchase_invoice_payments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1052,6 +1117,7 @@ CREATE TABLE `purchase_invoices` (
   `invoice_date` date NOT NULL,
   `due_date` date DEFAULT NULL,
   `payment_terms` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `invoice_type` enum('normal','opening') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
   `status` enum('unpaid','paid','partially_paid','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
   `subtotal` decimal(18,2) NOT NULL DEFAULT '0.00',
   `additional_discount` decimal(18,2) NOT NULL DEFAULT '0.00',
@@ -1072,7 +1138,7 @@ CREATE TABLE `purchase_invoices` (
   CONSTRAINT `purchase_invoices_chk_1` CHECK ((`additional_discount` >= 0)),
   CONSTRAINT `purchase_invoices_chk_2` CHECK ((`vat_rate` >= 0)),
   CONSTRAINT `purchase_invoices_chk_3` CHECK ((`tax_rate` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=95 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1081,7 +1147,7 @@ CREATE TABLE `purchase_invoices` (
 
 LOCK TABLES `purchase_invoices` WRITE;
 /*!40000 ALTER TABLE `purchase_invoices` DISABLE KEYS */;
-INSERT INTO `purchase_invoices` VALUES (62,3,80,'PI-2025-000080','2025-09-24',NULL,NULL,'partially_paid',1090.00,0.00,15.00,163.50,0.00,0.00,1253.50,'2025-09-24 09:37:33','2025-09-24 09:38:13'),(63,3,82,'PI-2025-000082','2025-10-15',NULL,NULL,'partially_paid',1610.00,0.00,0.00,0.00,0.00,0.00,1610.00,'2025-10-15 15:03:30','2025-10-15 15:06:35'),(64,1,86,'PI-2025-000086','2025-11-09',NULL,NULL,'unpaid',22.70,0.00,0.00,0.00,0.00,0.00,22.70,'2025-11-08 22:15:27','2025-11-08 22:15:27'),(65,1,87,'PI-2025-000087','2025-11-09',NULL,NULL,'unpaid',1248.50,0.00,0.00,0.00,0.00,0.00,1248.50,'2025-11-08 22:30:38','2025-11-08 22:30:38');
+INSERT INTO `purchase_invoices` VALUES (87,5,116,'PI-2025-000116','2025-12-02',NULL,NULL,'normal','partially_paid',33000.00,0.00,0.00,0.00,0.00,0.00,33000.00,'2025-12-02 10:41:11','2025-12-02 10:41:42'),(91,5,NULL,'PI-2025-000117','2025-12-02',NULL,'','opening','partially_paid',0.00,0.00,0.00,0.00,0.00,0.00,1000.00,'2025-12-02 12:29:12','2025-12-02 12:30:35'),(94,5,NULL,'PI-2025-000118','2025-12-02',NULL,'','opening','unpaid',0.00,0.00,0.00,0.00,0.00,0.00,5000.00,'2025-12-02 12:36:21','2025-12-02 12:36:21');
 /*!40000 ALTER TABLE `purchase_invoices` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1118,7 +1184,7 @@ CREATE TABLE `purchase_order_items` (
   CONSTRAINT `purchase_order_items_chk_2` CHECK ((`unit_price` >= 0)),
   CONSTRAINT `purchase_order_items_chk_3` CHECK (((`discount` >= 0) and (`discount` <= 100))),
   CONSTRAINT `purchase_order_items_chk_4` CHECK ((`total_price` >= 0))
-) ENGINE=InnoDB AUTO_INCREMENT=132 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1127,7 +1193,7 @@ CREATE TABLE `purchase_order_items` (
 
 LOCK TABLES `purchase_order_items` WRITE;
 /*!40000 ALTER TABLE `purchase_order_items` DISABLE KEYS */;
-INSERT INTO `purchase_order_items` VALUES (124,80,5,2,'001','2025-09-23',10.00,1.00,109.00,0.00,NULL,'2025-09-24 09:37:33','2025-09-24 09:37:33',0.00),(125,82,4,2,'003','2025-10-30',10.00,5.00,52.00,0.00,NULL,'2025-10-15 15:02:30','2025-10-15 15:03:30',0.00),(126,82,5,2,'002','2025-10-31',10.00,0.00,109.00,0.00,NULL,'2025-10-15 15:02:30','2025-10-15 15:03:30',0.00),(130,86,8,6,'002','2025-11-06',1.00,2.00,22.70,0.00,NULL,'2025-11-08 22:15:05','2025-11-08 22:15:27',0.00),(131,87,8,1,'003','2025-11-28',55.00,1.00,22.70,0.00,NULL,'2025-11-08 22:30:20','2025-11-08 22:30:38',0.00);
+INSERT INTO `purchase_order_items` VALUES (27,116,10,8,'',NULL,3000.00,0.00,6.00,0.00,NULL,'2025-12-02 10:40:55','2025-12-02 10:41:11',0.00),(28,116,12,8,'',NULL,3000.00,0.00,3.00,0.00,NULL,'2025-12-02 10:40:55','2025-12-02 10:41:11',0.00),(29,116,11,8,'',NULL,3000.00,0.00,2.00,0.00,NULL,'2025-12-02 10:40:56','2025-12-02 10:41:11',0.00);
 /*!40000 ALTER TABLE `purchase_order_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1159,7 +1225,7 @@ CREATE TABLE `purchase_orders` (
   KEY `idx_po_supplier` (`supplier_id`),
   KEY `idx_po_order_date` (`order_date`),
   CONSTRAINT `fk_po_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `parties` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=88 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=117 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1168,7 +1234,7 @@ CREATE TABLE `purchase_orders` (
 
 LOCK TABLES `purchase_orders` WRITE;
 /*!40000 ALTER TABLE `purchase_orders` DISABLE KEYS */;
-INSERT INTO `purchase_orders` VALUES (80,3,'PO-2025-000080','2025-09-25','approved',1253.50,'2025-09-24 09:37:33','2025-09-24 09:37:33',1090.00,0.00,15.00,163.50,0.00,0.00),(81,3,'PO-2025-000081','2025-10-15','draft',1610.00,'2025-10-15 15:01:15','2025-10-15 15:01:15',1610.00,0.00,0.00,0.00,0.00,0.00),(82,3,'PO-2025-000082','2025-10-15','approved',1610.00,'2025-10-15 15:02:30','2025-10-15 15:03:30',1610.00,0.00,0.00,0.00,0.00,0.00),(83,1,'PO-2025-000083','2025-11-08','draft',110000.00,'2025-11-08 22:04:32','2025-11-08 22:04:32',110000.00,0.00,0.00,0.00,0.00,0.00),(84,1,'PO-2025-000084','2025-11-08','draft',22.70,'2025-11-08 22:05:59','2025-11-08 22:05:59',22.70,0.00,0.00,0.00,0.00,0.00),(85,1,'PO-2025-000085','2025-11-08','draft',22.70,'2025-11-08 22:11:01','2025-11-08 22:11:01',22.70,0.00,0.00,0.00,0.00,0.00),(86,1,'PO-2025-000086','2025-11-08','approved',22.70,'2025-11-08 22:15:05','2025-11-08 22:15:27',22.70,0.00,0.00,0.00,0.00,0.00),(87,1,'PO-2025-000087','2025-11-08','approved',1248.50,'2025-11-08 22:30:20','2025-11-08 22:30:38',1248.50,0.00,0.00,0.00,0.00,0.00);
+INSERT INTO `purchase_orders` VALUES (116,5,'PO-2025-000116','2025-12-02','approved',33000.00,'2025-12-02 10:40:55','2025-12-02 10:41:11',33000.00,0.00,0.00,0.00,0.00,0.00);
 /*!40000 ALTER TABLE `purchase_orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1556,14 +1622,19 @@ CREATE TABLE `sales_invoice_items` (
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
   `price` decimal(10,2) NOT NULL,
-  `discount_percent` decimal(5,2) DEFAULT '0.00',
-  `extra_discount_percent` decimal(5,2) DEFAULT '0.00',
+  `discount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `tax_percent` decimal(5,2) NOT NULL DEFAULT '0.00',
+  `tax_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `warehouse_id` int DEFAULT NULL,
+  `bonus` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `sales_invoice_id` (`sales_invoice_id`),
   KEY `product_id` (`product_id`),
+  KEY `fk_si_items_warehouse` (`warehouse_id`),
+  CONSTRAINT `fk_si_items_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_invoice_items_ibfk_1` FOREIGN KEY (`sales_invoice_id`) REFERENCES `sales_invoices` (`id`),
   CONSTRAINT `sales_invoice_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1572,204 +1643,9 @@ CREATE TABLE `sales_invoice_items` (
 
 LOCK TABLES `sales_invoice_items` WRITE;
 /*!40000 ALTER TABLE `sales_invoice_items` DISABLE KEYS */;
+INSERT INTO `sales_invoice_items` VALUES (5,13,10,10,6.00,0.00,0.00,0.00,8,0);
 /*!40000 ALTER TABLE `sales_invoice_items` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_inventory_after_sales_invoice` AFTER INSERT ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE wh_id INT;
-  
-  -- حدد المخزن (مثلاً من إعدادات النظام أو تخصيص لاحقًا)
-  SET wh_id = 1; -- مؤقتًا
-
-  UPDATE current_inventory
-  SET quantity = quantity - NEW.quantity
-  WHERE product_id = NEW.product_id AND warehouse_id = wh_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_log_after_sales_invoice` AFTER INSERT ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE wh_id INT;
-
-  SET wh_id = 1; -- مؤقتًا
-
-  INSERT INTO inventory_logs (
-    product_id,
-    warehouse_id,
-    action_type,
-    quantity_change,
-    reference_type,
-    reference_id
-  )
-  VALUES (
-    NEW.product_id,
-    wh_id,
-    'delete',
-    -NEW.quantity,
-    'sales_invoice',
-    NEW.sales_invoice_id
-  );
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_sales_invoice_total` AFTER INSERT ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE subtotal DECIMAL(10,2) DEFAULT 0;
-  DECLARE disc DECIMAL(5,2);
-  DECLARE extra DECIMAL(5,2);
-  DECLARE tax DECIMAL(5,2);
-  DECLARE total DECIMAL(10,2);
-
-  -- حساب مجموع السطور بعد الخصومات الفردية
-  SELECT SUM(
-    quantity * price *
-    (1 - discount_percent / 100) *
-    (1 - extra_discount_percent / 100)
-  )
-  INTO subtotal
-  FROM sales_invoice_items
-  WHERE sales_invoice_id = NEW.sales_invoice_id;
-
-  -- جلب خصومات الفاتورة والضريبة
-  SELECT discount_percent, extra_discount_percent, tax_percent
-  INTO disc, extra, tax
-  FROM sales_invoices
-  WHERE id = NEW.sales_invoice_id;
-
-  -- تطبيق الخصومات والضريبة
-  SET total = subtotal *
-              (1 - disc / 100) *
-              (1 - extra / 100) *
-              (1 + tax / 100);
-
-  -- تحديث إجمالي الفاتورة
-  UPDATE sales_invoices
-  SET total_amount = ROUND(total, 2)
-  WHERE id = NEW.sales_invoice_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_sales_invoice_total_on_update` AFTER UPDATE ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE subtotal DECIMAL(10,2) DEFAULT 0;
-  DECLARE disc DECIMAL(5,2);
-  DECLARE extra DECIMAL(5,2);
-  DECLARE tax DECIMAL(5,2);
-  DECLARE total DECIMAL(10,2);
-
-  SELECT SUM(
-    quantity * price *
-    (1 - discount_percent / 100) *
-    (1 - extra_discount_percent / 100)
-  )
-  INTO subtotal
-  FROM sales_invoice_items
-  WHERE sales_invoice_id = NEW.sales_invoice_id;
-
-  SELECT discount_percent, extra_discount_percent, tax_percent
-  INTO disc, extra, tax
-  FROM sales_invoices
-  WHERE id = NEW.sales_invoice_id;
-
-  SET total = subtotal *
-              (1 - disc / 100) *
-              (1 - extra / 100) *
-              (1 + tax / 100);
-
-  UPDATE sales_invoices
-  SET total_amount = ROUND(total, 2)
-  WHERE id = NEW.sales_invoice_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_sales_invoice_total_on_delete` AFTER DELETE ON `sales_invoice_items` FOR EACH ROW BEGIN
-  DECLARE subtotal DECIMAL(10,2) DEFAULT 0;
-  DECLARE disc DECIMAL(5,2);
-  DECLARE extra DECIMAL(5,2);
-  DECLARE tax DECIMAL(5,2);
-  DECLARE total DECIMAL(10,2);
-
-  SELECT SUM(
-    quantity * price *
-    (1 - discount_percent / 100) *
-    (1 - extra_discount_percent / 100)
-  )
-  INTO subtotal
-  FROM sales_invoice_items
-  WHERE sales_invoice_id = OLD.sales_invoice_id;
-
-  SELECT discount_percent, extra_discount_percent, tax_percent
-  INTO disc, extra, tax
-  FROM sales_invoices
-  WHERE id = OLD.sales_invoice_id;
-
-  SET total = IFNULL(subtotal, 0) *
-              (1 - disc / 100) *
-              (1 - extra / 100) *
-              (1 + tax / 100);
-
-  UPDATE sales_invoices
-  SET total_amount = ROUND(total, 2)
-  WHERE id = OLD.sales_invoice_id;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `sales_invoices`
@@ -1780,29 +1656,37 @@ DROP TABLE IF EXISTS `sales_invoices`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sales_invoices` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `invoice_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('unpaid','paid','partial','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
   `sales_order_id` int DEFAULT NULL,
   `party_id` int NOT NULL,
   `invoice_date` date NOT NULL DEFAULT (curdate()),
-  `discount_percent` decimal(5,2) DEFAULT '0.00',
-  `extra_discount_percent` decimal(5,2) DEFAULT '0.00',
-  `tax_percent` decimal(5,2) DEFAULT '0.00',
-  `bonus` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `total_amount` decimal(10,2) DEFAULT NULL,
+  `due_date` date DEFAULT NULL,
+  `shipping_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `account_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `discount_amount` decimal(10,2) DEFAULT '0.00',
-  `tax_amount` decimal(10,2) DEFAULT '0.00',
   `employee_id` int DEFAULT NULL,
+  `warehouse_id` int DEFAULT NULL,
+  `subtotal` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `additional_discount` decimal(18,2) NOT NULL DEFAULT '0.00' COMMENT 'خصم إضافي على مستوى الفاتورة',
+  `vat_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'نسبة ضريبة القيمة المضافة',
+  `vat_amount` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `tax_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'أي ضريبة أخرى',
+  `tax_amount` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
+  UNIQUE KEY `invoice_number` (`invoice_number`),
   KEY `sales_order_id` (`sales_order_id`),
   KEY `party_id` (`party_id`),
   KEY `account_id` (`account_id`),
   KEY `fk_employee_id` (`employee_id`),
+  KEY `fk_sales_invoices_warehouse` (`warehouse_id`),
   CONSTRAINT `fk_employee_id` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
+  CONSTRAINT `fk_sales_invoices_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_invoices_ibfk_1` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`),
   CONSTRAINT `sales_invoices_ibfk_2` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`),
   CONSTRAINT `sales_invoices_ibfk_3` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1811,151 +1695,9 @@ CREATE TABLE `sales_invoices` (
 
 LOCK TABLES `sales_invoices` WRITE;
 /*!40000 ALTER TABLE `sales_invoices` DISABLE KEYS */;
+INSERT INTO `sales_invoices` VALUES (13,'INV-1764725751306-147','unpaid',14,4,'2025-12-03',NULL,0.00,NULL,'2025-12-03 01:35:51',NULL,8,60.00,0.00,0.00,0.00,0.00,0.00,60.00);
 /*!40000 ALTER TABLE `sales_invoices` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_after_insert_sales_invoice` AFTER INSERT ON `sales_invoices` FOR EACH ROW BEGIN
-    DECLARE entry_id INT;
-    DECLARE sales_account INT;
-    DECLARE receivable_account INT;
-    DECLARE discount_account INT;
-    DECLARE tax_account INT;
-
-    -- جلب إعدادات الحسابات
-    SELECT
-        sales_revenue_account_id,
-        receivables_account_id,
-        discount_account_id,
-        tax_account_id
-    INTO
-        sales_account,
-        receivable_account,
-        discount_account,
-        tax_account
-    FROM accounting_settings
-    WHERE id = 1;
-
-    -- رأس القيد
-    INSERT INTO journal_entries (entry_date, description)
-    VALUES (NEW.invoice_date, CONCAT('فاتورة بيع #', NEW.id));
-    SET entry_id = LAST_INSERT_ID();
-
-    -- قيد دائن: المبيعات
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (entry_id, sales_account, 0, NEW.total_amount, 'إثبات المبيعات');
-
-    -- قيد مدين: العميل (مدينون)
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (entry_id, receivable_account, NEW.total_amount, 0, 'إثبات مديونية العميل');
-
-    -- خصم إن وجد
-    IF NEW.discount_amount > 0 THEN
-        INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-        VALUES (entry_id, discount_account, NEW.discount_amount, 0, 'خصم على الفاتورة');
-    END IF;
-
-    -- ضريبة إن وجدت
-    IF NEW.tax_amount > 0 THEN
-        INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-        VALUES (entry_id, tax_account, 0, NEW.tax_amount, 'ضريبة مبيعات');
-    END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_after_update_sales_invoice` AFTER UPDATE ON `sales_invoices` FOR EACH ROW BEGIN
-    -- أولًا: التصريحات
-    DECLARE entry_id INT;
-    DECLARE sales_account INT;
-    DECLARE receivable_account INT;
-    DECLARE discount_account INT;
-    DECLARE tax_account INT;
-
-    -- جلب إعدادات الحسابات
-    SELECT
-        sales_revenue_account_id,
-        receivables_account_id,
-        discount_account_id,
-        tax_account_id
-    INTO
-        sales_account,
-        receivable_account,
-        discount_account,
-        tax_account
-    FROM accounting_settings
-    WHERE id = 1;
-
-    -- حذف القيد القديم
-    DELETE FROM journal_entries
-    WHERE description = CONCAT('فاتورة بيع #', OLD.id);
-
-    -- إضافة القيد الجديد
-    INSERT INTO journal_entries (entry_date, description)
-    VALUES (NEW.invoice_date, CONCAT('فاتورة بيع #', NEW.id));
-    SET entry_id = LAST_INSERT_ID();
-
-    -- قيد دائن: المبيعات
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (entry_id, sales_account, 0, NEW.total_amount, 'إثبات المبيعات');
-
-    -- قيد مدين: حساب العميل (مدينون)
-    INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-    VALUES (entry_id, receivable_account, NEW.total_amount, 0, 'إثبات مديونية العميل');
-
-    -- خصم إن وجد
-    IF NEW.discount_amount > 0 THEN
-        INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-        VALUES (entry_id, discount_account, NEW.discount_amount, 0, 'خصم على الفاتورة');
-    END IF;
-
-    -- ضريبة إن وجدت
-    IF NEW.tax_amount > 0 THEN
-        INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
-        VALUES (entry_id, tax_account, 0, NEW.tax_amount, 'ضريبة مبيعات');
-    END IF;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_after_delete_sales_invoice` AFTER DELETE ON `sales_invoices` FOR EACH ROW BEGIN
-    DELETE FROM journal_entries
-    WHERE description = CONCAT('فاتورة بيع #', OLD.id);
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `sales_order_items`
@@ -1970,12 +1712,19 @@ CREATE TABLE `sales_order_items` (
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
   `price` decimal(10,2) NOT NULL,
+  `discount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `tax_percent` decimal(5,2) NOT NULL DEFAULT '0.00',
+  `tax_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `bonus` int NOT NULL DEFAULT '0',
+  `warehouse_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `sales_order_id` (`sales_order_id`),
   KEY `product_id` (`product_id`),
+  KEY `fk_so_items_warehouse` (`warehouse_id`),
+  CONSTRAINT `fk_so_items_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_order_items_ibfk_1` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`),
   CONSTRAINT `sales_order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1984,6 +1733,7 @@ CREATE TABLE `sales_order_items` (
 
 LOCK TABLES `sales_order_items` WRITE;
 /*!40000 ALTER TABLE `sales_order_items` DISABLE KEYS */;
+INSERT INTO `sales_order_items` VALUES (4,10,4,10,330.00,0.00,0.00,0.00,0,2),(5,11,4,10,330.00,0.00,0.00,0.00,0,2),(6,12,13,1,520.00,0.00,0.00,0.00,0,1),(7,13,4,9,330.00,0.00,0.00,0.00,0,NULL),(8,14,10,10,6.00,0.00,0.00,0.00,0,8);
 /*!40000 ALTER TABLE `sales_order_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1997,13 +1747,27 @@ DROP TABLE IF EXISTS `sales_orders`;
 CREATE TABLE `sales_orders` (
   `id` int NOT NULL AUTO_INCREMENT,
   `party_id` int NOT NULL,
+  `status` enum('pending','approved','partial','completed','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `warehouse_id` int DEFAULT NULL,
+  `employee_id` int DEFAULT NULL,
   `order_date` date NOT NULL DEFAULT (curdate()),
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `subtotal` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `additional_discount` decimal(18,2) NOT NULL DEFAULT '0.00' COMMENT 'خصم إضافي على مستوى الطلب',
+  `vat_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'نسبة ضريبة القيمة المضافة المتوقعة',
+  `vat_amount` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `tax_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'أي ضريبة أخرى',
+  `tax_amount` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
   KEY `party_id` (`party_id`),
+  KEY `fk_sales_orders_warehouse` (`warehouse_id`),
+  KEY `fk_sales_orders_employee` (`employee_id`),
+  CONSTRAINT `fk_sales_orders_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
+  CONSTRAINT `fk_sales_orders_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_orders_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2012,6 +1776,7 @@ CREATE TABLE `sales_orders` (
 
 LOCK TABLES `sales_orders` WRITE;
 /*!40000 ALTER TABLE `sales_orders` DISABLE KEYS */;
+INSERT INTO `sales_orders` VALUES (10,4,'pending',2,NULL,'2025-12-03','','2025-12-03 00:41:14',3300.00,0.00,0.00,0.00,0.00,0.00,3300.00),(11,4,'pending',2,NULL,'2025-12-03','','2025-12-03 00:48:20',3300.00,0.00,0.00,0.00,0.00,0.00,3300.00),(12,4,'pending',1,NULL,'2025-12-03','','2025-12-03 01:07:51',520.00,0.00,0.00,0.00,0.00,0.00,520.00),(13,4,'pending',2,NULL,'2025-12-03','','2025-12-03 01:28:38',2970.00,0.00,0.00,0.00,0.00,0.00,2970.00),(14,4,'approved',8,NULL,'2025-12-03','','2025-12-03 01:35:43',60.00,0.00,0.00,0.00,0.00,0.00,60.00);
 /*!40000 ALTER TABLE `sales_orders` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2300,19 +2065,6 @@ LOCK TABLES `supplier_cheques` WRITE;
 UNLOCK TABLES;
 
 --
--- Temporary view structure for view `suppliers`
---
-
-DROP TABLE IF EXISTS `suppliers`;
-/*!50001 DROP VIEW IF EXISTS `suppliers`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `suppliers` AS SELECT 
- 1 AS `id`,
- 1 AS `name`*/;
-SET character_set_client = @saved_cs_client;
-
---
 -- Table structure for table `units`
 --
 
@@ -2323,7 +2075,7 @@ CREATE TABLE `units` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2364,285 +2116,6 @@ LOCK TABLES `users` WRITE;
 UNLOCK TABLES;
 
 --
--- Temporary view structure for view `v_monthly_orders_report`
---
-
-DROP TABLE IF EXISTS `v_monthly_orders_report`;
-/*!50001 DROP VIEW IF EXISTS `v_monthly_orders_report`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `v_monthly_orders_report` AS SELECT 
- 1 AS `order_month`,
- 1 AS `total_orders`,
- 1 AS `total_order_value`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `v_supplier_orders_report`
---
-
-DROP TABLE IF EXISTS `v_supplier_orders_report`;
-/*!50001 DROP VIEW IF EXISTS `v_supplier_orders_report`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `v_supplier_orders_report` AS SELECT 
- 1 AS `supplier_id`,
- 1 AS `supplier_name`,
- 1 AS `total_orders`,
- 1 AS `total_order_value`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_account_balances`
---
-
-DROP TABLE IF EXISTS `view_account_balances`;
-/*!50001 DROP VIEW IF EXISTS `view_account_balances`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_account_balances` AS SELECT 
- 1 AS `account_id`,
- 1 AS `account_name`,
- 1 AS `total_debit`,
- 1 AS `total_credit`,
- 1 AS `balance`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_avg_purchase_cost`
---
-
-DROP TABLE IF EXISTS `view_avg_purchase_cost`;
-/*!50001 DROP VIEW IF EXISTS `view_avg_purchase_cost`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_avg_purchase_cost` AS SELECT 
- 1 AS `product_id`,
- 1 AS `avg_cost_price`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_current_inventory`
---
-
-DROP TABLE IF EXISTS `view_current_inventory`;
-/*!50001 DROP VIEW IF EXISTS `view_current_inventory`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_current_inventory` AS SELECT 
- 1 AS `product_id`,
- 1 AS `product_name`,
- 1 AS `warehouse_id`,
- 1 AS `warehouse_name`,
- 1 AS `quantity`,
- 1 AS `last_updated`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_customer_statement`
---
-
-DROP TABLE IF EXISTS `view_customer_statement`;
-/*!50001 DROP VIEW IF EXISTS `view_customer_statement`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_customer_statement` AS SELECT 
- 1 AS `party_id`,
- 1 AS `trans_date`,
- 1 AS `description`,
- 1 AS `debit`,
- 1 AS `credit`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_customer_statement_base`
---
-
-DROP TABLE IF EXISTS `view_customer_statement_base`;
-/*!50001 DROP VIEW IF EXISTS `view_customer_statement_base`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_customer_statement_base` AS SELECT 
- 1 AS `party_id`,
- 1 AS `trans_date`,
- 1 AS `description`,
- 1 AS `debit`,
- 1 AS `credit`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_customer_statement_dated`
---
-
-DROP TABLE IF EXISTS `view_customer_statement_dated`;
-/*!50001 DROP VIEW IF EXISTS `view_customer_statement_dated`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_customer_statement_dated` AS SELECT 
- 1 AS `party_id`,
- 1 AS `party_name`,
- 1 AS `invoice_id`,
- 1 AS `invoice_date`,
- 1 AS `total_amount`,
- 1 AS `total_paid`,
- 1 AS `balance`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_inventory_logs`
---
-
-DROP TABLE IF EXISTS `view_inventory_logs`;
-/*!50001 DROP VIEW IF EXISTS `view_inventory_logs`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_inventory_logs` AS SELECT 
- 1 AS `id`,
- 1 AS `log_time`,
- 1 AS `action_type`,
- 1 AS `quantity_change`,
- 1 AS `reference_type`,
- 1 AS `reference_id`,
- 1 AS `product_name`,
- 1 AS `warehouse_name`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_monthly_profit_summary`
---
-
-DROP TABLE IF EXISTS `view_monthly_profit_summary`;
-/*!50001 DROP VIEW IF EXISTS `view_monthly_profit_summary`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_monthly_profit_summary` AS SELECT 
- 1 AS `month`,
- 1 AS `total_sales`,
- 1 AS `total_cost`,
- 1 AS `total_profit`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_monthly_sales_summary`
---
-
-DROP TABLE IF EXISTS `view_monthly_sales_summary`;
-/*!50001 DROP VIEW IF EXISTS `view_monthly_sales_summary`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_monthly_sales_summary` AS SELECT 
- 1 AS `month`,
- 1 AS `total_invoices`,
- 1 AS `total_sales`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_purchase_returns`
---
-
-DROP TABLE IF EXISTS `view_purchase_returns`;
-/*!50001 DROP VIEW IF EXISTS `view_purchase_returns`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_purchase_returns` AS SELECT 
- 1 AS `return_id`,
- 1 AS `return_date`,
- 1 AS `invoice_id`,
- 1 AS `product_name`,
- 1 AS `quantity`,
- 1 AS `reason`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_sales_invoices`
---
-
-DROP TABLE IF EXISTS `view_sales_invoices`;
-/*!50001 DROP VIEW IF EXISTS `view_sales_invoices`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_sales_invoices` AS SELECT 
- 1 AS `invoice_id`,
- 1 AS `invoice_date`,
- 1 AS `party_name`,
- 1 AS `product_id`,
- 1 AS `product_name`,
- 1 AS `quantity`,
- 1 AS `price`,
- 1 AS `discount_percent`,
- 1 AS `extra_discount_percent`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_sales_payments`
---
-
-DROP TABLE IF EXISTS `view_sales_payments`;
-/*!50001 DROP VIEW IF EXISTS `view_sales_payments`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_sales_payments` AS SELECT 
- 1 AS `payment_id`,
- 1 AS `payment_date`,
- 1 AS `party_name`,
- 1 AS `account_name`,
- 1 AS `amount`,
- 1 AS `invoice_id`,
- 1 AS `invoice_date`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_sales_payments_by_account`
---
-
-DROP TABLE IF EXISTS `view_sales_payments_by_account`;
-/*!50001 DROP VIEW IF EXISTS `view_sales_payments_by_account`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_sales_payments_by_account` AS SELECT 
- 1 AS `account_id`,
- 1 AS `account_name`,
- 1 AS `payment_date`,
- 1 AS `total_paid`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_sales_returns`
---
-
-DROP TABLE IF EXISTS `view_sales_returns`;
-/*!50001 DROP VIEW IF EXISTS `view_sales_returns`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_sales_returns` AS SELECT 
- 1 AS `return_id`,
- 1 AS `return_date`,
- 1 AS `invoice_id`,
- 1 AS `party_name`,
- 1 AS `product_id`,
- 1 AS `product_name`,
- 1 AS `quantity`,
- 1 AS `price`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Temporary view structure for view `view_unpaid_sales_invoices`
---
-
-DROP TABLE IF EXISTS `view_unpaid_sales_invoices`;
-/*!50001 DROP VIEW IF EXISTS `view_unpaid_sales_invoices`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `view_unpaid_sales_invoices` AS SELECT 
- 1 AS `invoice_id`,
- 1 AS `party_name`,
- 1 AS `invoice_date`,
- 1 AS `total_amount`,
- 1 AS `total_paid`,
- 1 AS `balance`*/;
-SET character_set_client = @saved_cs_client;
-
---
 -- Table structure for table `warehouse_transfer_items`
 --
 
@@ -2660,7 +2133,7 @@ CREATE TABLE `warehouse_transfer_items` (
   KEY `fk_transfer_item_product` (`product_id`),
   CONSTRAINT `fk_transfer_item_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `fk_transfer_item_transfer` FOREIGN KEY (`transfer_id`) REFERENCES `warehouse_transfers` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2669,7 +2142,6 @@ CREATE TABLE `warehouse_transfer_items` (
 
 LOCK TABLES `warehouse_transfer_items` WRITE;
 /*!40000 ALTER TABLE `warehouse_transfer_items` DISABLE KEYS */;
-INSERT INTO `warehouse_transfer_items` VALUES (4,4,4,55,2.00),(5,4,5,109,3.00),(6,5,7,20,20.00);
 /*!40000 ALTER TABLE `warehouse_transfer_items` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2700,7 +2172,6 @@ CREATE TABLE `warehouse_transfers` (
 
 LOCK TABLES `warehouse_transfers` WRITE;
 /*!40000 ALTER TABLE `warehouse_transfers` DISABLE KEYS */;
-INSERT INTO `warehouse_transfers` VALUES (4,2,3,'2025-10-25 07:20:00',''),(5,3,1,'2025-11-08 09:41:00','');
 /*!40000 ALTER TABLE `warehouse_transfers` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2720,7 +2191,7 @@ CREATE TABLE `warehouses` (
   PRIMARY KEY (`id`),
   KEY `warehouses_ibfk_1` (`city_id`),
   CONSTRAINT `warehouses_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2729,7 +2200,7 @@ CREATE TABLE `warehouses` (
 
 LOCK TABLES `warehouses` WRITE;
 /*!40000 ALTER TABLE `warehouses` DISABLE KEYS */;
-INSERT INTO `warehouses` VALUES (1,'المخزن الرئيس','شارع اداب',4,'2025-08-20 09:17:31'),(2,'المخزن الرئيسي','شارع ادابي',3,'2025-08-20 09:24:44'),(3,'مخزن اسكندريه','الاسكندرية',4,'2025-08-20 09:27:00'),(5,'dsd','sdsd',4,'2025-08-20 09:45:54'),(6,'المخزن الأسطوري','في أحلامك',1,'2025-09-01 13:23:52');
+INSERT INTO `warehouses` VALUES (1,'مخزن دمياط','دمياط',7,'2025-08-20 09:17:31'),(2,'المخزن الرئيسي','المنصوره',3,'2025-08-20 09:24:44'),(3,'مخزن الاسكندريه','الاسكندرية',4,'2025-08-20 09:27:00'),(8,'مخزن مستزمات انتاج','المنصوره',1,'2025-11-29 12:34:39');
 /*!40000 ALTER TABLE `warehouses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2789,330 +2260,6 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-
---
--- Final view structure for view `suppliers`
---
-
-/*!50001 DROP VIEW IF EXISTS `suppliers`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `suppliers` AS select `parties`.`id` AS `id`,`parties`.`name` AS `name` from `parties` where (`parties`.`party_type` = 'supplier') */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `v_monthly_orders_report`
---
-
-/*!50001 DROP VIEW IF EXISTS `v_monthly_orders_report`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_monthly_orders_report` AS select date_format(`po`.`order_date`,'%Y-%m') AS `order_month`,count(`po`.`id`) AS `total_orders`,sum(`po`.`total_amount`) AS `total_order_value` from `purchase_orders` `po` group by date_format(`po`.`order_date`,'%Y-%m') order by `order_month` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `v_supplier_orders_report`
---
-
-/*!50001 DROP VIEW IF EXISTS `v_supplier_orders_report`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_supplier_orders_report` AS select `p`.`id` AS `supplier_id`,`p`.`name` AS `supplier_name`,count(`po`.`id`) AS `total_orders`,sum(`po`.`total_amount`) AS `total_order_value` from (`parties` `p` left join `purchase_orders` `po` on((`po`.`supplier_id` = `p`.`id`))) group by `p`.`id`,`p`.`name` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_account_balances`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_account_balances`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_account_balances` AS select `a`.`id` AS `account_id`,`a`.`name` AS `account_name`,sum(`jel`.`debit`) AS `total_debit`,sum(`jel`.`credit`) AS `total_credit`,sum((`jel`.`debit` - `jel`.`credit`)) AS `balance` from (`accounts` `a` left join `journal_entry_lines` `jel` on((`a`.`id` = `jel`.`account_id`))) group by `a`.`id`,`a`.`name` order by `a`.`name` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_avg_purchase_cost`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_avg_purchase_cost`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_avg_purchase_cost` AS select `purchase_invoice_items`.`product_id` AS `product_id`,avg(`purchase_invoice_items`.`unit_price`) AS `avg_cost_price` from `purchase_invoice_items` group by `purchase_invoice_items`.`product_id` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_current_inventory`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_current_inventory`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_current_inventory` AS select `ci`.`product_id` AS `product_id`,`p`.`name` AS `product_name`,`ci`.`warehouse_id` AS `warehouse_id`,`w`.`name` AS `warehouse_name`,`ci`.`quantity` AS `quantity`,`ci`.`last_updated` AS `last_updated` from ((`current_inventory` `ci` join `products` `p` on((`ci`.`product_id` = `p`.`id`))) join `warehouses` `w` on((`ci`.`warehouse_id` = `w`.`id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_customer_statement`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_customer_statement`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_customer_statement` AS select `statement`.`party_id` AS `party_id`,`statement`.`trans_date` AS `trans_date`,`statement`.`description` AS `description`,`statement`.`debit` AS `debit`,`statement`.`credit` AS `credit` from (select `si`.`party_id` AS `party_id`,`si`.`invoice_date` AS `trans_date`,concat('فاتورة بيع #',`si`.`id`) AS `description`,`si`.`total_amount` AS `debit`,0 AS `credit` from `sales_invoices` `si` union all select `si`.`party_id` AS `party_id`,`sr`.`return_date` AS `return_date`,concat('مرتجع بيع #',`sr`.`id`) AS `CONCAT('مرتجع بيع #', sr.id)`,0 AS `0`,sum((`sri`.`quantity` * `sri`.`price`)) AS `SUM(sri.quantity * sri.price)` from ((`sales_returns` `sr` join `sales_invoices` `si` on((`sr`.`sales_invoice_id` = `si`.`id`))) join `sales_return_items` `sri` on((`sri`.`sales_return_id` = `sr`.`id`))) group by `sr`.`id`,`si`.`party_id`,`sr`.`return_date` union all select `sp`.`party_id` AS `party_id`,`sp`.`payment_date` AS `payment_date`,concat('دفعة عميل #',`sp`.`id`) AS `CONCAT('دفعة عميل #', sp.id)`,0 AS `0`,`sp`.`amount` AS `amount` from `sales_payments` `sp`) `statement` order by `statement`.`party_id`,`statement`.`trans_date` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_customer_statement_base`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_customer_statement_base`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_customer_statement_base` AS select `statement`.`party_id` AS `party_id`,`statement`.`trans_date` AS `trans_date`,`statement`.`description` AS `description`,`statement`.`debit` AS `debit`,`statement`.`credit` AS `credit` from (select `si`.`party_id` AS `party_id`,`si`.`invoice_date` AS `trans_date`,concat('فاتورة بيع #',`si`.`id`) AS `description`,`si`.`total_amount` AS `debit`,0 AS `credit` from `sales_invoices` `si` union all select `si`.`party_id` AS `party_id`,`sr`.`return_date` AS `return_date`,concat('مرتجع بيع #',`sr`.`id`) AS `CONCAT('مرتجع بيع #', sr.id)`,0 AS `0`,sum((`sri`.`quantity` * `sri`.`price`)) AS `SUM(sri.quantity * sri.price)` from ((`sales_returns` `sr` join `sales_invoices` `si` on((`sr`.`sales_invoice_id` = `si`.`id`))) join `sales_return_items` `sri` on((`sri`.`sales_return_id` = `sr`.`id`))) group by `sr`.`id`,`si`.`party_id`,`sr`.`return_date` union all select `sp`.`party_id` AS `party_id`,`sp`.`payment_date` AS `payment_date`,concat('دفعة عميل #',`sp`.`id`) AS `CONCAT('دفعة عميل #', sp.id)`,0 AS `0`,`sp`.`amount` AS `amount` from `sales_payments` `sp`) `statement` order by `statement`.`party_id`,`statement`.`trans_date` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_customer_statement_dated`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_customer_statement_dated`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_customer_statement_dated` AS select `p`.`id` AS `party_id`,`p`.`name` AS `party_name`,`si`.`id` AS `invoice_id`,`si`.`invoice_date` AS `invoice_date`,`si`.`total_amount` AS `total_amount`,ifnull(sum(`sp`.`amount`),0) AS `total_paid`,(`si`.`total_amount` - ifnull(sum(`sp`.`amount`),0)) AS `balance` from ((`sales_invoices` `si` join `parties` `p` on((`si`.`party_id` = `p`.`id`))) left join `sales_payments` `sp` on((`sp`.`sales_invoice_id` = `si`.`id`))) group by `si`.`id` order by `p`.`name`,`si`.`invoice_date` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_inventory_logs`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_inventory_logs`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_inventory_logs` AS select `il`.`id` AS `id`,`il`.`log_time` AS `log_time`,`il`.`action_type` AS `action_type`,`il`.`quantity_change` AS `quantity_change`,`il`.`reference_type` AS `reference_type`,`il`.`reference_id` AS `reference_id`,`p`.`name` AS `product_name`,`w`.`name` AS `warehouse_name` from ((`inventory_logs` `il` join `products` `p` on((`il`.`product_id` = `p`.`id`))) join `warehouses` `w` on((`il`.`warehouse_id` = `w`.`id`))) order by `il`.`log_time` desc */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_monthly_profit_summary`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_monthly_profit_summary`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_monthly_profit_summary` AS select date_format(`si`.`invoice_date`,'%Y-%m') AS `month`,sum((`sii`.`quantity` * `sii`.`price`)) AS `total_sales`,sum((`sii`.`quantity` * coalesce(`apc`.`avg_cost_price`,0))) AS `total_cost`,(sum((`sii`.`quantity` * `sii`.`price`)) - sum((`sii`.`quantity` * coalesce(`apc`.`avg_cost_price`,0)))) AS `total_profit` from ((`sales_invoice_items` `sii` join `sales_invoices` `si` on((`sii`.`sales_invoice_id` = `si`.`id`))) left join `view_avg_purchase_cost` `apc` on((`sii`.`product_id` = `apc`.`product_id`))) group by date_format(`si`.`invoice_date`,'%Y-%m') order by `month` desc */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_monthly_sales_summary`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_monthly_sales_summary`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_monthly_sales_summary` AS select date_format(`sales_invoices`.`invoice_date`,'%Y-%m') AS `month`,count(0) AS `total_invoices`,sum(`sales_invoices`.`total_amount`) AS `total_sales` from `sales_invoices` group by date_format(`sales_invoices`.`invoice_date`,'%Y-%m') order by `month` desc */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_purchase_returns`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_purchase_returns`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_purchase_returns` AS select `pr`.`id` AS `return_id`,`pr`.`return_date` AS `return_date`,`pi`.`id` AS `invoice_id`,`p`.`name` AS `product_name`,`pri`.`quantity` AS `quantity`,`pri`.`reason` AS `reason` from ((((`purchase_return_items` `pri` join `purchase_returns` `pr` on((`pri`.`purchase_return_id` = `pr`.`id`))) join `purchase_invoice_items` `pii` on((`pri`.`purchase_invoice_item_id` = `pii`.`id`))) join `products` `p` on((`pri`.`product_id` = `p`.`id`))) join `purchase_invoices` `pi` on((`pr`.`purchase_invoice_id` = `pi`.`id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_sales_invoices`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_sales_invoices`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_sales_invoices` AS select `si`.`id` AS `invoice_id`,`si`.`invoice_date` AS `invoice_date`,`p`.`name` AS `party_name`,`sii`.`product_id` AS `product_id`,`pr`.`name` AS `product_name`,`sii`.`quantity` AS `quantity`,`sii`.`price` AS `price`,`sii`.`discount_percent` AS `discount_percent`,`sii`.`extra_discount_percent` AS `extra_discount_percent` from (((`sales_invoices` `si` join `parties` `p` on((`si`.`party_id` = `p`.`id`))) join `sales_invoice_items` `sii` on((`sii`.`sales_invoice_id` = `si`.`id`))) join `products` `pr` on((`pr`.`id` = `sii`.`product_id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_sales_payments`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_sales_payments`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_sales_payments` AS select `sp`.`id` AS `payment_id`,`sp`.`payment_date` AS `payment_date`,`p`.`name` AS `party_name`,`a`.`name` AS `account_name`,`sp`.`amount` AS `amount`,`si`.`id` AS `invoice_id`,`si`.`invoice_date` AS `invoice_date` from (((`sales_payments` `sp` join `parties` `p` on((`sp`.`party_id` = `p`.`id`))) join `accounts` `a` on((`sp`.`account_id` = `a`.`id`))) left join `sales_invoices` `si` on((`sp`.`sales_invoice_id` = `si`.`id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_sales_payments_by_account`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_sales_payments_by_account`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_sales_payments_by_account` AS select `a`.`id` AS `account_id`,`a`.`name` AS `account_name`,cast(`sp`.`payment_date` as date) AS `payment_date`,sum(`sp`.`amount`) AS `total_paid` from (`sales_payments` `sp` join `accounts` `a` on((`sp`.`account_id` = `a`.`id`))) group by `a`.`id`,cast(`sp`.`payment_date` as date) order by `payment_date` desc,`a`.`name` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_sales_returns`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_sales_returns`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_sales_returns` AS select `sr`.`id` AS `return_id`,`sr`.`return_date` AS `return_date`,`si`.`id` AS `invoice_id`,`p`.`name` AS `party_name`,`sri`.`product_id` AS `product_id`,`pr`.`name` AS `product_name`,`sri`.`quantity` AS `quantity`,`sri`.`price` AS `price` from ((((`sales_returns` `sr` join `sales_invoices` `si` on((`sr`.`sales_invoice_id` = `si`.`id`))) join `parties` `p` on((`si`.`party_id` = `p`.`id`))) join `sales_return_items` `sri` on((`sri`.`sales_return_id` = `sr`.`id`))) join `products` `pr` on((`pr`.`id` = `sri`.`product_id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `view_unpaid_sales_invoices`
---
-
-/*!50001 DROP VIEW IF EXISTS `view_unpaid_sales_invoices`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `view_unpaid_sales_invoices` AS select `si`.`id` AS `invoice_id`,`p`.`name` AS `party_name`,`si`.`invoice_date` AS `invoice_date`,`si`.`total_amount` AS `total_amount`,ifnull(sum(`sp`.`amount`),0) AS `total_paid`,(`si`.`total_amount` - ifnull(sum(`sp`.`amount`),0)) AS `balance` from ((`sales_invoices` `si` join `parties` `p` on((`si`.`party_id` = `p`.`id`))) left join `sales_payments` `sp` on((`sp`.`sales_invoice_id` = `si`.`id`))) group by `si`.`id` having (`balance` > 0) order by `si`.`invoice_date` */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -3123,4 +2270,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-24  3:25:08
+-- Dump completed on 2025-12-03  3:37:37

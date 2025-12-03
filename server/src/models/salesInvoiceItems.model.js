@@ -13,8 +13,6 @@ export default (sequelize) => {
             tax_percent: { type: DataTypes.DECIMAL(5, 2), allowNull: false, defaultValue: 0.00 },
             tax_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.00 },
             warehouse_id: { type: DataTypes.INTEGER, allowNull: true },
-            batch_number: { type: DataTypes.STRING(100), allowNull: true },
-            expiry_date: { type: DataTypes.DATEONLY, allowNull: true },
             bonus: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }
         },
         {

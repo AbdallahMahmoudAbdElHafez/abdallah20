@@ -27,8 +27,8 @@ export default {
         });
     },
 
-    create: async (data) => {
-        const transaction = await sequelize.transaction();
+    create: async (data, options = {}) => {
+        const transaction = options.transaction || await sequelize.transaction();
         try {
             console.log('Service: Starting invoice creation');
             const { items, ...invoiceData } = data;
@@ -57,15 +57,15 @@ export default {
                             batch_number: item.batch_number,
                             expiry_date: item.expiry_date,
                             quantity: item.quantity,
-                            cost_per_unit: item.price // Assuming price is cost for now, or should we fetch cost? Sales usually use price. Cost is hidden. 
-                            // Actually cost_per_unit in InventoryTransaction should be the COST, not PRICE.
-                            // But we don't have cost here easily without fetching product/batch.
-                            // For OUT transactions, cost_per_unit might be calculated by FIFO/LIFO in a real system.
-                            // For now, let's pass 0 or handle it in service if possible. 
-                            // InventoryTransactionService.create uses batchData.cost_per_unit.
-                            // If we don't pass it, it defaults to 0.
-                            // Let's leave it as 0 or item.price? No, price is selling price.
-                            // Let's pass 0 and let the system handle cost calculation later if needed (e.g. weighted average).
+                            cost_per_unit: item.price
+                        });
+                    } else {
+                        // If no specific batch, still deduct quantity (will be handled as null batch_id)
+                        batches.push({
+                            batch_number: null,
+                            expiry_date: null,
+                            quantity: item.quantity,
+                            cost_per_unit: item.price
                         });
                     }
 
@@ -82,13 +82,13 @@ export default {
                 }
             }
 
-            await transaction.commit();
+            if (!options.transaction) await transaction.commit();
             console.log('Service: Transaction committed');
             return invoice;
         } catch (error) {
             console.error('Service: Error occurred:', error.message);
             console.error('Service: Error stack:', error.stack);
-            await transaction.rollback();
+            if (!options.transaction) await transaction.rollback();
             console.log('Service: Transaction rolled back');
             throw error;
         }
