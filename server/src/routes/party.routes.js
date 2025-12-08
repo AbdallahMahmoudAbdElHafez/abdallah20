@@ -6,6 +6,7 @@ const router = Router();
 // GET /api/parties
 router.get("/", partyController.getAll);
 router.get("/suppliers", partyController.getSuppliers);
+router.get("/customers", partyController.getCustomers);
 
 // GET /api/parties/:id
 router.get("/:id", partyController.getById);

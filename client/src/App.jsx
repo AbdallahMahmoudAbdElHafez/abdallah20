@@ -35,6 +35,8 @@ import PurchaseReturnsPage from "./pages/purchaseReturnsPage";
 import ExpensesPage from "./pages/ExpensesPage";
 import SalesOrdersPage from "./pages/salesOrdersPage";
 import SalesInvoicesPage from "./pages/salesInvoicesPage";
+import SalesInvoicePaymentsPage from "./pages/salesInvoicePaymentsPage";
+import CustomerStatementPage from "./pages/CustomerStatementPage";
 
 const drawerWidth = 240;
 
@@ -78,6 +80,9 @@ export default function App() {
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/sales-orders" element={<SalesOrdersPage />} />
           <Route path="/sales-invoices" element={<SalesInvoicesPage />} />
+          <Route path="/sales-invoice-payments" element={<SalesInvoicePaymentsPage />} />
+          <Route path="/customers/statement" element={<CustomerStatementPage />} />
+          <Route path="/customers/:customerId/statement" element={<CustomerStatementPage />} />
         </Routes>
       </Box>
     </BrowserRouter>

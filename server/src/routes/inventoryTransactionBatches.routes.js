@@ -4,5 +4,6 @@ import InventoryTransactionBatchesController from "../controllers/inventoryTrans
 const router = Router();
 
 router.get("/transaction/:transactionId", InventoryTransactionBatchesController.getByTransactionId);
+router.get("/cost/:productId", InventoryTransactionBatchesController.getLatestCost);
 
 export default router;

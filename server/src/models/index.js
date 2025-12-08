@@ -17,17 +17,6 @@ import PurchaseInvoiceItemModel from './purchaseInvoiceItem.model.js';
 import InventoryTransactionModel from './inventoryTransaction.model.js';
 import ReferenceTypeModel from './referenceType.model.js';
 import JournalEntryModel from './journalEntry.model.js';
-import JournalEntryLineModel from './journalEntryLine.model.js';
-import AccountingSettingModel from './accountingSetting.model.js';
-import purchaseOrderHooks from '../hooks/purchaseOrderHooks.js';
-import purchaseInvoiceHooks from "../hooks/purchaseInvoiceHooks.js";
-import purchaseInvoicePaymentHooks from "../hooks/purchaseInvoicePaymentHooks.js";
-import inventoryTransactionHooks from "../hooks/inventoryTransactionHooks.js";
-import PurchaseInvoicePaymentModel from "./purchaseInvoicePayment.model.js";
-import SupplierChequeModel from "./supplierCheque.model.js";
-import ExpenseModel from "./expenses.model.js";
-import ExpenseCategoryModel from "./expenseCategory.model.js";
-import BillOfMaterialModel from './billOfMaterial.model.js';
 import WarehouseTransferModel from './warehouseTransfers.model.js';
 import WarehouseTransferItemModel from "./warehouseTransferItems.model.js";
 import ProductCostModel from './productCosts.model.js';
@@ -49,6 +38,22 @@ import SalesInvoiceModel from "./salesInvoices.model.js";
 import SalesInvoiceItemModel from "./salesInvoiceItems.model.js";
 import BatchesModel from "./batches.model.js";
 import InventoryTransactionBatchesModel from "./inventoryTransactionBatches.model.js";
+import SalesInvoicePaymentModel from "./salesInvoicePayments.model.js";
+import EntryTypeModel from "./entryTypes.model.js";
+import JobOrderCostModel from "./jobOrderCosts.model.js";
+import JournalEntryLineModel from "./journalEntryLine.model.js";
+import AccountingSettingModel from "./accountingSetting.model.js";
+import PurchaseInvoicePaymentModel from "./purchaseInvoicePayment.model.js";
+import SupplierChequeModel from "./supplierCheque.model.js";
+import ExpenseModel from "./expenses.model.js";
+import ExpenseCategoryModel from "./expenseCategory.model.js";
+import BillOfMaterialModel from './billOfMaterial.model.js';
+import purchaseOrderHooks from '../hooks/purchaseOrderHooks.js';
+import purchaseInvoiceHooks from "../hooks/purchaseInvoiceHooks.js";
+import purchaseInvoicePaymentHooks from "../hooks/purchaseInvoicePaymentHooks.js";
+import salesInvoicePaymentHooks from "../hooks/salesInvoicePaymentHooks.js";
+import salesInvoiceHooks from "../hooks/salesInvoiceHooks.js";
+import externalJobOrderHooks from "../hooks/externalJobOrderHooks.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -102,10 +107,16 @@ const SalesInvoice = SalesInvoiceModel(sequelize);
 const SalesInvoiceItem = SalesInvoiceItemModel(sequelize);
 const Batches = BatchesModel(sequelize);
 const InventoryTransactionBatches = InventoryTransactionBatchesModel(sequelize);
+const SalesInvoicePayment = SalesInvoicePaymentModel(sequelize);
+const EntryType = EntryTypeModel(sequelize);
+const JobOrderCost = JobOrderCostModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
-purchaseInvoicePaymentHooks(sequelize)
+purchaseInvoicePaymentHooks(sequelize);
+salesInvoicePaymentHooks(sequelize);
+salesInvoiceHooks(sequelize);
+externalJobOrderHooks(sequelize);
 
 
 
@@ -205,6 +216,14 @@ InventoryTransaction.belongsTo(Warehouse, {
 JournalEntry.belongsTo(ReferenceType, {
   foreignKey: 'reference_type_id'
 });
+JournalEntry.belongsTo(EntryType, {
+  foreignKey: 'entry_type_id',
+  as: 'entry_type'
+});
+EntryType.hasMany(JournalEntry, {
+  foreignKey: 'entry_type_id',
+  as: 'journal_entries'
+});
 JournalEntry.hasMany(JournalEntryLine, {
   foreignKey: 'journal_entry_id',
   as: 'lines'
@@ -217,6 +236,7 @@ JournalEntryLine.belongsTo(JournalEntry, {
   foreignKey: 'journal_entry_id',
   as: 'journal_entry'
 })
+
 
 PurchaseInvoicePayment.belongsTo(PurchaseInvoice, {
   foreignKey: "purchase_invoice_id",
@@ -305,6 +325,17 @@ ExternalJobOrder.belongsTo(Process, {
 ExternalJobOrder.belongsTo(Warehouse, {
   foreignKey: 'warehouse_id',
   as: 'warehouse',
+});
+
+// ExternalJobOrder ↔ JobOrderCost
+ExternalJobOrder.hasMany(JobOrderCost, {
+  foreignKey: 'job_order_id',
+  as: 'costs',
+  onDelete: 'CASCADE',
+});
+JobOrderCost.belongsTo(ExternalJobOrder, {
+  foreignKey: 'job_order_id',
+  as: 'job_order',
 });
 Employee.belongsTo(JobTitle, {
   foreignKey: "job_title_id",
@@ -500,9 +531,6 @@ Warehouse.hasMany(SalesInvoice, { foreignKey: "warehouse_id", as: "sales_invoice
 SalesInvoice.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
 Employee.hasMany(SalesInvoice, { foreignKey: "employee_id", as: "sales_invoices" });
 
-SalesInvoice.belongsTo(Account, { foreignKey: "account_id", as: "account" });
-Account.hasMany(SalesInvoice, { foreignKey: "account_id", as: "sales_invoices" });
-
 SalesInvoice.belongsTo(SalesOrder, { foreignKey: "sales_order_id", as: "sales_order" });
 SalesOrder.hasMany(SalesInvoice, { foreignKey: "sales_order_id", as: "invoices" });
 
@@ -512,8 +540,16 @@ SalesInvoiceItem.belongsTo(SalesInvoice, { foreignKey: "sales_invoice_id", as: "
 SalesInvoiceItem.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 Product.hasMany(SalesInvoiceItem, { foreignKey: "product_id", as: "sales_invoice_items" });
 
+// SalesInvoiceItem ↔ Warehouse
 SalesInvoiceItem.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
 Warehouse.hasMany(SalesInvoiceItem, { foreignKey: "warehouse_id", as: "sales_invoice_items" });
+
+// SalesInvoicePayment Associations
+SalesInvoicePayment.belongsTo(SalesInvoice, { foreignKey: "sales_invoice_id", as: "sales_invoice" });
+SalesInvoice.hasMany(SalesInvoicePayment, { foreignKey: "sales_invoice_id", as: "payments" });
+
+SalesInvoicePayment.belongsTo(Account, { foreignKey: "account_id", as: "account" });
+Account.hasMany(SalesInvoicePayment, { foreignKey: "account_id", as: "sales_invoice_payments" });
 
 // Batches Associations
 Product.hasMany(Batches, { foreignKey: "product_id", as: "batches" });
@@ -529,6 +565,13 @@ InventoryTransactionBatches.belongsTo(Batches, { foreignKey: "batch_id", as: "ba
 // Current Inventory Associations
 CurrentInventory.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 CurrentInventory.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
+
+// BillOfMaterial Associations
+BillOfMaterial.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+BillOfMaterial.belongsTo(Product, { foreignKey: "material_id", as: "material" });
+Product.hasMany(BillOfMaterial, { foreignKey: "product_id", as: "bill_of_materials" });
+Product.hasMany(BillOfMaterial, { foreignKey: "material_id", as: "material_usages" });
+
 
 
 // Expense Associations
@@ -590,6 +633,8 @@ export {
   SalesInvoiceItem,
   Batches,
   InventoryTransactionBatches,
-
+  SalesInvoicePayment,
+  EntryType,
+  JobOrderCost,
 
 };

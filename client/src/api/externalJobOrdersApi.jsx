@@ -6,6 +6,8 @@ const externalJobOrdersApi = {
   create: (data) => axiosClient.post("/external-job-orders", data),
   update: (id, data) => axiosClient.put(`/external-job-orders/${id}`, data),
   remove: (id) => axiosClient.delete(`/external-job-orders/${id}`),
+  calculateCost: (productId, warehouseId, orderQuantity) =>
+    axiosClient.get(`/external-job-orders/calculate-cost?product_id=${productId}&warehouse_id=${warehouseId}&order_quantity=${orderQuantity}`),
 };
 
 export default externalJobOrdersApi;

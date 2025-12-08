@@ -6,6 +6,11 @@ export default (sequelize) => {
         {
             id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
             invoice_number: { type: DataTypes.STRING(100), allowNull: false, unique: true },
+            invoice_type: {
+                type: DataTypes.ENUM('normal', 'opening'),
+                allowNull: false,
+                defaultValue: 'normal'
+            },
             status: {
                 type: DataTypes.ENUM('unpaid', 'paid', 'partial', 'cancelled'),
                 allowNull: false,
@@ -24,7 +29,6 @@ export default (sequelize) => {
                 allowNull: false,
                 defaultValue: 0.00
             },
-            account_id: { type: DataTypes.INTEGER, allowNull: true },
             created_at: {
                 type: DataTypes.DATE,
                 defaultValue: sequelize.literal("CURRENT_TIMESTAMP")
@@ -74,7 +78,6 @@ export default (sequelize) => {
                 { fields: ["invoice_number"], unique: true },
                 { fields: ["sales_order_id"] },
                 { fields: ["party_id"] },
-                { fields: ["account_id"] },
                 { fields: ["employee_id"] },
                 { fields: ["warehouse_id"] }
             ]

@@ -48,6 +48,12 @@ class WarehouseTransfersService {
               quantity: item.quantity,
               cost_per_unit: item.cost_per_unit
             });
+          } else {
+            batches.push({
+              batch_id: null,
+              quantity: item.quantity,
+              cost_per_unit: item.cost_per_unit
+            });
           }
 
           // OUT from source
@@ -119,6 +125,12 @@ class WarehouseTransfersService {
           batches.push({
             batch_number: item.batch_number,
             expiry_date: item.expiry_date,
+            quantity: item.quantity,
+            cost_per_unit: item.cost_per_unit
+          });
+        } else {
+          batches.push({
+            batch_id: null,
             quantity: item.quantity,
             cost_per_unit: item.cost_per_unit
           });

@@ -38,6 +38,9 @@ import salesOrderItemsReducer from "../features/salesOrderItems/salesOrderItemsS
 import salesInvoicesReducer from "../features/salesInvoices/salesInvoicesSlice";
 import salesInvoiceItemsReducer from "../features/salesInvoiceItems/salesInvoiceItemsSlice";
 import batchesReducer from "../features/batches/batchesSlice";
+import salesInvoicePaymentsReducer from "../features/salesInvoicePayments/salesInvoicePaymentsSlice";
+import entryTypesReducer from "../features/entryTypes/entryTypesSlice";
+import jobOrderCostsReducer from "../features/jobOrderCosts/jobOrderCostsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -79,5 +82,8 @@ export const store = configureStore({
     salesInvoices: salesInvoicesReducer,
     salesInvoiceItems: salesInvoiceItemsReducer,
     batches: batchesReducer,
+    salesInvoicePayments: salesInvoicePaymentsReducer,
+    entryTypes: entryTypesReducer,
+    jobOrderCosts: jobOrderCostsReducer,
   },
 });

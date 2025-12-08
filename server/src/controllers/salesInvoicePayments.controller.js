@@ -1,0 +1,44 @@
+import * as paymentService from "../services/salesInvoicePayments.service.js";
+import { Account } from "../models/index.js";
+
+export async function createPayment(req, res, next) {
+    try {
+        const { account_id } = req.body;
+
+        const account = await Account.findByPk(account_id);
+        if (!account) return res.status(400).json({ message: "Invalid account" });
+
+        const payment = await paymentService.createPayment(req.body);
+        res.status(201).json(payment);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function getPayments(req, res, next) {
+    try {
+        const list = await paymentService.listPayments(req.params.invoiceId);
+        res.json(list);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function getPaymentDetail(req, res, next) {
+    try {
+        const payment = await paymentService.getPaymentById(req.params.paymentId);
+        if (!payment) return res.status(404).json({ message: "Payment not found" });
+        res.json(payment);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function updatePayment(req, res, next) {
+    try {
+        const updated = await paymentService.updatePayment(req.params.paymentId, req.body);
+        res.json(updated);
+    } catch (err) {
+        next(err);
+    }
+}

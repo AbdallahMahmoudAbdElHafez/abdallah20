@@ -3,6 +3,7 @@ import axiosClient from "./axiosClient";
 const partiesApi = {
   getAll: () => axiosClient.get("/parties"),
   getSuppliers: () => axiosClient.get("/parties/suppliers"),
+  getCustomers: () => axiosClient.get("/parties/customers"),
 
   getById: (id) => axiosClient.get(`/parties/${id}`),
   create: (data) => axiosClient.post("/parties", data),

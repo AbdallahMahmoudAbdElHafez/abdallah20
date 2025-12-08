@@ -110,8 +110,11 @@ export default {
 
                 // Create Sales Invoice
                 try {
+                    const year = new Date().getFullYear();
+                    const paddedId = String(order.id).padStart(6, "0");
+                    const invoiceNumber = `INV-${year}-${paddedId}`;
                     const invoiceData = {
-                        invoice_number: `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                        invoice_number: invoiceNumber,
                         party_id: order.party_id,
                         warehouse_id: order.warehouse_id,
                         employee_id: order.employee_id,

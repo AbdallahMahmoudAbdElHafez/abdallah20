@@ -1,4 +1,5 @@
 import { SalesInvoice, SalesInvoiceItem, sequelize, InventoryTransaction } from "../models/index.js";
+import { Op } from "sequelize";
 import InventoryTransactionService from './inventoryTransaction.service.js';
 
 export default {
@@ -8,7 +9,6 @@ export default {
                 { association: "party" },
                 { association: "warehouse" },
                 { association: "employee" },
-                { association: "account" },
                 { association: "sales_order" }
             ]
         });
@@ -20,7 +20,6 @@ export default {
                 { association: "party" },
                 { association: "warehouse" },
                 { association: "employee" },
-                { association: "account" },
                 { association: "sales_order" },
                 { association: "items", include: ["product"] }
             ]
@@ -34,6 +33,32 @@ export default {
             const { items, ...invoiceData } = data;
             console.log('Service: Invoice data:', invoiceData);
             console.log('Service: Items count:', items?.length || 0);
+
+            // Auto-generate invoice_number if not provided
+            if (!invoiceData.invoice_number) {
+                const year = new Date().getFullYear();
+                const lastInvoice = await SalesInvoice.findOne({
+                    where: {
+                        invoice_number: {
+                            [Op.like]: `SI-${year}-%`
+                        }
+                    },
+                    order: [['id', 'DESC']]
+                });
+
+                let nextNumber = 1;
+                if (lastInvoice) {
+                    const lastNumber = parseInt(lastInvoice.invoice_number.split('-')[2]);
+                    nextNumber = lastNumber + 1;
+                }
+
+                invoiceData.invoice_number = `SI-${year}-${String(nextNumber).padStart(6, '0')}`;
+            }
+
+            // Check if invoice_type is 'opening' and items exist
+            if (invoiceData.invoice_type === 'opening' && items && items.length > 0) {
+                throw new Error('لا يمكن إضافة عناصر لفاتورة افتتاحية');
+            }
 
             // Create the invoice
             const invoice = await SalesInvoice.create(invoiceData, { transaction });
@@ -103,6 +128,13 @@ export default {
             if (!invoice) {
                 await transaction.rollback();
                 return null;
+            }
+
+            // Check if invoice_type is 'opening' and items exist
+            const invoice_type = invoiceData.invoice_type || invoice.invoice_type;
+            if (invoice_type === 'opening' && items && items.length > 0) {
+                await transaction.rollback();
+                throw new Error('لا يمكن إضافة عناصر لفاتورة افتتاحية');
             }
 
             // Reverse old inventory transactions

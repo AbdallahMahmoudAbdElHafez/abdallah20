@@ -10,12 +10,16 @@ const schema = Joi.object({
   status: Joi.string()
     .valid('planned', 'in_progress', 'completed', 'cancelled')
     .default('planned'),
-  start_date: Joi.date().allow(null),
-  end_date: Joi.date().allow(null),
+  start_date: Joi.date().allow(null, ''),
+  end_date: Joi.date().allow(null, ''),
   order_quantity: Joi.number().precision(3).allow(null),
   produced_quantity: Joi.number().precision(3).allow(null),
-  cost_estimate: Joi.number().precision(2).default(0),
-  cost_actual: Joi.number().precision(2).default(0),
+  estimated_processing_cost_per_unit: Joi.number().precision(2).allow(null, '').default(0),
+  actual_processing_cost_per_unit: Joi.number().precision(2).allow(null, '').default(0),
+  estimated_raw_material_cost_per_unit: Joi.number().precision(2).allow(null, '').default(0),
+  actual_raw_material_cost_per_unit: Joi.number().precision(2).allow(null, '').default(0),
+  total_estimated_cost: Joi.number().precision(2).allow(null, '').default(0),
+  total_actual_cost: Joi.number().precision(2).allow(null, '').default(0),
   reference_no: Joi.string().allow(null, ''),
 });
 
@@ -53,6 +57,33 @@ const ExternalJobOrdersController = {
     const deleted = await ExternalJobOrdersService.remove(req.params.id);
     if (!deleted) return res.status(404).json({ message: 'Order not found' });
     res.json(deleted);
+  },
+
+  calculateCost: async (req, res) => {
+    try {
+      const { product_id, warehouse_id, order_quantity } = req.query;
+
+      // Validate required parameters
+      if (!product_id || !warehouse_id || !order_quantity) {
+        return res.status(400).json({
+          message: 'Missing required parameters: product_id, warehouse_id, order_quantity'
+        });
+      }
+
+      const result = await ExternalJobOrdersService.calculateRawMaterialCost(
+        parseInt(product_id),
+        parseInt(warehouse_id),
+        parseFloat(order_quantity)
+      );
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error calculating cost:', error);
+      res.status(500).json({
+        message: 'Error calculating cost',
+        error: error.message
+      });
+    }
   },
 };
 

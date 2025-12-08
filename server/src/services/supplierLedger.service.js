@@ -28,7 +28,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       model: PurchaseInvoice,
       as: "purchase_invoice",
       where: { supplier_id: supplierId },
-      attributes: [],
+      attributes: ["invoice_number"],
     }],
     where: Object.keys(dateFilter).length
       ? { payment_date: dateFilter }
@@ -50,7 +50,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     ...payments.map(pay => ({
       type: "payment",
       date: pay.payment_date,
-      description: `سداد دفعة لفاتورة #${pay.purchase_invoice_id}`,
+      description: `سداد دفعة لفاتورة #${pay["purchase_invoice.invoice_number"]}`,
       debit: 0,
       credit: Number(pay.amount),
     })),

@@ -22,8 +22,6 @@ const navItems = [
   { label: "الدول", path: "/countries" },
   { label: "اوامر التشغيل ", path: "/external-job-orders" },
   { label: "المصروفات", path: "/expenses" },
-  { label: "فواتير البيع", path: "/sales-invoices" },
-  { label: "أوامر البيع", path: "/sales-orders" },
   { label: "الحسابات", path: "/accounts" },
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
   { label: "العملاء الموردين", path: "/parties" },
@@ -32,6 +30,7 @@ const navItems = [
   { label: "فئات المصروفات", path: "/expense-categories" },
   { label: "مكونات التصنيع", path: "/bill-of-material" },
   { label: "كشف حساب المورد", path: "/suppliers/:supplierId/statement" },
+  { label: "كشف حساب العميل", path: "/customers/statement" },
 ];
 const productsMenu = [
   { label: "المنتجات", path: "/products" },
@@ -53,6 +52,13 @@ const purchasesMenu = [
   { label: "أوراق قبض", path: "/supplier-cheques" },
   { label: "مرتجعات", path: "/purchase-returns" },
 ];
+
+const salesMenu = [
+  { label: "أوامر البيع", path: "/sales-orders" },
+  { label: "فواتير البيع", path: "/sales-invoices" },
+  { label: "مدفوعات", path: "/sales-payments" },
+
+];
 const warehousesMenu = [
   { label: "حركة المخازن", path: "/inventory-transactions" },
   { label: "ارصدة المخازن", path: "/current-inventory" },
@@ -66,11 +72,13 @@ function Sidebar() {
   const [openPurchases, setOpenPurchases] = useState(false);
   const [openWarehouses, setOpenWarehouses] = useState(false);
   const [openCompanyInfo, setOpenCompanyInfo] = useState(false);
+  const [openSales, setOpenSales] = useState(false);
 
   const toggleCompanyInfo = () => setOpenCompanyInfo(!openCompanyInfo);
   const toggleWarehouses = () => setOpenWarehouses(!openWarehouses);
 
   const togglePurchases = () => setOpenPurchases(!openPurchases);
+  const toggleSales = () => setOpenSales(!openSales);
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -153,6 +161,31 @@ function Sidebar() {
         <Collapse in={openPurchases} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             {purchasesMenu.map((item) => (
+              <ListItemButton
+                key={item.path}
+                component={Link}
+                to={item.path}
+                sx={{
+                  pl: 4,
+                  bgcolor: isActive(item.path)
+                    ? "rgba(255,255,255,0.1)"
+                    : "transparent",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                }}
+              >
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
+        {/* البيع */}
+        <ListItemButton onClick={toggleSales}>
+          <ListItemText primary="المبيعات" />
+          {openSales ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={openSales} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {salesMenu.map((item) => (
               <ListItemButton
                 key={item.path}
                 component={Link}
