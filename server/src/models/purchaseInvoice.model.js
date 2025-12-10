@@ -16,8 +16,8 @@ export default (sequelize) => {
             defaultValue: "normal"
         },
         status: {
-            type: DataTypes.ENUM("unpaid", "paid", "partially_paid", "cancelled"),
-            defaultValue: "unpaid"
+            type: DataTypes.ENUM("draft", "unpaid", "paid", "partially_paid", "cancelled"),
+            defaultValue: "draft"
         },
         subtotal: { type: DataTypes.DECIMAL(18, 2), defaultValue: 0.0 },
         additional_discount: { type: DataTypes.DECIMAL(18, 2), defaultValue: 0.0 },

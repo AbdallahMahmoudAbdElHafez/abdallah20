@@ -1,12 +1,17 @@
-import {
-  PurchaseOrder,
-  PurchaseOrderItem,
-  PurchaseInvoice,
-  PurchaseInvoiceItem,
-  InventoryTransaction,
-} from "../models/index.js";
+import { createJournalEntry } from "../services/journal.service.js";
 
-export default function purchaseOrderHooks() {
+export default function purchaseOrderHooks(sequelize) {
+  const {
+    PurchaseOrder,
+    PurchaseOrderItem,
+    PurchaseInvoice,
+    PurchaseInvoiceItem,
+    InventoryTransaction,
+    ReferenceType,
+    Account,
+    Party
+  } = sequelize.models;
+
   PurchaseOrder.afterUpdate(async (order, options) => {
     if (order.changed("status") && order.status === "approved") {
       const t = options.transaction;
@@ -28,6 +33,7 @@ export default function purchaseOrderHooks() {
           invoice_number: invoiceNumber,
           invoice_date: new Date(),
           due_date: null,
+          status: 'unpaid',
           subtotal: order.subtotal,
           additional_discount: order.additional_discount,
           vat_rate: order.vat_rate,
@@ -61,7 +67,6 @@ export default function purchaseOrderHooks() {
         const createdItems = await PurchaseInvoiceItem.bulkCreate(invoiceItemsData, { transaction: t });
 
         // ✅ إضافة الأصناف للمخزون باستخدام Service لضمان تحديث الرصيد والباتشات
-        // نحتاج لاستيراد Service أولاً
         const InventoryTransactionService = (await import("../services/inventoryTransaction.service.js")).default;
 
         for (const it of createdItems) {
@@ -82,10 +87,57 @@ export default function purchaseOrderHooks() {
             transaction_date: new Date(),
             note: `Added from Purchase Invoice ${invoiceNumber}`,
             source_type: 'purchase',
-            source_id: it.id, // Use Item ID
+            source_id: it.id,
             batches: batches
-          }, { transaction: t }); // Service handles CurrentInventory update
+          }, { transaction: t });
         }
+      }
+
+      // Create Journal Entry for Purchase Order
+      try {
+        // 1. Ensure Reference Type exists
+        let refType = await ReferenceType.findOne({ where: { code: 'purchase_order' }, transaction: t });
+        if (!refType) {
+          refType = await ReferenceType.create({
+            code: 'purchase_order',
+            name: 'أمر شراء',
+            label: 'أمر شراء',
+            description: 'قيود أوامر الشراء'
+          }, { transaction: t });
+        }
+
+        // حساب المخزون
+        const inventoryAccount = await Account.findOne({
+          where: { name: "المخزون" },
+          transaction: t
+        });
+
+        if (inventoryAccount) {
+          // حساب المورد
+          const supplier = await Party.findByPk(order.supplier_id, { transaction: t });
+
+          if (supplier?.account_id) {
+            await createJournalEntry({
+              refCode: "purchase_order",
+              refId: order.id,
+              entryDate: order.order_date || new Date(),
+              description: `اعتماد أمر شراء #${order.order_number || order.id}`,
+              lines: [
+                { account_id: inventoryAccount.id, debit: order.total_amount, credit: 0, description: "إضافة للمخزون" },
+                { account_id: supplier.account_id, debit: 0, credit: order.total_amount, description: "حساب المورد (أجل)" }
+              ]
+            }, { transaction: t });
+
+            console.log(`Journal Entry created for Purchase Order #${order.id}`);
+          } else {
+            console.warn(`Supplier account not found for order #${order.id}. Skipping journal entry.`);
+          }
+        } else {
+          console.warn("حساب 'المخزون' غير موجود. Skipping journal entry.");
+        }
+      } catch (error) {
+        console.error("Error creating Journal Entry for Purchase Order:", error);
+        // Don't throw - let the order processing continue even if journal entry fails
       }
     }
   });

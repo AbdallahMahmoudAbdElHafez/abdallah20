@@ -1,9 +1,12 @@
-// services/journalEntriesApi.js
-import axios from "axios";
+// services/journalEntryLinesApi.jsx
+import axiosClient from "./axiosClient";
 
-const API_URL = "/api/journal-entries";
-
-export const fetchJournalEntries = async () => {
-  const res = await axios.get(API_URL);
-  return res.data;
+const journalEntryLinesApi = {
+  getAll: () => axiosClient.get("/journal-entry-lines"),
+  getById: (id) => axiosClient.get(`/journal-entry-lines/${id}`),
+  create: (data) => axiosClient.post("/journal-entry-lines", data),
+  update: (id, data) => axiosClient.put(`/journal-entry-lines/${id}`, data),
+  delete: (id) => axiosClient.delete(`/journal-entry-lines/${id}`),
 };
+
+export default journalEntryLinesApi;

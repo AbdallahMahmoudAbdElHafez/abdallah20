@@ -10,6 +10,15 @@ class InventoryTransactionBatchesController {
             next(err);
         }
     }
+
+    static async getLatestCost(req, res, next) {
+        try {
+            const cost = await InventoryTransactionBatchesService.getLatestCost(req.params.productId);
+            return response.ok(res, { cost });
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 export default InventoryTransactionBatchesController;

@@ -11,7 +11,7 @@ export default (sequelize) => {
         transaction_date: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
         note: { type: DataTypes.TEXT, allowNull: true },
         source_type: {
-            type: DataTypes.ENUM('purchase', 'manufacturing', 'transfer', 'adjustment'),
+            type: DataTypes.ENUM('purchase', 'manufacturing', 'transfer', 'adjustment', 'sales_invoice', 'sales_return', 'purchase_return'),
             defaultValue: 'adjustment'
         },
         source_id: { type: DataTypes.INTEGER, allowNull: true },

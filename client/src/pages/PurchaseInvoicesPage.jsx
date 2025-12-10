@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, CircularProgress } from "@mui/material";
+import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,6 +12,7 @@ import {
 } from "../features/purchaseInvoices/purchaseInvoicesSlice";
 import { fetchItemsByInvoice } from "../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice";
 import PurchaseInvoiceDialog from "../components/PurchaseInvoiceDialog";
+import PurchaseInvoicePaymentsManager from "../components/PurchaseInvoicePaymentsManager";
 
 export default function PurchaseInvoicesPage() {
   const dispatch = useDispatch();
@@ -26,6 +27,15 @@ export default function PurchaseInvoicesPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [editingItems, setEditingItems] = useState([]);
+
+  // Payments Dialog State
+  const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+
+  const handleOpenPayments = (invoice) => {
+    setSelectedInvoice(invoice);
+    setPaymentsOpen(true);
+  };
 
   useEffect(() => {
     // جلب الفواتير مفلترة (إن وجد purchase_order_id)
@@ -83,6 +93,14 @@ export default function PurchaseInvoicesPage() {
           >
             عرض الطلب
           </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            color="info"
+            onClick={() => handleOpenPayments(row.original)}
+          >
+            المدفوعات
+          </Button>
         </Box>
       ),
     },
@@ -115,6 +133,17 @@ export default function PurchaseInvoicesPage() {
           onSave={editingInvoice ? handleUpdate : handleAdd}
         />
       )}
+
+      {/* Payments Dialog */}
+      <Dialog open={paymentsOpen} onClose={() => setPaymentsOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>مدفوعات فاتورة {selectedInvoice?.invoice_number}</DialogTitle>
+        <DialogContent>
+          {selectedInvoice && <PurchaseInvoicePaymentsManager invoiceId={selectedInvoice.id} />}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPaymentsOpen(false)}>إغلاق</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

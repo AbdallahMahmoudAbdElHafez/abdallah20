@@ -41,15 +41,31 @@ export default function WarehouseTransferDialog({ open, onClose, initial, onSave
         setWarehouses(wRes.data);
         setProducts(pRes.data);
       }
-    }).catch(() => {});
+    }).catch(() => { });
     return () => { mounted = false; };
   }, []);
+
+  const handleProductChange = async (e) => {
+    const productId = e.target.value;
+    setNewItem({ ...newItem, product_id: productId });
+
+    if (productId) {
+      try {
+        const res = await api.get(`/inventory-transaction-batches/cost/${productId}`);
+        if (res.data && res.data.cost) {
+          setNewItem(prev => ({ ...prev, cost_per_unit: res.data.cost }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch cost", err);
+      }
+    }
+  };
 
   const handleAddItem = () => {
     if (!newItem.product_id || !newItem.quantity || !newItem.cost_per_unit) return;
     const product = products.find(p => p.id === parseInt(newItem.product_id));
     setItems([...items, { ...newItem, product_name: product?.name }]);
-    setNewItem({ product_id: '', quantity: '', cost_per_unit: '' });
+    setNewItem({ product_id: '', quantity: '', cost_per_unit: '', batch_number: '', expiry_date: '' });
   };
 
   const handleDeleteItem = (index) => {
@@ -110,13 +126,13 @@ export default function WarehouseTransferDialog({ open, onClose, initial, onSave
 
           {/* عناصر التحويل */}
           <Typography variant="h6" mt={2}>الأصناف</Typography>
-          <Stack direction="row" spacing={2}>
+          <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
             <TextField
               select
               label="المنتج"
               value={newItem.product_id}
-              onChange={(e) => setNewItem({ ...newItem, product_id: e.target.value })}
-              sx={{ flex: 2 }}
+              onChange={handleProductChange}
+              sx={{ flex: 2, minWidth: '200px' }}
             >
               <MenuItem value="">اختر المنتج</MenuItem>
               {products.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
@@ -126,14 +142,28 @@ export default function WarehouseTransferDialog({ open, onClose, initial, onSave
               type="number"
               value={newItem.quantity}
               onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
-              sx={{ flex: 1 }}
+              sx={{ flex: 1, minWidth: '100px' }}
             />
             <TextField
               label="التكلفة للوحدة"
               type="number"
               value={newItem.cost_per_unit}
               onChange={(e) => setNewItem({ ...newItem, cost_per_unit: e.target.value })}
-              sx={{ flex: 1 }}
+              sx={{ flex: 1, minWidth: '100px' }}
+            />
+            <TextField
+              label="رقم التشغيلة"
+              value={newItem.batch_number || ''}
+              onChange={(e) => setNewItem({ ...newItem, batch_number: e.target.value })}
+              sx={{ flex: 1, minWidth: '120px' }}
+            />
+            <TextField
+              label="تاريخ الصلاحية"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              value={newItem.expiry_date || ''}
+              onChange={(e) => setNewItem({ ...newItem, expiry_date: e.target.value })}
+              sx={{ flex: 1, minWidth: '150px' }}
             />
             <IconButton color="primary" onClick={handleAddItem}>
               <Add />

@@ -21,6 +21,21 @@ class InventoryTransactionBatchesService {
             where: { inventory_transaction_id: transactionId }
         });
     }
+
+    static async getLatestCost(productId) {
+        const { InventoryTransaction } = await import("../models/index.js");
+        const result = await InventoryTransactionBatches.findOne({
+            include: [{
+                model: InventoryTransaction,
+                as: 'transaction',
+                where: { product_id: productId },
+                attributes: []
+            }],
+            order: [[{ model: InventoryTransaction, as: 'transaction' }, 'transaction_date', 'DESC']],
+            attributes: ['cost_per_unit']
+        });
+        return result ? result.cost_per_unit : 0;
+    }
 }
 
 export default InventoryTransactionBatchesService;
