@@ -1,22 +1,19 @@
 -- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
 --
--- Host: localhost    Database: nurivina_erp
+-- Host: localhost    Database: nurivina
 -- ------------------------------------------------------
 -- Server version	8.0.42
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-
---
--- Current Database: `nurivina_erp`
---
-
-CREATE DATABASE /*!32312 IF NOT EXISTS*/ `nurivina_erp` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-
-USE `nurivina_erp`;
 
 --
 -- Table structure for table `accounting_settings`
@@ -40,17 +37,8 @@ CREATE TABLE `accounting_settings` (
   KEY `idx_accounting_settings_default` (`default_account_id`),
   CONSTRAINT `fk_accounting_settings_default` FOREIGN KEY (`default_account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_accounting_settings_parent` FOREIGN KEY (`parent_account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `accounting_settings`
---
-
-LOCK TABLES `accounting_settings` WRITE;
-/*!40000 ALTER TABLE `accounting_settings` DISABLE KEYS */;
-/*!40000 ALTER TABLE `accounting_settings` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `accounts`
@@ -71,16 +59,6 @@ CREATE TABLE `accounts` (
   CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`parent_account_id`) REFERENCES `accounts` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `accounts`
---
-
-LOCK TABLES `accounts` WRITE;
-/*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,''),(2,'خصوم','liability',NULL,0.00,''),(3,'مصروفات مباشره','expense',NULL,0.00,''),(4,'مصروفات غير مباشره','expense',NULL,0.00,''),(5,'ايرادات','revenue',NULL,0.00,''),(6,'مردودات المبيعات','revenue',NULL,0.00,''),(7,'صافي الدخل','equity',NULL,0.00,''),(8,'اصول ثابته','asset',1,0.00,''),(9,'اصول متداوله','asset',1,0.00,''),(10,'رأس المال','liability',2,0.00,''),(11,'قروض','liability',2,0.00,''),(12,'خصوم متادوله','liability',2,0.00,''),(13,'صافي الربح','liability',2,0.00,''),(14,'ارباح مرحلة','liability',2,0.00,''),(15,'تكلفة البضاعة المباعة','expense',3,0.00,''),(16,'مصروفات نقل بضاعة','expense',3,0.00,''),(17,'مرتبات المبيعات','expense',3,0.00,''),(18,'عمولات المبيعات','expense',3,0.00,''),(19,'خصم خاص','expense',3,0.00,''),(20,'دمغه','expense',3,0.00,''),(21,'مصروفات خطابات ضمان','expense',3,0.00,''),(22,'مصروفات تسويقيه','expense',3,0.00,''),(23,'جرد تالف تصنيع','expense',3,0.00,''),(24,'تكاليف تشغيل مباشره','expense',3,0.00,''),(25,'مصروفات عموميه','expense',4,0.00,''),(26,'اهلاكات','expense',4,0.00,''),(27,'مرتبات','expense',4,0.00,''),(28,'مبيعات','revenue',5,0.00,''),(29,'خدمات','revenue',5,0.00,''),(30,'خصم مكتسب','revenue',5,0.00,'');
-/*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -137,17 +115,8 @@ CREATE TABLE `batches` (
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
   CONSTRAINT `batches_ibfk_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `batches`
---
-
-LOCK TABLES `batches` WRITE;
-/*!40000 ALTER TABLE `batches` DISABLE KEYS */;
-/*!40000 ALTER TABLE `batches` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `bill_of_materials`
@@ -166,17 +135,8 @@ CREATE TABLE `bill_of_materials` (
   KEY `material_id` (`material_id`),
   CONSTRAINT `bill_of_materials_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `bill_of_materials_ibfk_2` FOREIGN KEY (`material_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `bill_of_materials`
---
-
-LOCK TABLES `bill_of_materials` WRITE;
-/*!40000 ALTER TABLE `bill_of_materials` DISABLE KEYS */;
-/*!40000 ALTER TABLE `bill_of_materials` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `cities`
@@ -192,17 +152,8 @@ CREATE TABLE `cities` (
   PRIMARY KEY (`id`),
   KEY `governate_id` (`governate_id`),
   CONSTRAINT `cities_ibfk_1` FOREIGN KEY (`governate_id`) REFERENCES `governates` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `cities`
---
-
-LOCK TABLES `cities` WRITE;
-/*!40000 ALTER TABLE `cities` DISABLE KEYS */;
-/*!40000 ALTER TABLE `cities` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `countries`
@@ -215,17 +166,8 @@ CREATE TABLE `countries` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `countries`
---
-
-LOCK TABLES `countries` WRITE;
-/*!40000 ALTER TABLE `countries` DISABLE KEYS */;
-/*!40000 ALTER TABLE `countries` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `current_inventory`
@@ -245,17 +187,8 @@ CREATE TABLE `current_inventory` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `current_inventory_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `current_inventory_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `current_inventory`
---
-
-LOCK TABLES `current_inventory` WRITE;
-/*!40000 ALTER TABLE `current_inventory` DISABLE KEYS */;
-/*!40000 ALTER TABLE `current_inventory` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `departments`
@@ -270,17 +203,8 @@ CREATE TABLE `departments` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `departments`
---
-
-LOCK TABLES `departments` WRITE;
-/*!40000 ALTER TABLE `departments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `departments` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `employees`
@@ -308,15 +232,6 @@ CREATE TABLE `employees` (
   CONSTRAINT `fk_parent_employee` FOREIGN KEY (`parent_id`) REFERENCES `employees` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `employees`
---
-
-LOCK TABLES `employees` WRITE;
-/*!40000 ALTER TABLE `employees` DISABLE KEYS */;
-/*!40000 ALTER TABLE `employees` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `expenses`
@@ -348,17 +263,8 @@ CREATE TABLE `expenses` (
   CONSTRAINT `fk_exp_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_exp_party` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `expenses_chk_amount` CHECK ((`amount` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `expenses`
---
-
-LOCK TABLES `expenses` WRITE;
-/*!40000 ALTER TABLE `expenses` DISABLE KEYS */;
-/*!40000 ALTER TABLE `expenses` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `external_job_orders`
@@ -390,17 +296,8 @@ CREATE TABLE `external_job_orders` (
   CONSTRAINT `external_job_orders_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `external_job_orders_ibfk_4` FOREIGN KEY (`process_id`) REFERENCES `processes` (`id`),
   CONSTRAINT `external_job_orders_ibfk_5` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `external_job_orders`
---
-
-LOCK TABLES `external_job_orders` WRITE;
-/*!40000 ALTER TABLE `external_job_orders` DISABLE KEYS */;
-/*!40000 ALTER TABLE `external_job_orders` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `governates`
@@ -416,17 +313,8 @@ CREATE TABLE `governates` (
   PRIMARY KEY (`id`),
   KEY `country_id` (`country_id`),
   CONSTRAINT `governates_ibfk_1` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `governates`
---
-
-LOCK TABLES `governates` WRITE;
-/*!40000 ALTER TABLE `governates` DISABLE KEYS */;
-/*!40000 ALTER TABLE `governates` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `inventory_logs`
@@ -449,17 +337,8 @@ CREATE TABLE `inventory_logs` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `inventory_logs_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `inventory_logs_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `inventory_logs`
---
-
-LOCK TABLES `inventory_logs` WRITE;
-/*!40000 ALTER TABLE `inventory_logs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `inventory_logs` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `inventory_transaction_batches`
@@ -479,17 +358,8 @@ CREATE TABLE `inventory_transaction_batches` (
   KEY `batch_id` (`batch_id`),
   CONSTRAINT `itb_ibfk_batch` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`),
   CONSTRAINT `itb_ibfk_transaction` FOREIGN KEY (`inventory_transaction_id`) REFERENCES `inventory_transactions` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `inventory_transaction_batches`
---
-
-LOCK TABLES `inventory_transaction_batches` WRITE;
-/*!40000 ALTER TABLE `inventory_transaction_batches` DISABLE KEYS */;
-/*!40000 ALTER TABLE `inventory_transaction_batches` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `inventory_transactions`
@@ -512,17 +382,8 @@ CREATE TABLE `inventory_transactions` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `inventory_transactions_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `inventory_transactions_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `inventory_transactions`
---
-
-LOCK TABLES `inventory_transactions` WRITE;
-/*!40000 ALTER TABLE `inventory_transactions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `inventory_transactions` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `issue_voucher_items`
@@ -555,15 +416,6 @@ CREATE TABLE `issue_voucher_items` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `issue_voucher_items`
---
-
-LOCK TABLES `issue_voucher_items` WRITE;
-/*!40000 ALTER TABLE `issue_voucher_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `issue_voucher_items` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `issue_voucher_type_accounts`
 --
 
@@ -583,15 +435,6 @@ CREATE TABLE `issue_voucher_type_accounts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `issue_voucher_type_accounts`
---
-
-LOCK TABLES `issue_voucher_type_accounts` WRITE;
-/*!40000 ALTER TABLE `issue_voucher_type_accounts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `issue_voucher_type_accounts` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `issue_voucher_types`
 --
 
@@ -608,15 +451,6 @@ CREATE TABLE `issue_voucher_types` (
   UNIQUE KEY `code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `issue_voucher_types`
---
-
-LOCK TABLES `issue_voucher_types` WRITE;
-/*!40000 ALTER TABLE `issue_voucher_types` DISABLE KEYS */;
-/*!40000 ALTER TABLE `issue_voucher_types` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `issue_vouchers`
@@ -653,15 +487,6 @@ CREATE TABLE `issue_vouchers` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `issue_vouchers`
---
-
-LOCK TABLES `issue_vouchers` WRITE;
-/*!40000 ALTER TABLE `issue_vouchers` DISABLE KEYS */;
-/*!40000 ALTER TABLE `issue_vouchers` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `job_order_costs`
 --
 
@@ -679,15 +504,6 @@ CREATE TABLE `job_order_costs` (
   CONSTRAINT `job_order_costs_ibfk_1` FOREIGN KEY (`job_order_id`) REFERENCES `external_job_orders` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `job_order_costs`
---
-
-LOCK TABLES `job_order_costs` WRITE;
-/*!40000 ALTER TABLE `job_order_costs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `job_order_costs` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `job_order_status_log`
@@ -709,15 +525,6 @@ CREATE TABLE `job_order_status_log` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `job_order_status_log`
---
-
-LOCK TABLES `job_order_status_log` WRITE;
-/*!40000 ALTER TABLE `job_order_status_log` DISABLE KEYS */;
-/*!40000 ALTER TABLE `job_order_status_log` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `job_titles`
 --
 
@@ -730,15 +537,6 @@ CREATE TABLE `job_titles` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `job_titles`
---
-
-LOCK TABLES `job_titles` WRITE;
-/*!40000 ALTER TABLE `job_titles` DISABLE KEYS */;
-/*!40000 ALTER TABLE `job_titles` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `journal_entries`
@@ -759,17 +557,8 @@ CREATE TABLE `journal_entries` (
   UNIQUE KEY `uq_journal_reference` (`reference_type_id`,`reference_id`),
   KEY `idx_journal_reference` (`reference_type_id`,`reference_id`),
   CONSTRAINT `fk_journal_reference_type` FOREIGN KEY (`reference_type_id`) REFERENCES `reference_types` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `journal_entries`
---
-
-LOCK TABLES `journal_entries` WRITE;
-/*!40000 ALTER TABLE `journal_entries` DISABLE KEYS */;
-/*!40000 ALTER TABLE `journal_entries` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `journal_entry_lines`
@@ -794,17 +583,8 @@ CREATE TABLE `journal_entry_lines` (
   CONSTRAINT `fk_line_entry` FOREIGN KEY (`journal_entry_id`) REFERENCES `journal_entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chk_credit_nonneg` CHECK ((`credit` >= 0)),
   CONSTRAINT `chk_debit_nonneg` CHECK ((`debit` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `journal_entry_lines`
---
-
-LOCK TABLES `journal_entry_lines` WRITE;
-/*!40000 ALTER TABLE `journal_entry_lines` DISABLE KEYS */;
-/*!40000 ALTER TABLE `journal_entry_lines` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `parties`
@@ -833,17 +613,8 @@ CREATE TABLE `parties` (
   CONSTRAINT `parties_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`),
   CONSTRAINT `parties_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
   CONSTRAINT `parties_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `party_categories` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `parties`
---
-
-LOCK TABLES `parties` WRITE;
-/*!40000 ALTER TABLE `parties` DISABLE KEYS */;
-/*!40000 ALTER TABLE `parties` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `party_categories`
@@ -856,17 +627,8 @@ CREATE TABLE `party_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `party_categories`
---
-
-LOCK TABLES `party_categories` WRITE;
-/*!40000 ALTER TABLE `party_categories` DISABLE KEYS */;
-/*!40000 ALTER TABLE `party_categories` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `processes`
@@ -880,17 +642,8 @@ CREATE TABLE `processes` (
   `name` varchar(255) NOT NULL,
   `description` text,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `processes`
---
-
-LOCK TABLES `processes` WRITE;
-/*!40000 ALTER TABLE `processes` DISABLE KEYS */;
-/*!40000 ALTER TABLE `processes` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `product_costs`
@@ -913,15 +666,6 @@ CREATE TABLE `product_costs` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `product_costs`
---
-
-LOCK TABLES `product_costs` WRITE;
-/*!40000 ALTER TABLE `product_costs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `product_costs` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `product_prices`
 --
 
@@ -940,15 +684,6 @@ CREATE TABLE `product_prices` (
   CONSTRAINT `product_prices_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `product_prices`
---
-
-LOCK TABLES `product_prices` WRITE;
-/*!40000 ALTER TABLE `product_prices` DISABLE KEYS */;
-/*!40000 ALTER TABLE `product_prices` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -995,17 +730,8 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   KEY `unit_id` (`unit_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `products`
---
-
-LOCK TABLES `products` WRITE;
-/*!40000 ALTER TABLE `products` DISABLE KEYS */;
-/*!40000 ALTER TABLE `products` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `purchase_invoice_items`
@@ -1039,17 +765,8 @@ CREATE TABLE `purchase_invoice_items` (
   CONSTRAINT `purchase_invoice_items_chk_2` CHECK ((`unit_price` >= 0)),
   CONSTRAINT `purchase_invoice_items_chk_3` CHECK ((`discount` >= 0)),
   CONSTRAINT `purchase_invoice_items_chk_4` CHECK ((`total_price` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `purchase_invoice_items`
---
-
-LOCK TABLES `purchase_invoice_items` WRITE;
-/*!40000 ALTER TABLE `purchase_invoice_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase_invoice_items` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `purchase_invoice_payments`
@@ -1075,17 +792,8 @@ CREATE TABLE `purchase_invoice_payments` (
   CONSTRAINT `fk_payment_account` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `fk_payment_invoice` FOREIGN KEY (`purchase_invoice_id`) REFERENCES `purchase_invoices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `purchase_invoice_payments_chk_1` CHECK ((`amount` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `purchase_invoice_payments`
---
-
-LOCK TABLES `purchase_invoice_payments` WRITE;
-/*!40000 ALTER TABLE `purchase_invoice_payments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase_invoice_payments` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `purchase_invoices`
@@ -1102,7 +810,7 @@ CREATE TABLE `purchase_invoices` (
   `invoice_date` date NOT NULL,
   `due_date` date DEFAULT NULL,
   `payment_terms` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `invoice_type` enum('normal','opening') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
+  `invoice_type` enum('normal','opening') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
   `status` enum('unpaid','paid','partially_paid','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
   `subtotal` decimal(18,2) NOT NULL DEFAULT '0.00',
   `additional_discount` decimal(18,2) NOT NULL DEFAULT '0.00',
@@ -1123,17 +831,8 @@ CREATE TABLE `purchase_invoices` (
   CONSTRAINT `purchase_invoices_chk_1` CHECK ((`additional_discount` >= 0)),
   CONSTRAINT `purchase_invoices_chk_2` CHECK ((`vat_rate` >= 0)),
   CONSTRAINT `purchase_invoices_chk_3` CHECK ((`tax_rate` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=98 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `purchase_invoices`
---
-
-LOCK TABLES `purchase_invoices` WRITE;
-/*!40000 ALTER TABLE `purchase_invoices` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase_invoices` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `purchase_order_items`
@@ -1168,17 +867,8 @@ CREATE TABLE `purchase_order_items` (
   CONSTRAINT `purchase_order_items_chk_2` CHECK ((`unit_price` >= 0)),
   CONSTRAINT `purchase_order_items_chk_3` CHECK (((`discount` >= 0) and (`discount` <= 100))),
   CONSTRAINT `purchase_order_items_chk_4` CHECK ((`total_price` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `purchase_order_items`
---
-
-LOCK TABLES `purchase_order_items` WRITE;
-/*!40000 ALTER TABLE `purchase_order_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase_order_items` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `purchase_orders`
@@ -1208,17 +898,8 @@ CREATE TABLE `purchase_orders` (
   KEY `idx_po_supplier` (`supplier_id`),
   KEY `idx_po_order_date` (`order_date`),
   CONSTRAINT `fk_po_supplier` FOREIGN KEY (`supplier_id`) REFERENCES `parties` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=120 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `purchase_orders`
---
-
-LOCK TABLES `purchase_orders` WRITE;
-/*!40000 ALTER TABLE `purchase_orders` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase_orders` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `purchase_payments`
@@ -1243,15 +924,6 @@ CREATE TABLE `purchase_payments` (
   CONSTRAINT `purchase_payments_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `purchase_payments`
---
-
-LOCK TABLES `purchase_payments` WRITE;
-/*!40000 ALTER TABLE `purchase_payments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase_payments` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -1273,11 +945,11 @@ DELIMITER ;;
     VALUES (NEW.payment_date, CONCAT('دفع مورد #', NEW.id));
     SET entry_id = LAST_INSERT_ID();
 
-    
+    -- دائن من حساب النقدية/البنك
     INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
     VALUES (entry_id, NEW.account_id, 0, NEW.amount, 'دفع للمورد');
 
-    
+    -- مدين إلى حساب المورد (الدائنون)
     INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
     VALUES (entry_id, payables_account, NEW.amount, 0, 'تخفيض مديونية المورد');
 END */;;
@@ -1310,15 +982,6 @@ CREATE TABLE `purchase_return_items` (
   CONSTRAINT `purchase_return_items_ibfk_3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `purchase_return_items`
---
-
-LOCK TABLES `purchase_return_items` WRITE;
-/*!40000 ALTER TABLE `purchase_return_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase_return_items` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -1331,14 +994,14 @@ DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_inventory_after_purchase_return` AFTER INSERT ON `purchase_return_items` FOR EACH ROW BEGIN
   DECLARE wh_id INT;
 
-  
+  -- جلب المخزن المرتبط بالفاتورة الأصلية
   SELECT warehouse_id INTO wh_id
   FROM purchase_invoices
   WHERE id = (
     SELECT purchase_invoice_id FROM purchase_returns WHERE id = NEW.purchase_return_id
   );
 
-  
+  -- خصم الكمية المرتجعة من المخزون
   UPDATE current_inventory
   SET quantity = quantity - NEW.quantity
   WHERE product_id = NEW.product_id AND warehouse_id = wh_id;
@@ -1415,15 +1078,6 @@ CREATE TABLE `purchase_returns` (
   CONSTRAINT `purchase_returns_ibfk_1` FOREIGN KEY (`purchase_invoice_id`) REFERENCES `purchase_invoices` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `purchase_returns`
---
-
-LOCK TABLES `purchase_returns` WRITE;
-/*!40000 ALTER TABLE `purchase_returns` DISABLE KEYS */;
-/*!40000 ALTER TABLE `purchase_returns` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -1439,7 +1093,7 @@ DELIMITER ;;
     DECLARE payable_account INT;
     DECLARE tax_account INT;
 
-    
+    -- جلب إعدادات الحسابات
     SELECT
         purchases_expense_account_id,
         payables_account_id,
@@ -1451,20 +1105,20 @@ DELIMITER ;;
     FROM accounting_settings
     WHERE id = 1;
 
-    
+    -- رأس القيد
     INSERT INTO journal_entries (entry_date, description)
     VALUES (NEW.return_date, CONCAT('مرتجع شراء #', NEW.id));
     SET entry_id = LAST_INSERT_ID();
 
-    
+    -- عكس قيد المشتريات: دائن للمشتريات
     INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
     VALUES (entry_id, purchase_account, 0, NEW.total_amount, 'إلغاء جزئي للمشتريات');
 
-    
+    -- مدين للمورد: تخفيض المديونية
     INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
     VALUES (entry_id, payable_account, NEW.total_amount, 0, 'تخفيض مديونية المورد');
 
-    
+    -- ضريبة مشتريات مستردة (لو فيه)
     IF NEW.tax_amount > 0 THEN
         INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
         VALUES (entry_id, tax_account, 0, NEW.tax_amount, 'عكس ضريبة المشتريات');
@@ -1492,11 +1146,11 @@ DELIMITER ;;
     DECLARE total_amount DECIMAL(10,2) DEFAULT 0.00;
     DECLARE tax_amount DECIMAL(10,2) DEFAULT 0.00;
 
-    
+    -- حذف القيد القديم
     DELETE FROM journal_entries 
     WHERE description = CONCAT('مرتجع شراء #', OLD.id);
 
-    
+    -- حساب الإجمالي من عناصر المرتجع
     SELECT 
         IFNULL(SUM(quantity * price), 0),
         IFNULL(SUM(quantity * price * (tax_rate / 100)), 0)
@@ -1506,7 +1160,7 @@ DELIMITER ;;
     FROM purchase_return_items
     WHERE return_id = NEW.id;
 
-    
+    -- جلب إعدادات الحسابات
     SELECT 
         purchases_expense_account_id,
         payables_account_id,
@@ -1518,20 +1172,20 @@ DELIMITER ;;
     FROM accounting_settings
     WHERE id = 1;
 
-    
+    -- رأس القيد الجديد
     INSERT INTO journal_entries (entry_date, description)
     VALUES (NEW.return_date, CONCAT('مرتجع شراء #', NEW.id));
     SET entry_id = LAST_INSERT_ID();
 
-    
+    -- عكس المشتريات
     INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
     VALUES (entry_id, purchase_account, 0, total_amount, 'إلغاء جزئي للمشتريات');
 
-    
+    -- تخفيض مديونية المورد
     INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
     VALUES (entry_id, payable_account, total_amount + tax_amount, 0, 'تخفيض مديونية المورد');
 
-    
+    -- عكس الضريبة
     IF tax_amount > 0 THEN
         INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
         VALUES (entry_id, tax_account, 0, tax_amount, 'عكس ضريبة المشتريات');
@@ -1552,7 +1206,7 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_after_delete_purchase_return` AFTER DELETE ON `purchase_returns` FOR EACH ROW BEGIN
-    
+    -- حذف القيد المرتبط
     DELETE FROM journal_entries 
     WHERE description = CONCAT('مرتجع شراء #', OLD.id);
 END */;;
@@ -1578,17 +1232,8 @@ CREATE TABLE `reference_types` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `reference_types`
---
-
-LOCK TABLES `reference_types` WRITE;
-/*!40000 ALTER TABLE `reference_types` DISABLE KEYS */;
-/*!40000 ALTER TABLE `reference_types` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sales_invoice_items`
@@ -1615,17 +1260,8 @@ CREATE TABLE `sales_invoice_items` (
   CONSTRAINT `fk_si_items_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_invoice_items_ibfk_1` FOREIGN KEY (`sales_invoice_id`) REFERENCES `sales_invoices` (`id`),
   CONSTRAINT `sales_invoice_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sales_invoice_items`
---
-
-LOCK TABLES `sales_invoice_items` WRITE;
-/*!40000 ALTER TABLE `sales_invoice_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_invoice_items` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sales_invoices`
@@ -1636,8 +1272,8 @@ DROP TABLE IF EXISTS `sales_invoices`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `sales_invoices` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `invoice_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `status` enum('unpaid','paid','partial','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
+  `invoice_number` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `status` enum('unpaid','paid','partial','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpaid',
   `sales_order_id` int DEFAULT NULL,
   `party_id` int NOT NULL,
   `invoice_date` date NOT NULL DEFAULT (curdate()),
@@ -1666,17 +1302,8 @@ CREATE TABLE `sales_invoices` (
   CONSTRAINT `sales_invoices_ibfk_1` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`),
   CONSTRAINT `sales_invoices_ibfk_2` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`),
   CONSTRAINT `sales_invoices_ibfk_3` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sales_invoices`
---
-
-LOCK TABLES `sales_invoices` WRITE;
-/*!40000 ALTER TABLE `sales_invoices` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_invoices` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sales_order_items`
@@ -1703,17 +1330,8 @@ CREATE TABLE `sales_order_items` (
   CONSTRAINT `fk_so_items_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_order_items_ibfk_1` FOREIGN KEY (`sales_order_id`) REFERENCES `sales_orders` (`id`),
   CONSTRAINT `sales_order_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sales_order_items`
---
-
-LOCK TABLES `sales_order_items` WRITE;
-/*!40000 ALTER TABLE `sales_order_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_order_items` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sales_orders`
@@ -1725,7 +1343,7 @@ DROP TABLE IF EXISTS `sales_orders`;
 CREATE TABLE `sales_orders` (
   `id` int NOT NULL AUTO_INCREMENT,
   `party_id` int NOT NULL,
-  `status` enum('pending','approved','partial','completed','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `status` enum('pending','approved','partial','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
   `warehouse_id` int DEFAULT NULL,
   `employee_id` int DEFAULT NULL,
   `order_date` date NOT NULL DEFAULT (curdate()),
@@ -1745,17 +1363,8 @@ CREATE TABLE `sales_orders` (
   CONSTRAINT `fk_sales_orders_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `fk_sales_orders_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `sales_orders_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sales_orders`
---
-
-LOCK TABLES `sales_orders` WRITE;
-/*!40000 ALTER TABLE `sales_orders` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_orders` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `sales_payments`
@@ -1784,15 +1393,6 @@ CREATE TABLE `sales_payments` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sales_payments`
---
-
-LOCK TABLES `sales_payments` WRITE;
-/*!40000 ALTER TABLE `sales_payments` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_payments` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `sales_return_items`
 --
 
@@ -1812,15 +1412,6 @@ CREATE TABLE `sales_return_items` (
   CONSTRAINT `sales_return_items_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sales_return_items`
---
-
-LOCK TABLES `sales_return_items` WRITE;
-/*!40000 ALTER TABLE `sales_return_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_return_items` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -1898,15 +1489,6 @@ CREATE TABLE `sales_returns` (
   CONSTRAINT `sales_returns_ibfk_1` FOREIGN KEY (`sales_invoice_id`) REFERENCES `sales_invoices` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `sales_returns`
---
-
-LOCK TABLES `sales_returns` WRITE;
-/*!40000 ALTER TABLE `sales_returns` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_returns` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
@@ -1924,7 +1506,7 @@ DELIMITER ;;
     DECLARE total_amount DECIMAL(10,2) DEFAULT 0.00;
     DECLARE tax_amount DECIMAL(10,2) DEFAULT 0.00;
 
-    
+    -- حساب الإجمالي من عناصر المرتجع
     SELECT 
         IFNULL(SUM(quantity * price), 0),
         IFNULL(SUM(quantity * price * (tax_rate / 100)), 0)
@@ -1934,7 +1516,7 @@ DELIMITER ;;
     FROM sales_return_items
     WHERE return_id = NEW.id;
 
-    
+    -- جلب إعدادات الحسابات
     SELECT 
         sales_revenue_account_id,
         receivables_account_id,
@@ -1946,20 +1528,20 @@ DELIMITER ;;
     FROM accounting_settings
     WHERE id = 1;
 
-    
+    -- رأس القيد
     INSERT INTO journal_entries (entry_date, description)
     VALUES (NEW.return_date, CONCAT('مرتجع بيع #', NEW.id));
     SET entry_id = LAST_INSERT_ID();
 
-    
+    -- دائن للعميل
     INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
     VALUES (entry_id, receivable_account, 0, total_amount + tax_amount, 'إلغاء مديونية العميل');
 
-    
+    -- مدين: إلغاء الإيراد
     INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
     VALUES (entry_id, sales_account, total_amount, 0, 'إلغاء إيرادات المبيعات');
 
-    
+    -- مدين: عكس ضريبة مبيعات
     IF tax_amount > 0 THEN
         INSERT INTO journal_entry_lines (journal_entry_id, account_id, debit, credit, description)
         VALUES (entry_id, tax_account, tax_amount, 0, 'عكس ضريبة المبيعات');
@@ -1980,11 +1562,11 @@ DELIMITER ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_after_update_sales_return` AFTER UPDATE ON `sales_returns` FOR EACH ROW BEGIN
-    
+    -- حذف القيد القديم
     DELETE FROM journal_entries 
     WHERE description = CONCAT('مرتجع بيع #', OLD.id);
 
-    
+    -- تنفيذ نفس خطوات INSERT
     CALL trg_after_insert_sales_return(NEW);
 END */;;
 DELIMITER ;
@@ -2036,15 +1618,6 @@ CREATE TABLE `supplier_cheques` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `supplier_cheques`
---
-
-LOCK TABLES `supplier_cheques` WRITE;
-/*!40000 ALTER TABLE `supplier_cheques` DISABLE KEYS */;
-/*!40000 ALTER TABLE `supplier_cheques` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Temporary view structure for view `suppliers`
 --
 
@@ -2068,17 +1641,8 @@ CREATE TABLE `units` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `units`
---
-
-LOCK TABLES `units` WRITE;
-/*!40000 ALTER TABLE `units` DISABLE KEYS */;
-/*!40000 ALTER TABLE `units` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `users`
@@ -2097,15 +1661,6 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `users`
---
-
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Temporary view structure for view `v_monthly_orders_report`
@@ -2388,15 +1943,6 @@ CREATE TABLE `warehouse_transfer_items` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `warehouse_transfer_items`
---
-
-LOCK TABLES `warehouse_transfer_items` WRITE;
-/*!40000 ALTER TABLE `warehouse_transfer_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `warehouse_transfer_items` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `warehouse_transfers`
 --
 
@@ -2414,17 +1960,8 @@ CREATE TABLE `warehouse_transfers` (
   KEY `fk_transfer_to` (`to_warehouse_id`),
   CONSTRAINT `fk_transfer_from` FOREIGN KEY (`from_warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `fk_transfer_to` FOREIGN KEY (`to_warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `warehouse_transfers`
---
-
-LOCK TABLES `warehouse_transfers` WRITE;
-/*!40000 ALTER TABLE `warehouse_transfers` DISABLE KEYS */;
-/*!40000 ALTER TABLE `warehouse_transfers` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `warehouses`
@@ -2442,23 +1979,8 @@ CREATE TABLE `warehouses` (
   PRIMARY KEY (`id`),
   KEY `warehouses_ibfk_1` (`city_id`),
   CONSTRAINT `warehouses_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `warehouses`
---
-
-LOCK TABLES `warehouses` WRITE;
-/*!40000 ALTER TABLE `warehouses` DISABLE KEYS */;
-/*!40000 ALTER TABLE `warehouses` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Current Database: `nurivina_erp`
---
-
-USE `nurivina_erp`;
 
 --
 -- Final view structure for view `suppliers`
@@ -2770,6 +2292,9 @@ USE `nurivina_erp`;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-10 12:55:26
+-- Dump completed on 2025-12-10 10:41:55
