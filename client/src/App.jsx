@@ -37,6 +37,7 @@ import SalesOrdersPage from "./pages/salesOrdersPage";
 import SalesInvoicesPage from "./pages/salesInvoicesPage";
 import SalesInvoicePaymentsPage from "./pages/salesInvoicePaymentsPage";
 import CustomerStatementPage from "./pages/CustomerStatementPage";
+import SalesReturnsPage from "./pages/salesReturnsPage";
 
 const drawerWidth = 240;
 
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/sales-invoice-payments" element={<SalesInvoicePaymentsPage />} />
           <Route path="/customers/statement" element={<CustomerStatementPage />} />
           <Route path="/customers/:customerId/statement" element={<CustomerStatementPage />} />
+          <Route path="/sales-returns" element={<SalesReturnsPage />} />
         </Routes>
       </Box>
     </BrowserRouter>

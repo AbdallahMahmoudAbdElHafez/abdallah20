@@ -39,6 +39,8 @@ import issueVoucherTypeAccountsRoutes from "./routes/issueVoucherTypeAccounts.ro
 import issueVouchersRoutes from "./routes/issueVouchers.routes.js";
 import purchaseReturnsRoutes from "./routes/purchaseReturns.routes.js";
 import purchaseReturnItemsRoutes from "./routes/purchaseReturnItems.routes.js";
+import salesReturnsRoutes from "./routes/salesReturns.routes.js";
+import salesReturnItemsRoutes from "./routes/salesReturnItems.routes.js";
 import salesOrderRoutes from "./routes/salesOrders.routes.js";
 import salesOrderItemRoutes from "./routes/salesOrderItems.routes.js";
 import salesInvoiceRoutes from "./routes/salesInvoices.routes.js";
@@ -93,6 +95,8 @@ app.use('/api/issue-voucher-type-accounts', issueVoucherTypeAccountsRoutes);
 app.use('/api/issue-vouchers', issueVouchersRoutes);
 app.use("/api/purchase-returns", purchaseReturnsRoutes);
 app.use("/api/purchase-return-items", purchaseReturnItemsRoutes);
+app.use("/api/sales-returns", salesReturnsRoutes);
+app.use("/api/sales-return-items", salesReturnItemsRoutes);
 app.use("/api/sales-orders", salesOrderRoutes);
 app.use("/api/sales-order-items", salesOrderItemRoutes);
 app.use("/api/sales-invoices", salesInvoiceRoutes);

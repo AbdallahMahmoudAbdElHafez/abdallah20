@@ -40,10 +40,12 @@ import salesInvoiceItemsReducer from "../features/salesInvoiceItems/salesInvoice
 import batchesReducer from "../features/batches/batchesSlice";
 import salesInvoicePaymentsReducer from "../features/salesInvoicePayments/salesInvoicePaymentsSlice";
 import entryTypesReducer from "../features/entryTypes/entryTypesSlice";
+import salesReturnsReducer from "../features/salesReturns/salesReturnsSlice";
 import jobOrderCostsReducer from "../features/jobOrderCosts/jobOrderCostsSlice";
 
 export const store = configureStore({
   reducer: {
+    salesReturns: salesReturnsReducer,
     units: unitsReducer,
     products: productsReducer,
     countries: countriesReducer,

@@ -32,6 +32,8 @@ import IssueVoucherModel from './issueVouchers.model.js';
 import IssueVoucherItemModel from './issueVoucherItems.model.js';
 import PurchaseReturnModel from "./purchaseReturns.model.js";
 import PurchaseReturnItemModel from "./purchaseReturnItems.model.js";
+import SalesReturnModel from "./salesReturns.model.js";
+import SalesReturnItemModel from "./salesReturnItems.model.js";
 import SalesOrderModel from "./salesOrders.model.js";
 import SalesOrderItemModel from "./salesOrderItems.model.js";
 import SalesInvoiceModel from "./salesInvoices.model.js";
@@ -101,6 +103,8 @@ const IssueVoucher = IssueVoucherModel(sequelize);
 const IssueVoucherItem = IssueVoucherItemModel(sequelize);
 const PurchaseReturn = PurchaseReturnModel(sequelize);
 const PurchaseReturnItem = PurchaseReturnItemModel(sequelize);
+const SalesReturn = SalesReturnModel(sequelize);
+const SalesReturnItem = SalesReturnItemModel(sequelize);
 const SalesOrder = SalesOrderModel(sequelize);
 const SalesOrderItem = SalesOrderItemModel(sequelize);
 const SalesInvoice = SalesInvoiceModel(sequelize);
@@ -502,6 +506,51 @@ PurchaseReturnItem.belongsTo(Product, {
   as: "product"
 });
 
+// === SalesInvoice ↔ SalesReturn ===
+SalesInvoice.hasMany(SalesReturn, {
+  foreignKey: "sales_invoice_id",
+  as: "returns",
+  onDelete: "RESTRICT"
+});
+SalesReturn.belongsTo(SalesInvoice, {
+  foreignKey: "sales_invoice_id",
+  as: "invoice",
+  onDelete: "RESTRICT"
+});
+
+SalesReturn.belongsTo(Party, {
+  foreignKey: "sales_invoice_id",
+  as: "customer",
+  through: SalesInvoice
+});
+
+SalesReturn.belongsTo(Warehouse, {
+  foreignKey: "warehouse_id",
+  as: "warehouse"
+});
+
+// === SalesReturn ↔ SalesReturnItem ===
+SalesReturn.hasMany(SalesReturnItem, {
+  foreignKey: "sales_return_id",
+  as: "items",
+  onDelete: "CASCADE"
+});
+SalesReturnItem.belongsTo(SalesReturn, {
+  foreignKey: "sales_return_id",
+  as: "sales_return"
+});
+
+// === SalesReturnItem ↔ Product ===
+Product.hasMany(SalesReturnItem, {
+  foreignKey: "product_id",
+  as: "sales_return_items"
+});
+SalesReturnItem.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product"
+});
+
+
 // === Sales Order Associations ===
 SalesOrder.belongsTo(Party, { foreignKey: "party_id", as: "party" });
 Party.hasMany(SalesOrder, { foreignKey: "party_id", as: "sales_orders" });
@@ -627,6 +676,8 @@ export {
   IssueVoucherItem,
   PurchaseReturn,
   PurchaseReturnItem,
+  SalesReturn,
+  SalesReturnItem,
   SalesOrder,
   SalesOrderItem,
   SalesInvoice,

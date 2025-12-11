@@ -57,6 +57,7 @@ const salesMenu = [
   { label: "أوامر البيع", path: "/sales-orders" },
   { label: "فواتير البيع", path: "/sales-invoices" },
   { label: "مدفوعات", path: "/sales-payments" },
+  { label: "مرتجعات", path: "/sales-returns" },
 
 ];
 const warehousesMenu = [
