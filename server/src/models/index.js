@@ -55,6 +55,8 @@ import purchaseInvoiceHooks from "../hooks/purchaseInvoiceHooks.js";
 import purchaseInvoicePaymentHooks from "../hooks/purchaseInvoicePaymentHooks.js";
 import salesInvoicePaymentHooks from "../hooks/salesInvoicePaymentHooks.js";
 import salesInvoiceHooks from "../hooks/salesInvoiceHooks.js";
+import salesReturnsHooks from "../hooks/salesReturnsHooks.js";
+import purchaseReturnsHooks from "../hooks/purchaseReturnsHooks.js";
 import externalJobOrderHooks from "../hooks/externalJobOrderHooks.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
@@ -120,6 +122,8 @@ purchaseInvoiceHooks(sequelize);
 purchaseInvoicePaymentHooks(sequelize);
 salesInvoicePaymentHooks(sequelize);
 salesInvoiceHooks(sequelize);
+salesReturnsHooks(sequelize);
+purchaseReturnsHooks(sequelize);
 externalJobOrderHooks(sequelize);
 
 

@@ -186,7 +186,7 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
             tax_amount: taxAmount,
             vat_amount: vatAmount,
             total_amount: totalAmount,
-            items: items.map(({ tempId, ...rest }) => rest),
+            items: items.map(({ tempId, id, sales_order_id, product, warehouse, createdAt, updatedAt, ...rest }) => rest),
         };
 
         // Sanitize optional fields

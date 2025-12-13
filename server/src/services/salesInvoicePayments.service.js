@@ -1,5 +1,6 @@
 import { sequelize, SalesInvoicePayment, SalesInvoice, Party, Account } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
+import ENTRY_TYPES from "../constants/entryTypes.js";
 import { Op } from "sequelize";
 
 export async function createPayment(data) {
@@ -38,6 +39,7 @@ export async function createPayment(data) {
                 refId: payment.id,
                 entryDate: payment.payment_date,
                 description: `تحصيل فاتورة مبيعات #${invoice.invoice_number}`,
+                entryTypeId: ENTRY_TYPES.SALES_COLLECTION,
                 lines: [
                     {
                         account_id: data.account_id, // Cash/Bank

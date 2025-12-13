@@ -1,4 +1,5 @@
 import { createJournalEntry } from "../services/journal.service.js";
+import ENTRY_TYPES from "../constants/entryTypes.js";
 
 export default function salesInvoiceHooks(sequelize) {
     const { Party, Account, ReferenceType } = sequelize.models; // SalesInvoice is snake_case
@@ -46,6 +47,7 @@ export default function salesInvoiceHooks(sequelize) {
                 refId: invoice.id,
                 entryDate: invoice.invoice_date || new Date(),
                 description: `فاتورة مبيعات #${invoice.invoice_number}`,
+                entryTypeId: ENTRY_TYPES.SALES_INVOICE,
                 lines: [
                     {
                         account_id: customer.account_id,

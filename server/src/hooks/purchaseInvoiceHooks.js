@@ -1,4 +1,5 @@
 import { createJournalEntry } from "../services/journal.service.js";
+import ENTRY_TYPES from "../constants/entryTypes.js";
 
 const createPurchaseJournalEntry = async (invoice, models, options) => {
   const t = options.transaction;
@@ -38,6 +39,7 @@ const createPurchaseJournalEntry = async (invoice, models, options) => {
       refId: invoice.id,
       entryDate: invoice.invoice_date || new Date(),
       description: `اعتماد فاتورة مشتريات #${invoice.id}`,
+      entryTypeId: ENTRY_TYPES.PURCHASE_INVOICE,
       lines: [
         { account_id: inventoryAccount.id, debit: invoice.total_amount, credit: 0, description: "إضافة للمخزون" },
         { account_id: supplier.account_id, debit: 0, credit: invoice.total_amount, description: "حساب المورد (أجل)" }

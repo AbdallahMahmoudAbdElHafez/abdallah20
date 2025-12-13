@@ -82,6 +82,16 @@ export default function SalesInvoicesPage() {
                     </Button>
                     <Button
                         size="small"
+                        variant="contained"
+                        color="secondary"
+                        onClick={() =>
+                            navigate(`/sales-orders?order_id=${row.original.sales_order_id}`)
+                        }
+                    >
+                        عرض الطلب
+                    </Button>
+                    <Button
+                        size="small"
                         variant="outlined"
                         color="info"
                         onClick={() => handleOpenPayments(row.original)}
