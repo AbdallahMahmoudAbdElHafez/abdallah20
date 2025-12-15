@@ -8,6 +8,7 @@ class PartyService {
       where: {
         party_type: ["supplier", "both"],
       },
+      include: [City],
     });
   }
 
@@ -16,6 +17,7 @@ class PartyService {
       where: {
         party_type: ["customer", "both"],
       },
+      include: [City],
     });
   }
   static async getAll() {

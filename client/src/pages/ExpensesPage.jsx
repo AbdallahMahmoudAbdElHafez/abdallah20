@@ -256,7 +256,7 @@ export default function ExpensesPage() {
                         <MenuItem value=""><em>لا يوجد</em></MenuItem>
                         {parties.map((party) => (
                             <MenuItem key={party.id} value={party.id}>
-                                {party.name}
+                                {party.name} {party.City?.name ? `(${party.City.name})` : ""}
                             </MenuItem>
                         ))}
                     </TextField>

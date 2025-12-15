@@ -493,7 +493,7 @@ export default function SalesInvoiceDialog({
                                         .filter((p) => p.party_type === "customer")
                                         .map((c) => (
                                             <MenuItem key={c.id} value={c.id}>
-                                                {c.name}
+                                                {c.name} {c.City?.name ? `(${c.City.name})` : ""}
                                             </MenuItem>
                                         ))}
                                 </TextField>

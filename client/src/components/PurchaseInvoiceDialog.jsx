@@ -452,7 +452,7 @@ export default function PurchaseInvoiceDialog({
                     .filter((p) => p.party_type === "supplier")
                     .map((s) => (
                       <MenuItem key={s.id} value={s.id}>
-                        {s.name}
+                        {s.name} {s.City?.name ? `(${s.City.name})` : ""}
                       </MenuItem>
                     ))}
                 </TextField>
