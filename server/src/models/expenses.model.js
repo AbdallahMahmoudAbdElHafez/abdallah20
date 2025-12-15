@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 
 export default (sequelize) => {
     return sequelize.define(
-        "expenses",
+        "Expense",
         {
             id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
             expense_date: {

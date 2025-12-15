@@ -28,7 +28,10 @@ import {
     Inventory as InventoryIcon,
     Money as MoneyIcon,
     ExpandLess as ExpandLessIcon,
+    FileDownload as FileDownloadIcon,
 } from "@mui/icons-material";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -39,6 +42,7 @@ import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
+import ExcelExportDialog from "./ExcelExportDialog";
 
 const statusConfig = {
     unpaid: { color: "default", label: "غير مدفوع" },
@@ -64,6 +68,7 @@ export default function SalesInvoiceDialog({
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [showItemForm, setShowItemForm] = useState(false);
+    const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
     const [invoiceHead, setInvoiceHead] = useState({
         invoice_number: "",
@@ -293,6 +298,88 @@ export default function SalesInvoiceDialog({
         }
     };
 
+    const exportColumns = [
+        { key: "invoice_number", label: "رقم الفاتورة" },
+        { key: "customer", label: "العميل" },
+        { key: "invoice_date", label: "التاريخ" },
+        { key: "due_date", label: "تاريخ الاستحقاق" },
+        { key: "warehouse", label: "المخزن" },
+        { key: "employee", label: "الموظف" },
+        { key: "invoice_type", label: "نوع الفاتورة" },
+        { key: "status", label: "الحالة" },
+        { key: "items", label: "الأصناف" },
+        { key: "subtotal", label: "المجموع الفرعي" },
+        { key: "additional_discount", label: "الخصم الإضافي" },
+        { key: "shipping_amount", label: "الشحن" },
+        { key: "vat_amount", label: "ضريبة القيمة المضافة" },
+        { key: "tax_amount", label: "ضريبة أخرى" },
+        { key: "total_amount", label: "الإجمالي النهائي" },
+    ];
+
+    const handleExportExcel = (selectedColumns) => {
+        const wb = XLSX.utils.book_new();
+
+        // Helper to check if column is selected
+        const isSelected = (key) => selectedColumns.includes(key);
+
+        // Prepare Header Data based on selection
+        const headData = [];
+        if (isSelected("invoice_number")) headData.push(["رقم الفاتورة", invoiceHead.invoice_number]);
+        if (isSelected("customer")) headData.push(["العميل", selectedCustomer?.name || ""]);
+        if (isSelected("invoice_date")) headData.push(["التاريخ", invoiceHead.invoice_date]);
+        if (isSelected("due_date")) headData.push(["تاريخ الاستحقاق", invoiceHead.due_date]);
+        if (isSelected("warehouse")) headData.push(["المخزن", warehouses.find(w => w.id === invoiceHead.warehouse_id)?.name || ""]);
+        if (isSelected("employee")) headData.push(["الموظف", employees.find(e => e.id === invoiceHead.employee_id)?.name || ""]);
+        if (isSelected("invoice_type")) headData.push(["نوع الفاتورة", invoiceHead.invoice_type === 'opening' ? 'رصيد افتتاحي' : 'فاتورة عادية']);
+        if (isSelected("status")) headData.push(["الحالة", statusConfig[invoiceHead.status]?.label || invoiceHead.status]);
+
+        headData.push([]); // Spacer
+
+        // Items Section
+        let itemsHeader = [];
+        let itemsData = [];
+
+        if (isSelected("items")) {
+            headData.push(["الأصناف"]);
+            itemsHeader = ["المنتج", "الكمية", "السعر", "الخصم", "الضريبة %", "بونص", "الإجمالي"];
+            itemsData = items.map(item => {
+                const product = products.find((p) => p.id === item.product_id);
+                return [
+                    product?.name || "",
+                    item.quantity,
+                    item.price,
+                    `${item.discount_percent || 0}% (${item.discount})`,
+                    item.tax_percent,
+                    item.bonus,
+                    ((item.quantity * item.price) - item.discount + ((item.quantity * item.price - item.discount) * item.tax_percent / 100)).toFixed(2)
+                ];
+            });
+        }
+
+        // Footer Data based on selection
+        const footerData = [];
+        footerData.push([]); // Spacer
+        if (isSelected("subtotal")) footerData.push(["المجموع الفرعي", invoiceHead.subtotal]);
+        if (isSelected("additional_discount")) footerData.push(["الخصم الإضافي", invoiceHead.additional_discount]);
+        if (isSelected("shipping_amount")) footerData.push(["الشحن", invoiceHead.shipping_amount]);
+        if (isSelected("vat_amount")) footerData.push(["ضريبة القيمة المضافة", invoiceHead.vat_amount]);
+        if (isSelected("tax_amount")) footerData.push(["ضريبة أخرى", invoiceHead.tax_amount]);
+        if (isSelected("total_amount")) footerData.push(["الإجمالي النهائي", invoiceHead.total_amount]);
+
+        const wsData = [
+            ...headData,
+            ...(isSelected("items") ? [itemsHeader, ...itemsData] : []),
+            ...footerData
+        ];
+
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        XLSX.utils.book_append_sheet(wb, ws, "Sales Invoice");
+
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+        saveAs(blob, `SalesInvoice_${invoiceHead.invoice_number || 'New'}.xlsx`);
+    };
+
     const itemColumns = [
         {
             accessorKey: "product_id",
@@ -349,10 +436,24 @@ export default function SalesInvoiceDialog({
                         {invoice ? "تعديل فاتورة بيع" : "إنشاء فاتورة بيع"}
                     </Typography>
                 </Box>
-                <IconButton onClick={onClose}>
-                    <CloseIcon />
-                </IconButton>
+                <Box>
+                    {invoice && (
+                        <IconButton onClick={() => setExportDialogOpen(true)} title="تصدير Excel">
+                            <FileDownloadIcon />
+                        </IconButton>
+                    )}
+                    <IconButton onClick={onClose}>
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
             </DialogTitle>
+
+            <ExcelExportDialog
+                open={exportDialogOpen}
+                onClose={() => setExportDialogOpen(false)}
+                onExport={handleExportExcel}
+                columns={exportColumns}
+            />
 
             <DialogContent>
                 {error && (

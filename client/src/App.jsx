@@ -65,6 +65,7 @@ export default function App() {
           <Route path="/supplier-cheques" element={<SupplierChequesPage />} />
           <Route path="/purchase-payments" element={<PurchasePaymentsPage />} />
           <Route path="/accounting-settings" element={<AccountingSettingsPage />} />
+          <Route path="/suppliers/statement" element={<SupplierStatementPage />} />
           <Route path="/suppliers/:supplierId/statement" element={<SupplierStatementPage />} />
           <Route path="/expense-categories" element={<ExpenseCategoryPage />} />
           <Route path="/bill-of-material" element={<BillOfMaterialsPage />} />

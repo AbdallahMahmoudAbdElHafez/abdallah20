@@ -117,8 +117,8 @@ export default function ExpensesPage() {
         { accessorKey: "expense_date", header: "التاريخ" },
         { accessorKey: "description", header: "الوصف" },
         { accessorKey: "amount", header: "المبلغ" },
-        { accessorKey: "debitAccount.name", header: "حساب المدين" },
-        { accessorKey: "creditAccount.name", header: "حساب الدائن" },
+        { accessorKey: "debitAccount.name", header: "مدفوع لحساب" },
+        { accessorKey: "creditAccount.name", header: "مدفوع من حساب" },
         {
             header: "المدينة",
             accessorFn: (row) => row.city?.name ?? "غير متوفر",
@@ -185,7 +185,7 @@ export default function ExpensesPage() {
                     <TextField
                         select
                         margin="dense"
-                        label="حساب المدين"
+                        label="مدفوع لحساب"
                         name="debit_account_id"
                         fullWidth
                         value={formData.debit_account_id}
@@ -200,7 +200,7 @@ export default function ExpensesPage() {
                     <TextField
                         select
                         margin="dense"
-                        label="حساب الدائن"
+                        label="مدفوع من حساب"
                         name="credit_account_id"
                         fullWidth
                         value={formData.credit_account_id}

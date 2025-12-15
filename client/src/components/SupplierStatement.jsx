@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { fetchSupplierStatement } from "../api/supplierLedgerApi";
+import { defaultTableProps } from "../config/tableConfig";
 import {
   Card,
   CardContent,
@@ -143,6 +144,7 @@ export default function SupplierStatement({ supplierId, fromParam, toParam }) {
         <MaterialReactTable
           columns={columns}
           data={statementRows}
+          {...defaultTableProps}
           enableColumnFilters={false}
           enableDensityToggle={false}
           enableSorting

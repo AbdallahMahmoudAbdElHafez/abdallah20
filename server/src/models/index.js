@@ -58,6 +58,7 @@ import salesInvoiceHooks from "../hooks/salesInvoiceHooks.js";
 import salesReturnsHooks from "../hooks/salesReturnsHooks.js";
 import purchaseReturnsHooks from "../hooks/purchaseReturnsHooks.js";
 import externalJobOrderHooks from "../hooks/externalJobOrderHooks.js";
+import expensesHooks from "../hooks/expensesHooks.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -125,6 +126,7 @@ salesInvoiceHooks(sequelize);
 salesReturnsHooks(sequelize);
 purchaseReturnsHooks(sequelize);
 externalJobOrderHooks(sequelize);
+expensesHooks(sequelize);
 
 
 

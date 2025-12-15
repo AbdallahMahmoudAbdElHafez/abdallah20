@@ -44,22 +44,22 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       description: inv.invoice_type === 'opening'
         ? `رصيد افتتاحي (فاتورة #${inv.invoice_number})`
         : `فاتورة مشتريات #${inv.invoice_number}`,
-      debit: Number(inv.total_amount),
-      credit: 0,
+      debit: 0,
+      credit: Number(inv.total_amount),
     })),
     ...payments.map(pay => ({
       type: "payment",
       date: pay.payment_date,
       description: `سداد دفعة لفاتورة #${pay["purchase_invoice.invoice_number"]}`,
-      debit: 0,
-      credit: Number(pay.amount),
+      debit: Number(pay.amount),
+      credit: 0,
     })),
   ].sort((a, b) => new Date(a.date) - new Date(b.date));
 
   // 4️⃣ حساب الرصيد التراكمي والختامي
   let runningBalance = 0;
   const statement = movements.map(row => {
-    runningBalance += row.debit - row.credit;
+    runningBalance += row.credit - row.debit;
     return { ...row, running_balance: runningBalance };
   });
 

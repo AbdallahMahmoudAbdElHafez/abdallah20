@@ -29,7 +29,7 @@ const navItems = [
   { label: "القيود", path: "/journal-entry-lines" },
   { label: "فئات المصروفات", path: "/expense-categories" },
   { label: "مكونات التصنيع", path: "/bill-of-material" },
-  { label: "كشف حساب المورد", path: "/suppliers/:supplierId/statement" },
+  { label: "كشف حساب المورد", path: "/suppliers/statement" },
   { label: "كشف حساب العميل", path: "/customers/statement" },
 ];
 const productsMenu = [
