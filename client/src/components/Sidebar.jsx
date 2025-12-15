@@ -26,11 +26,10 @@ const navItems = [
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
   { label: "العملاء الموردين", path: "/parties" },
   { label: "العمليات", path: "/processes" },
-  { label: "القيود", path: "/journal-entry-lines" },
+
   { label: "فئات المصروفات", path: "/expense-categories" },
   { label: "مكونات التصنيع", path: "/bill-of-material" },
-  { label: "كشف حساب المورد", path: "/suppliers/statement" },
-  { label: "كشف حساب العميل", path: "/customers/statement" },
+
 ];
 const productsMenu = [
   { label: "المنتجات", path: "/products" },
@@ -68,18 +67,26 @@ const warehousesMenu = [
   { label: "انواع سندات الصرف", path: "/issue-voucher-types" },
   { label: "اذونات الصرف", path: "/issue-vouchers" },
 ];
+const reportsMenu = [
+  { label: "كشف حساب المورد", path: "/suppliers/statement" },
+  { label: "كشف حساب العميل", path: "/customers/statement" },
+  { label: "القيود", path: "/journal-entry-lines" },
+
+];
 function Sidebar() {
   const location = useLocation();
   const [openPurchases, setOpenPurchases] = useState(false);
   const [openWarehouses, setOpenWarehouses] = useState(false);
   const [openCompanyInfo, setOpenCompanyInfo] = useState(false);
   const [openSales, setOpenSales] = useState(false);
+  const [openReports, setOpenReports] = useState(false);
 
   const toggleCompanyInfo = () => setOpenCompanyInfo(!openCompanyInfo);
   const toggleWarehouses = () => setOpenWarehouses(!openWarehouses);
 
   const togglePurchases = () => setOpenPurchases(!openPurchases);
   const toggleSales = () => setOpenSales(!openSales);
+  const toggleReports = () => setOpenReports(!openReports);
   const isActive = (path) => location.pathname === path;
 
   return (
@@ -229,8 +236,34 @@ function Sidebar() {
             ))}
           </List>
         </Collapse>
-        <Divider sx={{ my: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
 
+
+        {/* التقارير */}
+        <ListItemButton onClick={toggleReports}>
+          <ListItemText primary="التقارير" />
+          {openReports ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={openReports} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {reportsMenu.map((item) => (
+              <ListItemButton
+                key={item.path}
+                component={Link}
+                to={item.path}
+                sx={{
+                  pl: 4,
+                  bgcolor: isActive(item.path)
+                    ? "rgba(255,255,255,0.1)"
+                    : "transparent",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                }}
+              >
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
+        <Divider sx={{ my: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
         {/* باقي الروابط */}
         {navItems.map((item) => (
           <ListItemButton
