@@ -17,11 +17,11 @@ import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
 
 const statusConfig = {
-    pending: { color: "warning", label: "Pending" },
-    approved: { color: "success", label: "Approved" },
-    partial: { color: "info", label: "Partial" },
-    completed: { color: "success", label: "Completed" },
-    cancelled: { color: "error", label: "Cancelled" },
+    pending: { color: "warning", label: "قيد الانتظار" },
+    approved: { color: "success", label: "معتمد" },
+    partial: { color: "info", label: "جزئي" },
+    completed: { color: "success", label: "مكتمل" },
+    cancelled: { color: "error", label: "ملغي" },
 };
 
 export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] }) {
@@ -112,11 +112,11 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
     };
 
     const validateItemForm = () => {
-        if (!itemForm.product_id) return "Please select a product";
+        if (!itemForm.product_id) return "يرجى اختيار المنتج";
         if (!itemForm.quantity || Number(itemForm.quantity) <= 0)
-            return "Quantity must be greater than 0";
+            return "الكمية يجب أن تكون أكبر من 0";
         if (itemForm.price === "" || Number(itemForm.price) < 0)
-            return "Price must be 0 or greater";
+            return "السعر يجب أن يكون 0 أو أكثر";
         return null;
     };
 
@@ -155,15 +155,15 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
 
     const handleSaveAll = async () => {
         if (!orderHead.party_id) {
-            setError("Please select a customer");
+            setError("يرجى اختيار العميل");
             return;
         }
         if (!orderHead.order_date) {
-            setError("Please select an order date");
+            setError("يرجى اختيار تاريخ الطلب");
             return;
         }
         if (items.length === 0) {
-            setError("Please add at least one item");
+            setError("يرجى إضافة صنف واحد على الأقل");
             return;
         }
 
@@ -203,7 +203,7 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
             }
             onClose();
         } catch (err) {
-            setError(err.message || "Failed to save sales order");
+            setError(err.message || "فشل حفظ أمر المبيعات");
         } finally {
             setSaving(false);
         }
@@ -294,7 +294,7 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
                                         setOrderHead({ ...orderHead, party_id: e.target.value })
                                     }
                                 >
-                                    <MenuItem value="">Select Customer</MenuItem>
+                                    <MenuItem value="">اختر العميل</MenuItem>
                                     {customers
                                         .filter((p) => p.party_type === "customer")
                                         .map((c) => (
@@ -305,10 +305,10 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
                                 </TextField>
                                 {selectedCustomer && (
                                     <Typography variant="caption">
-                                        Contact:{" "}
+                                        رقم الهاتف:{" "}
                                         {selectedCustomer.phone ||
                                             selectedCustomer.email ||
-                                            "N/A"}
+                                            "غير متوفر"}
                                     </Typography>
                                 )}
                             </Grid>
@@ -465,7 +465,7 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
                                             value={itemForm.product_id}
                                             onChange={(e) => handleItemProductChange(e.target.value)}
                                         >
-                                            <MenuItem value="">Select Product</MenuItem>
+                                            <MenuItem value="">اختر المنتج</MenuItem>
                                             {products.map((p) => (
                                                 <MenuItem key={p.id} value={p.id}>
                                                     {p.name}
@@ -546,7 +546,7 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
                                             onClick={addItemTemp}
                                             startIcon={<AddIcon />}
                                         >
-                                            Add
+                                            إضافة
                                         </Button>
                                     </Grid>
                                 </Grid>

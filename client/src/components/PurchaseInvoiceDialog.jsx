@@ -43,10 +43,10 @@ import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import PaymentDialog from "./PaymentDialog";
 
 const statusConfig = {
-  unpaid: { color: "default", label: "Unpaid" },
-  paid: { color: "success", label: "Paid" },
-  partially_paid: { color: "warning", label: "Partially Paid" },
-  cancelled: { color: "error", label: "Cancelled" },
+  unpaid: { color: "default", label: "غير مدفوع" },
+  paid: { color: "success", label: "مدفوع" },
+  partially_paid: { color: "warning", label: "مدفوع جزئياً" },
+  cancelled: { color: "error", label: "ملغي" },
 };
 
 export default function PurchaseInvoiceDialog({
@@ -177,12 +177,12 @@ export default function PurchaseInvoiceDialog({
   };
 
   const validateItemForm = () => {
-    if (!itemForm.product_id) return "Please select a product";
-    if (!itemForm.warehouse_id) return "Please select a warehouse";
+    if (!itemForm.product_id) return "يرجى اختيار المنتج";
+    if (!itemForm.warehouse_id) return "يرجى اختيار المخزن";
     if (!itemForm.quantity || Number(itemForm.quantity) <= 0)
-      return "Quantity must be greater than 0";
+      return "الكمية يجب أن تكون أكبر من 0";
     if (itemForm.unit_price === "" || Number(itemForm.unit_price) < 0)
-      return "Unit price must be 0 or greater";
+      return "سعر الوحدة يجب أن يكون 0 أو أكثر";
     // batch_number and expiry_date are optional
     return null;
   };
@@ -205,9 +205,9 @@ export default function PurchaseInvoiceDialog({
     setItemForm({
       product_id: "",
       warehouse_id: "",
-      quantity: "",
+      quantity: newItem.quantity, // Retain quantity
       unit_price: "",
-      discount: "",
+      discount: newItem.discount, // Retain discount
       batch_number: "",
       expiry_date: "",
     });
@@ -220,24 +220,24 @@ export default function PurchaseInvoiceDialog({
 
   const handleSaveAll = async () => {
     if (!invoiceHead.supplier_id) {
-      setError("Please select a supplier");
+      setError("يرجى اختيار المورد");
       return;
     }
     if (!invoiceHead.invoice_date) {
-      setError("Please select an invoice date");
+      setError("يرجى اختيار تاريخ الفاتورة");
       return;
     }
 
     // For opening balance invoices, items are not required but total_amount is
     if (invoiceHead.invoice_type === "opening") {
       if (!invoiceHead.total_amount || Number(invoiceHead.total_amount) <= 0) {
-        setError("Please enter a total amount for opening balance");
+        setError("يرجى إدخال المبلغ الإجمالي للرصيد الافتتاحي");
         return;
       }
     } else {
       // For normal invoices, items are required
       if (items.length === 0) {
-        setError("Please add at least one item");
+        setError("يرجى إضافة صنف واحد على الأقل");
         return;
       }
     }
@@ -264,7 +264,7 @@ export default function PurchaseInvoiceDialog({
         onClose();
       }
     } catch (err) {
-      setError(err?.message || "Failed to save invoice");
+      setError(err?.message || "فشل حفظ الفاتورة");
     } finally {
       setSaving(false);
     }
@@ -273,7 +273,7 @@ export default function PurchaseInvoiceDialog({
   const itemColumns = [
     {
       accessorKey: "product_id",
-      header: "Product",
+      header: "المنتج",
       Cell: ({ cell }) => {
         const product = products.find((p) => p.id === cell.getValue());
         return <Typography>{product?.name || "—"}</Typography>;
@@ -281,20 +281,20 @@ export default function PurchaseInvoiceDialog({
     },
     {
       accessorKey: "warehouse_id",
-      header: "Warehouse",
+      header: "المخزن",
       Cell: ({ cell }) => {
         const w = warehouses.find((x) => x.id === cell.getValue());
         return <Typography>{w?.name || "—"}</Typography>;
       },
     },
-    { accessorKey: "batch_number", header: "Batch #" },
-    { accessorKey: "expiry_date", header: "Expiry Date" },
-    { accessorKey: "quantity", header: "Qty" },
-    { accessorKey: "unit_price", header: "Unit Price" },
-    { accessorKey: "discount", header: "Discount" },
+    { accessorKey: "batch_number", header: "رقم التشغيلة" },
+    { accessorKey: "expiry_date", header: "تاريخ الانتهاء" },
+    { accessorKey: "quantity", header: "الكمية" },
+    { accessorKey: "unit_price", header: "سعر الوحدة" },
+    { accessorKey: "discount", header: "الخصم" },
     {
       id: "total",
-      header: "Total",
+      header: "الإجمالي",
       Cell: ({ row }) => {
         const q = Number(row.original.quantity) || 0;
         const p = Number(row.original.unit_price) || 0;
@@ -320,7 +320,7 @@ export default function PurchaseInvoiceDialog({
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <ReceiptIcon />
           <Typography variant="h6">
-            {invoice ? "Edit Purchase Invoice" : "Create Purchase Invoice"}
+            {invoice ? "تعديل فاتورة شراء" : "إنشاء فاتورة شراء"}
           </Typography>
         </Box>
         <IconButton onClick={onClose}>
@@ -342,13 +342,13 @@ export default function PurchaseInvoiceDialog({
                 <TextField
                   select
                   fullWidth
-                  label="Supplier"
+                  label="المورد"
                   value={invoiceHead.supplier_id}
                   onChange={(e) =>
                     setInvoiceHead({ ...invoiceHead, supplier_id: e.target.value })
                   }
                 >
-                  <MenuItem value="">Select Supplier</MenuItem>
+                  <MenuItem value="">اختر المورد</MenuItem>
                   {suppliers
                     .filter((p) => p.party_type === "supplier")
                     .map((s) => (
@@ -359,7 +359,7 @@ export default function PurchaseInvoiceDialog({
                 </TextField>
                 {selectedSupplier && (
                   <Typography variant="caption">
-                    Contact: {selectedSupplier.phone || "N/A"}
+                    رقم الهاتف: {selectedSupplier.phone || "غير متوفر"}
                   </Typography>
                 )}
               </Grid>
@@ -368,7 +368,7 @@ export default function PurchaseInvoiceDialog({
                 <TextField
                   type="date"
                   fullWidth
-                  label="Invoice Date"
+                  label="تاريخ الفاتورة"
                   InputLabelProps={{ shrink: true }}
                   value={invoiceHead.invoice_date}
                   onChange={(e) =>
@@ -381,7 +381,7 @@ export default function PurchaseInvoiceDialog({
                 <TextField
                   type="date"
                   fullWidth
-                  label="Due Date"
+                  label="تاريخ الاستحقاق"
                   InputLabelProps={{ shrink: true }}
                   value={invoiceHead.due_date}
                   onChange={(e) =>
@@ -393,12 +393,12 @@ export default function PurchaseInvoiceDialog({
               <Grid item xs={12} md={3}>
                 <TextField
                   fullWidth
-                  label="Payment Terms"
+                  label="شروط الدفع"
                   value={invoiceHead.payment_terms}
                   onChange={(e) =>
                     setInvoiceHead({ ...invoiceHead, payment_terms: e.target.value })
                   }
-                  placeholder="e.g., Net 30"
+                  placeholder="مثال: Net 30"
                 />
               </Grid>
 
@@ -406,22 +406,23 @@ export default function PurchaseInvoiceDialog({
                 <TextField
                   select
                   fullWidth
-                  label="Invoice Type"
+                  label="نوع الفاتورة"
                   value={invoiceHead.invoice_type}
                   onChange={(e) =>
                     setInvoiceHead({ ...invoiceHead, invoice_type: e.target.value })
                   }
                 >
-                  <MenuItem value="normal">Normal</MenuItem>
-                  <MenuItem value="opening">Opening Balance</MenuItem>
+                  <MenuItem value="normal">فاتورة عادية</MenuItem>
+                  <MenuItem value="opening">رصيد افتتاحي</MenuItem>
                 </TextField>
               </Grid>
 
               <Grid item xs={12} md={3}>
+
                 <TextField
                   select
                   fullWidth
-                  label="Status"
+                  label="الحالة"
                   value={invoiceHead.status}
                   onChange={(e) =>
                     setInvoiceHead({ ...invoiceHead, status: e.target.value })
@@ -444,14 +445,14 @@ export default function PurchaseInvoiceDialog({
             <CardContent>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                 <Typography variant="h6">
-                  <InventoryIcon /> Invoice Items ({items.length})
+                  <InventoryIcon /> أصناف الفاتورة ({items.length})
                 </Typography>
                 <Button
                   variant="outlined"
                   startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
                   onClick={() => setShowItemForm(!showItemForm)}
                 >
-                  {showItemForm ? "Hide Form" : "Add Item"}
+                  {showItemForm ? "إخفاء النموذج" : "إضافة صنف"}
                 </Button>
               </Box>
 
@@ -462,12 +463,12 @@ export default function PurchaseInvoiceDialog({
                       <TextField
                         select
                         fullWidth
-                        label="Product"
+                        label="المنتج"
                         value={itemForm.product_id}
                         onChange={(e) => handleItemProductChange(e.target.value)}
                         size="small"
                       >
-                        <MenuItem value="">Select Product</MenuItem>
+                        <MenuItem value="">اختر المنتج</MenuItem>
                         {products.map((p) => (
                           <MenuItem key={p.id} value={p.id}>
                             {p.name}
@@ -480,14 +481,14 @@ export default function PurchaseInvoiceDialog({
                       <TextField
                         select
                         fullWidth
-                        label="Warehouse"
+                        label="المخزن"
                         value={itemForm.warehouse_id}
                         onChange={(e) =>
                           setItemForm((f) => ({ ...f, warehouse_id: e.target.value }))
                         }
                         size="small"
                       >
-                        <MenuItem value="">Select Warehouse</MenuItem>
+                        <MenuItem value="">اختر المخزن</MenuItem>
                         {warehouses.map((w) => (
                           <MenuItem key={w.id} value={w.id}>
                             {w.name}
@@ -497,9 +498,10 @@ export default function PurchaseInvoiceDialog({
                     </Grid>
 
                     <Grid item xs={12} sm={4} md={2}>
+
                       <TextField
                         fullWidth
-                        label="Batch Number"
+                        label="رقم التشغيلة"
                         value={itemForm.batch_number}
                         onChange={(e) =>
                           setItemForm((f) => ({ ...f, batch_number: e.target.value }))
@@ -509,10 +511,11 @@ export default function PurchaseInvoiceDialog({
                     </Grid>
 
                     <Grid item xs={12} sm={4} md={2}>
+
                       <TextField
                         type="date"
                         fullWidth
-                        label="Expiry Date"
+                        label="تاريخ الانتهاء"
                         InputLabelProps={{ shrink: true }}
                         value={itemForm.expiry_date}
                         onChange={(e) =>
@@ -523,10 +526,11 @@ export default function PurchaseInvoiceDialog({
                     </Grid>
 
                     <Grid item xs={6} sm={3} md={1.5}>
+
                       <TextField
                         type="number"
                         fullWidth
-                        label="Quantity"
+                        label="الكمية"
                         value={itemForm.quantity}
                         onChange={(e) =>
                           setItemForm((f) => ({ ...f, quantity: e.target.value }))
@@ -536,10 +540,11 @@ export default function PurchaseInvoiceDialog({
                     </Grid>
 
                     <Grid item xs={6} sm={3} md={1.5}>
+
                       <TextField
                         type="number"
                         fullWidth
-                        label="Unit Price"
+                        label="سعر الوحدة"
                         value={itemForm.unit_price}
                         onChange={(e) =>
                           setItemForm((f) => ({ ...f, unit_price: e.target.value }))
@@ -549,10 +554,11 @@ export default function PurchaseInvoiceDialog({
                     </Grid>
 
                     <Grid item xs={6} sm={3} md={1.5}>
+
                       <TextField
                         type="number"
                         fullWidth
-                        label="Discount"
+                        label="الخصم"
                         value={itemForm.discount}
                         onChange={(e) =>
                           setItemForm((f) => ({ ...f, discount: e.target.value }))
@@ -568,7 +574,7 @@ export default function PurchaseInvoiceDialog({
                         onClick={addItemTemp}
                         startIcon={<AddIcon />}
                       >
-                        Add
+                        إضافة
                       </Button>
                     </Grid>
                   </Grid>
@@ -595,10 +601,10 @@ export default function PurchaseInvoiceDialog({
             <CardContent>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="h6" gutterBottom>
-                  <MoneyIcon /> Opening Balance
+                  <MoneyIcon /> الرصيد الافتتاحي
                 </Typography>
                 <Alert severity="info" sx={{ mb: 2 }}>
-                  For opening balance invoices, enter the total amount directly. Items are not required.
+                  للفواتير الافتتاحية، أدخل المبلغ الإجمالي مباشرة. الأصناف غير مطلوبة.
                 </Alert>
               </Box>
               <Grid container spacing={2}>
@@ -606,13 +612,13 @@ export default function PurchaseInvoiceDialog({
                   <TextField
                     type="number"
                     fullWidth
-                    label="Total Amount"
+                    label="المبلغ الإجمالي"
                     value={invoiceHead.total_amount}
                     onChange={(e) =>
                       setInvoiceHead({ ...invoiceHead, total_amount: Number(e.target.value) })
                     }
                     inputProps={{ min: 0, step: 0.01 }}
-                    helperText="Enter the opening balance amount"
+                    helperText="أدخل مبلغ الرصيد الافتتاحي"
                   />
                 </Grid>
               </Grid>
@@ -624,7 +630,7 @@ export default function PurchaseInvoiceDialog({
           <CardContent>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography variant="h6">
-                <MoneyIcon /> Invoice Total
+                <MoneyIcon /> إجمالي الفاتورة
               </Typography>
               <Typography variant="h4" color="primary">
                 ${Number(invoiceHead.total_amount || 0).toFixed(2)}
@@ -640,7 +646,7 @@ export default function PurchaseInvoiceDialog({
           color="primary"
           onClick={() => setPaymentOpen(true)}
         >
-          Add Payment
+          إضافة دفعة
         </Button>
 
         <PaymentDialog
@@ -648,14 +654,14 @@ export default function PurchaseInvoiceDialog({
           onClose={() => setPaymentOpen(false)}
           invoiceId={invoice?.id}
         />
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose}>إلغاء</Button>
         <Button
           variant="contained"
           onClick={handleSaveAll}
           disabled={saving || loadingMeta}
           startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
         >
-          {saving ? "Saving..." : invoice ? "Update Invoice" : "Save Invoice"}
+          {saving ? "جاري الحفظ..." : invoice ? "تحديث الفاتورة" : "حفظ الفاتورة"}
         </Button>
       </DialogActions>
     </Dialog>

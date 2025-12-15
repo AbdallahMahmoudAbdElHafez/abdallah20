@@ -16,31 +16,70 @@ class PurchaseInvoiceItemService {
   static async create(data) {
     const item = await PurchaseInvoiceItem.create(data);
 
-    // Create Inventory Transaction
-    const batches = [];
-    const totalQty = Number(item.quantity) + Number(item.bonus_quantity || 0);
-    if (item.batch_number && item.expiry_date) {
-      batches.push({
-        batch_number: item.batch_number,
-        expiry_date: item.expiry_date,
-        quantity: totalQty,
-        cost_per_unit: Number(item.unit_price)
-      });
-    }
-
     // Fetch invoice for date/number
     const invoice = await PurchaseInvoice.findByPk(item.purchase_invoice_id);
 
-    await InventoryTransactionService.create({
-      product_id: item.product_id,
-      warehouse_id: item.warehouse_id,
-      transaction_type: "in",
-      transaction_date: invoice?.invoice_date || new Date(),
-      note: `Added from Purchase Invoice ${invoice?.invoice_number || item.purchase_invoice_id}`,
-      source_type: 'purchase',
-      source_id: item.id, // Use Item ID
-      batches: batches
-    });
+    // 1. Transaction for Main Quantity
+    if (Number(item.quantity) > 0) {
+      const batches = [];
+      if (item.batch_number && item.expiry_date) {
+        batches.push({
+          batch_number: item.batch_number,
+          expiry_date: item.expiry_date,
+          quantity: item.quantity,
+          cost_per_unit: Number(item.unit_price)
+        });
+      } else {
+        batches.push({
+          batch_number: null,
+          expiry_date: null,
+          quantity: item.quantity,
+          cost_per_unit: Number(item.unit_price)
+        });
+      }
+
+      await InventoryTransactionService.create({
+        product_id: item.product_id,
+        warehouse_id: item.warehouse_id,
+        transaction_type: "in",
+        transaction_date: invoice?.invoice_date || new Date(),
+        note: `Added from Purchase Invoice ${invoice?.invoice_number || item.purchase_invoice_id}`,
+        source_type: 'purchase',
+        source_id: item.id,
+        batches: batches
+      });
+    }
+
+    // 2. Transaction for Bonus
+    if (Number(item.bonus_quantity) > 0) {
+      const bonusBatches = [];
+      if (item.batch_number && item.expiry_date) {
+        bonusBatches.push({
+          batch_number: item.batch_number,
+          expiry_date: item.expiry_date,
+          quantity: item.bonus_quantity,
+          cost_per_unit: 0
+        });
+      } else {
+        bonusBatches.push({
+          batch_number: null,
+          expiry_date: null,
+          quantity: item.bonus_quantity,
+          cost_per_unit: 0
+        });
+      }
+
+      await InventoryTransactionService.create({
+        product_id: item.product_id,
+        warehouse_id: item.warehouse_id,
+        transaction_type: "in",
+        transaction_date: invoice?.invoice_date || new Date(),
+        note: `Added from Purchase Invoice ${invoice?.invoice_number || item.purchase_invoice_id} (Bonus)`,
+        source_type: 'purchase',
+        source_id: item.id,
+        batches: bonusBatches
+      });
+    }
 
     return item;
   }
@@ -78,30 +117,69 @@ class PurchaseInvoiceItemService {
 
     const item = await PurchaseInvoiceItem.findByPk(id);
 
-    // Create new transaction
-    const batches = [];
-    const totalQty = Number(item.quantity) + Number(item.bonus_quantity || 0);
-    if (item.batch_number && item.expiry_date) {
-      batches.push({
-        batch_number: item.batch_number,
-        expiry_date: item.expiry_date,
-        quantity: totalQty,
-        cost_per_unit: Number(item.unit_price)
+    const invoice = await PurchaseInvoice.findByPk(item.purchase_invoice_id);
+
+    // 1. Transaction for Main Quantity
+    if (Number(item.quantity) > 0) {
+      const batches = [];
+      if (item.batch_number && item.expiry_date) {
+        batches.push({
+          batch_number: item.batch_number,
+          expiry_date: item.expiry_date,
+          quantity: item.quantity,
+          cost_per_unit: Number(item.unit_price)
+        });
+      } else {
+        batches.push({
+          batch_number: null,
+          expiry_date: null,
+          quantity: item.quantity,
+          cost_per_unit: Number(item.unit_price)
+        });
+      }
+
+      await InventoryTransactionService.create({
+        product_id: item.product_id,
+        warehouse_id: item.warehouse_id,
+        transaction_type: "in",
+        transaction_date: invoice?.invoice_date || new Date(),
+        note: `Updated in Purchase Invoice ${invoice?.invoice_number || item.purchase_invoice_id}`,
+        source_type: 'purchase',
+        source_id: item.id,
+        batches: batches
       });
     }
 
-    const invoice = await PurchaseInvoice.findByPk(item.purchase_invoice_id);
+    // 2. Transaction for Bonus
+    if (Number(item.bonus_quantity) > 0) {
+      const bonusBatches = [];
+      if (item.batch_number && item.expiry_date) {
+        bonusBatches.push({
+          batch_number: item.batch_number,
+          expiry_date: item.expiry_date,
+          quantity: item.bonus_quantity,
+          cost_per_unit: 0
+        });
+      } else {
+        bonusBatches.push({
+          batch_number: null,
+          expiry_date: null,
+          quantity: item.bonus_quantity,
+          cost_per_unit: 0
+        });
+      }
 
-    await InventoryTransactionService.create({
-      product_id: item.product_id,
-      warehouse_id: item.warehouse_id,
-      transaction_type: "in",
-      transaction_date: invoice?.invoice_date || new Date(),
-      note: `Updated in Purchase Invoice ${invoice?.invoice_number || item.purchase_invoice_id}`,
-      source_type: 'purchase',
-      source_id: item.id,
-      batches: batches
-    });
+      await InventoryTransactionService.create({
+        product_id: item.product_id,
+        warehouse_id: item.warehouse_id,
+        transaction_type: "in",
+        transaction_date: invoice?.invoice_date || new Date(),
+        note: `Updated in Purchase Invoice ${invoice?.invoice_number || item.purchase_invoice_id} (Bonus)`,
+        source_type: 'purchase',
+        source_id: item.id,
+        batches: bonusBatches
+      });
+    }
 
     return item;
   }

@@ -41,10 +41,10 @@ import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
 
 const statusConfig = {
-    unpaid: { color: "default", label: "Unpaid" },
-    paid: { color: "success", label: "Paid" },
-    partial: { color: "warning", label: "Partial" },
-    cancelled: { color: "error", label: "Cancelled" },
+    unpaid: { color: "default", label: "غير مدفوع" },
+    paid: { color: "success", label: "مدفوع" },
+    partial: { color: "warning", label: "جزئي" },
+    cancelled: { color: "error", label: "ملغي" },
 };
 
 export default function SalesInvoiceDialog({
@@ -92,6 +92,7 @@ export default function SalesInvoiceDialog({
         quantity: "",
         price: "",
         discount: "",
+        discount_percent: "",
         tax_percent: 0,
         bonus: 0,
     });
@@ -189,11 +190,11 @@ export default function SalesInvoiceDialog({
     };
 
     const validateItemForm = () => {
-        if (!itemForm.product_id) return "Please select a product";
+        if (!itemForm.product_id) return "يرجى اختيار المنتج";
         if (!itemForm.quantity || Number(itemForm.quantity) <= 0)
-            return "Quantity must be greater than 0";
+            return "الكمية يجب أن تكون أكبر من 0";
         if (itemForm.price === "" || Number(itemForm.price) < 0)
-            return "Price must be 0 or greater";
+            return "السعر يجب أن يكون 0 أو أكثر";
         return null;
     };
 
@@ -204,12 +205,18 @@ export default function SalesInvoiceDialog({
             return;
         }
         setError("");
+        const qty = Number(itemForm.quantity);
+        const price = Number(itemForm.price);
+        const discountPercent = Number(itemForm.discount_percent) || 0;
+        const discountValue = (qty * price * discountPercent) / 100;
+
         const newItem = {
             ...itemForm,
             tempId: Date.now() + Math.random(),
-            quantity: Number(itemForm.quantity),
-            price: Number(itemForm.price),
-            discount: itemForm.discount === "" ? 0 : Number(itemForm.discount),
+            quantity: qty,
+            price: price,
+            discount: discountValue,
+            discount_percent: discountPercent,
             tax_percent: Number(itemForm.tax_percent) || 0,
             bonus: Number(itemForm.bonus) || 0,
         };
@@ -217,9 +224,10 @@ export default function SalesInvoiceDialog({
         setItemForm({
             product_id: "",
             warehouse_id: "",
-            quantity: "",
+            quantity: newItem.quantity, // Retain quantity
             price: "",
             discount: "",
+            discount_percent: newItem.discount_percent, // Retain discount percent
             tax_percent: 0,
             bonus: 0,
         });
@@ -232,24 +240,24 @@ export default function SalesInvoiceDialog({
 
     const handleSaveAll = async () => {
         if (!invoiceHead.party_id) {
-            setError("Please select a customer");
+            setError("يرجى اختيار العميل");
             return;
         }
         if (!invoiceHead.invoice_date) {
-            setError("Please select an invoice date");
+            setError("يرجى اختيار تاريخ الفاتورة");
             return;
         }
 
         // For opening balance invoices, items are not required but total_amount is
         if (invoiceHead.invoice_type === "opening") {
             if (!invoiceHead.total_amount || Number(invoiceHead.total_amount) <= 0) {
-                setError("Please enter a total amount for opening balance");
+                setError("يرجى إدخال المبلغ الإجمالي للرصيد الافتتاحي");
                 return;
             }
         } else {
             // For normal invoices, items are required
             if (items.length === 0) {
-                setError("Please add at least one item");
+                setError("يرجى إضافة صنف واحد على الأقل");
                 return;
             }
         }
@@ -279,7 +287,7 @@ export default function SalesInvoiceDialog({
                 onClose();
             }
         } catch (err) {
-            setError(err?.message || "Failed to save invoice");
+            setError(err?.message || "فشل حفظ الفاتورة");
         } finally {
             setSaving(false);
         }
@@ -288,20 +296,28 @@ export default function SalesInvoiceDialog({
     const itemColumns = [
         {
             accessorKey: "product_id",
-            header: "Product",
+            header: "المنتج",
             Cell: ({ cell }) => {
                 const product = products.find((p) => p.id === cell.getValue());
                 return <Typography>{product?.name || "—"}</Typography>;
             },
         },
-        { accessorKey: "quantity", header: "Qty" },
-        { accessorKey: "price", header: "Price" },
-        { accessorKey: "discount", header: "Discount" },
-        { accessorKey: "tax_percent", header: "Tax %" },
-        { accessorKey: "bonus", header: "Bonus" },
+        { accessorKey: "quantity", header: "الكمية" },
+        { accessorKey: "price", header: "السعر" },
+        {
+            accessorKey: "discount_percent",
+            header: "الخصم %",
+            Cell: ({ row }) => {
+                const percent = row.original.discount_percent || 0;
+                const val = row.original.discount || 0;
+                return <Typography>{percent}% (${Number(val).toFixed(2)})</Typography>;
+            }
+        },
+        { accessorKey: "tax_percent", header: "الضريبة %" },
+        { accessorKey: "bonus", header: "بونص" },
         {
             id: "total",
-            header: "Total",
+            header: "الإجمالي",
             Cell: ({ row }) => {
                 const q = Number(row.original.quantity) || 0;
                 const p = Number(row.original.price) || 0;
@@ -330,7 +346,7 @@ export default function SalesInvoiceDialog({
                 <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
                     <ReceiptIcon />
                     <Typography variant="h6">
-                        {invoice ? "Edit Sales Invoice" : "Create Sales Invoice"}
+                        {invoice ? "تعديل فاتورة بيع" : "إنشاء فاتورة بيع"}
                     </Typography>
                 </Box>
                 <IconButton onClick={onClose}>
@@ -348,30 +364,30 @@ export default function SalesInvoiceDialog({
                 <Card sx={{ mb: 3 }}>
                     <CardContent>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={6}>
+                            <Grid item xs={12} md={4}>
                                 <TextField
                                     fullWidth
-                                    label="Invoice Number"
+                                    label="رقم الفاتورة"
                                     value={invoiceHead.invoice_number}
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, invoice_number: e.target.value })
                                     }
-                                    placeholder="Auto-generated if empty (SI-YYYY-XXXXXX)"
-                                    helperText="Leave empty for auto-generation"
+                                    placeholder="تلقائي في حال تركه فارغاً"
+                                    helperText="اتركه فارغاً للتوليد التلقائي"
                                 />
                             </Grid>
 
-                            <Grid item xs={12} md={6}>
+                            <Grid item xs={12} md={4}>
                                 <TextField
                                     select
                                     fullWidth
-                                    label="Customer"
+                                    label="العميل"
                                     value={invoiceHead.party_id}
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, party_id: e.target.value })
                                     }
                                 >
-                                    <MenuItem value="">Select Customer</MenuItem>
+                                    <MenuItem value="">اختر العميل</MenuItem>
                                     {customers
                                         .filter((p) => p.party_type === "customer")
                                         .map((c) => (
@@ -382,16 +398,54 @@ export default function SalesInvoiceDialog({
                                 </TextField>
                                 {selectedCustomer && (
                                     <Typography variant="caption">
-                                        Contact: {selectedCustomer.phone || "N/A"}
+                                        رقم الهاتف: {selectedCustomer.phone || "غير متوفر"}
                                     </Typography>
                                 )}
+                            </Grid>
+
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="المخزن"
+                                    value={invoiceHead.warehouse_id}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, warehouse_id: e.target.value })
+                                    }
+                                >
+                                    <MenuItem value="">اختر المخزن</MenuItem>
+                                    {warehouses.map((w) => (
+                                        <MenuItem key={w.id} value={w.id}>
+                                            {w.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
+
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="الموظف"
+                                    value={invoiceHead.employee_id}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, employee_id: e.target.value })
+                                    }
+                                >
+                                    <MenuItem value="">اختر الموظف</MenuItem>
+                                    {employees.map((e) => (
+                                        <MenuItem key={e.id} value={e.id}>
+                                            {e.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
                             </Grid>
 
                             <Grid item xs={12} md={3}>
                                 <TextField
                                     type="date"
                                     fullWidth
-                                    label="Invoice Date"
+                                    label="تاريخ الفاتورة"
                                     InputLabelProps={{ shrink: true }}
                                     value={invoiceHead.invoice_date}
                                     onChange={(e) =>
@@ -404,7 +458,7 @@ export default function SalesInvoiceDialog({
                                 <TextField
                                     type="date"
                                     fullWidth
-                                    label="Due Date"
+                                    label="تاريخ الاستحقاق"
                                     InputLabelProps={{ shrink: true }}
                                     value={invoiceHead.due_date}
                                     onChange={(e) =>
@@ -417,14 +471,14 @@ export default function SalesInvoiceDialog({
                                 <TextField
                                     select
                                     fullWidth
-                                    label="Invoice Type"
+                                    label="نوع الفاتورة"
                                     value={invoiceHead.invoice_type}
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, invoice_type: e.target.value })
                                     }
                                 >
-                                    <MenuItem value="normal">Normal</MenuItem>
-                                    <MenuItem value="opening">Opening Balance</MenuItem>
+                                    <MenuItem value="normal">فاتورة عادية</MenuItem>
+                                    <MenuItem value="opening">رصيد افتتاحي</MenuItem>
                                 </TextField>
                             </Grid>
 
@@ -432,7 +486,7 @@ export default function SalesInvoiceDialog({
                                 <TextField
                                     select
                                     fullWidth
-                                    label="Status"
+                                    label="الحالة"
                                     value={invoiceHead.status}
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, status: e.target.value })
@@ -455,14 +509,14 @@ export default function SalesInvoiceDialog({
                         <CardContent>
                             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                                 <Typography variant="h6">
-                                    <InventoryIcon /> Invoice Items ({items.length})
+                                    <InventoryIcon /> أصناف الفاتورة ({items.length})
                                 </Typography>
                                 <Button
                                     variant="outlined"
                                     startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
                                     onClick={() => setShowItemForm(!showItemForm)}
                                 >
-                                    {showItemForm ? "Hide Form" : "Add Item"}
+                                    {showItemForm ? "إخفاء النموذج" : "إضافة صنف"}
                                 </Button>
                             </Box>
 
@@ -473,12 +527,12 @@ export default function SalesInvoiceDialog({
                                             <TextField
                                                 select
                                                 fullWidth
-                                                label="Product"
+                                                label="المنتج"
                                                 value={itemForm.product_id}
                                                 onChange={(e) => handleItemProductChange(e.target.value)}
                                                 size="small"
                                             >
-                                                <MenuItem value="">Select Product</MenuItem>
+                                                <MenuItem value="">اختر المنتج</MenuItem>
                                                 {products.map((p) => (
                                                     <MenuItem key={p.id} value={p.id}>
                                                         {p.name}
@@ -491,7 +545,7 @@ export default function SalesInvoiceDialog({
                                             <TextField
                                                 type="number"
                                                 fullWidth
-                                                label="Quantity"
+                                                label="الكمية"
                                                 value={itemForm.quantity}
                                                 onChange={(e) =>
                                                     setItemForm((f) => ({ ...f, quantity: e.target.value }))
@@ -504,23 +558,10 @@ export default function SalesInvoiceDialog({
                                             <TextField
                                                 type="number"
                                                 fullWidth
-                                                label="Price"
+                                                label="السعر"
                                                 value={itemForm.price}
                                                 onChange={(e) =>
                                                     setItemForm((f) => ({ ...f, price: e.target.value }))
-                                                }
-                                                size="small"
-                                            />
-                                        </Grid>
-
-                                        <Grid item xs={6} sm={3} md={2}>
-                                            <TextField
-                                                type="number"
-                                                fullWidth
-                                                label="Discount"
-                                                value={itemForm.discount}
-                                                onChange={(e) =>
-                                                    setItemForm((f) => ({ ...f, discount: e.target.value }))
                                                 }
                                                 size="small"
                                             />
@@ -530,10 +571,36 @@ export default function SalesInvoiceDialog({
                                             <TextField
                                                 type="number"
                                                 fullWidth
-                                                label="Tax %"
+                                                label="الخصم %"
+                                                value={itemForm.discount_percent || ""}
+                                                onChange={(e) =>
+                                                    setItemForm((f) => ({ ...f, discount_percent: e.target.value }))
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={1.5}>
+                                            <TextField
+                                                type="number"
+                                                fullWidth
+                                                label="الضريبة %"
                                                 value={itemForm.tax_percent}
                                                 onChange={(e) =>
                                                     setItemForm((f) => ({ ...f, tax_percent: e.target.value }))
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={1.5}>
+                                            <TextField
+                                                type="number"
+                                                fullWidth
+                                                label="بونص"
+                                                value={itemForm.bonus}
+                                                onChange={(e) =>
+                                                    setItemForm((f) => ({ ...f, bonus: e.target.value }))
                                                 }
                                                 size="small"
                                             />
@@ -546,7 +613,7 @@ export default function SalesInvoiceDialog({
                                                 onClick={addItemTemp}
                                                 startIcon={<AddIcon />}
                                             >
-                                                Add
+                                                إضافة
                                             </Button>
                                         </Grid>
                                     </Grid>
@@ -573,10 +640,10 @@ export default function SalesInvoiceDialog({
                         <CardContent>
                             <Box sx={{ mb: 2 }}>
                                 <Typography variant="h6" gutterBottom>
-                                    <MoneyIcon /> Opening Balance
+                                    <MoneyIcon /> الرصيد الافتتاحي
                                 </Typography>
                                 <Alert severity="info" sx={{ mb: 2 }}>
-                                    For opening balance invoices, enter the total amount directly. Items are not required.
+                                    للفواتير الافتتاحية، أدخل المبلغ الإجمالي مباشرة. الأصناف غير مطلوبة.
                                 </Alert>
                             </Box>
                             <Grid container spacing={2}>
@@ -584,13 +651,13 @@ export default function SalesInvoiceDialog({
                                     <TextField
                                         type="number"
                                         fullWidth
-                                        label="Total Amount"
+                                        label="المبلغ الإجمالي"
                                         value={invoiceHead.total_amount}
                                         onChange={(e) =>
                                             setInvoiceHead({ ...invoiceHead, total_amount: Number(e.target.value) })
                                         }
                                         inputProps={{ min: 0, step: 0.01 }}
-                                        helperText="Enter the opening balance amount"
+                                        helperText="أدخل مبلغ الرصيد الافتتاحي"
                                     />
                                 </Grid>
                             </Grid>
@@ -600,27 +667,92 @@ export default function SalesInvoiceDialog({
 
                 <Card>
                     <CardContent>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                            <Typography variant="h6">
-                                <MoneyIcon /> Invoice Total
-                            </Typography>
-                            <Typography variant="h4" color="primary">
-                                ${Number(invoiceHead.total_amount || 0).toFixed(2)}
-                            </Typography>
+                        <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="خصم إضافي"
+                                    value={invoiceHead.additional_discount}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, additional_discount: e.target.value })
+                                    }
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="نسبة ضريبة القيمة المضافة %"
+                                    value={invoiceHead.vat_rate}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, vat_rate: e.target.value })
+                                    }
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="نسبة ضريبة أخرى %"
+                                    value={invoiceHead.tax_rate}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, tax_rate: e.target.value })
+                                    }
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="تكلفة الشحن"
+                                    value={invoiceHead.shipping_amount}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, shipping_amount: e.target.value })
+                                    }
+                                    size="small"
+                                />
+                            </Grid>
+                        </Grid>
+
+                        <Stack spacing={1}>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography>المجموع الفرعي:</Typography>
+                                <Typography>${Number(invoiceHead.subtotal || 0).toFixed(2)}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography>قيمة ضريبة القيمة المضافة ({invoiceHead.vat_rate}%):</Typography>
+                                <Typography>${Number(invoiceHead.vat_amount || 0).toFixed(2)}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography>قيمة الضريبة الأخرى ({invoiceHead.tax_rate}%):</Typography>
+                                <Typography>${Number(invoiceHead.tax_amount || 0).toFixed(2)}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Typography variant="h6">
+                                    <MoneyIcon /> إجمالي الفاتورة
+                                </Typography>
+                                <Typography variant="h4" color="primary">
+                                    ${Number(invoiceHead.total_amount || 0).toFixed(2)}
+                                </Typography>
+                            </Stack>
                         </Stack>
                     </CardContent>
                 </Card>
             </DialogContent>
 
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose}>إلغاء</Button>
                 <Button
                     variant="contained"
                     onClick={handleSaveAll}
                     disabled={saving || loadingMeta}
                     startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
                 >
-                    {saving ? "Saving..." : invoice ? "Update Invoice" : "Save Invoice"}
+                    {saving ? "جاري الحفظ..." : invoice ? "تحديث الفاتورة" : "حفظ الفاتورة"}
                 </Button>
             </DialogActions>
         </Dialog>

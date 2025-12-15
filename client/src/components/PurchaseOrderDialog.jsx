@@ -1,25 +1,10 @@
-import React, { useState, useEffect } from "react";
-import {
-  Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem,
-  CircularProgress, Typography, Divider, Card, CardContent, Grid, Chip,
-  IconButton, Alert, Collapse, Paper, Stack
-} from "@mui/material";
-import {
-  Add as AddIcon, Delete as DeleteIcon, Save as SaveIcon, Close as CloseIcon,
-  ShoppingCart as ShoppingCartIcon, Inventory as InventoryIcon, Money as MoneyIcon, ExpandLess as ExpandLessIcon
-} from "@mui/icons-material";
-import { MaterialReactTable } from "material-react-table";
-import { useDispatch, useSelector } from "react-redux";
-import { addPurchaseOrder, updatePurchaseOrder } from "../features/purchaseOrders/purchaseOrdersSlice";
-import { fetchParties } from "../features/parties/partiesSlice";
-import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 
 const statusConfig = {
-  draft: { color: "default", label: "Draft" },
-  approved: { color: "success", label: "Approved" },
-  closed: { color: "info", label: "Closed" },
-  cancelled: { color: "error", label: "Cancelled" },
+  draft: { color: "default", label: "مسودة" },
+  approved: { color: "success", label: "معتمد" },
+  closed: { color: "info", label: "مغلق" },
+  cancelled: { color: "error", label: "ملغي" },
 };
 
 export default function PurchaseOrderDialog({ open, onClose, order }) {
@@ -110,15 +95,15 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
   };
 
   const validateItemForm = () => {
-    if (!itemForm.product_id) return "Please select a product";
-    if (!itemForm.warehouse_id) return "Please select a warehouse";
+    if (!itemForm.product_id) return "يرجى اختيار المنتج";
+    if (!itemForm.warehouse_id) return "يرجى اختيار المخزن";
     if (!itemForm.quantity || Number(itemForm.quantity) <= 0)
-      return "Quantity must be greater than 0";
+      return "الكمية يجب أن تكون أكبر من 0";
     if (
       itemForm.unit_price === "" ||
       Number(itemForm.unit_price) < 0
     )
-      return "Unit price must be 0 or greater";
+      return "سعر الوحدة يجب أن يكون 0 أو أكثر";
     return null;
   };
 
@@ -157,15 +142,15 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
 
   const handleSaveAll = async () => {
     if (!orderHead.supplier_id) {
-      setError("Please select a supplier");
+      setError("يرجى اختيار المورد");
       return;
     }
     if (!orderHead.order_date) {
-      setError("Please select an order date");
+      setError("يرجى اختيار تاريخ الطلب");
       return;
     }
     if (items.length === 0) {
-      setError("Please add at least one item");
+      setError("يرجى إضافة صنف واحد على الأقل");
       return;
     }
 
@@ -205,7 +190,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
       }
       onClose();
     } catch (err) {
-      setError(err.message || "Failed to save purchase order");
+      setError(err.message || "فشل حفظ أمر الشراء");
     } finally {
       setSaving(false);
     }
@@ -214,7 +199,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
   const itemColumns = [
     {
       accessorKey: "product_id",
-      header: "Product",
+      header: "المنتج",
       size: 180,
       Cell: ({ cell }) => {
         const product = products.find((p) => p.id === cell.getValue());
@@ -223,7 +208,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
     },
     {
       accessorKey: "warehouse_id",
-      header: "Warehouse",
+      header: "المخزن",
       size: 140,
       Cell: ({ cell }) => {
         const warehouse = warehouses.find((w) => w.id === cell.getValue());
@@ -232,15 +217,15 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
         );
       },
     },
-    { accessorKey: "batch_number", header: "Batch No.", size: 120 },
-    { accessorKey: "expiry_date", header: "Expiry Date", size: 120 },
-    { accessorKey: "quantity", header: "Qty", size: 80 },
-    { accessorKey: "bonus_quantity", header: "Bonus Qty", size: 90 },
-    { accessorKey: "unit_price", header: "Unit Price", size: 100 },
-    { accessorKey: "discount", header: "Discount", size: 100 },
+    { accessorKey: "batch_number", header: "رقم التشغيلة", size: 120 },
+    { accessorKey: "expiry_date", header: "تاريخ الانتهاء", size: 120 },
+    { accessorKey: "quantity", header: "الكمية", size: 80 },
+    { accessorKey: "bonus_quantity", header: "بونص", size: 90 },
+    { accessorKey: "unit_price", header: "سعر الوحدة", size: 100 },
+    { accessorKey: "discount", header: "الخصم", size: 100 },
     {
       id: "total",
-      header: "Total",
+      header: "الإجمالي",
       size: 120,
       Cell: ({ row }) => {
         const it = row.original;
@@ -251,7 +236,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
       },
     },
     {
-      header: "Actions",
+      header: "إجراءات",
       size: 80,
       Cell: ({ row }) => (
         <IconButton
@@ -291,7 +276,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <ShoppingCartIcon />{" "}
-          {order ? "Edit Purchase Order" : "Create Purchase Order"}
+          {order ? "تعديل أمر شراء" : "إنشاء أمر شراء"}
           <IconButton onClick={onClose}>
             <CloseIcon />
           </IconButton>
@@ -308,7 +293,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
               <Grid item xs={12} md={3}>
                 <TextField
                   fullWidth
-                  label="Order Number"
+                  label="رقم الأمر"
                   value={orderHead.order_number}
                   disabled
                 />
@@ -317,13 +302,13 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                 <TextField
                   select
                   fullWidth
-                  label="Supplier"
+                  label="المورد"
                   value={orderHead.supplier_id}
                   onChange={(e) =>
                     setOrderHead({ ...orderHead, supplier_id: e.target.value })
                   }
                 >
-                  <MenuItem value="">Select Supplier</MenuItem>
+                  <MenuItem value="">اختر المورد</MenuItem>
                   {suppliers
                     .filter((p) => p.party_type === "supplier")
                     .map((s) => (
@@ -334,10 +319,10 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                 </TextField>
                 {selectedSupplier && (
                   <Typography variant="caption">
-                    Contact:{" "}
+                    رقم الهاتف:{" "}
                     {selectedSupplier.phone ||
                       selectedSupplier.email ||
-                      "N/A"}
+                      "غير متوفر"}
                   </Typography>
                 )}
               </Grid>
@@ -345,7 +330,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                 <TextField
                   type="date"
                   fullWidth
-                  label="Order Date"
+                  label="تاريخ الأمر"
                   value={orderHead.order_date}
                   onChange={(e) =>
                     setOrderHead({ ...orderHead, order_date: e.target.value })
@@ -357,7 +342,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                 <TextField
                   select
                   fullWidth
-                  label="Status"
+                  label="الحالة"
                   value={orderHead.status}
                   onChange={(e) =>
                     setOrderHead({ ...orderHead, status: e.target.value })
@@ -374,7 +359,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                 <TextField
                   type="number"
                   fullWidth
-                  label="Additional Discount"
+                  label="خصم إضافي"
                   value={orderHead.additional_discount}
                   onChange={(e) =>
                     setOrderHead({
@@ -389,7 +374,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                 <TextField
                   type="number"
                   fullWidth
-                  label="Tax %"
+                  label="ضريبة %"
                   value={orderHead.tax_percent}
                   onChange={(e) =>
                     setOrderHead({
@@ -404,7 +389,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                 <TextField
                   type="number"
                   fullWidth
-                  label="VAT %"
+                  label="ضريبة القيمة المضافة %"
                   value={orderHead.vat_rate}
                   onChange={(e) =>
                     setOrderHead({
@@ -418,7 +403,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Notes"
+                  label="ملاحظات"
                   multiline
                   minRows={2}
                   value={orderHead.notes}
@@ -436,14 +421,14 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
           <CardContent>
             <Box display="flex" justifyContent="space-between" mb={2}>
               <Typography variant="h6">
-                <InventoryIcon color="primary" /> Order Items ({items.length})
+                <InventoryIcon color="primary" /> أصناف الأمر ({items.length})
               </Typography>
               <Button
                 variant="outlined"
                 startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
                 onClick={() => setShowItemForm(!showItemForm)}
               >
-                {showItemForm ? "Hide Form" : "Add Item"}
+                {showItemForm ? "إخفاء" : "إضافة صنف"}
               </Button>
             </Box>
 
@@ -454,11 +439,11 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                     <TextField
                       select
                       fullWidth
-                      label="Product"
+                      label="المنتج"
                       value={itemForm.product_id}
                       onChange={(e) => handleItemProductChange(e.target.value)}
                     >
-                      <MenuItem value="">Select Product</MenuItem>
+                      <MenuItem value="">اختر المنتج</MenuItem>
                       {products.map((p) => (
                         <MenuItem key={p.id} value={p.id}>
                           {p.name}
@@ -470,7 +455,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                     <TextField
                       select
                       fullWidth
-                      label="Warehouse"
+                      label="المخزن"
                       value={itemForm.warehouse_id}
                       onChange={(e) =>
                         setItemForm({
@@ -479,7 +464,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                         })
                       }
                     >
-                      <MenuItem value="">Select Warehouse</MenuItem>
+                      <MenuItem value="">اختر المخزن</MenuItem>
                       {warehouses.map((w) => (
                         <MenuItem key={w.id} value={w.id}>
                           {w.name}
@@ -490,7 +475,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                   <Grid item xs={12} sm={6} md={2}>
                     <TextField
                       fullWidth
-                      label="Batch Number"
+                      label="رقم التشغيلة"
                       value={itemForm.batch_number}
                       onChange={(e) =>
                         setItemForm({ ...itemForm, batch_number: e.target.value })
@@ -501,7 +486,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                     <TextField
                       type="date"
                       fullWidth
-                      label="Expiry Date"
+                      label="تاريخ الانتهاء"
                       value={itemForm.expiry_date}
                       onChange={(e) =>
                         setItemForm({ ...itemForm, expiry_date: e.target.value })
@@ -513,7 +498,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                     <TextField
                       type="number"
                       fullWidth
-                      label="Quantity"
+                      label="الكمية"
                       value={itemForm.quantity}
                       onChange={(e) =>
                         setItemForm({ ...itemForm, quantity: e.target.value })
@@ -525,7 +510,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                     <TextField
                       type="number"
                       fullWidth
-                      label="Bonus Qty"
+                      label="بونص"
                       value={itemForm.bonus_quantity}
                       onChange={(e) =>
                         setItemForm({
@@ -540,7 +525,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                     <TextField
                       type="number"
                       fullWidth
-                      label="Unit Price"
+                      label="سعر الوحدة"
                       value={itemForm.unit_price}
                       onChange={(e) =>
                         setItemForm({
@@ -555,7 +540,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                     <TextField
                       type="number"
                       fullWidth
-                      label="Discount"
+                      label="الخصم"
                       value={itemForm.discount}
                       onChange={(e) =>
                         setItemForm({ ...itemForm, discount: e.target.value })
@@ -567,10 +552,10 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
                     <Button
                       variant="contained"
                       fullWidth
-                                            onClick={addItemTemp}
+                      onClick={addItemTemp}
                       startIcon={<AddIcon />}
                     >
-                      Add
+                      إضافة
                     </Button>
                   </Grid>
                 </Grid>
@@ -614,23 +599,23 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
           <CardContent>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Typography variant="h6">
-                <MoneyIcon color="primary" /> Order Summary
+                <MoneyIcon color="primary" /> ملخص الأمر
               </Typography>
               <Box textAlign="right">
-                <Typography>Subtotal (items): ${subTotal.toFixed(2)}</Typography>
+                <Typography>المجموع الفرعي: ${subTotal.toFixed(2)}</Typography>
                 <Typography>
-                  Additional Discount: $
+                  خصم إضافي: $
                   {Number(orderHead.additional_discount).toFixed(2)}
                 </Typography>
                 <Typography>
-                  Tax ({Number(orderHead.tax_percent)}%): ${taxAmount.toFixed(2)}
+                  ضريبة ({Number(orderHead.tax_percent)}%): ${taxAmount.toFixed(2)}
                 </Typography>
                 <Typography>
-                  VAT ({Number(orderHead.vat_rate)}%): ${vatAmount.toFixed(2)}
+                  ض.ق.م ({Number(orderHead.vat_rate)}%): ${vatAmount.toFixed(2)}
                 </Typography>
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="h4" color="primary.main">
-                  Total: ${totalAmount.toFixed(2)}
+                  الإجمالي: ${totalAmount.toFixed(2)}
                 </Typography>
               </Box>
             </Stack>
@@ -640,7 +625,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
 
       <DialogActions sx={{ p: 3, gap: 1 }}>
         <Button onClick={onClose} variant="outlined">
-          Cancel
+          إلغاء
         </Button>
         <Button
           variant="contained"
@@ -648,11 +633,9 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
           disabled={saving || loadingMeta}
           startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
         >
-          {saving ? "Saving..." : "Save Order"}
+          {saving ? "جار الحفظ..." : "حفظ"}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
-
- 

@@ -112,6 +112,7 @@ export default function EmployeesPage() {
 
       <MaterialReactTable
         columns={columns}
+        {...defaultTableProps}
         data={list}
         enableRowActions
         renderRowActions={({ row }) => (

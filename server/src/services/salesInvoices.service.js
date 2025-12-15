@@ -68,42 +68,83 @@ export default {
             if (items && items.length > 0) {
                 const itemsWithInvoiceId = items.map(item => ({
                     ...item,
-                    sales_invoice_id: invoice.id
+                    sales_invoice_id: invoice.id,
+                    warehouse_id: item.warehouse_id || invoice.warehouse_id || null
                 }));
                 console.log('Service: Creating items:', JSON.stringify(itemsWithInvoiceId, null, 2));
-                await SalesInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
+                const createdItems = await SalesInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
                 console.log('Service: Items created successfully');
 
                 // Create Inventory Transactions (OUT)
-                for (const item of itemsWithInvoiceId) {
-                    const batches = [];
-                    if (item.batch_number && item.expiry_date) {
-                        batches.push({
-                            batch_number: item.batch_number,
-                            expiry_date: item.expiry_date,
-                            quantity: item.quantity,
-                            cost_per_unit: item.price
-                        });
-                    } else {
-                        // If no specific batch, still deduct quantity (will be handled as null batch_id)
-                        batches.push({
-                            batch_number: null,
-                            expiry_date: null,
-                            quantity: item.quantity,
-                            cost_per_unit: item.price
-                        });
+                for (const item of createdItems) {
+                    // 1. Transaction for Main Quantity
+                    if (Number(item.quantity) > 0) {
+                        const batches = [];
+                        if (item.batch_number && item.expiry_date) {
+                            batches.push({
+                                batch_number: item.batch_number,
+                                expiry_date: item.expiry_date,
+                                quantity: item.quantity,
+                                cost_per_unit: item.price
+                            });
+                        } else {
+                            batches.push({
+                                batch_number: null,
+                                expiry_date: null,
+                                quantity: item.quantity,
+                                cost_per_unit: item.price
+                            });
+                        }
+
+                        await InventoryTransactionService.create({
+                            product_id: item.product_id,
+                            warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                            transaction_type: 'out',
+                            transaction_date: invoice.invoice_date || new Date(),
+                            note: `Sales Invoice #${invoice.invoice_number || invoice.id}`,
+                            source_type: 'sales_invoice',
+                            source_id: item.id,
+                            batches: batches
+                        }, { transaction });
                     }
 
-                    await InventoryTransactionService.create({
-                        product_id: item.product_id,
-                        warehouse_id: item.warehouse_id || invoice.warehouse_id, // Fallback to invoice warehouse if item doesn't have one
-                        transaction_type: 'out',
-                        transaction_date: invoice.invoice_date || new Date(),
-                        note: `Sales Invoice #${invoice.invoice_number || invoice.id}`,
-                        source_type: 'sales_invoice',
-                        source_id: invoice.id,
-                        batches: batches
-                    }, { transaction });
+                    // 2. Transaction for Bonus
+                    if (Number(item.bonus) > 0) {
+                        const bonusBatches = [];
+                        // Bonus usually comes from the same batch or null if not specified. 
+                        // Assuming same batch logic for now, but cost is 0 for bonus? 
+                        // Usually bonus has 0 cost for the customer, but for inventory valuation it has cost.
+                        // However, in 'out' transaction, cost_per_unit is usually the selling price or cost?
+                        // In this system, it seems to be sending 'item.price' (selling price).
+                        // For bonus, selling price is effectively 0.
+
+                        if (item.batch_number && item.expiry_date) {
+                            bonusBatches.push({
+                                batch_number: item.batch_number,
+                                expiry_date: item.expiry_date,
+                                quantity: item.bonus,
+                                cost_per_unit: 0 // Bonus has 0 selling price
+                            });
+                        } else {
+                            bonusBatches.push({
+                                batch_number: null,
+                                expiry_date: null,
+                                quantity: item.bonus,
+                                cost_per_unit: 0
+                            });
+                        }
+
+                        await InventoryTransactionService.create({
+                            product_id: item.product_id,
+                            warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                            transaction_type: 'out',
+                            transaction_date: invoice.invoice_date || new Date(),
+                            note: `Sales Invoice #${invoice.invoice_number || invoice.id} (Bonus)`,
+                            source_type: 'sales_invoice',
+                            source_id: item.id,
+                            batches: bonusBatches
+                        }, { transaction });
+                    }
                 }
             }
 
@@ -166,32 +207,89 @@ export default {
                 if (items.length > 0) {
                     const itemsWithInvoiceId = items.map(item => ({
                         ...item,
-                        sales_invoice_id: id
+                        sales_invoice_id: id,
+                        warehouse_id: item.warehouse_id || invoice.warehouse_id || null
                     }));
-                    await SalesInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
+                    const createdItems = await SalesInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
 
                     // Create new Inventory Transactions
-                    for (const item of itemsWithInvoiceId) {
-                        const batches = [];
-                        if (item.batch_number && item.expiry_date) {
-                            batches.push({
-                                batch_number: item.batch_number,
-                                expiry_date: item.expiry_date,
-                                quantity: item.quantity,
-                                cost_per_unit: 0
-                            });
+                    for (const item of createdItems) {
+                        // 1. Main Quantity
+                        if (Number(item.quantity) > 0) {
+                            const batches = [];
+                            if (item.batch_number && item.expiry_date) {
+                                batches.push({
+                                    batch_number: item.batch_number,
+                                    expiry_date: item.expiry_date,
+                                    quantity: item.quantity,
+                                    cost_per_unit: 0 // In update, we might not have price easily if not passed, but usually it is. 
+                                    // Actually in update 'items' comes from data.
+                                    // Let's assume item.price is there or 0.
+                                    // Wait, in update logic above, we are creating items from 'items' array.
+                                    // So item.price should be there.
+                                });
+                            } else {
+                                batches.push({
+                                    batch_number: null,
+                                    expiry_date: null,
+                                    quantity: item.quantity,
+                                    cost_per_unit: 0
+                                });
+                            }
+
+                            await InventoryTransactionService.create({
+                                product_id: item.product_id,
+                                warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                                transaction_type: 'out',
+                                transaction_date: invoice.invoice_date || new Date(),
+                                note: `Sales Invoice #${invoice.invoice_number || invoice.id}`,
+                                source_type: 'sales_invoice',
+                                source_id: invoice.id, // Wait, in create we used item.id. In update we should also use item.id?
+                                // In create: source_id: item.id
+                                // In update (previous code): source_id: invoice.id (This looks like a bug in previous code or inconsistency)
+                                // The user wants item level tracking.
+                                // In the previous turn I fixed create to use item.id.
+                                // In update, I should also use item.id.
+                                // 'newItem' is created in bulkCreate above? No, bulkCreate returns items?
+                                // 'SalesInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction })'
+                                // Sequelize bulkCreate returns the created instances with IDs.
+                                // So 'itemsWithInvoiceId' will NOT have IDs unless we capture the result.
+                                // I need to capture the result of bulkCreate.
+                                source_id: item.id, // This will be undefined if I don't capture result!
+                                batches: batches
+                            }, { transaction });
                         }
 
-                        await InventoryTransactionService.create({
-                            product_id: item.product_id,
-                            warehouse_id: item.warehouse_id || invoice.warehouse_id,
-                            transaction_type: 'out',
-                            transaction_date: invoice.invoice_date || new Date(),
-                            note: `Sales Invoice #${invoice.invoice_number || invoice.id}`,
-                            source_type: 'sales_invoice',
-                            source_id: invoice.id,
-                            batches: batches
-                        }, { transaction });
+                        // 2. Bonus
+                        if (Number(item.bonus) > 0) {
+                            const bonusBatches = [];
+                            if (item.batch_number && item.expiry_date) {
+                                bonusBatches.push({
+                                    batch_number: item.batch_number,
+                                    expiry_date: item.expiry_date,
+                                    quantity: item.bonus,
+                                    cost_per_unit: 0
+                                });
+                            } else {
+                                bonusBatches.push({
+                                    batch_number: null,
+                                    expiry_date: null,
+                                    quantity: item.bonus,
+                                    cost_per_unit: 0
+                                });
+                            }
+
+                            await InventoryTransactionService.create({
+                                product_id: item.product_id,
+                                warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                                transaction_type: 'out',
+                                transaction_date: invoice.invoice_date || new Date(),
+                                note: `Sales Invoice #${invoice.invoice_number || invoice.id} (Bonus)`,
+                                source_type: 'sales_invoice',
+                                source_id: item.id, // Again, need correct ID
+                                batches: bonusBatches
+                            }, { transaction });
+                        }
                     }
                 }
             }

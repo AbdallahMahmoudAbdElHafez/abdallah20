@@ -64,6 +64,7 @@ export default function JobTitlesPage() {
 
       <MaterialReactTable
         columns={columns}
+        {...defaultTableProps}
         data={items}
         state={{ isLoading: loading }}
         enableRowActions
