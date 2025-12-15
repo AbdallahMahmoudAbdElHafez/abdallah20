@@ -24,6 +24,7 @@ import {
   MenuItem,
   Chip,
   Box,
+  Autocomplete,
 } from "@mui/material";
 
 const partyTypes = [
@@ -179,6 +180,7 @@ const PartiesPage = () => {
 
       <MaterialReactTable
         columns={columns}
+        {...defaultTableProps}
         data={parties}
         state={{ isLoading: loading }}
       />
@@ -212,21 +214,22 @@ const PartiesPage = () => {
             ))}
           </TextField>
 
-          <TextField
-            select
-            fullWidth
-            margin="dense"
-            label="المدينة"
-            value={form.city_id || ""}
-            onChange={(e) => setForm({ ...form, city_id: e.target.value })}
-          >
-            <MenuItem value="">-- اختر المدينة --</MenuItem>
-            {cities.map((c) => (
-              <MenuItem key={c.id} value={c.id}>
-                {c.name}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Autocomplete
+            options={cities}
+            getOptionLabel={(option) => option.name}
+            value={cities.find((c) => c.id === form.city_id) || null}
+            onChange={(event, newValue) => {
+              setForm({ ...form, city_id: newValue ? newValue.id : "" });
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="المدينة"
+                margin="dense"
+                fullWidth
+              />
+            )}
+          />
 
 
 
