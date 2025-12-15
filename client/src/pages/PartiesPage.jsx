@@ -228,21 +228,7 @@ const PartiesPage = () => {
             ))}
           </TextField>
 
-          <TextField
-            select
-            fullWidth
-            margin="dense"
-            label="الحساب"
-            value={form.account_id || ""}
-            onChange={(e) => setForm({ ...form, account_id: e.target.value })}
-          >
-            <MenuItem value="">-- اختر الحساب --</MenuItem>
-            {accounts.map((a) => (
-              <MenuItem key={a.id} value={a.id}>
-                {a.name}
-              </MenuItem>
-            ))}
-          </TextField>
+
 
           <TextField
             select

@@ -27,12 +27,34 @@ class PartyService {
   }
 
   static async create(data) {
+    if (!data.account_id) {
+      let accountName = "";
+      if (data.party_type === "customer") accountName = "العملاء";
+      else if (data.party_type === "supplier") accountName = "الموردين";
+
+      if (accountName) {
+        const account = await Account.findOne({ where: { name: accountName } });
+        if (account) data.account_id = account.id;
+      }
+    }
     return await Party.create(data);
   }
 
   static async update(id, data) {
     const party = await Party.findByPk(id);
     if (!party) throw new Error("Party not found");
+
+    if (data.party_type && (data.party_type !== party.party_type || !party.account_id)) {
+      let accountName = "";
+      if (data.party_type === "customer") accountName = "العملاء";
+      else if (data.party_type === "supplier") accountName = "الموردين";
+
+      if (accountName) {
+        const account = await Account.findOne({ where: { name: accountName } });
+        if (account) data.account_id = account.id;
+      }
+    }
+
     return await party.update(data);
   }
 
