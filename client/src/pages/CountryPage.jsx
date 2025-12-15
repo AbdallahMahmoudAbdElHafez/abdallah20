@@ -2,10 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCountries, addCountry, updateCountry, deleteCountry } from "../features/countries/countriesSlice";
 import { MaterialReactTable } from "material-react-table";
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert, Box ,IconButton} from "@mui/material";
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Snackbar, Alert, Box, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom"; // <--- استيراد
 import { Delete, Edit } from "@mui/icons-material";
-
+import { defaultTableProps } from "../config/tableConfig";
 export default function CountyPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // <--- تعريف navigate
@@ -57,6 +57,7 @@ export default function CountyPage() {
 
       <MaterialReactTable
         columns={columns}
+        {...defaultTableProps}
         data={items}
         state={{ isLoading: loading }}
         enablePagination

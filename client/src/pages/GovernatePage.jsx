@@ -111,12 +111,11 @@ export default function GovernatesPage() {
 
       <MaterialReactTable
         columns={columns}
+        {...defaultTableProps}
         data={filteredData}
         state={{ isLoading: loading }}
         enablePagination
         enableSorting
-        muiTableBodyCellProps={{ align: 'center', sx: { py: '0px' } }}
-        muiTableHeadCellProps={{ align: 'center' }}
         enableGlobalFilter
         enableRowActions
         renderRowActions={({ row }) => (

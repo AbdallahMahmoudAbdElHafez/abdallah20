@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState  } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCities, addCity, updateCity, deleteCity } from "../features/cities/citiesSlice";
 import { fetchGovernates } from "../features/governates/governatesSlice";
@@ -20,9 +20,9 @@ import {
   Typography,
   Breadcrumbs,
   Link,
-  IconButton,  FormControl, InputLabel, Select
+  IconButton, FormControl, InputLabel, Select
 } from "@mui/material";
-
+import { defaultTableProps } from "../config/tableConfig";
 export default function CitiesPage() {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -92,8 +92,8 @@ export default function CitiesPage() {
     <Box p={4} sx={{ direction: 'rtl' }}>
       {/* Breadcrumbs */}
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2, direction: 'rtl' }}>
-          <Link component={RouterLink} underline="hover" color="inherit" to="/countries">
-      الدول
+        <Link component={RouterLink} underline="hover" color="inherit" to="/countries">
+          الدول
         </Link>
         <Link component={RouterLink} underline="hover" color="inherit" to="/governates">
           المحافظات
@@ -109,12 +109,11 @@ export default function CitiesPage() {
 
       <MaterialReactTable
         columns={columns}
+        {...defaultTableProps}
         data={filteredData}
         state={{ isLoading: loading }}
         enablePagination
         enableSorting
-        muiTableBodyCellProps={{ align: 'center', sx: { py: '0px' } }}
-        muiTableHeadCellProps={{ align: 'center' }}
         enableGlobalFilter
         enableRowActions
         renderRowActions={({ row }) => (
@@ -125,20 +124,20 @@ export default function CitiesPage() {
             <IconButton color="error" onClick={() => handleDelete(row.original.id)}>
               <Delete />
             </IconButton>
- 
+
           </Box>
         )}
       />
 
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
         <DialogTitle>{editRow ? "تعديل" : "اضافه"}</DialogTitle>
-       <DialogContent>
+        <DialogContent>
           <TextField
             fullWidth
             margin="dense"
             label="المنطقه"
             value={formData.name}
-             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
 
           <FormControl fullWidth margin="dense">
@@ -146,7 +145,7 @@ export default function CitiesPage() {
             <Select
               labelId="country-label"
               value={formData.governate_id || ""}
-     
+
               onChange={(e) => {
                 const val = e.target.value;
                 // تحديث state بالـ country الجديد
