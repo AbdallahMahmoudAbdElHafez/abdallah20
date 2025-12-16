@@ -471,22 +471,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={12} md={2}>
-                  <FormControl fullWidth error={!!errors.warehouse_id}>
-                    <InputLabel>Warehouse</InputLabel>
-                    <Select
-                      value={currentItem.warehouse_id}
-                      label="Warehouse"
-                      onChange={(e) => handleItemChange('warehouse_id', e.target.value)}
-                    >
-                      {warehouses.map(wh => (
-                        <MenuItem key={wh.id} value={wh.id}>
-                          {wh.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
+
 
                 <Grid item xs={6} md={1}>
                   <TextField
@@ -523,15 +508,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   />
                 </Grid>
 
-                <Grid item xs={6} md={1}>
-                  <TextField
-                    fullWidth
-                    label="Unit Price"
-                    type="number"
-                    value={currentItem.unit_price}
-                    onChange={(e) => handleItemChange('unit_price', e.target.value)}
-                  />
-                </Grid>
+
 
                 <Grid item xs={6} md={1}>
                   <TextField
