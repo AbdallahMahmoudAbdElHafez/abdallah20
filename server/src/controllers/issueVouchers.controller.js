@@ -32,7 +32,6 @@ const voucherWithItemsSchema = Joi.object({
     batch_number: Joi.string().max(100).allow('', null),
     expiry_date: Joi.date().allow(null),
     quantity: Joi.number().precision(3).positive().required(),
-    unit_price: Joi.number().precision(2).min(0).default(0),
     cost_per_unit: Joi.number().precision(2).min(0).default(0),
     note: Joi.string().allow('', null)
   })).default([])

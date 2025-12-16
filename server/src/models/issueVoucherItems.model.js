@@ -27,10 +27,6 @@ const IssueVoucherItemModel = (sequelize) => {
       type: DataTypes.DECIMAL(12, 3),
       allowNull: false
     },
-    unit_price: {
-      type: DataTypes.DECIMAL(12, 2),
-      defaultValue: 0.00
-    },
     cost_per_unit: {
       type: DataTypes.DECIMAL(12, 2),
       defaultValue: 0.00

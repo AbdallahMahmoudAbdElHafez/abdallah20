@@ -68,11 +68,11 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const [errors, setErrors] = useState({});
   const [currentItem, setCurrentItem] = useState({
     product_id: '',
-    warehouse_id: '',
+
     batch_number: '',
     expiry_date: null,
     quantity: '',
-    unit_price: '',
+
     cost_per_unit: '',
     note: ''
   });
@@ -183,7 +183,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
 
     if (!currentItem.product_id) newErrors.product_id = 'Product is required';
     if (!currentItem.quantity || currentItem.quantity <= 0) newErrors.quantity = 'Valid quantity is required';
-    if (!currentItem.warehouse_id) newErrors.warehouse_id = 'Warehouse is required';
+    if (!currentItem.quantity || currentItem.quantity <= 0) newErrors.quantity = 'Valid quantity is required';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -191,23 +191,23 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     }
 
     const selectedProduct = products.find(p => p.id === currentItem.product_id);
-    const selectedWarehouse = warehouses.find(w => w.id === currentItem.warehouse_id);
+
 
     const newItem = {
       id: Date.now(), // مؤقت لحين الحفظ
       ...currentItem,
       product: selectedProduct,
-      warehouse: selectedWarehouse
+
     };
 
     setItems(prev => [...prev, newItem]);
     setCurrentItem({
       product_id: '',
-      warehouse_id: '',
+
       batch_number: '',
       expiry_date: null,
       quantity: '',
-      unit_price: '',
+
       cost_per_unit: '',
       note: ''
     });
@@ -244,7 +244,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
         batch_number: item.batch_number,
         expiry_date: item.expiry_date ? item.expiry_date.toISOString().split('T')[0] : null,
         quantity: parseFloat(item.quantity),
-        unit_price: parseFloat(item.unit_price || 0),
+
         cost_per_unit: parseFloat(item.cost_per_unit || 0),
         note: item.note
       }))
@@ -263,7 +263,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   };
 
   const totalAmount = items.reduce((sum, item) => {
-    return sum + (parseFloat(item.quantity) * parseFloat(item.unit_price || 0));
+    return sum + (parseFloat(item.quantity) * parseFloat(item.cost_per_unit || 0));
   }, 0);
 
   // دالة لتحويل التاريخ إلى تنسيق قابل للعرض
@@ -564,11 +564,11 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Product</TableCell>
-                    <TableCell>Warehouse</TableCell>
+
                     <TableCell>Batch</TableCell>
                     <TableCell>Expiry</TableCell>
                     <TableCell align="right">Quantity</TableCell>
-                    <TableCell align="right">Unit Price</TableCell>
+
                     <TableCell align="right">Total</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
@@ -577,13 +577,13 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   {items.map((item, index) => (
                     <TableRow key={item.id || index}>
                       <TableCell>{item.product?.name || 'N/A'}</TableCell>
-                      <TableCell>{item.warehouse?.name || 'N/A'}</TableCell>
+
                       <TableCell>{item.batch_number || '-'}</TableCell>
                       <TableCell>{formatDate(item.expiry_date)}</TableCell> {/* إصلاح هنا */}
                       <TableCell align="right">{item.quantity}</TableCell>
-                      <TableCell align="right">{item.unit_price || '0.00'}</TableCell>
+
                       <TableCell align="right">
-                        {((item.quantity || 0) * (item.unit_price || 0)).toFixed(2)}
+                        {((item.quantity || 0) * (item.cost_per_unit || 0)).toFixed(2)}
                       </TableCell>
                       <TableCell>
                         <IconButton

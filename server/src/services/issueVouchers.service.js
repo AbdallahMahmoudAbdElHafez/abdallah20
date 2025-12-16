@@ -1,17 +1,17 @@
-import { 
-  IssueVoucher, 
-  IssueVoucherItem, 
-  Product, 
-  Warehouse, 
-  IssueVoucherType, 
-  Party, 
+import {
+  IssueVoucher,
+  IssueVoucherItem,
+  Product,
+  Warehouse,
+  IssueVoucherType,
+  Party,
   Employee,
-  sequelize 
+  sequelize
 } from '../models/index.js';
 import { Op } from 'sequelize';
 
 export class IssueVouchersService {
-  
+
   // إنشاء سند إصدار جديد
   async createIssueVoucher(voucherData) {
     try {
@@ -26,21 +26,21 @@ export class IssueVouchersService {
   async createIssueVoucherWithItems(voucherData, itemsData = []) {
     try {
       const transaction = await sequelize.transaction();
-      
+
       try {
         // إنشاء السند
         const voucher = await IssueVoucher.create(voucherData, { transaction });
-        
+
         // إضافة الأصناف إذا وجدت
         if (itemsData.length > 0) {
           const itemsWithVoucherId = itemsData.map(item => ({
             ...item,
             voucher_id: voucher.id
           }));
-          
+
           await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
         }
-        
+
         await transaction.commit();
         return await this.getIssueVoucherById(voucher.id, true);
       } catch (error) {
@@ -56,16 +56,16 @@ export class IssueVouchersService {
   async getAllIssueVouchers(filters = {}) {
     try {
       const whereClause = {};
-      
+
       // تطبيق الفلاتر إذا وجدت
       if (filters.status) {
         whereClause.status = filters.status;
       }
-      
+
       if (filters.warehouse_id) {
         whereClause.warehouse_id = filters.warehouse_id;
       }
-      
+
       if (filters.start_date && filters.end_date) {
         whereClause.issue_date = {
           [Op.between]: [filters.start_date, filters.end_date]
@@ -98,7 +98,7 @@ export class IssueVouchersService {
         ],
         order: [['created_at', 'DESC']]
       });
-      
+
       return vouchers;
     } catch (error) {
       throw new Error(`Error fetching issue vouchers: ${error.message}`);
@@ -162,11 +162,11 @@ export class IssueVouchersService {
       }
 
       const voucher = await IssueVoucher.findByPk(id, { include });
-      
+
       if (!voucher) {
         throw new Error('Issue voucher not found');
       }
-      
+
       return voucher;
     } catch (error) {
       throw new Error(`Error fetching issue voucher: ${error.message}`);
@@ -222,11 +222,11 @@ export class IssueVouchersService {
         where: { voucher_no: voucherNo },
         include
       });
-      
+
       if (!voucher) {
         throw new Error('Issue voucher not found');
       }
-      
+
       return voucher;
     } catch (error) {
       throw new Error(`Error fetching issue voucher: ${error.message}`);
@@ -252,31 +252,31 @@ export class IssueVouchersService {
   async updateIssueVoucherWithItems(id, updateData, itemsData = []) {
     try {
       const transaction = await sequelize.transaction();
-      
+
       try {
         // تحديث السند
         const voucher = await IssueVoucher.findByPk(id, { transaction });
         if (!voucher) {
           throw new Error('Issue voucher not found');
         }
-        
+
         await voucher.update(updateData, { transaction });
-        
+
         // حذف الأصناف القديمة وإضافة الجديدة
         await IssueVoucherItem.destroy({
           where: { voucher_id: id },
           transaction
         });
-        
+
         if (itemsData.length > 0) {
           const itemsWithVoucherId = itemsData.map(item => ({
             ...item,
             voucher_id: id
           }));
-          
+
           await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
         }
-        
+
         await transaction.commit();
         return await this.getIssueVoucherById(id, true);
       } catch (error) {
@@ -307,7 +307,7 @@ export class IssueVouchersService {
   async updateVoucherStatus(id, status, approvedBy = null) {
     try {
       const updateData = { status };
-      
+
       if (status === 'approved' && approvedBy) {
         updateData.approved_by = approvedBy;
       }
@@ -323,7 +323,7 @@ export class IssueVouchersService {
   async isVoucherNoUnique(voucherNo, excludeId = null) {
     try {
       const whereClause = { voucher_no: voucherNo };
-      
+
       if (excludeId) {
         whereClause.id = { [Op.ne]: excludeId };
       }
@@ -339,7 +339,7 @@ export class IssueVouchersService {
   async getVoucherTotals(id) {
     try {
       const voucher = await this.getIssueVoucherById(id, true);
-      
+
       if (!voucher.items || voucher.items.length === 0) {
         return {
           totalQuantity: 0,
@@ -362,7 +362,7 @@ export class IssueVouchersService {
         return acc;
       }, {
         totalQuantity: 0,
-        totalValue: 0,
+
         totalCost: 0,
         itemsCount: 0
       });
