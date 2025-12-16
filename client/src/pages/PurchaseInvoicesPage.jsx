@@ -11,8 +11,10 @@ import {
   addPurchaseInvoice,
 } from "../features/purchaseInvoices/purchaseInvoicesSlice";
 import { fetchItemsByInvoice } from "../features/purchaseInvoiceItems/purchaseInvoiceItemsSlice";
+import { fetchProducts } from "../features/products/productsSlice";
 import PurchaseInvoiceDialog from "../components/PurchaseInvoiceDialog";
 import PurchaseInvoicePaymentsManager from "../components/PurchaseInvoicePaymentsManager";
+import InvoicePreviewDialog from "../components/InvoicePreview/InvoicePreviewDialog";
 
 export default function PurchaseInvoicesPage() {
   const dispatch = useDispatch();
@@ -23,6 +25,7 @@ export default function PurchaseInvoicesPage() {
   const { items: invoices = [], loading } = useSelector(
     (state) => state.purchaseInvoices
   );
+  const products = useSelector((state) => state.products?.items || []);
 
   const [openDialog, setOpenDialog] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
@@ -37,9 +40,31 @@ export default function PurchaseInvoicesPage() {
     setPaymentsOpen(true);
   };
 
+  // Preview State
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewInvoice, setPreviewInvoice] = useState(null);
+  const [previewItems, setPreviewItems] = useState([]);
+
+  const handlePreview = async (invoice) => {
+    const res = await dispatch(
+      fetchItemsByInvoice(invoice.id)
+    ).unwrap();
+
+    // Map items to include product names
+    const mappedItems = res.map(item => ({
+      ...item,
+      product_name: products.find(p => p.id === item.product_id)?.name || "Unknown Product"
+    }));
+
+    setPreviewInvoice(invoice);
+    setPreviewItems(mappedItems);
+    setPreviewOpen(true);
+  };
+
   useEffect(() => {
     // جلب الفواتير مفلترة (إن وجد purchase_order_id)
     dispatch(fetchPurchaseInvoices({ purchase_order_id: filterOrderId }));
+    dispatch(fetchProducts());
   }, [dispatch, filterOrderId]);
 
   const handleEdit = async (invoice) => {
@@ -101,6 +126,14 @@ export default function PurchaseInvoicesPage() {
           >
             المدفوعات
           </Button>
+          <Button
+            size="small"
+            variant="contained"
+            color="warning"
+            onClick={() => handlePreview(row.original)}
+          >
+            معاينة
+          </Button>
         </Box>
       ),
     },
@@ -144,6 +177,17 @@ export default function PurchaseInvoicesPage() {
           <Button onClick={() => setPaymentsOpen(false)}>إغلاق</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Invoice Preview Dialog */}
+      {previewOpen && (
+        <InvoicePreviewDialog
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          invoice={previewInvoice}
+          items={previewItems}
+          type="purchase"
+        />
+      )}
     </Box>
   );
 }

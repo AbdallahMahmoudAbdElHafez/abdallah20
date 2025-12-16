@@ -59,6 +59,7 @@ import salesReturnsHooks from "../hooks/salesReturnsHooks.js";
 import purchaseReturnsHooks from "../hooks/purchaseReturnsHooks.js";
 import externalJobOrderHooks from "../hooks/externalJobOrderHooks.js";
 import expensesHooks from "../hooks/expensesHooks.js";
+import CompanyModel from "./company.model.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -117,6 +118,7 @@ const InventoryTransactionBatches = InventoryTransactionBatchesModel(sequelize);
 const SalesInvoicePayment = SalesInvoicePaymentModel(sequelize);
 const EntryType = EntryTypeModel(sequelize);
 const JobOrderCost = JobOrderCostModel(sequelize);
+const Company = CompanyModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -644,8 +646,13 @@ City.hasMany(Expense, { foreignKey: 'city_id', as: 'expenses' });
 Employee.hasMany(Expense, { foreignKey: 'employee_id', as: 'expenses' });
 Party.hasMany(Expense, { foreignKey: 'party_id', as: 'partyExpenses' });
 
+// Company Associations
+City.hasMany(Company, { foreignKey: "city_id", as: "companies" });
+Company.belongsTo(City, { foreignKey: "city_id", as: "city" });
+
 export {
   sequelize,
+  Company,
   Product,
   Unit,
   Country,

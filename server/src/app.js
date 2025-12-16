@@ -50,6 +50,7 @@ import salesInvoicePaymentRoutes from "./routes/salesInvoicePayments.routes.js";
 import entryTypesRoutes from "./routes/entryTypes.routes.js";
 import journalEntryRoutes from "./routes/journalEntry.routes.js";
 import jobOrderCostsRoutes from './routes/jobOrderCosts.routes.js';
+import companyRoutes from './routes/company.routes.js';
 
 const app = express();
 app.use(cors());
@@ -84,6 +85,7 @@ app.use('/api/bill-of-material', billOfMaterialRouter);
 app.use("/api/warehouse-transfers", warehouseTransfersRoutes);
 app.use("/api/warehouse-transfer-items", warehouseTransferItemsRoutes);
 app.use("/api/product-costs", productCostRoutes);
+app.use('/uploads', express.static('uploads'));
 app.use('/api/processes', processesRoutes);
 app.use('/api/external-job-orders', externalJobOrdersRoutes);
 app.use("/api/current-inventory", currentInventoryRoutes);
@@ -106,6 +108,7 @@ app.use("/api/sales-invoice-payments", salesInvoicePaymentRoutes);
 app.use("/api/entry-types", entryTypesRoutes);
 app.use("/api/journal-entries", journalEntryRoutes);
 app.use('/api/job-order-costs', jobOrderCostsRoutes);
+app.use('/api/companies', companyRoutes);
 
 app.use(errorHandler);
 export default app;

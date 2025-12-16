@@ -38,11 +38,10 @@ const productsMenu = [
 
 ];
 const companyInfoMenu = [
+  { label: "الشركات", path: "/companies" },
   { label: "الاقسام", path: "/departments" },
   { label: "المسميات الوظيفيه", path: "/job-titles" },
   { label: "الموظفين", path: "/employees" },
-
-
 ];
 const purchasesMenu = [
   { label: "أوامر الشراء", path: "/purchase-orders" },
