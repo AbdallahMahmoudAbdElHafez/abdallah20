@@ -69,7 +69,7 @@ CREATE TABLE `accounts` (
   PRIMARY KEY (`id`),
   KEY `parent_account_id` (`parent_account_id`),
   CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`parent_account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -78,7 +78,7 @@ CREATE TABLE `accounts` (
 
 LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,''),(2,'خصوم','liability',NULL,0.00,''),(3,'مصروفات مباشره','expense',NULL,0.00,''),(4,'مصروفات غير مباشره','expense',NULL,0.00,''),(5,'ايرادات','revenue',NULL,0.00,''),(6,'مردودات المبيعات','revenue',NULL,0.00,''),(7,'صافي الدخل','equity',NULL,0.00,''),(8,'اصول ثابته','asset',1,0.00,''),(9,'اصول متداوله','asset',1,0.00,''),(10,'رأس المال','liability',2,0.00,''),(11,'قروض','liability',2,0.00,''),(12,'خصوم متادوله','liability',2,0.00,''),(13,'صافي الربح','liability',2,0.00,''),(14,'ارباح مرحلة','liability',2,0.00,''),(15,'تكلفة البضاعة المباعة','expense',3,0.00,''),(16,'مصروفات نقل بضاعة','expense',3,0.00,''),(17,'مرتبات المبيعات','expense',3,0.00,''),(18,'عمولات المبيعات','expense',3,0.00,''),(19,'خصم خاص','expense',3,0.00,''),(20,'دمغه','expense',3,0.00,''),(21,'مصروفات خطابات ضمان','expense',3,0.00,''),(22,'مصروفات تسويقيه','expense',3,0.00,''),(23,'جرد تالف تصنيع','expense',3,0.00,''),(24,'تكاليف تشغيل مباشره','expense',3,0.00,''),(25,'مصروفات عموميه','expense',4,0.00,''),(26,'اهلاكات','expense',4,0.00,''),(27,'مرتبات','expense',4,0.00,''),(28,'مبيعات','revenue',5,0.00,''),(29,'خدمات','revenue',5,0.00,''),(30,'خصم مكتسب','revenue',5,0.00,'');
+INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,''),(2,'خصوم','liability',NULL,0.00,''),(3,'مصروفات مباشره','expense',NULL,0.00,''),(4,'مصروفات غير مباشره','expense',NULL,0.00,''),(5,'ايرادات','revenue',NULL,0.00,''),(6,'مردودات المبيعات','revenue',NULL,0.00,''),(7,'صافي الدخل','equity',NULL,0.00,''),(8,'اصول ثابته','asset',1,0.00,''),(9,'اصول متداوله','asset',1,0.00,''),(10,'رأس المال','liability',2,0.00,''),(11,'قروض','liability',2,0.00,''),(12,'خصوم متادوله','liability',2,0.00,''),(13,'صافي الربح','liability',2,0.00,''),(14,'ارباح مرحلة','liability',2,0.00,''),(15,'تكلفة البضاعة المباعة','expense',3,0.00,''),(16,'مصروفات نقل بضاعة','expense',3,0.00,''),(17,'مرتبات المبيعات','expense',3,0.00,''),(18,'عمولات المبيعات','expense',3,0.00,''),(19,'خصم خاص','expense',3,0.00,''),(20,'دمغه','expense',3,0.00,''),(21,'مصروفات خطابات ضمان','expense',3,0.00,''),(22,'مصروفات تسويقيه','expense',3,0.00,''),(23,'جرد تالف تصنيع','expense',3,0.00,''),(24,'تكاليف تشغيل مباشره','expense',3,0.00,''),(25,'مصروفات عموميه','expense',4,0.00,''),(26,'اهلاكات','expense',4,0.00,''),(27,'مرتبات','expense',4,0.00,''),(28,'مبيعات','revenue',5,0.00,''),(29,'خدمات','revenue',5,0.00,''),(30,'خصم مكتسب','revenue',5,0.00,''),(31,'آلات','asset',8,0.00,''),(32,'آراضي','asset',8,0.00,''),(33,'مباني','asset',8,0.00,''),(34,'أدوات مكتبية','asset',8,0.00,''),(35,'سيارات','asset',8,0.00,''),(36,'أثاث','asset',8,0.00,''),(37,'ملفات','asset',8,0.00,''),(38,'برامج محاسبيه','asset',8,0.00,''),(39,'جهاز كمبيوتر','asset',8,0.00,''),(40,'صندوق وبنوك','asset',9,0.00,''),(41,'خزينه','asset',40,0.00,''),(42,'خزينة شركة الشحن','asset',40,0.00,''),(43,'البنك الأهلي الخاص','asset',40,0.00,''),(44,'البنك شركه','asset',40,0.00,''),(45,'فودافون كاش','asset',40,0.00,''),(46,'كارد فيزا','asset',40,0.00,''),(47,'العملاء','asset',9,0.00,''),(48,'اوراق قبض','asset',9,0.00,''),(49,'المخزون','asset',9,0.00,''),(50,'جاري الشركاء','asset',9,0.00,''),(51,'جاري هاني صلاح','asset',50,0.00,''),(52,'صافي الخسارة','asset',9,0.00,''),(53,'خسارة مرحلة','asset',9,0.00,''),(54,'تأمينات لدى الغير','asset',9,0.00,''),(55,'سلف العاملين','asset',9,0.00,''),(56,'خصم ضرائب','asset',9,0.00,''),(57,'خصم ضرائب مبيعات','asset',9,0.00,''),(58,'غطاء خطابات ضمان','asset',9,0.00,''),(59,'اعتمادات مستندية','asset',9,0.00,''),(60,'مدينون متنوعون','asset',9,0.00,''),(61,'عائلة ','asset',60,0.00,''),(62,'الموردين','liability',12,0.00,''),(63,'مخصصات','liability',12,0.00,''),(64,'اوراق دفع','liability',12,0.00,''),(65,'ضريبة القيمه المضافه','liability',12,0.00,''),(66,'مصلحة الضرائب','liability',12,0.00,''),(67,'مقاولين من الباطل','liability',12,0.00,''),(68,'خصم و اضافه ضرائب مشتريات','liability',12,0.00,''),(69,'دائنون متنوعون ','liability',12,0.00,''),(70,'دائن فيزا كارد','liability',69,0.00,''),(71,'ديون شخصيه','liability',12,0.00,''),(72,'الأولاد','liability',71,0.00,''),(73,'نيفين','liability',71,0.00,''),(74,'إيهاب','liability',71,0.00,''),(75,'مرتبات مستحقه','liability',12,0.00,''),(76,'نسبة تحصيل','expense',22,0.00,''),(77,'هدايا تسويقية','expense',22,0.00,''),(78,'تعويضات عروض تسويقيه','expense',22,0.00,''),(79,'مصاريف تصميمات','expense',22,0.00,''),(80,'عينات مجانية للدكاترة','expense',22,0.00,''),(81,'عينات للتصوير والتصميمات','expense',22,0.00,''),(82,'عينات للbloggers','expense',22,0.00,''),(83,'مشاركات مؤتمرات','expense',22,0.00,''),(84,'مشاركه فى معرض الجامعات','expense',22,0.00,''),(85,'مطبوعات تسويقيه','expense',22,0.00,''),(86,'sponsor health day','expense',22,0.00,''),(87,'social media ','expense',22,0.00,''),(88,'اجتماع للدكاتره','expense',22,0.00,''),(89,'مصروفات بلوجر blogger','expense',22,0.00,''),(90,'ايجارات','expense',25,0.00,''),(91,'ايجار مكتب','expense',90,0.00,''),(92,'ايجار سياره','expense',90,0.00,''),(93,'ايجار مخزن','expense',90,0.00,''),(94,'كهرباء','expense',25,0.00,''),(95,'بوفيه','expense',25,0.00,''),(96,'ضيافه','expense',25,0.00,''),(97,'مصاريف سيارة المدير','expense',25,0.00,''),(98,'زكاة','expense',25,0.00,''),(99,'مصاريف مكتب الإداره','expense',25,0.00,''),(100,'هدايا','expense',25,0.00,''),(101,'عمولات بنكيه','expense',25,0.00,''),(102,'مصاريف اجتماعات','expense',25,0.00,''),(103,'بدل سفر','expense',25,0.00,''),(104,'كروت بيزنيس b.c','expense',25,0.00,''),(105,'مصاريف وزارة الصحة','expense',25,0.00,''),(106,'اتعاب مكتب المحاسب القانونى','expense',25,0.00,''),(107,'فندق ','expense',25,0.00,'');
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -192,7 +192,7 @@ CREATE TABLE `cities` (
   PRIMARY KEY (`id`),
   KEY `governate_id` (`governate_id`),
   CONSTRAINT `cities_ibfk_1` FOREIGN KEY (`governate_id`) REFERENCES `governates` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -201,6 +201,7 @@ CREATE TABLE `cities` (
 
 LOCK TABLES `cities` WRITE;
 /*!40000 ALTER TABLE `cities` DISABLE KEYS */;
+INSERT INTO `cities` VALUES (1,'برج العرب',3),(2,'مطوبس',11),(3,'كفر الشيخ',11),(4,'المنصوره',7),(5,'ميت غمر',7),(6,'السنبلاوين',7),(7,'طلخا',7),(8,'منيه النصر',7),(9,'المنزله',7),(10,'شربين',7),(11,'دكرنس',7),(12,'بلقاس',7),(13,'طنطا',9),(14,'كفر الزيات',9),(15,'المحله الكبرى',9),(16,'بسيون',9),(17,'قطور',9),(18,'زفتى',9),(19,'سمنود',9),(20,'القاهره',1),(21,'مدينه نصر',1),(22,'مصر الجديده',1),(23,'المعادى',1),(24,'حلوان',1),(25,'شبرا',1),(26,'الزيتون',1),(27,'المطريه',1),(28,'المرج',1),(29,'عين شمس',1),(30,'السلام',1),(31,'الجيزه',2),(32,'6 اكتوبر',2),(33,'الشيخ زايد',2),(34,'الهرم',2),(35,'العمرانيه',2),(36,'الدقى',2),(37,'الاسكندريه',3),(38,'بنها',4),(39,'شبرا الخيمه',4),(40,'دمنهور',5),(41,'كفر الدوار',5),(42,'رشيد',5),(43,'ادكو',5),(44,'مرسى مطروح',6),(45,'العلمين',6),(46,'الضبعه',6),(47,'سيوه',6),(48,'الزقازيق',8),(49,'العاشر من رمضان',8),(50,'منيا القمح',8),(51,'بلبيس',8),(52,'اجا',7),(53,'جمصه',7),(54,'دسوق',11),(55,'دمياط',12),(56,'دمياط الجديده',12),(57,'راس البر',12),(58,'كفر سعد',12),(59,'الزرقا',12),(60,'فارسكور',12),(61,'كفر البطيخ',12);
 /*!40000 ALTER TABLE `cities` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -215,7 +216,7 @@ CREATE TABLE `countries` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -224,6 +225,7 @@ CREATE TABLE `countries` (
 
 LOCK TABLES `countries` WRITE;
 /*!40000 ALTER TABLE `countries` DISABLE KEYS */;
+INSERT INTO `countries` VALUES (1,'مصر');
 /*!40000 ALTER TABLE `countries` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -319,6 +321,30 @@ LOCK TABLES `employees` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `entry_types`
+--
+
+DROP TABLE IF EXISTS `entry_types`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `entry_types` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `entry_types`
+--
+
+LOCK TABLES `entry_types` WRITE;
+/*!40000 ALTER TABLE `entry_types` DISABLE KEYS */;
+INSERT INTO `entry_types` VALUES (1,'قيد افتتاحي'),(2,'قيد فاتورة مبيعات'),(3,'قيد تحصيل مبيعات'),(4,'قيد مرتجع مبيعات'),(5,'قيد فاتورة مشتريات'),(6,'قيد سداد مشتريات'),(7,'قيد مرتجع مشتريات'),(8,'قيد مصروف'),(9,'قيد إيراد'),(10,'قيد تسوية'),(11,'قيد إهلاك'),(12,'قيد تحويل مخزني'),(13,'قيد إنتاج / تصنيع'),(14,'قيد تعديل يدوي');
+/*!40000 ALTER TABLE `entry_types` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `expenses`
 --
 
@@ -348,7 +374,7 @@ CREATE TABLE `expenses` (
   CONSTRAINT `fk_exp_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_exp_party` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `expenses_chk_amount` CHECK ((`amount` > 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -416,7 +442,7 @@ CREATE TABLE `governates` (
   PRIMARY KEY (`id`),
   KEY `country_id` (`country_id`),
   CONSTRAINT `governates_ibfk_1` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -425,6 +451,7 @@ CREATE TABLE `governates` (
 
 LOCK TABLES `governates` WRITE;
 /*!40000 ALTER TABLE `governates` DISABLE KEYS */;
+INSERT INTO `governates` VALUES (1,'القاهره',1),(2,'الجيزه',1),(3,'الاسكندريه',1),(4,'القليوبيه',1),(5,'البحيره',1),(6,'مطروح',1),(7,'الدقهليه',1),(8,'الشرقيه',1),(9,'الغربيه',1),(10,'المنوفيه',1),(11,'كفر الشيخ',1),(12,'دمياط',1),(13,'بورسعيد',1),(14,'الاسماعيليه',1),(15,'السويس',1),(16,'شمال سيناء',1),(17,'جنوب سيناء',1),(18,'بنى سويف',1),(19,'الفيوم',1),(20,'المنيا',1),(21,'اسيوط',1),(22,'سوهاج',1),(23,'قنا',1),(24,'الاقصر',1),(25,'اسوان',1),(26,'البحر الاحمر',1),(27,'الوادى الجديد',1);
 /*!40000 ALTER TABLE `governates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -505,7 +532,7 @@ CREATE TABLE `inventory_transactions` (
   `transaction_type` enum('in','out') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `transaction_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `source_type` enum('purchase','manufacturing','transfer','adjustment') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'adjustment',
+  `source_type` enum('purchase','manufacturing','transfer','adjustment','sales_invoice','sales_return',' purchase_return') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'adjustment',
   `source_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
@@ -535,11 +562,9 @@ CREATE TABLE `issue_voucher_items` (
   `id` int NOT NULL AUTO_INCREMENT,
   `voucher_id` int NOT NULL,
   `product_id` int NOT NULL,
-  `warehouse_id` int NOT NULL,
   `batch_number` varchar(100) DEFAULT NULL,
   `expiry_date` date DEFAULT NULL,
   `quantity` decimal(12,3) NOT NULL,
-  `unit_price` decimal(12,2) DEFAULT '0.00',
   `cost_per_unit` decimal(12,2) DEFAULT '0.00',
   `note` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -547,10 +572,8 @@ CREATE TABLE `issue_voucher_items` (
   PRIMARY KEY (`id`),
   KEY `fk_ivi_voucher` (`voucher_id`),
   KEY `fk_ivi_product` (`product_id`),
-  KEY `fk_ivi_warehouse` (`warehouse_id`),
   CONSTRAINT `fk_ivi_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
-  CONSTRAINT `fk_ivi_voucher` FOREIGN KEY (`voucher_id`) REFERENCES `issue_vouchers` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_ivi_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
+  CONSTRAINT `fk_ivi_voucher` FOREIGN KEY (`voucher_id`) REFERENCES `issue_vouchers` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -639,6 +662,7 @@ CREATE TABLE `issue_vouchers` (
   `note` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `account_id` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `voucher_no` (`voucher_no`),
   KEY `fk_iv_type` (`type_id`),
@@ -755,9 +779,12 @@ CREATE TABLE `journal_entries` (
   `reference_id` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `entry_type_id` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_journal_reference` (`reference_type_id`,`reference_id`),
   KEY `idx_journal_reference` (`reference_type_id`,`reference_id`),
+  KEY `fk_journal_entries_entry_type` (`entry_type_id`),
+  CONSTRAINT `fk_journal_entries_entry_type` FOREIGN KEY (`entry_type_id`) REFERENCES `entry_types` (`id`),
   CONSTRAINT `fk_journal_reference_type` FOREIGN KEY (`reference_type_id`) REFERENCES `reference_types` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -833,7 +860,7 @@ CREATE TABLE `parties` (
   CONSTRAINT `parties_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`),
   CONSTRAINT `parties_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
   CONSTRAINT `parties_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `party_categories` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -842,6 +869,7 @@ CREATE TABLE `parties` (
 
 LOCK TABLES `parties` WRITE;
 /*!40000 ALTER TABLE `parties` DISABLE KEYS */;
+INSERT INTO `parties` VALUES (1,'ال عبد اللطيف الطرشوبى','customer','','','','',4,47,0.00,'2025-12-15 14:43:54',2),(2,'سالي','customer','','','','',4,47,0.00,'2025-12-15 14:50:27',2),(3,'نبيل الطرشوبى','customer','','','','',4,47,0.00,'2025-12-15 14:53:13',2),(4,'هيلثى','customer','','','','',4,47,0.00,'2025-12-15 14:53:33',3),(5,'نيوكيان','customer','','','','',4,47,0.00,'2025-12-15 14:53:52',3),(6,'الطيبى','customer','','','','',37,47,0.00,'2025-12-15 14:56:57',2),(7,'رمضان','customer','','','','',37,47,0.00,'2025-12-15 14:57:24',1),(8,'خالد محمد','customer','','','','',37,47,0.00,'2025-12-15 14:57:52',1),(9,'القبطان','customer','','','','',37,47,0.00,'2025-12-15 15:24:03',1),(10,'الشمس','customer','','','','',48,47,0.00,'2025-12-15 15:27:50',3),(11,'بيت المقدس','customer','','','','',55,47,0.00,'2025-12-15 15:28:13',3),(12,'بيت الادويه','customer','','','','',55,47,0.00,'2025-12-15 15:28:33',3),(13,'عامر','customer','','','','',55,47,0.00,'2025-12-15 15:29:27',1),(14,'وجيه','customer','','','','',5,47,0.00,'2025-12-15 15:35:10',1),(15,'هاجر وشروق','customer','','','','',13,47,0.00,'2025-12-15 15:35:32',3),(16,'رضا عطيه','customer','','','','',3,47,0.00,'2025-12-15 15:36:05',3),(17,'الاندلس','customer','','','','',13,47,0.00,'2025-12-15 15:36:24',3),(18,'هشام وفؤاد','customer','','','','',13,47,0.00,'2025-12-15 15:36:52',2),(19,'تهانى','customer','','','','',2,47,0.00,'2025-12-15 15:37:59',1);
 /*!40000 ALTER TABLE `parties` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -856,7 +884,7 @@ CREATE TABLE `party_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -865,6 +893,7 @@ CREATE TABLE `party_categories` (
 
 LOCK TABLES `party_categories` WRITE;
 /*!40000 ALTER TABLE `party_categories` DISABLE KEYS */;
+INSERT INTO `party_categories` VALUES (1,'صيدليه'),(2,'سلسله'),(3,'مخزن'),(4,'مورد'),(5,'مصنع'),(6,'عميل');
 /*!40000 ALTER TABLE `party_categories` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -995,7 +1024,7 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   KEY `unit_id` (`unit_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1004,6 +1033,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
+INSERT INTO `products` VALUES (1,'Nurivina Argan Oil 100ml',330.00,1,'2025-12-13 15:00:23',0.00),(2,'Nurivina Argan Oil Hair Serum 100ml',430.00,1,'2025-12-13 15:01:00',0.00),(3,'Nurivina Omega Anti-Hair Loss Shampoo 220ml',250.00,1,'2025-12-13 15:01:39',0.00),(4,'Nurivina Argan oil Leave in Conditioner 220ml',270.00,1,'2025-12-13 15:02:34',0.00),(5,'Nurivina whitening Cream 50gm',240.00,1,'2025-12-13 15:03:07',0.00),(6,'Nurivina Anti-Hair Loss Spray 100ml',520.00,1,'2025-12-13 15:04:41',0.00);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1628,6 +1658,40 @@ LOCK TABLES `sales_invoice_items` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `sales_invoice_payments`
+--
+
+DROP TABLE IF EXISTS `sales_invoice_payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sales_invoice_payments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `sales_invoice_id` int NOT NULL,
+  `payment_date` date NOT NULL DEFAULT (curdate()),
+  `payment_method` enum('cash','bank_transfer','cheque') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_id` int NOT NULL,
+  `amount` decimal(18,2) NOT NULL,
+  `reference_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `note` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sales_invoice_id` (`sales_invoice_id`),
+  KEY `idx_account_id` (`account_id`),
+  CONSTRAINT `chk_amount_positive` CHECK ((`amount` >= 0.01))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sales_invoice_payments`
+--
+
+LOCK TABLES `sales_invoice_payments` WRITE;
+/*!40000 ALTER TABLE `sales_invoice_payments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sales_invoice_payments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `sales_invoices`
 --
 
@@ -1654,6 +1718,7 @@ CREATE TABLE `sales_invoices` (
   `tax_rate` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'أي ضريبة أخرى',
   `tax_amount` decimal(18,2) NOT NULL DEFAULT '0.00',
   `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `invoice_type` enum('normal','opening') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal',
   PRIMARY KEY (`id`),
   UNIQUE KEY `invoice_number` (`invoice_number`),
   KEY `sales_order_id` (`sales_order_id`),
@@ -1891,6 +1956,7 @@ CREATE TABLE `sales_returns` (
   `return_date` date NOT NULL DEFAULT (curdate()),
   `notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `return_type` enum('cash','credit') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'cash',
   PRIMARY KEY (`id`),
   KEY `sales_invoice_id` (`sales_invoice_id`),
   KEY `fk_sales_returns_warehouse` (`warehouse_id`),
@@ -2068,7 +2134,7 @@ CREATE TABLE `units` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2077,6 +2143,7 @@ CREATE TABLE `units` (
 
 LOCK TABLES `units` WRITE;
 /*!40000 ALTER TABLE `units` DISABLE KEYS */;
+INSERT INTO `units` VALUES (1,'قطعة'),(2,'عبوه');
 /*!40000 ALTER TABLE `units` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2442,7 +2509,7 @@ CREATE TABLE `warehouses` (
   PRIMARY KEY (`id`),
   KEY `warehouses_ibfk_1` (`city_id`),
   CONSTRAINT `warehouses_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2451,6 +2518,7 @@ CREATE TABLE `warehouses` (
 
 LOCK TABLES `warehouses` WRITE;
 /*!40000 ALTER TABLE `warehouses` DISABLE KEYS */;
+INSERT INTO `warehouses` VALUES (1,'المخزن الرئيسي','المنصوره - شارع الترعه',4,'2025-12-15 09:24:58'),(2,'مخزن التوريد الرئيسي','المنصوره - شارع اداب',4,'2025-12-15 09:25:42'),(3,'مخزن الاسكندريه','الاسكندريه',37,'2025-12-15 09:26:27'),(4,'مخزن مستلزمات الانتاج','المنصوره-شارع الترعه',4,'2025-12-15 09:27:03'),(5,'مخزن تحت التشغيل لدى الغير','المنصوره',4,'2025-12-15 09:29:30'),(6,'مخزن دمياط','دمياط',55,'2025-12-15 09:30:34');
 /*!40000 ALTER TABLE `warehouses` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2772,4 +2840,4 @@ USE `nurivina_erp`;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-10 12:55:26
+-- Dump completed on 2025-12-16 18:00:52
