@@ -44,7 +44,10 @@ export class IssueVouchersService {
         await transaction.commit();
         return await this.getIssueVoucherById(voucher.id, true);
       } catch (error) {
-        await transaction.rollback();
+        // Only rollback if transaction is not finished
+        if (!transaction.finished) {
+          await transaction.rollback();
+        }
         throw error;
       }
     } catch (error) {
@@ -151,11 +154,6 @@ export class IssueVouchersService {
               model: Product,
               as: 'product',
               attributes: ['id', 'name'] // إزالة code و unit_id إذا تسبب في مشاكل
-            },
-            {
-              model: Warehouse,
-              as: 'warehouse',
-              attributes: ['id', 'name'] // إزالة code
             }
           ]
         });
@@ -208,11 +206,6 @@ export class IssueVouchersService {
               model: Product,
               as: 'product',
               attributes: ['id', 'name'] // إزالة code و unit_id
-            },
-            {
-              model: Warehouse,
-              as: 'warehouse',
-              attributes: ['id', 'name'] // إزالة code
             }
           ]
         });
@@ -280,7 +273,9 @@ export class IssueVouchersService {
         await transaction.commit();
         return await this.getIssueVoucherById(id, true);
       } catch (error) {
-        await transaction.rollback();
+        if (!transaction.finished) {
+          await transaction.rollback();
+        }
         throw error;
       }
     } catch (error) {
@@ -343,7 +338,6 @@ export class IssueVouchersService {
       if (!voucher.items || voucher.items.length === 0) {
         return {
           totalQuantity: 0,
-          totalValue: 0,
           totalCost: 0,
           itemsCount: 0
         };
@@ -351,18 +345,15 @@ export class IssueVouchersService {
 
       const totals = voucher.items.reduce((acc, item) => {
         const quantity = parseFloat(item.quantity);
-        const unitPrice = parseFloat(item.unit_price);
         const costPerUnit = parseFloat(item.cost_per_unit);
 
         acc.totalQuantity += quantity;
-        acc.totalValue += quantity * unitPrice;
         acc.totalCost += quantity * costPerUnit;
         acc.itemsCount += 1;
 
         return acc;
       }, {
         totalQuantity: 0,
-
         totalCost: 0,
         itemsCount: 0
       });

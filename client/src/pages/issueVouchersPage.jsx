@@ -106,7 +106,7 @@ const IssueVouchersPage = () => {
       size: 120,
     },
     {
-      accessorKey: 'party.name',
+      accessorFn: (row) => row.party?.name || 'N/A',
       header: 'Party',
       size: 150,
     },

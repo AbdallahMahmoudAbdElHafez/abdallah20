@@ -68,11 +68,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const [errors, setErrors] = useState({});
   const [currentItem, setCurrentItem] = useState({
     product_id: '',
-
     batch_number: '',
     expiry_date: null,
     quantity: '',
-
     cost_per_unit: '',
     note: ''
   });
@@ -203,11 +201,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     setItems(prev => [...prev, newItem]);
     setCurrentItem({
       product_id: '',
-
       batch_number: '',
       expiry_date: null,
       quantity: '',
-
       cost_per_unit: '',
       note: ''
     });
@@ -237,6 +233,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
 
     const submitData = {
       ...formData,
+      type_id: formData.type_id || null,
+      party_id: formData.party_id || null,
+      employee_id: formData.employee_id || null,
       issue_date: formData.issue_date.toISOString().split('T')[0],
       items: items.map(item => ({
         product_id: item.product_id,
@@ -471,8 +470,6 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   </FormControl>
                 </Grid>
 
-
-
                 <Grid item xs={6} md={1}>
                   <TextField
                     fullWidth
@@ -508,8 +505,6 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   />
                 </Grid>
 
-
-
                 <Grid item xs={6} md={1}>
                   <TextField
                     fullWidth
@@ -541,11 +536,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Product</TableCell>
-
                     <TableCell>Batch</TableCell>
                     <TableCell>Expiry</TableCell>
                     <TableCell align="right">Quantity</TableCell>
-
                     <TableCell align="right">Total</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
@@ -554,11 +547,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   {items.map((item, index) => (
                     <TableRow key={item.id || index}>
                       <TableCell>{item.product?.name || 'N/A'}</TableCell>
-
                       <TableCell>{item.batch_number || '-'}</TableCell>
-                      <TableCell>{formatDate(item.expiry_date)}</TableCell> {/* إصلاح هنا */}
+                      <TableCell>{formatDate(item.expiry_date)}</TableCell>
                       <TableCell align="right">{item.quantity}</TableCell>
-
                       <TableCell align="right">
                         {((item.quantity || 0) * (item.cost_per_unit || 0)).toFixed(2)}
                       </TableCell>
