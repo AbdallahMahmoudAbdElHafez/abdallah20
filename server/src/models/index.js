@@ -425,6 +425,16 @@ IssueVoucher.belongsTo(Employee, {
   foreignKey: "approved_by",
   as: "approver"
 });
+
+// IssueVoucher ↔ Account
+Account.hasMany(IssueVoucher, {
+  foreignKey: "account_id",
+  as: "issue_vouchers"
+});
+IssueVoucher.belongsTo(Account, {
+  foreignKey: "account_id",
+  as: "account"
+});
 // العلاقات الجديدة
 // IssueVoucher ↔ IssueVoucherItem
 IssueVoucher.hasMany(IssueVoucherItem, {
@@ -447,15 +457,7 @@ IssueVoucherItem.belongsTo(Product, {
   as: "product"
 });
 
-// IssueVoucherItem ↔ Warehouse
-Warehouse.hasMany(IssueVoucherItem, {
-  foreignKey: "warehouse_id",
-  as: "issue_voucher_items"
-});
-IssueVoucherItem.belongsTo(Warehouse, {
-  foreignKey: "warehouse_id",
-  as: "warehouse"
-});
+
 
 // === PurchaseInvoice ↔ PurchaseReturn ===
 PurchaseInvoice.hasMany(PurchaseReturn, {

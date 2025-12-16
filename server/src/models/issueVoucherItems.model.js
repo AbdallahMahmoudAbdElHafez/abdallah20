@@ -15,10 +15,6 @@ const IssueVoucherItemModel = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    warehouse_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
     batch_number: {
       type: DataTypes.STRING(100),
       allowNull: true

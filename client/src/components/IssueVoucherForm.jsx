@@ -39,10 +39,11 @@ import { fetchWarehouses } from '../features/warehouses/warehousesSlice';
 import { fetchEmployees } from '../features/employees/employeesSlice';
 import { fetchParties } from '../features/parties/partiesSlice';
 import { fetchIssueVoucherTypes } from '../features/issueVoucherTypes/issueVoucherTypesSlice';
+import { fetchAccounts } from '../features/accounts/accountsSlice';
 
 const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const dispatch = useDispatch();
-  
+
   // الحصول على البيانات من الـ store
   const { loading: vouchersLoading } = useSelector(state => state.issueVouchers);
   const { items: products, loading: productsLoading } = useSelector(state => state.products);
@@ -50,6 +51,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const { list: employees, loading: employeesLoading } = useSelector(state => state.employees);
   const { items: parties, loading: partiesLoading } = useSelector(state => state.parties);
   const { list: voucherTypes, loading: voucherTypesLoading } = useSelector(state => state.issueVoucherTypes);
+  const { items: accounts, loading: accountsLoading } = useSelector(state => state.accounts);
 
   const [formData, setFormData] = useState({
     voucher_no: '',
@@ -57,10 +59,11 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     party_id: '',
     employee_id: '',
     warehouse_id: '',
+    account_id: '',
     issue_date: new Date(),
     note: ''
   });
-  
+
   const [items, setItems] = useState([]);
   const [errors, setErrors] = useState({});
   const [currentItem, setCurrentItem] = useState({
@@ -74,6 +77,56 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     note: ''
   });
 
+  const [filteredAccounts, setFilteredAccounts] = useState([]);
+  const [filteredTypes, setFilteredTypes] = useState([]);
+
+  // Initialize filtered lists
+  useEffect(() => {
+    setFilteredAccounts(accounts);
+    setFilteredTypes(voucherTypes);
+  }, [accounts, voucherTypes]);
+
+  // Filter accounts when type changes
+  useEffect(() => {
+    if (formData.type_id) {
+      const selectedType = voucherTypes.find(t => t.id === formData.type_id);
+      if (selectedType && selectedType.accounts && selectedType.accounts.length > 0) {
+        const linkedAccountIds = selectedType.accounts.map(a => a.account_id);
+        const newFilteredAccounts = accounts.filter(acc => linkedAccountIds.includes(acc.id));
+        setFilteredAccounts(newFilteredAccounts);
+
+        // If current account is not in the new filtered list, clear it
+        if (formData.account_id && !linkedAccountIds.includes(formData.account_id)) {
+          handleFormChange('account_id', '');
+        }
+      } else {
+        // If type has no specific accounts linked, show all
+        setFilteredAccounts(accounts);
+      }
+    } else {
+      setFilteredAccounts(accounts);
+    }
+  }, [formData.type_id, voucherTypes, accounts]);
+
+  // Filter types when account changes
+  useEffect(() => {
+    if (formData.account_id) {
+      // Find types that are linked to this account
+      const newFilteredTypes = voucherTypes.filter(type => {
+        if (!type.accounts || type.accounts.length === 0) return true; // Keep types with no restrictions
+        return type.accounts.some(acc => acc.account_id === formData.account_id);
+      });
+      setFilteredTypes(newFilteredTypes);
+
+      // If current type is not in new list, clear it
+      if (formData.type_id && !newFilteredTypes.find(t => t.id === formData.type_id)) {
+        handleFormChange('type_id', '');
+      }
+    } else {
+      setFilteredTypes(voucherTypes);
+    }
+  }, [formData.account_id, voucherTypes]);
+
   useEffect(() => {
     if (open) {
       // تحميل البيانات الثابتة عند فتح النموذج
@@ -82,6 +135,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       dispatch(fetchEmployees());
       dispatch(fetchParties());
       dispatch(fetchIssueVoucherTypes());
+      dispatch(fetchAccounts());
     }
   }, [open, dispatch]);
 
@@ -93,6 +147,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
         party_id: voucher.party_id || '',
         employee_id: voucher.employee_id || '',
         warehouse_id: voucher.warehouse_id || '',
+        account_id: voucher.account_id || '',
         issue_date: voucher.issue_date ? new Date(voucher.issue_date) : new Date(),
         note: voucher.note || ''
       });
@@ -125,7 +180,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
 
   const addItem = () => {
     const newErrors = {};
-    
+
     if (!currentItem.product_id) newErrors.product_id = 'Product is required';
     if (!currentItem.quantity || currentItem.quantity <= 0) newErrors.quantity = 'Valid quantity is required';
     if (!currentItem.warehouse_id) newErrors.warehouse_id = 'Warehouse is required';
@@ -169,6 +224,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     if (!formData.voucher_no) newErrors.voucher_no = 'Voucher number is required';
     if (!formData.type_id) newErrors.type_id = 'Type is required';
     if (!formData.warehouse_id) newErrors.warehouse_id = 'Warehouse is required';
+    if (!formData.account_id) newErrors.account_id = 'Account is required';
     if (!formData.issue_date) newErrors.issue_date = 'Issue date is required';
     if (items.length === 0) newErrors.items = 'At least one item is required';
 
@@ -184,9 +240,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       issue_date: formData.issue_date.toISOString().split('T')[0],
       items: items.map(item => ({
         product_id: item.product_id,
-        warehouse_id: item.warehouse_id,
+        // warehouse_id: item.warehouse_id, // Removed from backend
         batch_number: item.batch_number,
-        expiry_date: item.expiry_date ? item.expiry_date.toISOString().split('T')[0] : null, // إصلاح هنا
+        expiry_date: item.expiry_date ? item.expiry_date.toISOString().split('T')[0] : null,
         quantity: parseFloat(item.quantity),
         unit_price: parseFloat(item.unit_price || 0),
         cost_per_unit: parseFloat(item.cost_per_unit || 0),
@@ -221,7 +277,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   };
 
   // دالة للتحقق من التحميل
-  const isLoading = productsLoading || warehousesLoading || employeesLoading || partiesLoading || voucherTypesLoading;
+  const isLoading = productsLoading || warehousesLoading || employeesLoading || partiesLoading || voucherTypesLoading || accountsLoading;
 
   if (isLoading) {
     return (
@@ -276,7 +332,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 label="Type"
                 onChange={(e) => handleFormChange('type_id', e.target.value)}
               >
-                {voucherTypes.map(type => (
+                {filteredTypes.map(type => (
                   <MenuItem key={type.id} value={type.id}>
                     {type.name}
                   </MenuItem>
@@ -337,6 +393,24 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 ))}
               </Select>
               {errors.warehouse_id && <Typography color="error" variant="caption">{errors.warehouse_id}</Typography>}
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth error={!!errors.account_id}>
+              <InputLabel>Account</InputLabel>
+              <Select
+                value={formData.account_id}
+                label="Account"
+                onChange={(e) => handleFormChange('account_id', e.target.value)}
+              >
+                {filteredAccounts.map(acc => (
+                  <MenuItem key={acc.id} value={acc.id}>
+                    {acc.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.account_id && <Typography color="error" variant="caption">{errors.account_id}</Typography>}
             </FormControl>
           </Grid>
 
@@ -428,11 +502,11 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                     label="Expiry"
                     value={currentItem.expiry_date}
                     onChange={(date) => handleItemChange('expiry_date', date)}
-                    slotProps={{ 
-                      textField: { 
+                    slotProps={{
+                      textField: {
                         fullWidth: true,
-                        error: !!errors.expiry_date 
-                      } 
+                        error: !!errors.expiry_date
+                      }
                     }}
                   />
                 </Grid>

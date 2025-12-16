@@ -28,7 +28,7 @@ const voucherWithItemsSchema = Joi.object({
   note: Joi.string().allow('', null),
   items: Joi.array().items(Joi.object({
     product_id: Joi.number().integer().required(),
-    warehouse_id: Joi.number().integer().required(),
+
     batch_number: Joi.string().max(100).allow('', null),
     expiry_date: Joi.date().allow(null),
     quantity: Joi.number().precision(3).positive().required(),
@@ -44,7 +44,7 @@ const statusSchema = Joi.object({
 });
 
 export class IssueVouchersController {
-  
+
   // إنشاء سند إصدار جديد (مع أو بدون أصناف)
   async createIssueVoucher(req, res) {
     try {
@@ -68,7 +68,7 @@ export class IssueVouchersController {
 
       // فصل بيانات السند عن الأصناف
       const { items, ...voucherData } = value;
-      
+
       let voucher;
       if (items && items.length > 0) {
         // إنشاء السند مع الأصناف
@@ -77,7 +77,7 @@ export class IssueVouchersController {
         // إنشاء السند بدون أصناف
         voucher = await issueVouchersService.createIssueVoucher(voucherData);
       }
-      
+
       res.status(201).json({
         success: true,
         message: 'Issue voucher created successfully',
@@ -102,7 +102,7 @@ export class IssueVouchersController {
       };
 
       const vouchers = await issueVouchersService.getAllIssueVouchers(filters);
-      
+
       res.status(200).json({
         success: true,
         data: vouchers
@@ -120,9 +120,9 @@ export class IssueVouchersController {
     try {
       const { id } = req.params;
       const includeItems = req.query.include_items === 'true';
-      
+
       const voucher = await issueVouchersService.getIssueVoucherById(parseInt(id), includeItems);
-      
+
       res.status(200).json({
         success: true,
         data: voucher
@@ -140,7 +140,7 @@ export class IssueVouchersController {
   async updateIssueVoucher(req, res) {
     try {
       const { id } = req.params;
-      
+
       const { error, value } = voucherWithItemsSchema.validate(req.body);
       if (error) {
         return res.status(400).json({
@@ -161,7 +161,7 @@ export class IssueVouchersController {
 
       // فصل بيانات السند عن الأصناف
       const { items, ...voucherData } = value;
-      
+
       let voucher;
       if (items) {
         // تحديث السند مع الأصناف
@@ -170,7 +170,7 @@ export class IssueVouchersController {
         // تحديث السند بدون تعديل الأصناف
         voucher = await issueVouchersService.updateIssueVoucher(parseInt(id), voucherData);
       }
-      
+
       res.status(200).json({
         success: true,
         message: 'Issue voucher updated successfully',
@@ -190,7 +190,7 @@ export class IssueVouchersController {
     try {
       const { id } = req.params;
       const result = await issueVouchersService.deleteIssueVoucher(parseInt(id));
-      
+
       res.status(200).json({
         success: true,
         message: result.message
@@ -208,7 +208,7 @@ export class IssueVouchersController {
   async updateVoucherStatus(req, res) {
     try {
       const { id } = req.params;
-      
+
       const { error, value } = statusSchema.validate(req.body);
       if (error) {
         return res.status(400).json({
@@ -219,11 +219,11 @@ export class IssueVouchersController {
       }
 
       const voucher = await issueVouchersService.updateVoucherStatus(
-        parseInt(id), 
-        value.status, 
+        parseInt(id),
+        value.status,
         value.approved_by
       );
-      
+
       res.status(200).json({
         success: true,
         message: `Voucher status updated to ${value.status}`,
@@ -243,9 +243,9 @@ export class IssueVouchersController {
     try {
       const { voucher_no } = req.params;
       const includeItems = req.query.include_items === 'true';
-      
+
       const voucher = await issueVouchersService.getIssueVoucherByVoucherNo(voucher_no, includeItems);
-      
+
       res.status(200).json({
         success: true,
         data: voucher
@@ -264,7 +264,7 @@ export class IssueVouchersController {
     try {
       const { id } = req.params;
       const totals = await issueVouchersService.getVoucherTotals(parseInt(id));
-      
+
       res.status(200).json({
         success: true,
         data: totals
@@ -282,7 +282,7 @@ export class IssueVouchersController {
   async checkInventoryAvailability(req, res) {
     try {
       const { items } = req.body;
-      
+
       if (!items || !Array.isArray(items)) {
         return res.status(400).json({
           success: false,
@@ -291,7 +291,7 @@ export class IssueVouchersController {
       }
 
       const availability = await issueVouchersService.checkInventoryAvailability(items);
-      
+
       res.status(200).json({
         success: true,
         data: availability

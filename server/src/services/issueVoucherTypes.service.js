@@ -1,8 +1,16 @@
-import { IssueVoucherType } from "../models/index.js";
+import { IssueVoucherType, IssueVoucherTypeAccount } from "../models/index.js";
 
 class IssueVoucherTypesService {
   async getAll() {
-    return IssueVoucherType.findAll({ order: [["id", "ASC"]] });
+    return IssueVoucherType.findAll({
+      include: [
+        {
+          model: IssueVoucherTypeAccount,
+          as: "accounts",
+        },
+      ],
+      order: [["id", "ASC"]],
+    });
   }
 
   async getById(id) {
