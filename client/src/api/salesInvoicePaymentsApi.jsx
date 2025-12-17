@@ -2,7 +2,7 @@ import axiosClient from "./axiosClient";
 
 const salesInvoicePaymentsApi = {
     // جلب كل المدفوعات
-    getAll: () => axiosClient.get("/sales-invoice-payments/all"),
+    getAll: (params) => axiosClient.get("/sales-invoice-payments/all", { params }),
 
     // جلب المدفوعات الخاصة بفاتورة معيّنة
     getAllByInvoice: (invoiceId) => axiosClient.get(`/sales-invoice-payments/${invoiceId}`),

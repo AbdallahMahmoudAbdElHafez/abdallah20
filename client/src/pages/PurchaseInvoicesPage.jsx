@@ -155,7 +155,7 @@ export default function PurchaseInvoicesPage() {
         </Button>
       </Box>
 
-      <MaterialReactTable columns={columns} data={invoices} />
+      <MaterialReactTable {...defaultTableProps} columns={columns} data={invoices} />
 
       {openDialog && (
         <PurchaseInvoiceDialog

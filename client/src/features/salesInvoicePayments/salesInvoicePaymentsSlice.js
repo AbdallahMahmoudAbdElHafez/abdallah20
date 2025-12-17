@@ -6,8 +6,8 @@ import salesInvoicePaymentsApi from '../../api/salesInvoicePaymentsApi';
 // جلب جميع المدفوعات
 export const fetchAllPayments = createAsyncThunk(
     'salesInvoicePayments/fetchAll',
-    async () => {
-        const { data } = await salesInvoicePaymentsApi.getAll();
+    async (params) => {
+        const { data } = await salesInvoicePaymentsApi.getAll(params);
         return data;
     }
 );

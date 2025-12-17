@@ -4,6 +4,7 @@ import { MaterialReactTable } from "material-react-table";
 import { Button, Snackbar, Alert, Box } from "@mui/material";
 import { fetchJournalEntryLines } from "../features/journalEntryLines/journalEntryLinesSlice";
 import ManualJournalEntryDialog from "./ManualJournalEntryDialog";
+import { defaultTableProps } from "../config/tableConfig";
 
 export const JournalEntryLinesTable = () => {
   const dispatch = useDispatch();
@@ -62,6 +63,7 @@ export const JournalEntryLinesTable = () => {
       </Button>
 
       <MaterialReactTable
+        {...defaultTableProps}
         columns={columns}
         data={lines}
         state={{ isLoading: loading }}

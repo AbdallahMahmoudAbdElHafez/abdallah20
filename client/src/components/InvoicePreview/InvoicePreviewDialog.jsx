@@ -105,10 +105,10 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
 
         // --- Styles ---
         const headerFont = { name: 'Arial', size: 16, bold: true, color: { argb: 'FF2C3E50' } };
-        const labelFont = { name: 'Arial', size: 10, bold: true, color: { argb: 'FF7F8C8D' } };
-        const valFont = { name: 'Arial', size: 10 };
+        const labelFont = { name: 'Arial', size: 12, bold: true, color: { argb: 'FF7F8C8D' } };
+        const valFont = { name: 'Arial', size: 12 };
         const tableHeaderFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2C3E50' } };
-        const tableHeaderFont = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+        const tableHeaderFont = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
         const borderStyle = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
 
         // --- Define Columns First (to determine width) ---
@@ -140,12 +140,12 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
                 });
 
                 // In RTL, column 0 is Right. Last column is Left.
-                // Place logo at the far left (last column)
+                // Place logo at the far left (last column) to align with the table edge
                 const logoColIndex = wsColumns.length - 1;
 
                 worksheet.addImage(imageId, {
-                    tl: { col: logoColIndex - 1, row: 0 }, // Spanning last 2 columns roughly
-                    ext: { width: 180, height: 100 },
+                    tl: { col: logoColIndex - 1, row: 0 }, // Move closer to the edge (was -2)
+                    ext: { width: 280, height: 150 },
                     editAs: 'oneCell'
                 });
             } catch (error) {
@@ -157,7 +157,7 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         worksheet.mergeCells('A1:C1'); // Reduced merge to keep it right-aligned visually
         const titleCell = worksheet.getCell('A1');
         titleCell.value = selectedCompany.company_name || 'شركة نوريفيناء';
-        titleCell.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF2C3E50' } };
+        titleCell.font = { name: 'Arial', size: 24, bold: true, color: { argb: 'FF2C3E50' } };
         titleCell.alignment = { horizontal: 'right', vertical: 'middle' }; // Right align in cell
 
         worksheet.mergeCells('A2:E2'); // Subtitle can span more
@@ -172,17 +172,23 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         companyDetails.push(selectedCompany.phone && `هاتف: ${selectedCompany.phone}`);
 
         if (showCompanyIds) {
-            if (selectedCompany.commercial_register) companyDetails.push(`س.ت: ${selectedCompany.commercial_register}`);
-            if (selectedCompany.tax_number) companyDetails.push(`ر.ض: ${selectedCompany.tax_number}`);
-            if (selectedCompany.vat_number) companyDetails.push(`ر.ض.ق.م: ${selectedCompany.vat_number}`);
+            if (selectedCompany.commercial_register) companyDetails.push(`سجل تجاري : ${selectedCompany.commercial_register}`);
+            if (selectedCompany.tax_number) companyDetails.push(`رقم التسجيل الضريبي : ${selectedCompany.tax_number}`);
+            if (selectedCompany.vat_number) companyDetails.push(`رقم التسجيل الضريبي للقيمة المضافة : ${selectedCompany.vat_number}`);
         }
 
-        subTitle.value = companyDetails.filter(Boolean).join(' | ') || 'الرياض، المملكة العربية السعودية | هاتف: 011-1234567';
-        subTitle.font = { name: 'Arial', size: 9, color: { argb: 'FF7F8C8D' } };
-        subTitle.alignment = { horizontal: 'right' }; // Right align subtitle too
+        // Join with newlines for stacking in Excel cell
+        const detailsText = companyDetails.filter(Boolean).join('\n');
+        subTitle.value = detailsText || 'الرياض، المملكة العربية السعودية | هاتف: 011-1234567';
+        subTitle.font = { name: 'Arial', size: 12, color: { argb: 'FF7F8C8D' } };
+        subTitle.alignment = { horizontal: 'right', vertical: 'top', wrapText: true }; // Enable wrapText for newlines
+
+        // Adjust row height based on number of lines
+        const lineCount = companyDetails.filter(Boolean).length || 1;
+        worksheet.getRow(2).height = Math.max(20, lineCount * 15);
 
         // Spacer (Make it bigger for logo)
-        worksheet.getRow(1).height = 100; // Match logo height
+        worksheet.getRow(1).height = 150; // Match logo height
         worksheet.addRow([]);
 
         // --- 2. Invoice Meta ---
@@ -238,19 +244,26 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
             if (visibleCols.find(c => c.key === 'total')) rowData.push(((qty * price) - discountVal));
 
             const row = worksheet.addRow(rowData);
+            row.height = 30; // Increase row height as requested
             row.eachCell((cell) => {
                 cell.border = borderStyle;
-                cell.alignment = { horizontal: 'center' };
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
             });
         });
 
-        // Auto Fit Columns
+        // Auto Fit Columns - Based on table content only (ignoring header/logo)
+        // User requested to start from row 9
+        const tableStartRow = 9;
+
         worksheet.columns.forEach((column) => {
             let maxLength = 0;
+            // Iterate only cells starting from the table header
             column.eachCell({ includeEmpty: true }, (cell) => {
-                const columnLength = cell.value ? cell.value.toString().length : 10;
-                if (columnLength > maxLength) {
-                    maxLength = columnLength;
+                if (cell.row >= tableStartRow) {
+                    const columnLength = cell.value ? cell.value.toString().length : 10;
+                    if (columnLength > maxLength) {
+                        maxLength = columnLength;
+                    }
                 }
             });
             column.width = maxLength < 10 ? 10 : maxLength + 2;
@@ -285,6 +298,19 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         addTotalRow('الخصم الإضافي:', invoice.additional_discount);
         if (Number(invoice.vat_amount) > 0) addTotalRow('ضريبة القيمة المضافة:', invoice.vat_amount);
         addTotalRow('الإجمالي النهائي:', invoice.total_amount, true);
+
+        // --- Page Setup ---
+        worksheet.pageSetup = {
+            fitToPage: true,
+            fitToHeight: 1,
+            fitToWidth: 1,
+            margins: {
+                left: 1, right: 1, top: 1, bottom: 1,
+                header: 0.3, footer: 0.3
+            },
+            horizontalCentered: true,
+            verticalCentered: false
+        };
 
         // --- Write File ---
         const buffer = await workbook.xlsx.writeBuffer();

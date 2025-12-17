@@ -9,11 +9,13 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Typography,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  fetchAllPayments,
   fetchPaymentsByInvoice,
   deletePayment,
   updatePayment,
@@ -22,6 +24,11 @@ import {
 export default function PurchasePaymentsPage() {
   const dispatch = useDispatch();
   const { byInvoice, status } = useSelector((s) => s.purchasePayments);
+
+  // ====== Date Range Dialog State ======
+  const [dateDialogOpen, setDateDialogOpen] = useState(true);
+  const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
+  const [error, setError] = useState("");
 
   // ====== state for editing ======
   const [editOpen, setEditOpen] = useState(false);
@@ -32,13 +39,24 @@ export default function PurchasePaymentsPage() {
     notes: "",
   });
 
-  // جلب جميع المدفوعات
-  useEffect(() => {
-    dispatch(fetchPaymentsByInvoice("all"));
-  }, [dispatch]);
+  // Fetch data only when date range is valid and submitted
+  const handleDateSubmit = () => {
+    const { startDate, endDate } = dateRange;
+    if (!startDate || !endDate) {
+      setError("Please select both start and end dates.");
+      return;
+    }
+    if (new Date(startDate) > new Date(endDate)) {
+      setError("Start date must be before end date.");
+      return;
+    }
+    setError("");
+    dispatch(fetchAllPayments({ startDate, endDate }));
+    setDateDialogOpen(false);
+  };
 
   // دمج كل المدفوعات
-  const allPayments = Object.values(byInvoice).flat();
+  const allPayments = byInvoice.all || [];
 
   // حذف
   const handleDelete = (id) => {
@@ -67,7 +85,8 @@ export default function PurchasePaymentsPage() {
 
   const columns = [
     { accessorKey: "id", header: "ID" },
-    { accessorKey: "purchase_invoice_id", header: "Invoice ID" },
+    { accessorKey: "purchase_invoice.invoice_number", header: "Invoice Number" },
+    { accessorKey: "purchase_invoice.supplier.name", header: "Supplier Name" },
     { accessorKey: "amount", header: "Amount" },
     { accessorKey: "payment_date", header: "Payment Date" },
     { accessorKey: "payment_method", header: "Method" },
@@ -97,17 +116,48 @@ export default function PurchasePaymentsPage() {
     },
   ];
 
-  if (status === "loading") {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box p={2}>
-      <MaterialReactTable columns={columns} data={allPayments} />
+      <Button variant="contained" onClick={() => setDateDialogOpen(true)} sx={{ mb: 2 }}>
+        Change Date Range
+      </Button>
+
+      {status === "loading" ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <MaterialReactTable {...defaultTableProps} columns={columns} data={allPayments} />
+      )}
+
+      {/* ===== Date Range Dialog ===== */}
+      <Dialog open={dateDialogOpen} disableEscapeKeyDown>
+        <DialogTitle>Select Date Range</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1, minWidth: 300 }}>
+          <TextField
+            label="From Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={dateRange.startDate}
+            onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="To Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            value={dateRange.endDate}
+            onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
+            fullWidth
+          />
+          {error && <Typography color="error" variant="body2">{error}</Typography>}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDateSubmit} variant="contained" disabled={!dateRange.startDate || !dateRange.endDate}>
+            Show Payments
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* ===== Dialog for Editing ===== */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth>

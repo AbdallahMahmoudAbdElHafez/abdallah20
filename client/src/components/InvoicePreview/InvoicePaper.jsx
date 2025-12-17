@@ -43,9 +43,9 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                         {company?.address && <span>، {company.address}</span>}<br />
                         {company?.phone && <span>هاتف: {company.phone}</span>}<br />
                         {company?.email && <span>البريد الإلكتروني: {company.email}</span>}<br />
-                        {company?.commercial_register && <span>س.ت: {company.commercial_register} | </span>}
-                        {company?.tax_number && <span>ر.ض: {company.tax_number}</span>}
-                        {company?.vat_number && <span> |  ر.ض.ق.م: {company.vat_number}</span>}
+                        {company?.commercial_register && <div>سجل تجاري : {company.commercial_register}</div>}
+                        {company?.tax_number && <div>رقم التسجيل الضريبي : {company.tax_number}</div>}
+                        {company?.vat_number && <div>رقم التسجيل الضريبي للقيمة المضافة : {company.vat_number}</div>}
                     </div>
                 </div>
                 <div className="inv-meta">
@@ -82,6 +82,7 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                         {showCol('product') && <th>المنتج</th>}
                         {showCol('quantity') && <th>الكمية</th>}
                         {showCol('unit_price') && <th>السعر</th>}
+                        {showCol('total_before_discount') && <th>الإجمالي قبل الخصم</th>}
                         {showCol('bonus') && <th>بونص</th>}
                         {showCol('discount_percent') && <th>نسبة الخصم</th>}
                         {showCol('discount') && <th>قيمة الخصم</th>}
@@ -95,6 +96,7 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                         const price = Number(item.price || item.unit_price) || 0;
                         const discountVal = Number(item.discount) || 0;
                         const bonus = Number(item.bonus) || 0;
+                        const totalBeforeDiscount = qty * price;
 
                         // Calculate percent if strictly not present
                         let discountPercent = Number(item.discount_percent);
@@ -112,6 +114,7 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                                 {showCol('product') && <td>{item.product_name || item.Product?.name || "منتج"}</td>}
                                 {showCol('quantity') && <td>{qty}</td>}
                                 {showCol('unit_price') && <td>{formatCurrency(price)}</td>}
+                                {showCol('total_before_discount') && <td>{formatCurrency(totalBeforeDiscount)}</td>}
                                 {showCol('bonus') && <td>{bonus}</td>}
                                 {showCol('discount_percent') && <td>{discountPercent.toFixed(2)}%</td>}
                                 {showCol('discount') && <td>{formatCurrency(discountVal)}</td>}

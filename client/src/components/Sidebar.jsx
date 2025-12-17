@@ -54,7 +54,7 @@ const purchasesMenu = [
 const salesMenu = [
   { label: "أوامر البيع", path: "/sales-orders" },
   { label: "فواتير البيع", path: "/sales-invoices" },
-  { label: "مدفوعات", path: "/sales-payments" },
+  { label: "المقبوضات", path: "/sales-invoice-payments" },
   { label: "مرتجعات", path: "/sales-returns" },
 
 ];

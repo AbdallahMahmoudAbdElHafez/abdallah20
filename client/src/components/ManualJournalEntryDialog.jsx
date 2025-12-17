@@ -26,6 +26,7 @@ import { Add, Delete } from "@mui/icons-material";
 import { fetchAccounts } from "../features/accounts/accountsSlice";
 import { fetchEntryTypes } from "../features/entryTypes/entryTypesSlice";
 import axiosClient from "../api/axiosClient";
+import { defaultTableProps } from "../config/tableConfig";
 
 export default function ManualJournalEntryDialog({ open, onClose, onSuccess }) {
     const dispatch = useDispatch();
