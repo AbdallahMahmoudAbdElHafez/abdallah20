@@ -1,9 +1,7 @@
-import { PurchaseInvoice, Party, PurchaseOrder, PurchaseInvoiceItem, sequelize } from "../models/index.js";
+import { PurchaseInvoice, Party, PurchaseOrder, PurchaseInvoiceItem, sequelize, Account, ReferenceType } from "../models/index.js";
 import { Op } from "sequelize";
 
-
 class PurchaseInvoiceService {
-  // ⬇️ تعديل الدالة لقبول فلتر اختياري
   static async getAll(purchaseOrderId = null) {
     const where = {};
     if (purchaseOrderId) {
@@ -68,7 +66,6 @@ class PurchaseInvoiceService {
         await PurchaseInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
 
         // Create Inventory Transactions (IN)
-        // We need to import InventoryTransactionService dynamically or at top if not circular
         const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
 
         for (const item of itemsWithInvoiceId) {
@@ -93,16 +90,12 @@ class PurchaseInvoiceService {
 
             await InventoryTransactionService.create({
               product_id: item.product_id,
-              warehouse_id: item.warehouse_id || invoice.warehouse_id, // Fallback
+              warehouse_id: item.warehouse_id || invoice.warehouse_id,
               transaction_type: 'in',
               transaction_date: invoice.invoice_date || new Date(),
               note: `Purchase Invoice #${invoice.invoice_number || invoice.id}`,
-              source_type: 'purchase', // Matches purchaseInvoiceItem.service.js source_type
-              source_id: item.id, // This is tricky with bulkCreate, we don't have IDs easily.
-              // Actually bulkCreate returns instances if we ask it, but let's see.
-              // If we use bulkCreate, we might not get IDs back easily in all SQL dialects without returning: true
-              // Let's iterate and create one by one to be safe and get IDs, OR fetch them.
-              // Better: create one by one to get ID for source_id.
+              source_type: 'purchase',
+              source_id: item.id,
               batches: batches
             }, { transaction });
           }
@@ -115,13 +108,7 @@ class PurchaseInvoiceService {
                 batch_number: item.batch_number,
                 expiry_date: item.expiry_date,
                 quantity: item.bonus_quantity,
-                cost_per_unit: Number(item.unit_price) // Bonus usually has 0 cost, but in purchase we might want to track it with cost or 0?
-                // User didn't specify, but usually bonus is free.
-                // However, if we put cost, it increases inventory value.
-                // If it's free, cost should be 0.
-                // Let's assume 0 cost for bonus in purchase too, unless it's a "buy 1 get 1" where cost is distributed.
-                // But "bonus" usually implies free.
-                // Let's use 0 for now to be consistent with sales.
+                cost_per_unit: 0
               });
             } else {
               bonusBatches.push({
@@ -134,7 +121,7 @@ class PurchaseInvoiceService {
 
             await InventoryTransactionService.create({
               product_id: item.product_id,
-              warehouse_id: item.warehouse_id || invoice.warehouse_id, // Fallback
+              warehouse_id: item.warehouse_id || invoice.warehouse_id,
               transaction_type: 'in',
               transaction_date: invoice.invoice_date || new Date(),
               note: `Purchase Invoice #${invoice.invoice_number || invoice.id} (Bonus)`,
@@ -144,6 +131,124 @@ class PurchaseInvoiceService {
             }, { transaction });
           }
         }
+      }
+
+      // --- Journal Entry Creation ---
+      const { createJournalEntry } = await import('./journal.service.js');
+
+      // Resolve Accounts
+      const inventoryAccount = await Account.findOne({ where: { name: 'المخزون' }, transaction });
+
+      // VAT: Try specific "ضريبة القيمه المضافه" (ID 65 specific) or standard.
+      let vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمه المضافه' }, transaction });
+      if (!vatAccount) vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمة المضافة' }, transaction });
+
+      const supplierAccount = await Account.findOne({ where: { name: 'الموردين' }, transaction });
+      const discountAccount = await Account.findOne({ where: { name: 'خصم مكتسب' }, transaction });
+      const taxAccount = await Account.findOne({ where: { name: 'خصم و اضافه ضرائب مشتريات' }, transaction });
+
+      console.log('JE Debug: PI Accounts Resolved', {
+        inventory: !!inventoryAccount,
+        vat: !!vatAccount,
+        supplier: !!supplierAccount
+      });
+
+      // Check for ReferenceType
+      let refType = await ReferenceType.findOne({ where: { code: 'purchase_invoice' }, transaction });
+      if (!refType) {
+        refType = await ReferenceType.create({
+          code: 'purchase_invoice',
+          label: 'فاتورة شراء',
+          name: 'فاتورة شراء',
+          description: 'Journal Entry for Purchase Invoice'
+        }, { transaction });
+      }
+
+      if (inventoryAccount && supplierAccount) {
+        const lines = [];
+
+        // 1. Dr Inventory (Subtotal)
+        if (Number(invoice.subtotal) > 0) {
+          lines.push({
+            account_id: inventoryAccount.id,
+            debit: invoice.subtotal,
+            credit: 0,
+            description: `Inventory - PI #${invoice.invoice_number}`
+          });
+        }
+
+        // 2. Dr VAT
+        if (Number(invoice.vat_amount) > 0) {
+          if (vatAccount) {
+            lines.push({
+              account_id: vatAccount.id,
+              debit: invoice.vat_amount,
+              credit: 0,
+              description: `VAT - PI #${invoice.invoice_number}`
+            });
+          } else {
+            console.warn('JE Warning: VAT > 0 but Account MISSING');
+          }
+        }
+
+        // 3. Cr Discount (Additional Discount)
+        if (Number(invoice.additional_discount) > 0) {
+          if (discountAccount) {
+            lines.push({
+              account_id: discountAccount.id,
+              debit: 0,
+              credit: invoice.additional_discount,
+              description: `Discount Received - PI #${invoice.invoice_number}`
+            });
+          } else {
+            console.warn('JE Warning: Discount > 0 but Account MISSING');
+          }
+        }
+
+        // 4. Cr Withholding Tax
+        if (Number(invoice.tax_amount) > 0) {
+          if (taxAccount) {
+            lines.push({
+              account_id: taxAccount.id,
+              debit: 0,
+              credit: invoice.tax_amount,
+              description: `WHT - PI #${invoice.invoice_number}`
+            });
+          } else {
+            console.warn('JE Warning: TaxAmount > 0 but Account MISSING');
+          }
+        }
+
+        // 5. Cr Supplier (Total Payable)
+        if (Number(invoice.total_amount) > 0) {
+          lines.push({
+            account_id: supplierAccount.id,
+            debit: 0,
+            credit: invoice.total_amount,
+            description: `Supplier - PI #${invoice.invoice_number}`
+          });
+        }
+
+        if (lines.length > 0) {
+          try {
+            await createJournalEntry({
+              refCode: 'purchase_invoice',
+              refId: invoice.id,
+              entryDate: invoice.invoice_date,
+              description: `Purchase Invoice #${invoice.invoice_number}`,
+              lines: lines,
+              entryTypeId: 1
+            }, { transaction });
+            console.log('JE Success: PI Entry Created');
+          } catch (err) {
+            console.error('JE Error: PI Entry Failed', err);
+          }
+        }
+      } else {
+        console.error('JE Error: PI Entry Skipped. Missing Essential Accounts:', {
+          inventory: !!inventoryAccount ? inventoryAccount.name : 'MISSING',
+          supplier: !!supplierAccount ? supplierAccount.name : 'MISSING'
+        });
       }
 
       if (!options.transaction) await transaction.commit();
@@ -200,24 +305,10 @@ class PurchaseInvoiceService {
             const newItem = await PurchaseInvoiceItem.create(itemData, { transaction });
 
             // 4. Create new inventory transactions
-            // 4.1 Main Quantity
             if (Number(newItem.quantity) > 0) {
-              const batches = [];
-              if (newItem.batch_number && newItem.expiry_date) {
-                batches.push({
-                  batch_number: newItem.batch_number,
-                  expiry_date: newItem.expiry_date,
-                  quantity: newItem.quantity,
-                  cost_per_unit: Number(newItem.unit_price)
-                });
-              } else {
-                batches.push({
-                  batch_number: null,
-                  expiry_date: null,
-                  quantity: newItem.quantity,
-                  cost_per_unit: Number(newItem.unit_price)
-                });
-              }
+              const batches = newItem.batch_number && newItem.expiry_date ?
+                [{ batch_number: newItem.batch_number, expiry_date: newItem.expiry_date, quantity: newItem.quantity, cost_per_unit: Number(newItem.unit_price) }] :
+                [{ batch_number: null, expiry_date: null, quantity: newItem.quantity, cost_per_unit: Number(newItem.unit_price) }];
 
               await InventoryTransactionService.create({
                 product_id: newItem.product_id,
@@ -231,24 +322,10 @@ class PurchaseInvoiceService {
               }, { transaction });
             }
 
-            // 4.2 Bonus
             if (Number(newItem.bonus_quantity) > 0) {
-              const bonusBatches = [];
-              if (newItem.batch_number && newItem.expiry_date) {
-                bonusBatches.push({
-                  batch_number: newItem.batch_number,
-                  expiry_date: newItem.expiry_date,
-                  quantity: newItem.bonus_quantity,
-                  cost_per_unit: 0
-                });
-              } else {
-                bonusBatches.push({
-                  batch_number: null,
-                  expiry_date: null,
-                  quantity: newItem.bonus_quantity,
-                  cost_per_unit: 0
-                });
-              }
+              const bonusBatches = newItem.batch_number && newItem.expiry_date ?
+                [{ batch_number: newItem.batch_number, expiry_date: newItem.expiry_date, quantity: newItem.bonus_quantity, cost_per_unit: 0 }] :
+                [{ batch_number: null, expiry_date: null, quantity: newItem.bonus_quantity, cost_per_unit: 0 }];
 
               await InventoryTransactionService.create({
                 product_id: newItem.product_id,

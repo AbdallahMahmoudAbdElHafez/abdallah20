@@ -63,10 +63,11 @@ CREATE TABLE `accounts` (
   `parent_account_id` int DEFAULT NULL,
   `opening_balance` decimal(15,2) DEFAULT '0.00',
   `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `normal_balance` enum('debit','credit') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'debit',
   PRIMARY KEY (`id`),
   KEY `parent_account_id` (`parent_account_id`),
   CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`parent_account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -75,7 +76,7 @@ CREATE TABLE `accounts` (
 
 LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,''),(2,'خصوم','liability',NULL,0.00,''),(3,'مصروفات مباشره','expense',NULL,0.00,''),(4,'مصروفات غير مباشره','expense',NULL,0.00,''),(5,'ايرادات','revenue',NULL,0.00,''),(6,'مردودات المبيعات','revenue',NULL,0.00,''),(7,'صافي الدخل','equity',NULL,0.00,''),(8,'اصول ثابته','asset',1,0.00,''),(9,'اصول متداوله','asset',1,0.00,''),(10,'رأس المال','liability',2,0.00,''),(11,'قروض','liability',2,0.00,''),(12,'خصوم متادوله','liability',2,0.00,''),(13,'صافي الربح','liability',2,0.00,''),(14,'ارباح مرحلة','liability',2,0.00,''),(15,'تكلفة البضاعة المباعة','expense',3,0.00,''),(16,'مصروفات نقل بضاعة','expense',3,0.00,''),(17,'مرتبات المبيعات','expense',3,0.00,''),(18,'عمولات المبيعات','expense',3,0.00,''),(19,'خصم خاص','expense',3,0.00,''),(20,'دمغه','expense',3,0.00,''),(21,'مصروفات خطابات ضمان','expense',3,0.00,''),(22,'مصروفات تسويقيه','expense',3,0.00,''),(23,'جرد تالف تصنيع','expense',3,0.00,''),(24,'تكاليف تشغيل مباشره','expense',3,0.00,''),(25,'مصروفات عموميه','expense',4,0.00,''),(26,'اهلاكات','expense',4,0.00,''),(27,'مرتبات','expense',4,0.00,''),(28,'مبيعات','revenue',5,0.00,''),(29,'خدمات','revenue',5,0.00,''),(30,'خصم مكتسب','revenue',5,0.00,''),(31,'آلات','asset',8,0.00,''),(32,'آراضي','asset',8,0.00,''),(33,'مباني','asset',8,0.00,''),(34,'أدوات مكتبية','asset',8,0.00,''),(35,'سيارات','asset',8,0.00,''),(36,'أثاث','asset',8,0.00,''),(37,'ملفات','asset',8,0.00,''),(38,'برامج محاسبيه','asset',8,0.00,''),(39,'جهاز كمبيوتر','asset',8,0.00,''),(40,'صندوق وبنوك','asset',9,0.00,''),(41,'خزينه','asset',40,0.00,''),(42,'خزينة شركة الشحن','asset',40,0.00,''),(43,'البنك الأهلي الخاص','asset',40,0.00,''),(44,'البنك شركه','asset',40,0.00,''),(45,'فودافون كاش','asset',40,0.00,''),(46,'كارد فيزا','asset',40,0.00,''),(47,'العملاء','asset',9,0.00,''),(48,'اوراق قبض','asset',9,0.00,''),(49,'المخزون','asset',9,0.00,''),(50,'جاري الشركاء','asset',9,0.00,''),(51,'جاري هاني صلاح','asset',50,0.00,''),(52,'صافي الخسارة','asset',9,0.00,''),(53,'خسارة مرحلة','asset',9,0.00,''),(54,'تأمينات لدى الغير','asset',9,0.00,''),(55,'سلف العاملين','asset',9,0.00,''),(56,'خصم ضرائب','asset',9,0.00,''),(57,'خصم ضرائب مبيعات','asset',9,0.00,''),(58,'غطاء خطابات ضمان','asset',9,0.00,''),(59,'اعتمادات مستندية','asset',9,0.00,''),(60,'مدينون متنوعون','asset',9,0.00,''),(61,'عائلة ','asset',60,0.00,''),(62,'الموردين','liability',12,0.00,''),(63,'مخصصات','liability',12,0.00,''),(64,'اوراق دفع','liability',12,0.00,''),(65,'ضريبة القيمه المضافه','liability',12,0.00,''),(66,'مصلحة الضرائب','liability',12,0.00,''),(67,'مقاولين من الباطل','liability',12,0.00,''),(68,'خصم و اضافه ضرائب مشتريات','liability',12,0.00,''),(69,'دائنون متنوعون ','liability',12,0.00,''),(70,'دائن فيزا كارد','liability',69,0.00,''),(71,'ديون شخصيه','liability',12,0.00,''),(72,'الأولاد','liability',71,0.00,''),(73,'نيفين','liability',71,0.00,''),(74,'إيهاب','liability',71,0.00,''),(75,'مرتبات مستحقه','liability',12,0.00,''),(76,'نسبة تحصيل','expense',22,0.00,''),(77,'هدايا تسويقية','expense',22,0.00,''),(78,'تعويضات عروض تسويقيه','expense',22,0.00,''),(79,'مصاريف تصميمات','expense',22,0.00,''),(80,'عينات مجانية للدكاترة','expense',22,0.00,''),(81,'عينات للتصوير والتصميمات','expense',22,0.00,''),(82,'عينات للbloggers','expense',22,0.00,''),(83,'مشاركات مؤتمرات','expense',22,0.00,''),(84,'مشاركه فى معرض الجامعات','expense',22,0.00,''),(85,'مطبوعات تسويقيه','expense',22,0.00,''),(86,'sponsor health day','expense',22,0.00,''),(87,'social media ','expense',22,0.00,''),(88,'اجتماع للدكاتره','expense',22,0.00,''),(89,'مصروفات بلوجر blogger','expense',22,0.00,''),(90,'ايجارات','expense',25,0.00,''),(91,'ايجار مكتب','expense',90,0.00,''),(92,'ايجار سياره','expense',90,0.00,''),(93,'ايجار مخزن','expense',90,0.00,''),(94,'كهرباء','expense',25,0.00,''),(95,'بوفيه','expense',25,0.00,''),(96,'ضيافه','expense',25,0.00,''),(97,'مصاريف سيارة المدير','expense',25,0.00,''),(98,'زكاة','expense',25,0.00,''),(99,'مصاريف مكتب الإداره','expense',25,0.00,''),(100,'هدايا','expense',25,0.00,''),(101,'عمولات بنكيه','expense',25,0.00,''),(102,'مصاريف اجتماعات','expense',25,0.00,''),(103,'بدل سفر','expense',25,0.00,''),(104,'كروت بيزنيس b.c','expense',25,0.00,''),(105,'مصاريف وزارة الصحة','expense',25,0.00,''),(106,'اتعاب مكتب المحاسب القانونى','expense',25,0.00,''),(107,'فندق ','expense',25,0.00,'');
+INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,'','debit'),(2,'خصوم','liability',NULL,0.00,'','credit'),(3,'مصروفات مباشره','expense',NULL,0.00,'','debit'),(4,'مصروفات غير مباشره','expense',NULL,0.00,'','debit'),(5,'ايرادات','revenue',NULL,0.00,'','credit'),(6,'مردودات المبيعات','revenue',NULL,0.00,'','credit'),(7,'صافي الدخل','equity',NULL,0.00,'','credit'),(8,'اصول ثابته','asset',1,0.00,'','debit'),(9,'اصول متداوله','asset',1,0.00,'','debit'),(10,'رأس المال','liability',2,0.00,'','credit'),(11,'قروض','liability',2,0.00,'','credit'),(12,'خصوم متادوله','liability',2,0.00,'','credit'),(13,'صافي الربح','liability',2,0.00,'','credit'),(14,'ارباح مرحلة','liability',2,0.00,'','credit'),(15,'تكلفة البضاعة المباعة','expense',3,0.00,'','debit'),(16,'مصروفات نقل بضاعة','expense',3,0.00,'','debit'),(17,'مرتبات المبيعات','expense',3,0.00,'','debit'),(18,'عمولات المبيعات','expense',3,0.00,'','debit'),(19,'خصم خاص','expense',3,0.00,'','debit'),(20,'دمغه','expense',3,0.00,'','debit'),(21,'مصروفات خطابات ضمان','expense',3,0.00,'','debit'),(22,'مصروفات تسويقيه','expense',3,0.00,'','debit'),(23,'جرد تالف تصنيع','expense',3,0.00,'','debit'),(24,'تكاليف تشغيل مباشره','expense',3,0.00,'','debit'),(25,'مصروفات عموميه','expense',4,0.00,'','debit'),(26,'اهلاكات','expense',4,0.00,'','debit'),(27,'مرتبات','expense',4,0.00,'','debit'),(28,'مبيعات','revenue',5,0.00,'','credit'),(29,'خدمات','revenue',5,0.00,'','credit'),(30,'خصم مكتسب','revenue',5,0.00,'','credit'),(31,'آلات','asset',8,0.00,'','debit'),(32,'آراضي','asset',8,0.00,'','debit'),(33,'مباني','asset',8,0.00,'','debit'),(34,'أدوات مكتبية','asset',8,0.00,'','debit'),(35,'سيارات','asset',8,0.00,'','debit'),(36,'أثاث','asset',8,0.00,'','debit'),(37,'ملفات','asset',8,0.00,'','debit'),(38,'برامج محاسبيه','asset',8,0.00,'','debit'),(39,'جهاز كمبيوتر','asset',8,0.00,'','debit'),(40,'صندوق وبنوك','asset',9,0.00,'','debit'),(41,'خزينه','asset',40,0.00,'','debit'),(42,'خزينة شركة الشحن','asset',40,0.00,'','debit'),(43,'البنك الأهلي الخاص','asset',40,0.00,'','debit'),(44,'البنك شركه','asset',40,0.00,'','debit'),(45,'فودافون كاش','asset',40,0.00,'','debit'),(46,'كارد فيزا','asset',40,0.00,'','debit'),(47,'العملاء','asset',9,0.00,'','debit'),(48,'اوراق قبض','asset',9,0.00,'','debit'),(49,'المخزون','asset',9,0.00,'','debit'),(50,'جاري الشركاء','asset',9,0.00,'','debit'),(51,'جاري هاني صلاح','asset',50,0.00,'','debit'),(52,'صافي الخسارة','asset',9,0.00,'','debit'),(53,'خسارة مرحلة','asset',9,0.00,'','debit'),(54,'تأمينات لدى الغير','asset',9,0.00,'','debit'),(55,'سلف العاملين','asset',9,0.00,'','debit'),(56,'خصم ضرائب','asset',9,0.00,'','debit'),(57,'خصم ضرائب مبيعات','asset',9,0.00,'','debit'),(58,'غطاء خطابات ضمان','asset',9,0.00,'','debit'),(59,'اعتمادات مستندية','asset',9,0.00,'','debit'),(60,'مدينون متنوعون','asset',9,0.00,'','debit'),(61,'عائلة ','asset',60,0.00,'','debit'),(62,'الموردين','liability',12,0.00,'','credit'),(63,'مخصصات','liability',12,0.00,'','credit'),(64,'اوراق دفع','liability',12,0.00,'','credit'),(65,'ضريبة القيمه المضافه','liability',12,0.00,'','credit'),(66,'مصلحة الضرائب','liability',12,0.00,'','credit'),(67,'مقاولين من الباطل','liability',12,0.00,'','credit'),(68,'خصم و اضافه ضرائب مشتريات','liability',12,0.00,'','credit'),(69,'دائنون متنوعون ','liability',12,0.00,'','credit'),(70,'دائن فيزا كارد','liability',69,0.00,'','credit'),(71,'ديون شخصيه','liability',12,0.00,'','credit'),(72,'الأولاد','liability',71,0.00,'','credit'),(73,'نيفين','liability',71,0.00,'','credit'),(74,'إيهاب','liability',71,0.00,'','credit'),(75,'مرتبات مستحقه','liability',12,0.00,'','credit'),(76,'نسبة تحصيل','expense',22,0.00,'','debit'),(77,'هدايا تسويقية','expense',22,0.00,'','debit'),(78,'تعويضات عروض تسويقيه','expense',22,0.00,'','debit'),(79,'مصاريف تصميمات','expense',22,0.00,'','debit'),(80,'عينات مجانية للدكاترة','expense',22,0.00,'','debit'),(81,'عينات للتصوير والتصميمات','expense',22,0.00,'','debit'),(82,'عينات للbloggers','expense',22,0.00,'','debit'),(83,'مشاركات مؤتمرات','expense',22,0.00,'','debit'),(84,'مشاركه فى معرض الجامعات','expense',22,0.00,'','debit'),(85,'مطبوعات تسويقيه','expense',22,0.00,'','debit'),(86,'sponsor health day','expense',22,0.00,'','debit'),(87,'social media ','expense',22,0.00,'','debit'),(88,'اجتماع للدكاتره','expense',22,0.00,'','debit'),(89,'مصروفات بلوجر blogger','expense',22,0.00,'','debit'),(90,'ايجارات','expense',25,0.00,'','debit'),(91,'ايجار مكتب','expense',90,0.00,'','debit'),(92,'ايجار سياره','expense',90,0.00,'','debit'),(93,'ايجار مخزن','expense',90,0.00,'','debit'),(94,'كهرباء','expense',25,0.00,'','debit'),(95,'بوفيه','expense',25,0.00,'','debit'),(96,'ضيافه','expense',25,0.00,'','debit'),(97,'مصاريف سيارة المدير','expense',25,0.00,'','debit'),(98,'زكاة','expense',25,0.00,'','debit'),(99,'مصاريف مكتب الإداره','expense',25,0.00,'','debit'),(100,'هدايا','expense',25,0.00,'','debit'),(101,'عمولات بنكيه','expense',25,0.00,'','debit'),(102,'مصاريف اجتماعات','expense',25,0.00,'','debit'),(103,'بدل سفر','expense',25,0.00,'','debit'),(104,'كروت بيزنيس b.c','expense',25,0.00,'','debit'),(105,'مصاريف وزارة الصحة','expense',25,0.00,'','debit'),(106,'اتعاب مكتب المحاسب القانونى','expense',25,0.00,'','debit'),(107,'فندق ','expense',25,0.00,'','debit'),(108,'خصم مسموح به','revenue',28,0.00,'','debit');
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -897,7 +898,7 @@ CREATE TABLE `parties` (
   CONSTRAINT `parties_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`),
   CONSTRAINT `parties_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`),
   CONSTRAINT `parties_ibfk_3` FOREIGN KEY (`category_id`) REFERENCES `party_categories` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1061,7 +1062,7 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   KEY `unit_id` (`unit_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2566,6 +2567,55 @@ UNLOCK TABLES;
 --
 -- Dumping routines for database 'nurivina_erp'
 --
+/*!50003 DROP FUNCTION IF EXISTS `has_cycle` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `has_cycle`(new_id INT, new_parent_id INT) RETURNS tinyint(1)
+    DETERMINISTIC
+BEGIN
+    DECLARE cycle_found BOOLEAN DEFAULT FALSE;
+
+    -- لو parent_id = NULL مفيش مشكلة
+    IF new_parent_id IS NULL THEN
+        RETURN FALSE;
+    END IF;
+
+    -- ممنوع يكون الحساب parent لنفسه
+    IF new_id = new_parent_id THEN
+        RETURN TRUE;
+    END IF;
+
+    -- CTE recursive يتبع الشجرة لفوق
+    WITH RECURSIVE ancestors AS (
+        SELECT id, parent_account_id
+        FROM accounts
+        WHERE id = new_parent_id
+
+        UNION ALL
+
+        SELECT a.id, a.parent_account_id
+        FROM accounts a
+        INNER JOIN ancestors an ON a.id = an.parent_account_id
+    )
+    SELECT TRUE INTO cycle_found
+    FROM ancestors
+    WHERE id = new_id
+    LIMIT 1;
+
+    RETURN cycle_found;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Final view structure for view `suppliers`
@@ -2882,4 +2932,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-17  1:44:24
+-- Dump completed on 2025-12-18 15:24:52

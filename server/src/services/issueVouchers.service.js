@@ -6,13 +6,14 @@ import {
   IssueVoucherType,
   Party,
   Employee,
-  sequelize
+  sequelize,
+  Account,
+  ReferenceType
 } from '../models/index.js';
 import { Op } from 'sequelize';
 
 export class IssueVouchersService {
 
-  // إنشاء سند إصدار جديد
   async createIssueVoucher(voucherData) {
     try {
       const voucher = await IssueVoucher.create(voucherData);
@@ -22,29 +23,84 @@ export class IssueVouchersService {
     }
   }
 
-  // إنشاء سند إصدار مع الأصناف
   async createIssueVoucherWithItems(voucherData, itemsData = []) {
     try {
       const transaction = await sequelize.transaction();
 
       try {
-        // إنشاء السند
         const voucher = await IssueVoucher.create(voucherData, { transaction });
 
-        // إضافة الأصناف إذا وجدت
+        let createdItems = [];
         if (itemsData.length > 0) {
           const itemsWithVoucherId = itemsData.map(item => ({
             ...item,
             voucher_id: voucher.id
           }));
 
-          await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+          createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+        }
+
+        // --- Journal Entry Creation ---
+        if (createdItems.length > 0) {
+          const { createJournalEntry } = await import('./journal.service.js');
+
+          const inventoryAccount = await Account.findOne({ where: { name: 'المخزون' }, transaction });
+          // voucher.account_id acts as the debit account
+          const debitAccount = await Account.findByPk(voucher.account_id, { transaction });
+
+          let totalCost = 0;
+          const productIds = createdItems.map(i => i.product_id);
+          const products = await Product.findAll({
+            where: { id: { [Op.in]: productIds } },
+            transaction
+          });
+          const productMap = new Map(products.map(p => [p.id, p]));
+
+          for (const item of createdItems) {
+            const product = productMap.get(item.product_id);
+            if (product && Number(product.cost_price) > 0) {
+              totalCost += Number(item.quantity) * Number(product.cost_price);
+            }
+          }
+
+          if (totalCost > 0 && inventoryAccount && debitAccount) {
+            let refType = await ReferenceType.findOne({ where: { code: 'issue_voucher' }, transaction });
+            if (!refType) {
+              refType = await ReferenceType.create({
+                code: 'issue_voucher',
+                label: 'سند صرف',
+                name: 'سند صرف',
+                description: 'Journal Entry for Issue Voucher'
+              }, { transaction });
+            }
+
+            await createJournalEntry({
+              refCode: 'issue_voucher',
+              refId: voucher.id,
+              entryDate: voucher.issue_date,
+              description: `Issue Voucher #${voucher.voucher_no} - ${voucher.note || ''}`,
+              lines: [
+                {
+                  account_id: debitAccount.id,
+                  debit: totalCost,
+                  credit: 0,
+                  description: `Issue Voucher #${voucher.voucher_no}`
+                },
+                {
+                  account_id: inventoryAccount.id,
+                  debit: 0,
+                  credit: totalCost,
+                  description: `Inventory - Issue Voucher #${voucher.voucher_no}`
+                }
+              ],
+              entryTypeId: 1
+            }, { transaction });
+          }
         }
 
         await transaction.commit();
         return await this.getIssueVoucherById(voucher.id, true);
       } catch (error) {
-        // Only rollback if transaction is not finished
         if (!transaction.finished) {
           await transaction.rollback();
         }
@@ -55,12 +111,10 @@ export class IssueVouchersService {
     }
   }
 
-  // الحصول على جميع سندات الإصدار
   async getAllIssueVouchers(filters = {}) {
     try {
       const whereClause = {};
 
-      // تطبيق الفلاتر إذا وجدت
       if (filters.status) {
         whereClause.status = filters.status;
       }
@@ -81,22 +135,22 @@ export class IssueVouchersService {
           {
             model: IssueVoucherType,
             as: 'type',
-            attributes: ['id', 'name'] // إزالة code إذا لم يكن موجوداً
+            attributes: ['id', 'name']
           },
           {
             model: Party,
             as: 'party',
-            attributes: ['id', 'name'] // إزالة code
+            attributes: ['id', 'name']
           },
           {
             model: Warehouse,
             as: 'warehouse',
-            attributes: ['id', 'name'] // إزالة code
+            attributes: ['id', 'name']
           },
           {
             model: Employee,
             as: 'responsible_employee',
-            attributes: ['id', 'name'] // إزالة code
+            attributes: ['id', 'name']
           }
         ],
         order: [['created_at', 'DESC']]
@@ -108,43 +162,41 @@ export class IssueVouchersService {
     }
   }
 
-  // الحصول على سند إصدار بواسطة ID
   async getIssueVoucherById(id, includeItems = false) {
     try {
       const include = [
         {
           model: IssueVoucherType,
           as: 'type',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         },
         {
           model: Party,
           as: 'party',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         },
         {
           model: Warehouse,
           as: 'warehouse',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         },
         {
           model: Employee,
           as: 'responsible_employee',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         },
         {
           model: Employee,
           as: 'issuer',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         },
         {
           model: Employee,
           as: 'approver',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         }
       ];
 
-      // تضمين الأصناف إذا طلب
       if (includeItems) {
         include.push({
           model: IssueVoucherItem,
@@ -153,7 +205,7 @@ export class IssueVouchersService {
             {
               model: Product,
               as: 'product',
-              attributes: ['id', 'name'] // إزالة code و unit_id إذا تسبب في مشاكل
+              attributes: ['id', 'name', 'cost_price']
             }
           ]
         });
@@ -171,29 +223,28 @@ export class IssueVouchersService {
     }
   }
 
-  // الحصول على سند إصدار بواسطة رقم السند
   async getIssueVoucherByVoucherNo(voucherNo, includeItems = false) {
     try {
       const include = [
         {
           model: IssueVoucherType,
           as: 'type',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         },
         {
           model: Party,
           as: 'party',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         },
         {
           model: Warehouse,
           as: 'warehouse',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         },
         {
           model: Employee,
           as: 'responsible_employee',
-          attributes: ['id', 'name'] // إزالة code
+          attributes: ['id', 'name']
         }
       ];
 
@@ -205,7 +256,7 @@ export class IssueVouchersService {
             {
               model: Product,
               as: 'product',
-              attributes: ['id', 'name'] // إزالة code و unit_id
+              attributes: ['id', 'name', 'cost_price']
             }
           ]
         });
@@ -226,7 +277,6 @@ export class IssueVouchersService {
     }
   }
 
-  // تحديث سند إصدار
   async updateIssueVoucher(id, updateData) {
     try {
       const voucher = await IssueVoucher.findByPk(id);
@@ -241,13 +291,11 @@ export class IssueVouchersService {
     }
   }
 
-  // تحديث سند إصدار مع الأصناف
   async updateIssueVoucherWithItems(id, updateData, itemsData = []) {
     try {
       const transaction = await sequelize.transaction();
 
       try {
-        // تحديث السند
         const voucher = await IssueVoucher.findByPk(id, { transaction });
         if (!voucher) {
           throw new Error('Issue voucher not found');
@@ -255,7 +303,6 @@ export class IssueVouchersService {
 
         await voucher.update(updateData, { transaction });
 
-        // حذف الأصناف القديمة وإضافة الجديدة
         await IssueVoucherItem.destroy({
           where: { voucher_id: id },
           transaction
@@ -283,7 +330,6 @@ export class IssueVouchersService {
     }
   }
 
-  // حذف سند إصدار
   async deleteIssueVoucher(id) {
     try {
       const voucher = await IssueVoucher.findByPk(id);
@@ -298,7 +344,6 @@ export class IssueVouchersService {
     }
   }
 
-  // تغيير حالة السند
   async updateVoucherStatus(id, status, approvedBy = null) {
     try {
       const updateData = { status };
@@ -314,7 +359,6 @@ export class IssueVouchersService {
     }
   }
 
-  // التحقق من وجود رقم سند مكرر
   async isVoucherNoUnique(voucherNo, excludeId = null) {
     try {
       const whereClause = { voucher_no: voucherNo };
@@ -330,7 +374,6 @@ export class IssueVouchersService {
     }
   }
 
-  // الحصول على إجماليات السند
   async getVoucherTotals(id) {
     try {
       const voucher = await this.getIssueVoucherById(id, true);
@@ -345,7 +388,7 @@ export class IssueVouchersService {
 
       const totals = voucher.items.reduce((acc, item) => {
         const quantity = parseFloat(item.quantity);
-        const costPerUnit = parseFloat(item.cost_per_unit);
+        const costPerUnit = parseFloat(item.cost_per_unit || 0);
 
         acc.totalQuantity += quantity;
         acc.totalCost += quantity * costPerUnit;
@@ -364,18 +407,15 @@ export class IssueVouchersService {
     }
   }
 
-  // التحقق من توفر المخزون للأصناف
   async checkInventoryAvailability(items) {
     try {
-      // هذه الدالة تحتاج للتكامل مع نظام إدارة المخزون
-      // حالياً ترجع true كقيمة افتراضية
       const availability = {
         available: true,
         details: items.map(item => ({
           product_id: item.product_id,
           warehouse_id: item.warehouse_id,
           required_quantity: item.quantity,
-          available_quantity: 1000, // قيمة افتراضية
+          available_quantity: 1000,
           is_available: true
         }))
       };
