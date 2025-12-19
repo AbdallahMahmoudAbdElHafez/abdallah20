@@ -121,6 +121,34 @@ DELIMITER ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
+-- Table structure for table `batch_inventory`
+--
+
+DROP TABLE IF EXISTS `batch_inventory`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `batch_inventory` (
+  `batch_id` int NOT NULL,
+  `warehouse_id` int NOT NULL,
+  `quantity` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`batch_id`,`warehouse_id`),
+  KEY `warehouse_id` (`warehouse_id`),
+  CONSTRAINT `batch_inventory_ibfk_1` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`),
+  CONSTRAINT `batch_inventory_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
+  CONSTRAINT `batch_inventory_chk_1` CHECK ((`quantity` >= 0))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `batch_inventory`
+--
+
+LOCK TABLES `batch_inventory` WRITE;
+/*!40000 ALTER TABLE `batch_inventory` DISABLE KEYS */;
+/*!40000 ALTER TABLE `batch_inventory` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `batches`
 --
 
@@ -1474,6 +1502,7 @@ CREATE TABLE `purchase_returns` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `tax_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `return_type` enum('cash','credit') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'cash',
   PRIMARY KEY (`id`),
   KEY `purchase_invoice_id` (`purchase_invoice_id`),
   KEY `fk_pr_supplier` (`supplier_id`),
@@ -1924,61 +1953,6 @@ LOCK TABLES `sales_return_items` WRITE;
 /*!40000 ALTER TABLE `sales_return_items` DISABLE KEYS */;
 /*!40000 ALTER TABLE `sales_return_items` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_update_inventory_on_sales_return` AFTER INSERT ON `sales_return_items` FOR EACH ROW BEGIN
-  DECLARE wh_id INT DEFAULT 1;
-
-  INSERT INTO current_inventory (product_id, warehouse_id, quantity)
-  VALUES (NEW.product_id, wh_id, NEW.quantity)
-  ON DUPLICATE KEY UPDATE quantity = quantity + NEW.quantity;
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `trg_log_on_sales_return` AFTER INSERT ON `sales_return_items` FOR EACH ROW BEGIN
-  DECLARE wh_id INT DEFAULT 1;
-
-  INSERT INTO inventory_logs (
-    product_id,
-    warehouse_id,
-    action_type,
-    quantity_change,
-    reference_type,
-    reference_id
-  )
-  VALUES (
-    NEW.product_id,
-    wh_id,
-    'return',
-    NEW.quantity,
-    'sales_return',
-    NEW.sales_return_id
-  );
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `sales_returns`
@@ -2932,4 +2906,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-18 15:24:52
+-- Dump completed on 2025-12-20  1:54:00
