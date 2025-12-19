@@ -48,40 +48,91 @@ export default {
 
                 createdItems = await SalesReturnItem.bulkCreate(itemsWithReturnId, { transaction });
 
-                // Fetch products to get cost price for COGS calculation
-                const productIds = items.map(i => i.product_id);
-                const products = await Product.findAll({
-                    where: { id: { [Op.in]: productIds } },
-                    transaction
-                });
-                const productMap = new Map(products.map(p => [p.id, p]));
+                // Calculate FIFO cost for the returned items
+                const FIFOCostService = (await import('./fifoCost.service.js')).default;
+                const itemsForCost = createdItems.map(item => ({
+                    product_id: item.product_id,
+                    warehouse_id: salesReturn.warehouse_id,
+                    quantity: Number(item.quantity)
+                }));
 
-                // Create Inventory Transactions (IN - Return to Stock)
-                for (const item of createdItems) {
-                    const product = productMap.get(item.product_id);
-                    const costPrice = product ? Number(product.cost_price) : 0;
+                let fifoBatchesMap = new Map();
+                try {
+                    const { totalCost: fifoTotalCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
+                        itemsForCost,
+                        transaction
+                    );
+                    totalCost = fifoTotalCost;
 
-                    if (Number(item.quantity) > 0) {
-                        // accumulate cost for JE
+                    // Store batches for each item
+                    for (const itemCost of itemCosts) {
+                        const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
+                        if (createdItem) {
+                            fifoBatchesMap.set(createdItem.id, itemCost.batches);
+                        }
+                    }
+
+                    console.log('Sales Return: FIFO Cost Calculation Success. Total:', totalCost);
+                } catch (error) {
+                    console.error('Sales Return: FIFO Cost Calculation Failed:', error.message);
+                    // Fallback to product cost_price
+                    const productIds = items.map(i => i.product_id);
+                    const products = await Product.findAll({
+                        where: { id: { [Op.in]: productIds } },
+                        transaction
+                    });
+                    const productMap = new Map(products.map(p => [p.id, p]));
+
+                    for (const item of createdItems) {
+                        const product = productMap.get(item.product_id);
+                        const costPrice = product ? Number(product.cost_price) : 0;
                         totalCost += Number(item.quantity) * costPrice;
+                    }
+                }
 
-                        // Create Inventory In Transaction
-                        // Note: Sales Return usually doesn't have batch info in basic payload unless provided.
-                        // We assume generic return or handle batches if provided.
-                        const batches = item.batch_number && item.expiry_date ?
-                            [{ batch_number: item.batch_number, expiry_date: item.expiry_date, quantity: item.quantity, cost_per_unit: costPrice }] :
-                            [{ batch_number: null, expiry_date: null, quantity: item.quantity, cost_per_unit: costPrice }];
+                // Create Inventory Transactions (IN - Return to Stock) using the same batches
+                for (const item of createdItems) {
+                    if (Number(item.quantity) > 0) {
+                        const fifoBatches = fifoBatchesMap.get(item.id);
 
-                        await InventoryTransactionService.create({
-                            product_id: item.product_id,
-                            warehouse_id: salesReturn.warehouse_id,
-                            transaction_type: 'in', // Returning to stock
-                            transaction_date: salesReturn.return_date || new Date(),
-                            note: `Sales Return #${salesReturn.id} for Invoice #${salesReturn.sales_invoice_id}`,
-                            source_type: 'sales_return',
-                            source_id: item.id,
-                            batches: batches
-                        }, { transaction });
+                        if (fifoBatches && fifoBatches.length > 0) {
+                            // Return to the same batches that were sold (FIFO)
+                            for (const fifoBatch of fifoBatches) {
+                                await InventoryTransactionService.create({
+                                    product_id: item.product_id,
+                                    warehouse_id: salesReturn.warehouse_id,
+                                    transaction_type: 'in', // Returning to stock
+                                    transaction_date: salesReturn.return_date || new Date(),
+                                    note: `Sales Return #${salesReturn.id} for Invoice #${salesReturn.sales_invoice_id}`,
+                                    source_type: 'sales_return',
+                                    source_id: item.id,
+                                    batches: [{
+                                        batch_id: fifoBatch.batchId,
+                                        quantity: fifoBatch.quantity,
+                                        cost_per_unit: fifoBatch.costPerUnit
+                                    }]
+                                }, { transaction });
+                            }
+                        } else {
+                            // Fallback: create generic IN transaction
+                            const product = await Product.findByPk(item.product_id, { transaction });
+                            const costPrice = product ? Number(product.cost_price) : 0;
+
+                            await InventoryTransactionService.create({
+                                product_id: item.product_id,
+                                warehouse_id: salesReturn.warehouse_id,
+                                transaction_type: 'in',
+                                transaction_date: salesReturn.return_date || new Date(),
+                                note: `Sales Return #${salesReturn.id} for Invoice #${salesReturn.sales_invoice_id}`,
+                                source_type: 'sales_return',
+                                source_id: item.id,
+                                batches: [{
+                                    batch_id: null,
+                                    quantity: Number(item.quantity),
+                                    cost_per_unit: costPrice
+                                }]
+                            }, { transaction });
+                        }
                     }
                 }
             }

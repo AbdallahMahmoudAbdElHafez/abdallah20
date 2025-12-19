@@ -63,6 +63,8 @@ export default {
 
             // Create items if they exist
             let createdItems = [];
+            let fifoBatchesMap = new Map(); // Store FIFO batches per item for inventory deduction
+
             if (items && items.length > 0) {
                 const itemsWithInvoiceId = items.map(item => ({
                     ...item,
@@ -71,42 +73,77 @@ export default {
                 }));
                 createdItems = await SalesInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
 
-                // Create Inventory Transactions (OUT)
-                for (const item of createdItems) {
-                    // 1. Transaction for Main Quantity
-                    if (Number(item.quantity) > 0) {
-                        const batches = item.batch_number && item.expiry_date ?
-                            [{ batch_number: item.batch_number, expiry_date: item.expiry_date, quantity: item.quantity, cost_per_unit: item.price }] :
-                            [{ batch_number: null, expiry_date: null, quantity: item.quantity, cost_per_unit: item.price }];
+                // Calculate FIFO costs FIRST to determine which batches to use
+                const FIFOCostService = (await import('./fifoCost.service.js')).default;
+                const itemsForCost = createdItems.map(item => ({
+                    product_id: item.product_id,
+                    warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                    quantity: Number(item.quantity) + Number(item.bonus || 0),
+                    itemId: item.id // Track which item this is for
+                }));
 
-                        await InventoryTransactionService.create({
-                            product_id: item.product_id,
-                            warehouse_id: item.warehouse_id || invoice.warehouse_id,
-                            transaction_type: 'out',
-                            transaction_date: invoice.invoice_date || new Date(),
-                            note: `Sales Invoice #${invoice.invoice_number || invoice.id}`,
-                            source_type: 'sales_invoice',
-                            source_id: item.id,
-                            batches: batches
-                        }, { transaction });
+                try {
+                    const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
+                        itemsForCost,
+                        transaction
+                    );
+
+                    // Store FIFO batches for each item
+                    for (const itemCost of itemCosts) {
+                        // Find corresponding created item
+                        const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
+                        if (createdItem) {
+                            fifoBatchesMap.set(createdItem.id, itemCost.batches);
+                        }
                     }
+                } catch (error) {
+                    console.error('FIFO batch calculation failed:', error.message);
+                    // If FIFO fails, we'll fall back to creating transactions without batch info
+                }
 
-                    // 2. Transaction for Bonus
-                    if (Number(item.bonus) > 0) {
-                        const bonusBatches = item.batch_number && item.expiry_date ?
-                            [{ batch_number: item.batch_number, expiry_date: item.expiry_date, quantity: item.bonus, cost_per_unit: 0 }] :
-                            [{ batch_number: null, expiry_date: null, quantity: item.bonus, cost_per_unit: 0 }];
+                // Create Inventory Transactions (OUT) using FIFO batches
+                for (const item of createdItems) {
+                    const totalQty = Number(item.quantity) + Number(item.bonus || 0);
 
-                        await InventoryTransactionService.create({
-                            product_id: item.product_id,
-                            warehouse_id: item.warehouse_id || invoice.warehouse_id,
-                            transaction_type: 'out',
-                            transaction_date: invoice.invoice_date || new Date(),
-                            note: `Sales Invoice #${invoice.invoice_number || invoice.id} (Bonus)`,
-                            source_type: 'sales_invoice',
-                            source_id: item.id,
-                            batches: bonusBatches
-                        }, { transaction });
+                    if (totalQty > 0) {
+                        const fifoBatches = fifoBatchesMap.get(item.id);
+
+                        if (fifoBatches && fifoBatches.length > 0) {
+                            // Use FIFO batches - create separate transaction for each batch
+                            for (const fifoBatch of fifoBatches) {
+                                await InventoryTransactionService.create({
+                                    product_id: item.product_id,
+                                    warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                                    transaction_type: 'out',
+                                    transaction_date: invoice.invoice_date || new Date(),
+                                    note: `Sales Invoice #${invoice.invoice_number || invoice.id}`,
+                                    source_type: 'sales_invoice',
+                                    source_id: item.id,
+                                    batches: [{
+                                        batch_id: fifoBatch.batchId,
+                                        quantity: fifoBatch.quantity,
+                                        cost_per_unit: fifoBatch.costPerUnit
+                                    }]
+                                }, { transaction });
+                            }
+                        } else {
+                            // Fallback: create transaction without batch (for unbatched items)
+                            console.warn(`No FIFO batches found for item ${item.id}, creating unbatched transaction`);
+                            await InventoryTransactionService.create({
+                                product_id: item.product_id,
+                                warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                                transaction_type: 'out',
+                                transaction_date: invoice.invoice_date || new Date(),
+                                note: `Sales Invoice #${invoice.invoice_number || invoice.id}`,
+                                source_type: 'sales_invoice',
+                                source_id: item.id,
+                                batches: [{
+                                    batch_id: null,
+                                    quantity: totalQty,
+                                    cost_per_unit: item.price
+                                }]
+                            }, { transaction });
+                        }
                     }
                 }
             }
@@ -248,27 +285,47 @@ export default {
 
             // 2. Cost Entry (COGS)
             if (cogsAccount && inventoryAccount && createdItems.length > 0) {
+                // Import FIFO Cost Service
+                const FIFOCostService = (await import('./fifoCost.service.js')).default;
+
+                // Prepare items for FIFO cost calculation
+                const itemsForCost = createdItems.map(item => ({
+                    product_id: item.product_id,
+                    warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                    quantity: Number(item.quantity) + Number(item.bonus || 0)
+                }));
+
+                console.log('JE Debug: COGS Calculation Start using FIFO. Items:', createdItems.length);
+
                 let totalCost = 0;
+                try {
+                    const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
+                        itemsForCost,
+                        transaction
+                    );
+                    totalCost = fifoCost;
 
-                // Fetch Products to get cost_price
-                const productIds = createdItems.map(i => i.product_id);
-                const products = await Product.findAll({
-                    where: { id: { [Op.in]: productIds } },
-                    transaction
-                });
-                const productMap = new Map(products.map(p => [p.id, p]));
+                    console.log('JE Debug: FIFO Cost Calculation Success. Total:', totalCost);
+                    console.log('JE Debug: Item Costs Details:', JSON.stringify(itemCosts, null, 2));
+                } catch (error) {
+                    console.error('JE Error: FIFO Cost Calculation Failed:', error.message);
+                    // Fallback to product cost_price if FIFO fails
+                    console.warn('JE Warning: Falling back to product cost_price due to FIFO error');
 
-                console.log('JE Debug: COGS Calculation Start. Items:', createdItems.length);
+                    const productIds = createdItems.map(i => i.product_id);
+                    const products = await Product.findAll({
+                        where: { id: { [Op.in]: productIds } },
+                        transaction
+                    });
+                    const productMap = new Map(products.map(p => [p.id, p]));
 
-                for (const item of createdItems) {
-                    const product = productMap.get(item.product_id);
-                    const costPrice = product ? Number(product.cost_price) : 0;
-
-                    if (costPrice > 0) {
-                        const qty = Number(item.quantity) + Number(item.bonus || 0);
-                        totalCost += qty * costPrice;
-                    } else {
-                        console.warn(`JE Warning: Product ${item.product_id} has Cost Price = 0. COGS will be 0 for this item.`);
+                    for (const item of createdItems) {
+                        const product = productMap.get(item.product_id);
+                        const costPrice = product ? Number(product.cost_price) : 0;
+                        if (costPrice > 0) {
+                            const qty = Number(item.quantity) + Number(item.bonus || 0);
+                            totalCost += qty * costPrice;
+                        }
                     }
                 }
 
@@ -372,39 +429,66 @@ export default {
                     }));
                     const createdItems = await SalesInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
 
-                    for (const item of createdItems) {
-                        if (Number(item.quantity) > 0) {
-                            const batches = item.batch_number && item.expiry_date ?
-                                [{ batch_number: item.batch_number, expiry_date: item.expiry_date, quantity: item.quantity, cost_per_unit: item.price }] :
-                                [{ batch_number: null, expiry_date: null, quantity: item.quantity, cost_per_unit: item.price }];
+                    // Calculate FIFO costs for the new items
+                    const FIFOCostService = (await import('./fifoCost.service.js')).default;
+                    const itemsForCost = createdItems.map(item => ({
+                        product_id: item.product_id,
+                        warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                        quantity: Number(item.quantity) + Number(item.bonus || 0)
+                    }));
 
-                            await InventoryTransactionService.create({
-                                product_id: item.product_id,
-                                warehouse_id: item.warehouse_id || invoice.warehouse_id,
-                                transaction_type: 'out',
-                                transaction_date: invoice.invoice_date,
-                                note: `Sales Invoice #${invoice.invoice_number}`,
-                                source_type: 'sales_invoice',
-                                source_id: item.id,
-                                batches: batches
-                            }, { transaction });
+                    let fifoBatchesMap = new Map();
+                    try {
+                        const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(itemsForCost, transaction);
+                        for (const itemCost of itemCosts) {
+                            const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
+                            if (createdItem) {
+                                fifoBatchesMap.set(createdItem.id, itemCost.batches);
+                            }
                         }
+                    } catch (error) {
+                        console.error('FIFO batch calculation failed in update:', error.message);
+                    }
 
-                        if (Number(item.bonus) > 0) {
-                            const bonusBatches = item.batch_number && item.expiry_date ?
-                                [{ batch_number: item.batch_number, expiry_date: item.expiry_date, quantity: item.bonus, cost_per_unit: 0 }] :
-                                [{ batch_number: null, expiry_date: null, quantity: item.bonus, cost_per_unit: 0 }];
+                    // Create inventory transactions using FIFO batches
+                    for (const item of createdItems) {
+                        const totalQty = Number(item.quantity) + Number(item.bonus || 0);
+                        if (totalQty > 0) {
+                            const fifoBatches = fifoBatchesMap.get(item.id);
 
-                            await InventoryTransactionService.create({
-                                product_id: item.product_id,
-                                warehouse_id: item.warehouse_id || invoice.warehouse_id,
-                                transaction_type: 'out',
-                                transaction_date: invoice.invoice_date,
-                                note: `Sales Invoice #${invoice.invoice_number} (Bonus)`,
-                                source_type: 'sales_invoice',
-                                source_id: item.id,
-                                batches: bonusBatches
-                            }, { transaction });
+                            if (fifoBatches && fifoBatches.length > 0) {
+                                for (const fifoBatch of fifoBatches) {
+                                    await InventoryTransactionService.create({
+                                        product_id: item.product_id,
+                                        warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                                        transaction_type: 'out',
+                                        transaction_date: invoice.invoice_date,
+                                        note: `Sales Invoice #${invoice.invoice_number}`,
+                                        source_type: 'sales_invoice',
+                                        source_id: item.id,
+                                        batches: [{
+                                            batch_id: fifoBatch.batchId,
+                                            quantity: fifoBatch.quantity,
+                                            cost_per_unit: fifoBatch.costPerUnit
+                                        }]
+                                    }, { transaction });
+                                }
+                            } else {
+                                await InventoryTransactionService.create({
+                                    product_id: item.product_id,
+                                    warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                                    transaction_type: 'out',
+                                    transaction_date: invoice.invoice_date,
+                                    note: `Sales Invoice #${invoice.invoice_number}`,
+                                    source_type: 'sales_invoice',
+                                    source_id: item.id,
+                                    batches: [{
+                                        batch_id: null,
+                                        quantity: totalQty,
+                                        cost_per_unit: item.price
+                                    }]
+                                }, { transaction });
+                            }
                         }
                     }
                 }

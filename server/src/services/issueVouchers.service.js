@@ -38,6 +38,71 @@ export class IssueVouchersService {
           }));
 
           createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+
+          // Import InventoryTransactionService
+          const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
+
+          // Create Inventory Transactions (OUT) using FIFO batches
+          const FIFOCostService = (await import('./fifoCost.service.js')).default;
+          const itemsForCost = createdItems.map(item => ({
+            product_id: item.product_id,
+            warehouse_id: voucher.warehouse_id,
+            quantity: Number(item.quantity)
+          }));
+
+          let fifoBatchesMap = new Map();
+          try {
+            const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(itemsForCost, transaction);
+            for (const itemCost of itemCosts) {
+              const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
+              if (createdItem) {
+                fifoBatchesMap.set(createdItem.id, itemCost.batches);
+              }
+            }
+          } catch (error) {
+            console.error('Issue Voucher: FIFO batch calculation failed:', error.message);
+          }
+
+          // Create inventory OUT transactions using FIFO batches
+          for (const item of createdItems) {
+            if (Number(item.quantity) > 0) {
+              const fifoBatches = fifoBatchesMap.get(item.id);
+
+              if (fifoBatches && fifoBatches.length > 0) {
+                for (const fifoBatch of fifoBatches) {
+                  await InventoryTransactionService.create({
+                    product_id: item.product_id,
+                    warehouse_id: voucher.warehouse_id,
+                    transaction_type: 'out',
+                    transaction_date: voucher.issue_date,
+                    note: `Issue Voucher #${voucher.voucher_no}`,
+                    source_type: 'issue_voucher',
+                    source_id: item.id,
+                    batches: [{
+                      batch_id: fifoBatch.batchId,
+                      quantity: fifoBatch.quantity,
+                      cost_per_unit: fifoBatch.costPerUnit
+                    }]
+                  }, { transaction });
+                }
+              } else {
+                await InventoryTransactionService.create({
+                  product_id: item.product_id,
+                  warehouse_id: voucher.warehouse_id,
+                  transaction_type: 'out',
+                  transaction_date: voucher.issue_date,
+                  note: `Issue Voucher #${voucher.voucher_no}`,
+                  source_type: 'issue_voucher',
+                  source_id: item.id,
+                  batches: [{
+                    batch_id: null,
+                    quantity: Number(item.quantity),
+                    cost_per_unit: 0
+                  }]
+                }, { transaction });
+              }
+            }
+          }
         }
 
         // --- Journal Entry Creation ---
@@ -48,18 +113,41 @@ export class IssueVouchersService {
           // voucher.account_id acts as the debit account
           const debitAccount = await Account.findByPk(voucher.account_id, { transaction });
 
-          let totalCost = 0;
-          const productIds = createdItems.map(i => i.product_id);
-          const products = await Product.findAll({
-            where: { id: { [Op.in]: productIds } },
-            transaction
-          });
-          const productMap = new Map(products.map(p => [p.id, p]));
+          // Import FIFO Cost Service
+          const FIFOCostService = (await import('./fifoCost.service.js')).default;
 
-          for (const item of createdItems) {
-            const product = productMap.get(item.product_id);
-            if (product && Number(product.cost_price) > 0) {
-              totalCost += Number(item.quantity) * Number(product.cost_price);
+          // Prepare items for FIFO cost calculation
+          const itemsForCost = createdItems.map(item => ({
+            product_id: item.product_id,
+            warehouse_id: voucher.warehouse_id,
+            quantity: Number(item.quantity)
+          }));
+
+          let totalCost = 0;
+          try {
+            const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
+              itemsForCost,
+              transaction
+            );
+            totalCost = fifoCost;
+            console.log('Issue Voucher: FIFO Cost Calculation Success. Total:', totalCost);
+          } catch (error) {
+            console.error('Issue Voucher: FIFO Cost Calculation Failed:', error.message);
+            // Fallback to product cost_price if FIFO fails
+            console.warn('Issue Voucher: Falling back to product cost_price due to FIFO error');
+
+            const productIds = createdItems.map(i => i.product_id);
+            const products = await Product.findAll({
+              where: { id: { [Op.in]: productIds } },
+              transaction
+            });
+            const productMap = new Map(products.map(p => [p.id, p]));
+
+            for (const item of createdItems) {
+              const product = productMap.get(item.product_id);
+              if (product && Number(product.cost_price) > 0) {
+                totalCost += Number(item.quantity) * Number(product.cost_price);
+              }
             }
           }
 

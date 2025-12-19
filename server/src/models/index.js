@@ -40,6 +40,7 @@ import SalesInvoiceModel from "./salesInvoices.model.js";
 import SalesInvoiceItemModel from "./salesInvoiceItems.model.js";
 import BatchesModel from "./batches.model.js";
 import InventoryTransactionBatchesModel from "./inventoryTransactionBatches.model.js";
+import BatchInventoryModel from "./batchInventory.model.js";
 import SalesInvoicePaymentModel from "./salesInvoicePayments.model.js";
 import EntryTypeModel from "./entryTypes.model.js";
 import JobOrderCostModel from "./jobOrderCosts.model.js";
@@ -115,6 +116,7 @@ const SalesInvoice = SalesInvoiceModel(sequelize);
 const SalesInvoiceItem = SalesInvoiceItemModel(sequelize);
 const Batches = BatchesModel(sequelize);
 const InventoryTransactionBatches = InventoryTransactionBatchesModel(sequelize);
+const BatchInventory = BatchInventoryModel(sequelize);
 const SalesInvoicePayment = SalesInvoicePaymentModel(sequelize);
 const EntryType = EntryTypeModel(sequelize);
 const JobOrderCost = JobOrderCostModel(sequelize);
@@ -625,6 +627,12 @@ InventoryTransactionBatches.belongsTo(Batches, { foreignKey: "batch_id", as: "ba
 CurrentInventory.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 CurrentInventory.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
 
+// Batch Inventory Associations
+BatchInventory.belongsTo(Batches, { foreignKey: "batch_id", as: "batch" });
+BatchInventory.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
+Batches.hasMany(BatchInventory, { foreignKey: "batch_id", as: "batch_inventories" });
+Warehouse.hasMany(BatchInventory, { foreignKey: "warehouse_id", as: "batch_inventories" });
+
 // BillOfMaterial Associations
 BillOfMaterial.belongsTo(Product, { foreignKey: "product_id", as: "product" });
 BillOfMaterial.belongsTo(Product, { foreignKey: "material_id", as: "material" });
@@ -699,6 +707,7 @@ export {
   SalesInvoiceItem,
   Batches,
   InventoryTransactionBatches,
+  BatchInventory,
   SalesInvoicePayment,
   EntryType,
   JobOrderCost,

@@ -1,5 +1,6 @@
 import { InventoryTransaction, Product, Warehouse, InventoryTransactionBatches, Batches } from "../models/index.js";
 import CurrentInventoryService from "./currentInventory.service.js";
+import BatchInventoryService from "./batchInventory.service.js";
 
 class InventoryTransactionService {
   static async getByAll() {
@@ -67,6 +68,19 @@ class InventoryTransactionService {
           cost_per_unit: batchData.cost_per_unit || 0
         }, options);
         totalQuantity += Number(batchData.quantity);
+
+        // Update batch_inventory for this batch
+        if (batchId) {
+          const batchQtyChange = data.transaction_type === "in"
+            ? Number(batchData.quantity)
+            : -Number(batchData.quantity);
+          await BatchInventoryService.createOrUpdate(
+            batchId,
+            data.warehouse_id,
+            batchQtyChange,
+            options
+          );
+        }
       }
     }
 
@@ -108,6 +122,23 @@ class InventoryTransactionService {
     // Update transaction header
     await trx.update(data, options);
 
+    // Reverse old batch_inventory changes before deleting
+    if (trx.transaction_batches) {
+      for (const oldBatch of trx.transaction_batches) {
+        if (oldBatch.batch_id) {
+          const reverseQtyChange = oldType === "in"
+            ? -Number(oldBatch.quantity)
+            : Number(oldBatch.quantity);
+          await BatchInventoryService.createOrUpdate(
+            oldBatch.batch_id,
+            trx.warehouse_id,
+            reverseQtyChange,
+            options
+          );
+        }
+      }
+    }
+
     // Handle batches update - simplified: remove old, add new
     // In a real app, we might want to be smarter to preserve IDs or handle partial updates
     await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id }, ...options });
@@ -136,6 +167,19 @@ class InventoryTransactionService {
           cost_per_unit: batchData.cost_per_unit || 0
         }, options);
         newQty += Number(batchData.quantity);
+
+        // Update batch_inventory for new batches
+        if (batchId) {
+          const batchQtyChange = (data.transaction_type || trx.transaction_type) === "in"
+            ? Number(batchData.quantity)
+            : -Number(batchData.quantity);
+          await BatchInventoryService.createOrUpdate(
+            batchId,
+            data.warehouse_id || trx.warehouse_id,
+            batchQtyChange,
+            options
+          );
+        }
       }
     }
 
@@ -170,6 +214,23 @@ class InventoryTransactionService {
     let quantity = 0;
     if (trx.transaction_batches) {
       quantity = trx.transaction_batches.reduce((sum, b) => sum + Number(b.quantity), 0);
+    }
+
+    // Reverse batch_inventory changes before deletion
+    if (trx.transaction_batches) {
+      for (const batch of trx.transaction_batches) {
+        if (batch.batch_id) {
+          const reverseQtyChange = trx.transaction_type === "in"
+            ? -Number(batch.quantity)
+            : Number(batch.quantity);
+          await BatchInventoryService.createOrUpdate(
+            batch.batch_id,
+            trx.warehouse_id,
+            reverseQtyChange,
+            options
+          );
+        }
+      }
     }
 
     // عند الحذف نرجع الكمية إلى ما كانت عليه

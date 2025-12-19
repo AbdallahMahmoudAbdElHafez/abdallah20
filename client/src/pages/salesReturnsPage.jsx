@@ -32,7 +32,6 @@ import {
 } from "../features/salesReturns/salesReturnsSlice";
 import { fetchSalesInvoices } from "../features/salesInvoices/salesInvoicesSlice";
 import { fetchSalesInvoiceItems } from "../features/salesInvoiceItems/salesInvoiceItemsSlice";
-import { createSalesReturnItem } from "../features/salesReturnItems/salesReturnItemsSlice";
 import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
@@ -188,39 +187,27 @@ export default function SalesReturnsPage() {
     };
 
     const handleSave = async () => {
-        let returnId;
+        // Prepare items array from selected items
+        const itemsArray = Object.entries(selectedItems)
+            .filter(([_, data]) => data.isSelected && data.quantity > 0)
+            .map(([itemId, data]) => {
+                const item = invoiceItems.find(i => i.id === Number(itemId));
+                return {
+                    product_id: item.product_id,
+                    quantity: data.quantity,
+                    price: item.price
+                };
+            });
+
         const dataToSend = {
-            ...formData
+            ...formData,
+            items: itemsArray // Include items in the same request
         };
 
         if (editingReturn) {
-            const res = await dispatch(updateSalesReturn({ id: editingReturn.id, data: dataToSend }));
-            // Usually update returns result in payload
-            returnId = res.payload?.id;
+            await dispatch(updateSalesReturn({ id: editingReturn.id, data: dataToSend }));
         } else {
-            const res = await dispatch(addSalesReturn(dataToSend));
-            returnId = res.payload?.id;
-        }
-
-        // Create return items
-        if (returnId && !editingReturn) { // Only add items on create for now, as per reference implementation
-            const promises = Object.entries(selectedItems)
-                .filter(([_, data]) => data.isSelected && data.quantity > 0)
-                .map(([itemId, data]) => {
-                    const item = invoiceItems.find(i => i.id === Number(itemId));
-                    return dispatch(createSalesReturnItem({
-                        sales_return_id: returnId,
-                        sales_invoice_items_id: Number(itemId), // NOTE: Verify column name in sales_return_items model. It might be just 'product_id' and 'quantity' without link to invoice item if not strictly enforced, but usually we want link.
-                        // Wait, sales_return_items model I created has: sales_return_id, product_id, quantity, price. 
-                        // It DOES NOT have sales_invoice_item_id in the schema provided in Step 0.
-                        // So we mapping product_id from the invoice item.
-                        product_id: item.product_id,
-                        quantity: data.quantity,
-                        price: item.price // Assuming we want to record price at return time
-                    }));
-                });
-
-            await Promise.all(promises);
+            await dispatch(addSalesReturn(dataToSend));
         }
 
         handleClose();
