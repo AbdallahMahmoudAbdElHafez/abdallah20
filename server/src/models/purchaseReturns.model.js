@@ -11,6 +11,7 @@ export default (sequelize) => {
       notes: { type: DataTypes.TEXT },
       created_at: { type: DataTypes.DATE, defaultValue: sequelize.literal("CURRENT_TIMESTAMP") },
       total_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.0 },
+      return_type: { type: DataTypes.ENUM('cash', 'credit'), allowNull: false, defaultValue: 'cash' },
       tax_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.0 }
     },
     {
