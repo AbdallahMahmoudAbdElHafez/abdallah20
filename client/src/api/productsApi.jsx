@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 
 const productsApi = {
-  getAll: () => axiosClient.get("/products"),
+  getAll: (params) => axiosClient.get("/products", { params }),
   getById: (id) => axiosClient.get(`/products/${id}`),
   create: (data) => axiosClient.post("/products", data),
   update: (id, data) => axiosClient.put(`/products/${id}`, data),

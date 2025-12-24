@@ -18,6 +18,8 @@ export default (sequelize) => {
       end_date: { type: DataTypes.DATEONLY, allowNull: true },
       order_quantity: { type: DataTypes.DECIMAL(12, 3), allowNull: true },
       produced_quantity: { type: DataTypes.DECIMAL(12, 3), allowNull: true },
+      waste_quantity: { type: DataTypes.DECIMAL(12, 3), defaultValue: 0.0 }, // فاقد تصنيع
+      transport_cost: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0.0 }, // تكلفة النقل
       estimated_processing_cost_per_unit: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0.0 },
       actual_processing_cost_per_unit: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0.0 },
       estimated_raw_material_cost_per_unit: { type: DataTypes.DECIMAL(12, 2), defaultValue: 0.0 },

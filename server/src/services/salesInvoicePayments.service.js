@@ -1,4 +1,4 @@
-import { sequelize, SalesInvoicePayment, SalesInvoice, Party, Account } from "../models/index.js";
+import { sequelize, SalesInvoicePayment, SalesInvoice, Party, Account, Cheque } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
 import ENTRY_TYPES from "../constants/entryTypes.js";
 import { Op } from "sequelize";
@@ -33,19 +33,31 @@ export async function createPayment(data) {
             throw new Error("Customer does not have a linked account_id");
         }
 
+        // Handle Cheque Creation
+        if (data.payment_method === 'cheque' && data.cheque_details) {
+            await Cheque.create({
+                ...data.cheque_details,
+                cheque_type: 'incoming',
+                amount: data.amount,
+                sales_payment_id: payment.id,
+                account_id: data.account_id, // The account where the cheque is held (e.g., Notes Receivable)
+                status: 'issued'
+            }, { transaction: t });
+        }
+
         await createJournalEntry(
             {
                 refCode: "sales_invoice",
                 refId: payment.id,
                 entryDate: payment.payment_date,
-                description: `تحصيل فاتورة مبيعات #${invoice.invoice_number}`,
+                description: `تحصيل فاتورة مبيعات #${invoice.invoice_number} - ${data.payment_method}`,
                 entryTypeId: ENTRY_TYPES.SALES_COLLECTION,
                 lines: [
                     {
-                        account_id: data.account_id, // Cash/Bank
+                        account_id: data.account_id, // Cash/Bank/Cheque Account
                         debit: Number(data.amount),
                         credit: 0,
-                        description: "دخول إلى الصندوق/البنك",
+                        description: `تحصيل - ${data.payment_method}`,
                     },
                     {
                         account_id: invoice.party.account_id, // Customer Account

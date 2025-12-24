@@ -91,6 +91,7 @@ export default function SalesInvoicesPage() {
 
     const columns = [
         { accessorKey: "invoice_number", header: "رقم الفاتورة" },
+        { accessorKey: "party.name", header: "العميل" },
         { accessorKey: "invoice_date", header: "تاريخ الفاتورة" },
         { accessorKey: "status", header: "الحالة" },
         { accessorKey: "total_amount", header: "الإجمالي" },

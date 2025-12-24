@@ -106,11 +106,20 @@ export default function SalesInvoiceDialog({
         setLoadingMeta(true);
         Promise.all([
             dispatch(fetchParties()),
-            dispatch(fetchProducts()),
+            // dispatch(fetchProducts()), // Don't fetch all initially, wait for warehouse selection or fetch generic
             dispatch(fetchWarehouses()),
             dispatch(fetchEmployees()),
         ]).finally(() => setLoadingMeta(false));
     }, [dispatch]);
+
+    // Fetch products when warehouse changes
+    useEffect(() => {
+        if (invoiceHead.warehouse_id) {
+            dispatch(fetchProducts({ warehouse_id: invoiceHead.warehouse_id }));
+        } else {
+            dispatch(fetchProducts()); // Fetch all (no stock info or generic)
+        }
+    }, [dispatch, invoiceHead.warehouse_id]);
 
     useEffect(() => {
         if (invoice) {
@@ -377,7 +386,7 @@ export default function SalesInvoiceDialog({
 
         const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([wbout], { type: 'application/octet-stream' });
-        saveAs(blob, `SalesInvoice_${invoiceHead.invoice_number || 'New'}.xlsx`);
+        saveAs(blob, `فاتورة_مبيعات_${invoiceHead.invoice_number || 'جديدة'}.xlsx`);
     };
 
     const itemColumns = [
@@ -416,7 +425,7 @@ export default function SalesInvoiceDialog({
             },
         },
         {
-            header: "Actions",
+            header: "إجراءات",
             Cell: ({ row }) => (
                 <IconButton color="error" onClick={() => removeItemTemp(row.original.tempId)}>
                     <DeleteIcon fontSize="small" />
@@ -634,11 +643,14 @@ export default function SalesInvoiceDialog({
                                                 size="small"
                                             >
                                                 <MenuItem value="">اختر المنتج</MenuItem>
-                                                {products.map((p) => (
-                                                    <MenuItem key={p.id} value={p.id}>
-                                                        {p.name}
-                                                    </MenuItem>
-                                                ))}
+                                                {products.map((p) => {
+                                                    const stock = p.current_inventory?.[0]?.quantity || 0;
+                                                    return (
+                                                        <MenuItem key={p.id} value={p.id} disabled={stock <= 0}>
+                                                            {p.name} (الرصيد: {stock})
+                                                        </MenuItem>
+                                                    );
+                                                })}
                                             </TextField>
                                         </Grid>
 

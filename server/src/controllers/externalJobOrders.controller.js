@@ -85,6 +85,30 @@ const ExternalJobOrdersController = {
       });
     }
   },
+
+  sendMaterials: async (req, res) => {
+    try {
+      const { items } = req.body;
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ message: 'Items array is required' });
+      }
+      const result = await ExternalJobOrdersService.sendMaterials(req.params.id, items);
+      res.json(result);
+    } catch (error) {
+      console.error('Error sending materials:', error);
+      res.status(500).json({ message: error.message });
+    }
+  },
+
+  receiveFinishedGoods: async (req, res) => {
+    try {
+      const result = await ExternalJobOrdersService.receiveFinishedGoods(req.params.id, req.body);
+      res.json(result);
+    } catch (error) {
+      console.error('Error receiving goods:', error);
+      res.status(500).json({ message: error.message });
+    }
+  },
 };
 
 export default ExternalJobOrdersController;

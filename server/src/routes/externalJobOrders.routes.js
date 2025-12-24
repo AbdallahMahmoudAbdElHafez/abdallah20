@@ -10,6 +10,8 @@ router.post('/', ExternalJobOrdersController.create);
 router.get('/:id', ExternalJobOrdersController.getById);
 router.put('/:id', ExternalJobOrdersController.update);
 router.delete('/:id', ExternalJobOrdersController.remove);
+router.post('/:id/send-materials', ExternalJobOrdersController.sendMaterials);
+router.post('/:id/receive-goods', ExternalJobOrdersController.receiveFinishedGoods);
 
 export default router;
 

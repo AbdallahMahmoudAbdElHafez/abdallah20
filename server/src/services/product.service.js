@@ -1,8 +1,19 @@
-import { Product, Unit } from "../models/index.js";
+import { Product, Unit, CurrentInventory } from "../models/index.js";
 
 class ProductService {
-  static async getAll() {
-    return await Product.findAll({ include: [{ model: Unit, as: "unit" }] });
+  static async getAll(params = {}) {
+    const include = [{ model: Unit, as: "unit" }];
+
+    if (params.warehouse_id) {
+      include.push({
+        model: CurrentInventory,
+        as: "current_inventory",
+        where: { warehouse_id: params.warehouse_id },
+        required: false // Keep products even if no inventory record exists (stock 0)
+      });
+    }
+
+    return await Product.findAll({ include });
   }
 
   static async create(data) {

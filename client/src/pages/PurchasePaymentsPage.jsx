@@ -43,11 +43,11 @@ export default function PurchasePaymentsPage() {
   const handleDateSubmit = () => {
     const { startDate, endDate } = dateRange;
     if (!startDate || !endDate) {
-      setError("Please select both start and end dates.");
+      setError("يرجى تحديد تاريخ البدء والانتهاء.");
       return;
     }
     if (new Date(startDate) > new Date(endDate)) {
-      setError("Start date must be before end date.");
+      setError("تاريخ البدء يجب أن يكون قبل تاريخ الانتهاء.");
       return;
     }
     setError("");
@@ -60,7 +60,7 @@ export default function PurchasePaymentsPage() {
 
   // حذف
   const handleDelete = (id) => {
-    if (window.confirm("Delete this payment?")) {
+    if (window.confirm("هل أنت متأكد من حذف هذا السند؟")) {
       dispatch(deletePayment(id));
     }
   };
@@ -84,15 +84,15 @@ export default function PurchasePaymentsPage() {
   };
 
   const columns = [
-    { accessorKey: "id", header: "ID" },
-    { accessorKey: "purchase_invoice.invoice_number", header: "Invoice Number" },
-    { accessorKey: "purchase_invoice.supplier.name", header: "Supplier Name" },
-    { accessorKey: "amount", header: "Amount" },
-    { accessorKey: "payment_date", header: "Payment Date" },
-    { accessorKey: "payment_method", header: "Method" },
-    { accessorKey: "notes", header: "Notes" },
+    { accessorKey: "id", header: "المعرف" },
+    { accessorKey: "purchase_invoice.invoice_number", header: "رقم الفاتورة" },
+    { accessorKey: "purchase_invoice.supplier.name", header: "اسم المورد" },
+    { accessorKey: "amount", header: "المبلغ" },
+    { accessorKey: "payment_date", header: "تاريخ السداد" },
+    { accessorKey: "payment_method", header: "طريقة السداد" },
+    { accessorKey: "notes", header: "ملاحظات" },
     {
-      header: "Actions",
+      header: "إجراءات",
       Cell: ({ row }) => (
         <Box sx={{ display: "flex", gap: 1 }}>
           <Button
@@ -101,7 +101,7 @@ export default function PurchasePaymentsPage() {
             color="primary"
             onClick={() => handleEditOpen(row.original)}
           >
-            Edit
+            تعديل
           </Button>
           <Button
             size="small"
@@ -109,7 +109,7 @@ export default function PurchasePaymentsPage() {
             variant="outlined"
             onClick={() => handleDelete(row.original.id)}
           >
-            Delete
+            حذف
           </Button>
         </Box>
       ),
@@ -119,7 +119,7 @@ export default function PurchasePaymentsPage() {
   return (
     <Box p={2}>
       <Button variant="contained" onClick={() => setDateDialogOpen(true)} sx={{ mb: 2 }}>
-        Change Date Range
+        تغيير نطاق التاريخ
       </Button>
 
       {status === "loading" ? (
@@ -132,10 +132,10 @@ export default function PurchasePaymentsPage() {
 
       {/* ===== Date Range Dialog ===== */}
       <Dialog open={dateDialogOpen} disableEscapeKeyDown>
-        <DialogTitle>Select Date Range</DialogTitle>
+        <DialogTitle>تحديد نطاق التاريخ</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1, minWidth: 300 }}>
           <TextField
-            label="From Date"
+            label="من تاريخ"
             type="date"
             InputLabelProps={{ shrink: true }}
             value={dateRange.startDate}
@@ -143,7 +143,7 @@ export default function PurchasePaymentsPage() {
             fullWidth
           />
           <TextField
-            label="To Date"
+            label="إلى تاريخ"
             type="date"
             InputLabelProps={{ shrink: true }}
             value={dateRange.endDate}
@@ -154,38 +154,38 @@ export default function PurchasePaymentsPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDateSubmit} variant="contained" disabled={!dateRange.startDate || !dateRange.endDate}>
-            Show Payments
+            عرض المدفوعات
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* ===== Dialog for Editing ===== */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth>
-        <DialogTitle>Edit Payment</DialogTitle>
+        <DialogTitle>تعديل السند</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
           <TextField
-            label="Amount"
+            label="المبلغ"
             type="number"
             value={editData.amount}
             onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
           />
           <TextField
-            label="Payment Date"
+            label="تاريخ السداد"
             type="date"
             InputLabelProps={{ shrink: true }}
             value={editData.payment_date?.slice(0, 10) || ""}
             onChange={(e) => setEditData({ ...editData, payment_date: e.target.value })}
           />
           <TextField
-            label="Notes"
+            label="ملاحظات"
             value={editData.notes}
             onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+          <Button onClick={() => setEditOpen(false)}>إلغاء</Button>
           <Button onClick={handleEditSave} variant="contained">
-            Save
+            حفظ
           </Button>
         </DialogActions>
       </Dialog>

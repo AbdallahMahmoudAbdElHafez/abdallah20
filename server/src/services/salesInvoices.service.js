@@ -269,7 +269,7 @@ export default {
                             entryDate: invoice.invoice_date,
                             description: `Sales Invoice #${invoice.invoice_number}`,
                             lines: lines,
-                            entryTypeId: 1
+                            entryTypeId: 2
                         }, { transaction });
                         console.log('JE Success: SI Revenue Entry Created');
                     } catch (err) {
@@ -358,7 +358,7 @@ export default {
                                     description: `Inventory - SI #${invoice.invoice_number}`
                                 }
                             ],
-                            entryTypeId: 1
+                            entryTypeId: 2
                         }, { transaction });
                         console.log('JE Success: SI COGS Entry Created');
                     } catch (err) {

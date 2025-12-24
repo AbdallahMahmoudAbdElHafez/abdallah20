@@ -51,6 +51,7 @@ import entryTypesRoutes from "./routes/entryTypes.routes.js";
 import journalEntryRoutes from "./routes/journalEntry.routes.js";
 import jobOrderCostsRoutes from './routes/jobOrderCosts.routes.js';
 import companyRoutes from './routes/company.routes.js';
+import chequesRoutes from './routes/cheque.routes.js';
 
 const app = express();
 app.use(cors());
@@ -109,6 +110,7 @@ app.use("/api/entry-types", entryTypesRoutes);
 app.use("/api/journal-entries", journalEntryRoutes);
 app.use('/api/job-order-costs', jobOrderCostsRoutes);
 app.use('/api/companies', companyRoutes);
+app.use('/api/cheques', chequesRoutes);
 
 app.use(errorHandler);
 export default app;

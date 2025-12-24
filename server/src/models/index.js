@@ -22,6 +22,7 @@ import WarehouseTransferItemModel from "./warehouseTransferItems.model.js";
 import ProductCostModel from './productCosts.model.js';
 import ProcessModel from './processes.model.js';
 import ExternalJobOrderModel from './externalJobOrders.model.js';
+import ExternalJobOrderItemModel from './externalJobOrderItems.model.js';
 import CurrentInventoryModel from "./currentInventory.model.js";
 import DepartmentModel from "./departments.model.js";
 import jobTitleModel from "./jobTitles.model.js";
@@ -61,6 +62,7 @@ import purchaseReturnsHooks from "../hooks/purchaseReturnsHooks.js";
 import externalJobOrderHooks from "../hooks/externalJobOrderHooks.js";
 import expensesHooks from "../hooks/expensesHooks.js";
 import CompanyModel from "./company.model.js";
+import ChequeModel from "./cheque.model.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -98,6 +100,7 @@ const WarehouseTransferItem = WarehouseTransferItemModel(sequelize);
 const ProductCost = ProductCostModel(sequelize);
 const Process = ProcessModel(sequelize);
 const ExternalJobOrder = ExternalJobOrderModel(sequelize);
+const ExternalJobOrderItem = ExternalJobOrderItemModel(sequelize);
 const CurrentInventory = CurrentInventoryModel(sequelize);
 const Department = DepartmentModel(sequelize);
 const JobTitle = jobTitleModel(sequelize);
@@ -121,6 +124,7 @@ const SalesInvoicePayment = SalesInvoicePaymentModel(sequelize);
 const EntryType = EntryTypeModel(sequelize);
 const JobOrderCost = JobOrderCostModel(sequelize);
 const Company = CompanyModel(sequelize);
+const Cheque = ChequeModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -350,6 +354,27 @@ ExternalJobOrder.hasMany(JobOrderCost, {
 JobOrderCost.belongsTo(ExternalJobOrder, {
   foreignKey: 'job_order_id',
   as: 'job_order',
+});
+
+// ExternalJobOrder ↔ ExternalJobOrderItem
+ExternalJobOrder.hasMany(ExternalJobOrderItem, {
+  foreignKey: 'job_order_id',
+  as: 'items',
+  onDelete: 'CASCADE',
+});
+ExternalJobOrderItem.belongsTo(ExternalJobOrder, {
+  foreignKey: 'job_order_id',
+  as: 'job_order',
+});
+
+ExternalJobOrderItem.belongsTo(Product, {
+  foreignKey: 'product_id',
+  as: 'product',
+});
+
+ExternalJobOrderItem.belongsTo(Warehouse, {
+  foreignKey: 'warehouse_id',
+  as: 'warehouse',
 });
 Employee.belongsTo(JobTitle, {
   foreignKey: "job_title_id",
@@ -625,6 +650,7 @@ InventoryTransactionBatches.belongsTo(Batches, { foreignKey: "batch_id", as: "ba
 
 // Current Inventory Associations
 CurrentInventory.belongsTo(Product, { foreignKey: "product_id", as: "product" });
+Product.hasMany(CurrentInventory, { foreignKey: "product_id", as: "current_inventory" });
 CurrentInventory.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
 
 // Batch Inventory Associations
@@ -658,6 +684,14 @@ Party.hasMany(Expense, { foreignKey: 'party_id', as: 'partyExpenses' });
 City.hasMany(Company, { foreignKey: "city_id", as: "companies" });
 Company.belongsTo(City, { foreignKey: "city_id", as: "city" });
 
+// Cheque Associations
+Cheque.belongsTo(Account, { foreignKey: "account_id", as: "account" });
+Cheque.belongsTo(SalesInvoicePayment, { foreignKey: "sales_payment_id", as: "sales_payment" });
+Cheque.belongsTo(PurchaseInvoicePayment, { foreignKey: "purchase_payment_id", as: "purchase_payment" });
+
+SalesInvoicePayment.hasOne(Cheque, { foreignKey: "sales_payment_id", as: "cheque" });
+PurchaseInvoicePayment.hasOne(Cheque, { foreignKey: "purchase_payment_id", as: "cheque" });
+
 export {
   sequelize,
   Company,
@@ -689,6 +723,7 @@ export {
   ProductCost,
   Process,
   ExternalJobOrder,
+  ExternalJobOrderItem,
   CurrentInventory,
   Department,
   JobTitle,
@@ -711,5 +746,6 @@ export {
   SalesInvoicePayment,
   EntryType,
   JobOrderCost,
+  Cheque,
 
 };

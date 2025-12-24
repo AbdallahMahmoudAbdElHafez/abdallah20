@@ -1,4 +1,4 @@
-import { sequelize, PurchaseInvoicePayment, PurchaseInvoice, Party } from "../models/index.js";
+import { sequelize, PurchaseInvoicePayment, PurchaseInvoice, Party, Cheque, Account } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
 import { Op } from "sequelize"; // 👈 مهم جداً
 
@@ -11,6 +11,10 @@ export async function createPayment(data) {
       transaction: t,
     });
     if (!invoice) throw new Error("Invoice not found");
+
+    if (!data.amount || isNaN(Number(data.amount)) || Number(data.amount) <= 0) {
+      throw new Error("Invalid payment amount");
+    }
 
     // 2️⃣ إجمالي المدفوعات السابقة
     const totalPaid = await PurchaseInvoicePayment.sum("amount", {
@@ -32,12 +36,24 @@ export async function createPayment(data) {
       throw new Error("Supplier does not have a linked account_id");
     }
 
+    // Handle Cheque Creation
+    if (data.payment_method === 'cheque' && data.cheque_details) {
+      await Cheque.create({
+        ...data.cheque_details,
+        cheque_type: 'outgoing',
+        amount: data.amount,
+        purchase_payment_id: payment.id,
+        account_id: data.account_id, // The account where the cheque is drawn from (e.g., Notes Payable)
+        status: 'issued'
+      }, { transaction: t });
+    }
+
     await createJournalEntry(
       {
         refCode: "purchase_invoice",
         refId: payment.id,
         entryDate: payment.payment_date,
-        description: `سداد فاتورة مشتريات #${invoice.invoice_number}`,
+        description: `سداد فاتورة مشتريات #${invoice.invoice_number} - ${data.payment_method}`,
         lines: [
           {
             account_id: invoice.supplier.account_id,
@@ -49,9 +65,10 @@ export async function createPayment(data) {
             account_id: data.account_id,
             debit: 0,
             credit: Number(data.amount),
-            description: "خروج من الصندوق/البنك",
+            description: `خروج - ${data.payment_method}`,
           },
         ],
+        entryTypeId: 6 // PURCHASE_PAYMENT
       },
       { transaction: t }
     );
@@ -62,8 +79,8 @@ export async function createPayment(data) {
       newPaid >= Number(invoice.total_amount)
         ? "paid"
         : newPaid > 0
-        ? "partially_paid"
-        : invoice.status;
+          ? "partially_paid"
+          : invoice.status;
 
     if (newStatus !== invoice.status) {
       await invoice.update({ status: newStatus }, { transaction: t });
@@ -114,8 +131,8 @@ export async function updatePayment(id, data) {
       totalAfter >= invoice.total_amount
         ? "paid"
         : totalAfter > 0
-        ? "partially_paid"
-        : invoice.status;
+          ? "partially_paid"
+          : invoice.status;
     if (newStatus !== invoice.status) {
       await invoice.update({ status: newStatus }, { transaction: t });
     }
@@ -128,4 +145,16 @@ export async function updatePayment(id, data) {
   }
 }
 
- 
+export async function listPayments(invoiceId) {
+  return await PurchaseInvoicePayment.findAll({
+    where: { purchase_invoice_id: invoiceId },
+    include: [{ model: Account, as: "account" }],
+    order: [["payment_date", "DESC"]],
+  });
+}
+
+export async function getPaymentById(id) {
+  return await PurchaseInvoicePayment.findByPk(id, {
+    include: [{ model: Account, as: "account" }],
+  });
+}

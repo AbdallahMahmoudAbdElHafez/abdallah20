@@ -60,7 +60,8 @@ class PurchaseInvoiceService {
       if (items && items.length > 0) {
         const itemsWithInvoiceId = items.map(item => ({
           ...item,
-          purchase_invoice_id: invoice.id
+          purchase_invoice_id: invoice.id,
+          expiry_date: item.expiry_date === "" || item.expiry_date === "Invalid date" ? null : item.expiry_date
         }));
 
         await PurchaseInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
@@ -237,7 +238,7 @@ class PurchaseInvoiceService {
               entryDate: invoice.invoice_date,
               description: `Purchase Invoice #${invoice.invoice_number}`,
               lines: lines,
-              entryTypeId: 1
+              entryTypeId: 5
             }, { transaction });
             console.log('JE Success: PI Entry Created');
           } catch (err) {

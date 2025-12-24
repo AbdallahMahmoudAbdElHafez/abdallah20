@@ -19,6 +19,7 @@ import {
     addPayment,
 } from "../features/salesInvoicePayments/salesInvoicePaymentsSlice";
 import { fetchAccounts } from "../features/accounts/accountsSlice";
+import ChequeDetailsForm from "./ChequeDetailsForm";
 
 export default function SalesInvoicePaymentsManager({ invoiceId }) {
     const dispatch = useDispatch();
@@ -36,6 +37,12 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
         payment_method: "cash",
         account_id: "",
         note: "",
+        cheque_details: {
+            cheque_number: "",
+            issue_date: "",
+            due_date: "",
+            bank_name: ""
+        }
     });
 
     useEffect(() => {
@@ -48,7 +55,7 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
     const payments = byInvoice[invoiceId] || [];
 
     const handleDelete = (id) => {
-        if (window.confirm("Delete this payment?")) {
+        if (window.confirm("هل أنت متأكد من حذف هذا السند؟")) {
             dispatch(deletePayment(id));
         }
     };
@@ -75,6 +82,12 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
                 payment_method: "cash",
                 account_id: "", // Should be selected by user
                 note: "",
+                cheque_details: {
+                    cheque_number: "",
+                    issue_date: "",
+                    due_date: "",
+                    bank_name: ""
+                }
             });
         }
         setDialogOpen(true);
@@ -92,17 +105,17 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
     };
 
     const columns = [
-        { accessorKey: "id", header: "ID" },
-        { accessorKey: "amount", header: "Amount" },
-        { accessorKey: "payment_date", header: "Date" },
-        { accessorKey: "payment_method", header: "Method" },
+        { accessorKey: "id", header: "المعرف" },
+        { accessorKey: "amount", header: "المبلغ" },
+        { accessorKey: "payment_date", header: "التاريخ" },
+        { accessorKey: "payment_method", header: "الطريقة" },
         {
             accessorFn: (row) => row.account?.name || row.account_id,
-            header: "Account"
+            header: "الحساب"
         },
-        { accessorKey: "note", header: "Note" },
+        { accessorKey: "note", header: "ملاحظات" },
         {
-            header: "Actions",
+            header: "إجراءات",
             Cell: ({ row }) => (
                 <Box sx={{ display: "flex", gap: 1 }}>
                     <Button
@@ -110,7 +123,7 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
                         variant="outlined"
                         onClick={() => handleOpenDialog(row.original)}
                     >
-                        Edit
+                        تعديل
                     </Button>
                     <Button
                         size="small"
@@ -118,7 +131,7 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
                         variant="outlined"
                         onClick={() => handleDelete(row.original.id)}
                     >
-                        Delete
+                        حذف
                     </Button>
                 </Box>
             ),
@@ -132,7 +145,7 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
     return (
         <Box>
             <Button variant="contained" onClick={() => handleOpenDialog()} sx={{ mb: 2 }}>
-                Add Payment
+                إضافة دفعة
             </Button>
             <MaterialReactTable
                 columns={columns}
@@ -143,17 +156,17 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
             />
 
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
-                <DialogTitle>{isEditing ? "Edit Payment" : "Add Payment"}</DialogTitle>
+                <DialogTitle>{isEditing ? "تعديل دفعة" : "إضافة دفعة"}</DialogTitle>
                 <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
                     <TextField
-                        label="Amount"
+                        label="المبلغ"
                         type="number"
                         value={formData.amount}
                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                         fullWidth
                     />
                     <TextField
-                        label="Date"
+                        label="التاريخ"
                         type="date"
                         InputLabelProps={{ shrink: true }}
                         value={formData.payment_date?.slice(0, 10) || ""}
@@ -162,18 +175,18 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
                     />
                     <TextField
                         select
-                        label="Method"
+                        label="الطريقة"
                         value={formData.payment_method}
                         onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
                         fullWidth
                     >
-                        <MenuItem value="cash">Cash</MenuItem>
-                        <MenuItem value="bank_transfer">Bank Transfer</MenuItem>
-                        <MenuItem value="cheque">Cheque</MenuItem>
+                        <MenuItem value="cash">نقدي</MenuItem>
+                        <MenuItem value="bank_transfer">تحويل بنكي</MenuItem>
+                        <MenuItem value="cheque">شيك</MenuItem>
                     </TextField>
                     <TextField
                         select
-                        label="Account"
+                        label="الحساب"
                         value={formData.account_id}
                         onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
                         fullWidth
@@ -183,16 +196,22 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
                         ))}
                     </TextField>
                     <TextField
-                        label="Note"
+                        label="ملاحظات"
                         value={formData.note}
                         onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                         fullWidth
                     />
+                    {formData.payment_method === 'cheque' && (
+                        <ChequeDetailsForm
+                            chequeDetails={formData.cheque_details}
+                            setChequeDetails={(details) => setFormData({ ...formData, cheque_details: details })}
+                        />
+                    )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={() => setDialogOpen(false)}>إلغاء</Button>
                     <Button onClick={handleSave} variant="contained">
-                        Save
+                        حفظ
                     </Button>
                 </DialogActions>
             </Dialog>

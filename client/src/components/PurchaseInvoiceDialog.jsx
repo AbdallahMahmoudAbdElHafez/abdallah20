@@ -103,10 +103,19 @@ export default function PurchaseInvoiceDialog({
     setLoadingMeta(true);
     Promise.all([
       dispatch(fetchParties()),
-      dispatch(fetchProducts()),
+      // dispatch(fetchProducts()),
       dispatch(fetchWarehouses()),
     ]).finally(() => setLoadingMeta(false));
   }, [dispatch]);
+
+  useEffect(() => {
+    if (itemForm.warehouse_id) {
+      dispatch(fetchProducts({ warehouse_id: itemForm.warehouse_id }));
+    } else {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, itemForm.warehouse_id]);
+
 
   useEffect(() => {
     if (invoice) {
@@ -205,6 +214,7 @@ export default function PurchaseInvoiceDialog({
       quantity: Number(itemForm.quantity),
       unit_price: Number(itemForm.unit_price),
       discount: itemForm.discount === "" ? 0 : Number(itemForm.discount),
+      expiry_date: itemForm.expiry_date === "" ? null : itemForm.expiry_date,
     };
     setItems((prev) => [...prev, newItem]);
     setItemForm({
@@ -352,7 +362,7 @@ export default function PurchaseInvoiceDialog({
 
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([wbout], { type: 'application/octet-stream' });
-    saveAs(blob, `PurchaseInvoice_${invoiceHead.invoice_number || invoice?.invoice_number || 'New'}.xlsx`);
+    saveAs(blob, `فاتورة_مشتريات_${invoiceHead.invoice_number || invoice?.invoice_number || 'جديدة'}.xlsx`);
   };
 
   const itemColumns = [
@@ -388,7 +398,7 @@ export default function PurchaseInvoiceDialog({
       },
     },
     {
-      header: "Actions",
+      header: "إجراءات",
       Cell: ({ row }) => (
         <IconButton color="error" onClick={() => removeItemTemp(row.original.tempId)}>
           <DeleteIcon fontSize="small" />
@@ -558,24 +568,6 @@ export default function PurchaseInvoiceDialog({
               <Collapse in={showItemForm}>
                 <Paper sx={{ p: 2, mb: 2 }}>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <TextField
-                        select
-                        fullWidth
-                        label="المنتج"
-                        value={itemForm.product_id}
-                        onChange={(e) => handleItemProductChange(e.target.value)}
-                        size="small"
-                      >
-                        <MenuItem value="">اختر المنتج</MenuItem>
-                        {products.map((p) => (
-                          <MenuItem key={p.id} value={p.id}>
-                            {p.name}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Grid>
-
                     <Grid item xs={12} sm={6} md={2}>
                       <TextField
                         select
@@ -593,6 +585,27 @@ export default function PurchaseInvoiceDialog({
                             {w.name}
                           </MenuItem>
                         ))}
+                      </TextField>
+                    </Grid>
+
+                    <Grid item xs={12} sm={6} md={3}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="المنتج"
+                        value={itemForm.product_id}
+                        onChange={(e) => handleItemProductChange(e.target.value)}
+                        size="small"
+                      >
+                        <MenuItem value="">اختر المنتج</MenuItem>
+                        {products.map((p) => {
+                          const stock = p.current_inventory?.[0]?.quantity || 0;
+                          return (
+                            <MenuItem key={p.id} value={p.id}>
+                              {p.name} (الرصيد: {stock})
+                            </MenuItem>
+                          );
+                        })}
                       </TextField>
                     </Grid>
 
