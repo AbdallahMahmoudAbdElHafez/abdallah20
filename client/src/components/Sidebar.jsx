@@ -29,6 +29,7 @@ const navItems = [
 
   { label: "فئات المصروفات", path: "/expense-categories" },
   { label: "مكونات التصنيع", path: "/bill-of-material" },
+  { label: "الأطباء", path: "/doctors" },
 
 ];
 const productsMenu = [

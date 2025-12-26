@@ -46,6 +46,7 @@ import PurchasesReportPage from "./pages/PurchasesReportPage";
 import ExpensesReportPage from "./pages/ExpensesReportPage";
 import JobOrdersReportPage from "./pages/JobOrdersReportPage";
 import ServicePaymentsPage from "./pages/servicePaymentsPage";
+import DoctorsPage from "./pages/DoctorsPage";
 
 const drawerWidth = 240;
 
@@ -102,6 +103,7 @@ export default function App() {
           <Route path="/reports/expenses" element={<ExpensesReportPage />} />
           <Route path="/reports/job-orders" element={<JobOrdersReportPage />} />
           <Route path="/service-payments" element={<ServicePaymentsPage />} />
+          <Route path="/doctors" element={<DoctorsPage />} />
         </Routes>
       </Box>
     </BrowserRouter>

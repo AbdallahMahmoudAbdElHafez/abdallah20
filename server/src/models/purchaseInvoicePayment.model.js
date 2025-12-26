@@ -29,6 +29,11 @@ export default (sequelize) =>
         validate: { min: 0.01 },
       },
       reference_number: DataTypes.STRING,
+      employee_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: { model: "employees", key: "id" },
+      },
       note: DataTypes.STRING,
     },
     {

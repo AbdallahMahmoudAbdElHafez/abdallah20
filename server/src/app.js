@@ -53,6 +53,7 @@ import companyRoutes from './routes/company.routes.js';
 import chequesRoutes from './routes/cheque.routes.js';
 import servicePaymentsRoutes from './routes/servicePayments.routes.js';
 import reportsRoutes from './routes/reports.routes.js';
+import doctorsRoutes from './routes/doctors.routes.js';
 
 const app = express();
 app.use(cors());
@@ -113,6 +114,7 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/cheques', chequesRoutes);
 app.use('/api/service-payments', servicePaymentsRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/doctors', doctorsRoutes);
 
 app.use(errorHandler);
 export default app;

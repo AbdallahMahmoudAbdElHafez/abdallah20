@@ -23,6 +23,7 @@ export default function ServicePaymentsPage() {
     // Dropdown Data
     const [parties, setParties] = useState([]);
     const [accounts, setAccounts] = useState([]);
+    const [employees, setEmployees] = useState([]);
 
     // Date Range State
     const [dateDialogOpen, setDateDialogOpen] = useState(true);
@@ -45,7 +46,8 @@ export default function ServicePaymentsPage() {
         note: "",
         cheque_number: "",
         issue_date: "",
-        due_date: ""
+        due_date: "",
+        employee_id: ""
     });
 
     useEffect(() => {
@@ -56,12 +58,14 @@ export default function ServicePaymentsPage() {
 
     const fetchDropdowns = async () => {
         try {
-            const [partiesRes, accountsRes] = await Promise.all([
+            const [partiesRes, accountsRes, employeesRes] = await Promise.all([
                 axiosClient.get("/parties"),
-                axiosClient.get("/accounts")
+                axiosClient.get("/accounts"),
+                axiosClient.get("/employees")
             ]);
             setParties(partiesRes.data);
             setAccounts(accountsRes.data);
+            setEmployees(employeesRes.data);
         } catch (err) {
             console.error(err);
         }
@@ -111,7 +115,8 @@ export default function ServicePaymentsPage() {
             note: "",
             cheque_number: "",
             issue_date: "",
-            due_date: ""
+            due_date: "",
+            employee_id: ""
         });
         setDialogOpen(true);
     };
@@ -128,7 +133,8 @@ export default function ServicePaymentsPage() {
             note: row.note || "",
             cheque_number: row.cheque_number || "",
             issue_date: row.issue_date || "",
-            due_date: row.due_date || ""
+            due_date: row.due_date || "",
+            employee_id: row.employee_id || ""
         });
         setDialogOpen(true);
     };
@@ -174,6 +180,11 @@ export default function ServicePaymentsPage() {
             accessorKey: "account_id",
             header: "الخزينة/البنك",
             Cell: ({ cell }) => accounts.find(a => a.id === cell.getValue())?.name || cell.getValue()
+        },
+        {
+            accessorKey: "employee_id",
+            header: "الموظف",
+            Cell: ({ cell }) => employees.find(e => e.id === cell.getValue())?.name || "-"
         },
         { accessorKey: "note", header: "ملاحظات" },
         {
@@ -319,6 +330,18 @@ export default function ServicePaymentsPage() {
                                 onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
                             />
                         </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                select
+                                label="الموظف"
+                                fullWidth
+                                value={formData.employee_id}
+                                onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
+                            >
+                                <MenuItem value=""><em>لا يوجد</em></MenuItem>
+                                {employees.map(e => <MenuItem key={e.id} value={e.id}>{e.name}</MenuItem>)}
+                            </TextField>
+                        </Grid>
 
                         {/* Cheque Fields */}
                         {formData.payment_method === 'cheque' && (
@@ -377,6 +400,6 @@ export default function ServicePaymentsPage() {
                     <Button variant="contained" onClick={handleSave}>حفظ</Button>
                 </DialogActions>
             </Dialog>
-        </Box>
+        </Box >
     );
 }

@@ -44,6 +44,7 @@ import journalEntryReducer from "../features/journalEntry/journalEntrySlice";
 import salesReturnsReducer from "../features/salesReturns/salesReturnsSlice";
 import jobOrderCostsReducer from "../features/jobOrderCosts/jobOrderCostsSlice";
 import companiesReducer from '../features/companies/companiesSlice';
+import doctorsReducer from "../features/doctors/doctorsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -91,5 +92,6 @@ export const store = configureStore({
     entryTypes: entryTypesReducer,
     jobOrderCosts: jobOrderCostsReducer,
     companies: companiesReducer,
+    doctors: doctorsReducer,
   },
 });

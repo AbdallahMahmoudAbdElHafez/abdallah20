@@ -19,12 +19,14 @@ import {
     addPayment,
 } from "../features/purchasePayments/purchasePaymentsSlice";
 import { fetchAccounts } from "../features/accounts/accountsSlice";
+import { fetchEmployees } from "../features/employees/employeesSlice";
 import ChequeDetailsForm from "./ChequeDetailsForm";
 
 export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
     const dispatch = useDispatch();
     const { byInvoice, status } = useSelector((s) => s.purchasePayments);
     const { items: accounts } = useSelector((s) => s.accounts);
+    const { list: employees } = useSelector((s) => s.employees);
 
     // ====== state for editing/adding ======
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -38,11 +40,9 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
         account_id: "",
         notes: "",
         cheque_details: {
-            cheque_number: "",
-            issue_date: "",
-            due_date: "",
             bank_name: ""
-        }
+        },
+        employee_id: ""
     });
 
     useEffect(() => {
@@ -50,6 +50,7 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
             dispatch(fetchPaymentsByInvoice(invoiceId));
         }
         dispatch(fetchAccounts());
+        dispatch(fetchEmployees());
     }, [dispatch, invoiceId]);
 
     const payments = byInvoice[invoiceId] || [];
@@ -70,6 +71,7 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
                 payment_date: payment.payment_date,
                 payment_method: payment.payment_method,
                 account_id: payment.account_id,
+                employee_id: payment.employee_id || "",
                 notes: payment.notes || "",
             });
         } else {
@@ -83,11 +85,9 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
                 account_id: "",
                 notes: "",
                 cheque_details: {
-                    cheque_number: "",
-                    issue_date: "",
-                    due_date: "",
                     bank_name: ""
-                }
+                },
+                employee_id: ""
             });
         }
         setDialogOpen(true);
@@ -116,6 +116,10 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
         {
             accessorFn: (row) => row.account?.name || row.account_id,
             header: "الحساب"
+        },
+        {
+            accessorFn: (row) => row.employee?.name || row.employee_id || "-",
+            header: "الموظف"
         },
         { accessorKey: "notes", header: "ملاحظات" },
         {
@@ -200,11 +204,20 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
                         ))}
                     </TextField>
                     <TextField
-                        label="ملاحظات"
-                        value={formData.notes}
-                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                         fullWidth
                     />
+                    <TextField
+                        select
+                        label="الموظف"
+                        value={formData.employee_id}
+                        onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
+                        fullWidth
+                    >
+                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
+                        {employees.map((emp) => (
+                            <MenuItem key={emp.id} value={emp.id}>{emp.name}</MenuItem>
+                        ))}
+                    </TextField>
                     {formData.payment_method === 'cheque' && (
                         <ChequeDetailsForm
                             chequeDetails={formData.cheque_details}

@@ -63,6 +63,7 @@ import expensesHooks from "../hooks/expensesHooks.js";
 import CompanyModel from "./company.model.js";
 import ChequeModel from "./cheque.model.js";
 import ServicePaymentModel from "./servicePayments.model.js";
+import DoctorModel from "./doctors.model.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -125,6 +126,7 @@ const JobOrderCost = JobOrderCostModel(sequelize);
 const Company = CompanyModel(sequelize);
 const Cheque = ChequeModel(sequelize);
 const ServicePayment = ServicePaymentModel(sequelize);
+const Doctor = DoctorModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -263,6 +265,8 @@ PurchaseInvoicePayment.belongsTo(PurchaseInvoice, {
   foreignKey: "purchase_invoice_id",
   as: "purchase_invoice",
 });
+PurchaseInvoicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
+Employee.hasMany(PurchaseInvoicePayment, { foreignKey: "employee_id", as: "purchase_payments" });
 
 
 PurchaseInvoicePayment.hasMany(SupplierCheque, {
@@ -639,6 +643,8 @@ SalesInvoice.hasMany(SalesInvoicePayment, { foreignKey: "sales_invoice_id", as: 
 
 SalesInvoicePayment.belongsTo(Account, { foreignKey: "account_id", as: "account" });
 Account.hasMany(SalesInvoicePayment, { foreignKey: "account_id", as: "sales_invoice_payments" });
+SalesInvoicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
+Employee.hasMany(SalesInvoicePayment, { foreignKey: "employee_id", as: "sales_payments" });
 
 // Batches Associations
 Product.hasMany(Batches, { foreignKey: "product_id", as: "batches" });
@@ -701,6 +707,12 @@ Party.hasMany(ServicePayment, { foreignKey: "party_id", as: "service_payments" }
 
 ServicePayment.belongsTo(Account, { foreignKey: "account_id", as: "account" });
 Account.hasMany(ServicePayment, { foreignKey: "account_id", as: "service_payments" });
+ServicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
+Employee.hasMany(ServicePayment, { foreignKey: "employee_id", as: "service_payments" });
+
+// Doctor Associations
+Doctor.belongsTo(City, { foreignKey: "city_id", as: "city" });
+City.hasMany(Doctor, { foreignKey: "city_id", as: "doctors" });
 
 export {
   sequelize,
@@ -757,5 +769,6 @@ export {
   JobOrderCost,
   Cheque,
   ServicePayment,
+  Doctor,
 
 };
