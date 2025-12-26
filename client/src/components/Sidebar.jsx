@@ -20,7 +20,7 @@ const navItems = [
   { label: "لوحة التحكم", path: "/dashboard" },
   { label: "الوحدات", path: "/units" },
   { label: "الدول", path: "/countries" },
-  { label: "اوامر التشغيل ", path: "/external-job-orders" },
+
   { label: "المصروفات", path: "/expenses" },
   { label: "الحسابات", path: "/accounts" },
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
@@ -51,6 +51,11 @@ const purchasesMenu = [
   { label: "مرتجعات", path: "/purchase-returns" },
 ];
 
+const manufacturingMenu = [
+  { label: "أوامر التشغيل", path: "/external-job-orders" },
+  { label: "مدفوعات خدمية", path: "/service-payments" },
+];
+
 const salesMenu = [
   { label: "أوامر البيع", path: "/sales-orders" },
   { label: "فواتير البيع", path: "/sales-invoices" },
@@ -67,9 +72,11 @@ const warehousesMenu = [
   { label: "اذونات الصرف", path: "/issue-vouchers" },
 ];
 const reportsMenu = [
+  { label: "إعداد التقارير", path: "/reports-dashboard" },
   { label: "كشف حساب المورد", path: "/suppliers/statement" },
   { label: "كشف حساب العميل", path: "/customers/statement" },
   { label: "القيود", path: "/journal-entry-lines" },
+  { label: "ملخص التقارير", path: "/reports" },
 
 ];
 function Sidebar() {
@@ -78,6 +85,7 @@ function Sidebar() {
   const [openWarehouses, setOpenWarehouses] = useState(false);
   const [openCompanyInfo, setOpenCompanyInfo] = useState(false);
   const [openSales, setOpenSales] = useState(false);
+  const [openManufacturing, setOpenManufacturing] = useState(false);
   const [openReports, setOpenReports] = useState(false);
 
   const toggleCompanyInfo = () => setOpenCompanyInfo(!openCompanyInfo);
@@ -85,6 +93,7 @@ function Sidebar() {
 
   const togglePurchases = () => setOpenPurchases(!openPurchases);
   const toggleSales = () => setOpenSales(!openSales);
+  const toggleManufacturing = () => setOpenManufacturing(!openManufacturing);
   const toggleReports = () => setOpenReports(!openReports);
   const isActive = (path) => location.pathname === path;
 
@@ -185,6 +194,33 @@ function Sidebar() {
             ))}
           </List>
         </Collapse>
+
+        {/* التصنيع (NEW SECTION) */}
+        <ListItemButton onClick={toggleManufacturing}>
+          <ListItemText primary="التصنيع" />
+          {openManufacturing ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
+        <Collapse in={openManufacturing} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            {manufacturingMenu.map((item) => (
+              <ListItemButton
+                key={item.path}
+                component={Link}
+                to={item.path}
+                sx={{
+                  pl: 4,
+                  bgcolor: isActive(item.path)
+                    ? "rgba(255,255,255,0.1)"
+                    : "transparent",
+                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+                }}
+              >
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            ))}
+          </List>
+        </Collapse>
+
         {/* البيع */}
         <ListItemButton onClick={toggleSales}>
           <ListItemText primary="المبيعات" />

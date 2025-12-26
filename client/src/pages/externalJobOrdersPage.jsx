@@ -12,21 +12,20 @@ import {
   Typography,
   IconButton,
   Grid,
-  Card,
-  CardContent,
-  Alert
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
-import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as ViewIcon } from "@mui/icons-material";
+import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, Visibility as ViewIcon, AttachMoney as PaymentIcon } from "@mui/icons-material";
 import axiosClient from "../api/axiosClient";
+import ExternalJobOrderDialog from "../components/ExternalJobOrderDialog";
+import { defaultTableProps } from "../config/tableConfig";
 
 export default function ExternalJobOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Dialog State
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
-
-  // Form State
   const [formData, setFormData] = useState({
     party_id: "",
     product_id: "",
@@ -37,23 +36,41 @@ export default function ExternalJobOrdersPage() {
     estimated_processing_cost_per_unit: 0,
   });
 
-  // Dropdown Data
+  // Dropdowns
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
+  const [accounts, setAccounts] = useState([]);
 
-  // Send Materials Dialog State
+  // Send Materials
   const [sendMaterialsOpen, setSendMaterialsOpen] = useState(false);
   const [materialsToSend, setMaterialsToSend] = useState([]);
   const [sendLoading, setSendLoading] = useState(false);
 
-  // Receive Goods Dialog State
+  // Receive Goods
   const [receiveGoodsOpen, setReceiveGoodsOpen] = useState(false);
   const [receiveData, setReceiveData] = useState({
     produced_quantity: "",
     waste_quantity: 0,
     service_cost: 0,
     transport_cost: 0
+  });
+
+  // Payment
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [jobOrderPayments, setJobOrderPayments] = useState([]);
+  const [paymentData, setPaymentData] = useState({
+    party_id: "",
+    amount: "",
+    payment_date: new Date().toISOString().split("T")[0],
+    payment_method: "cash",
+    account_id: "",
+    reference_number: "",
+    note: "",
+    external_job_order_id: null,
+    cheque_number: "",
+    issue_date: "",
+    due_date: ""
   });
 
   useEffect(() => {
@@ -74,25 +91,74 @@ export default function ExternalJobOrdersPage() {
 
   const fetchDropdowns = async () => {
     try {
-      const [partiesRes, productsRes, warehousesRes] = await Promise.all([
+      const [partiesRes, productsRes, warehousesRes, accountsRes] = await Promise.all([
         axiosClient.get("/parties"),
         axiosClient.get("/products"),
         axiosClient.get("/warehouses"),
+        axiosClient.get("/accounts")
       ]);
       setSuppliers(partiesRes.data.filter(p => p.party_type === 'supplier'));
       setProducts(productsRes.data);
       setWarehouses(warehousesRes.data);
+      setAccounts(accountsRes.data);
     } catch (err) {
       console.error(err);
     }
   };
 
+  // --- Handlers ---
+
+  const handleCreate = () => {
+    setSelectedOrder(null);
+    setFormData({
+      party_id: "",
+      product_id: "",
+      warehouse_id: "",
+      order_quantity: "",
+      start_date: new Date().toISOString().split("T")[0],
+      end_date: "",
+      estimated_processing_cost_per_unit: 0,
+    });
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (row) => {
+    setSelectedOrder(row);
+    setFormData({
+      ...row,
+      start_date: row.start_date ? row.start_date.split('T')[0] : "",
+      end_date: row.end_date ? row.end_date.split('T')[0] : ""
+    });
+    setDialogOpen(true);
+  };
+
+  const handleSaveOrder = async (data) => {
+    try {
+      if (selectedOrder) {
+        await axiosClient.put(`/external-job-orders/${selectedOrder.id}`, data);
+      } else {
+        await axiosClient.post("/external-job-orders", data);
+      }
+      setDialogOpen(false);
+      fetchOrders();
+    } catch (err) {
+      alert("Error saving order: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure?")) {
+      await axiosClient.delete(`/external-job-orders/${id}`);
+      fetchOrders();
+    }
+  };
+
+  // --- Send Materials ---
   const handleOpenSendMaterials = async (order) => {
     setSelectedOrder(order);
     setSendLoading(true);
     setSendMaterialsOpen(true);
     try {
-      // Fetch BOM calculation to pre-fill
       const res = await axiosClient.get("/external-job-orders/calculate-cost", {
         params: {
           product_id: order.product_id,
@@ -100,13 +166,13 @@ export default function ExternalJobOrdersPage() {
           order_quantity: order.order_quantity
         }
       });
-
       if (res.data.details) {
         setMaterialsToSend(res.data.details.map(item => ({
           product_id: item.material_id,
           product_name: item.material_name,
-          warehouse_id: order.warehouse_id, // Default to order warehouse
-          quantity: item.required_quantity
+          warehouse_id: order.warehouse_id,
+          quantity: item.required_quantity,
+          available_quantity: item.available_quantity
         })));
       }
     } catch (err) {
@@ -130,10 +196,11 @@ export default function ExternalJobOrdersPage() {
     }
   };
 
+  // --- Receive Goods ---
   const handleOpenReceiveGoods = (order) => {
     setSelectedOrder(order);
     setReceiveData({
-      produced_quantity: order.order_quantity, // Default to ordered qty
+      produced_quantity: order.order_quantity,
       waste_quantity: 0,
       service_cost: 0,
       transport_cost: 0
@@ -152,29 +219,47 @@ export default function ExternalJobOrdersPage() {
     }
   };
 
-  const handleSave = async () => {
+  // --- Payment ---
+  const handleOpenPayment = async (order) => {
+    setSelectedOrder(order);
+    setPaymentData({
+      party_id: order.party_id,
+      amount: "",
+      payment_date: new Date().toISOString().split("T")[0],
+      payment_method: "cash",
+      account_id: "",
+      reference_number: "",
+      note: `دفعة مقابل أمر تشغيل #${order.id}`,
+      external_job_order_id: order.id,
+      cheque_number: "",
+      issue_date: "",
+      due_date: ""
+    });
+
     try {
-      if (selectedOrder) {
-        await axiosClient.put(`/external-job-orders/${selectedOrder.id}`, formData);
-      } else {
-        await axiosClient.post("/external-job-orders", formData);
-      }
-      setDialogOpen(false);
-      fetchOrders();
+      const res = await axiosClient.get("/service-payments", {
+        params: { external_job_order_id: order.id }
+      });
+      setJobOrderPayments(res.data);
     } catch (err) {
-      alert("Error saving order");
+      console.error("Error fetching payments", err);
+      setJobOrderPayments([]);
     }
+    setPaymentDialogOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure?")) {
-      await axiosClient.delete(`/external-job-orders/${id}`);
-      fetchOrders();
+  const handlePaymentSubmit = async () => {
+    try {
+      await axiosClient.post("/service-payments", paymentData);
+      setPaymentDialogOpen(false);
+      alert("تم تسجيل الدفعة بنجاح");
+    } catch (err) {
+      alert("Error saving payment: " + (err.response?.data?.message || err.message));
     }
   };
 
   const columns = [
-    { accessorKey: "id", header: "ID" },
+    { accessorKey: "id", header: "ID", size: 60 },
     {
       accessorKey: "party_id",
       header: "المورد",
@@ -191,7 +276,7 @@ export default function ExternalJobOrdersPage() {
       header: "إجراءات",
       Cell: ({ row }) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton onClick={() => { setSelectedOrder(row.original); setFormData(row.original); setDialogOpen(true); }}>
+          <IconButton onClick={() => handleEdit(row.original)} color="primary">
             <EditIcon />
           </IconButton>
           <IconButton color="error" onClick={() => handleDelete(row.original.id)}>
@@ -207,6 +292,15 @@ export default function ExternalJobOrdersPage() {
               استلام منتج تام
             </Button>
           )}
+          <Button
+            variant="contained"
+            size="small"
+            color="info"
+            startIcon={<PaymentIcon />}
+            onClick={() => handleOpenPayment(row.original)}
+          >
+            سداد
+          </Button>
         </Box>
       )
     }
@@ -214,89 +308,27 @@ export default function ExternalJobOrdersPage() {
 
   return (
     <Box p={2}>
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setSelectedOrder(null); setDialogOpen(true); }}>
-        أمر تشغيل جديد
-      </Button>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
+          أمر تشغيل جديد
+        </Button>
+      </Box>
 
-      <MaterialReactTable columns={columns} data={orders} state={{ isLoading: loading }} />
+      <MaterialReactTable {...defaultTableProps} columns={columns} data={orders} state={{ isLoading: loading }} />
 
-      {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>{selectedOrder ? "تعديل أمر تشغيل" : "أمر تشغيل جديد"}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={6}>
-              <TextField
-                select
-                label="المورد (المصنع)"
-                fullWidth
-                value={formData.party_id}
-                onChange={(e) => setFormData({ ...formData, party_id: e.target.value })}
-              >
-                {suppliers.map(s => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
-              </TextField>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                select
-                label="المخزن (للمواد الخام)"
-                fullWidth
-                value={formData.warehouse_id}
-                onChange={(e) => setFormData({ ...formData, warehouse_id: e.target.value })}
-              >
-                {warehouses.map(w => <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>)}
-              </TextField>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                select
-                label="المنتج النهائي"
-                fullWidth
-                value={formData.product_id}
-                onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
-              >
-                {products.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
-              </TextField>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                label="الكمية المطلوبة"
-                type="number"
-                fullWidth
-                value={formData.order_quantity}
-                onChange={(e) => setFormData({ ...formData, order_quantity: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                label="تاريخ البدء"
-                type="date"
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                value={formData.start_date}
-                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                label="تكلفة التشغيل التقديرية (للوحدة)"
-                type="number"
-                fullWidth
-                value={formData.estimated_processing_cost_per_unit}
-                onChange={(e) => setFormData({ ...formData, estimated_processing_cost_per_unit: e.target.value })}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDialogOpen(false)}>إلغاء</Button>
-          <Button variant="contained" onClick={handleSave}>حفظ</Button>
-        </DialogActions>
-      </Dialog>
+      <ExternalJobOrderDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onSave={handleSaveOrder}
+        initialData={formData}
+        suppliers={suppliers}
+        products={products}
+        warehouses={warehouses}
+      />
 
       {/* Send Materials Dialog */}
       <Dialog open={sendMaterialsOpen} onClose={() => setSendMaterialsOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>صرف الخامات للمصنع</DialogTitle>
+        <DialogTitle>صرف الخامات للمصنع (أمر #{selectedOrder?.id})</DialogTitle>
         <DialogContent>
           {sendLoading ? <CircularProgress /> : (
             <Box sx={{ mt: 2 }}>
@@ -319,6 +351,8 @@ export default function ExternalJobOrdersPage() {
                         newMaterials[index].quantity = e.target.value;
                         setMaterialsToSend(newMaterials);
                       }}
+                      error={parseFloat(item.quantity) > parseFloat(item.available_quantity)}
+                      helperText={`المتاح: ${item.available_quantity}`}
                     />
                   </Grid>
                   <Grid item xs={4}>
@@ -350,7 +384,7 @@ export default function ExternalJobOrdersPage() {
 
       {/* Receive Goods Dialog */}
       <Dialog open={receiveGoodsOpen} onClose={() => setReceiveGoodsOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>استلام المنتج التام</DialogTitle>
+        <DialogTitle>استلام المنتج التام (أمر #{selectedOrder?.id})</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
             <TextField
@@ -363,7 +397,15 @@ export default function ExternalJobOrdersPage() {
               label="كمية الفاقد (الهالك)"
               type="number"
               value={receiveData.waste_quantity}
-              onChange={(e) => setReceiveData({ ...receiveData, waste_quantity: e.target.value })}
+              onChange={(e) => {
+                const waste = parseFloat(e.target.value) || 0;
+                const orderQty = parseFloat(selectedOrder.order_quantity) || 0;
+                setReceiveData({
+                  ...receiveData,
+                  waste_quantity: e.target.value,
+                  produced_quantity: (orderQty - waste) > 0 ? (orderQty - waste) : 0
+                });
+              }}
             />
             <TextField
               label="تكلفة التشغيل (الإجمالية)"
@@ -383,6 +425,140 @@ export default function ExternalJobOrdersPage() {
         <DialogActions>
           <Button onClick={() => setReceiveGoodsOpen(false)}>إلغاء</Button>
           <Button variant="contained" onClick={handleReceiveGoodsSubmit}>تأكيد الاستلام</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Payment Dialog */}
+      <Dialog open={paymentDialogOpen} onClose={() => setPaymentDialogOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle>تسجيل دفعة (أمر #{selectedOrder?.id})</DialogTitle>
+        <DialogContent>
+          {jobOrderPayments.length > 0 && (
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" gutterBottom>الدفعات السابقة:</Typography>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #ddd", background: "#f5f5f5" }}>
+                    <th style={{ padding: "8px", textAlign: "right" }}>التاريخ</th>
+                    <th style={{ padding: "8px", textAlign: "right" }}>المبلغ</th>
+                    <th style={{ padding: "8px", textAlign: "right" }}>طريقة الدفع</th>
+                    <th style={{ padding: "8px", textAlign: "right" }}>ملاحظات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {jobOrderPayments.map((p) => (
+                    <tr key={p.id} style={{ borderBottom: "1px solid #eee" }}>
+                      <td style={{ padding: "8px" }}>{p.payment_date}</td>
+                      <td style={{ padding: "8px" }}>{parseFloat(p.amount).toLocaleString()}</td>
+                      <td style={{ padding: "8px" }}>{p.payment_method}</td>
+                      <td style={{ padding: "8px" }}>{p.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Box>
+          )}
+
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={6}>
+              <TextField
+                label="المبلغ"
+                type="number"
+                fullWidth
+                value={paymentData.amount}
+                onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                label="التاريخ"
+                type="date"
+                fullWidth
+                value={paymentData.payment_date}
+                onChange={(e) => setPaymentData({ ...paymentData, payment_date: e.target.value })}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                select
+                label="الخزينة / البنك"
+                fullWidth
+                value={paymentData.account_id}
+                onChange={(e) => setPaymentData({ ...paymentData, account_id: e.target.value })}
+              >
+                {accounts.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
+              </TextField>
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                select
+                label="طريقة الدفع"
+                fullWidth
+                value={paymentData.payment_method}
+                onChange={(e) => setPaymentData({ ...paymentData, payment_method: e.target.value })}
+              >
+                <MenuItem value="cash">نقدي</MenuItem>
+                <MenuItem value="bank">تحويل بنكي</MenuItem>
+                <MenuItem value="cheque">شيك</MenuItem>
+                <MenuItem value="other">أخرى</MenuItem>
+              </TextField>
+            </Grid>
+
+            {/* Cheque Fields */}
+            {paymentData.payment_method === 'cheque' && (
+              <>
+                <Grid item xs={12}>
+                  <Box sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1, mb: 1 }}>
+                    <strong>بيانات الشيك</strong>
+                  </Box>
+                </Grid>
+                <Grid item xs={4}>
+                  <TextField
+                    label="رقم الشيك"
+                    fullWidth
+                    required
+                    value={paymentData.cheque_number || ''}
+                    onChange={(e) => setPaymentData({ ...paymentData, cheque_number: e.target.value })}
+                  />
+                </Grid>
+                <Grid item xs={4}>
+                  <TextField
+                    label="تاريخ الإصدار"
+                    type="date"
+                    fullWidth
+                    InputLabelProps={{ shrink: true }}
+                    value={paymentData.issue_date || paymentData.payment_date}
+                    onChange={(e) => setPaymentData({ ...paymentData, issue_date: e.target.value })}
+                  />
+                </Grid>
+                <Grid item xs={4}>
+                  <TextField
+                    label="تاريخ الاستحقاق"
+                    type="date"
+                    fullWidth
+                    required
+                    InputLabelProps={{ shrink: true }}
+                    value={paymentData.due_date || ''}
+                    onChange={(e) => setPaymentData({ ...paymentData, due_date: e.target.value })}
+                  />
+                </Grid>
+              </>
+            )}
+
+            <Grid item xs={12}>
+              <TextField
+                label="ملاحظات"
+                fullWidth
+                multiline
+                rows={2}
+                value={paymentData.note}
+                onChange={(e) => setPaymentData({ ...paymentData, note: e.target.value })}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPaymentDialogOpen(false)}>إلغاء</Button>
+          <Button variant="contained" onClick={handlePaymentSubmit}>حفظ الدفعة</Button>
         </DialogActions>
       </Dialog>
     </Box>

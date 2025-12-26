@@ -6,11 +6,16 @@ import {
   Product,
   InventoryTransaction,
   JournalEntry,
+  JournalEntryLine,
   sequelize,
   Party,
   Account,
-  Warehouse
+  Warehouse,
+  CurrentInventory,
+  ServicePayment,
+  EntryType
 } from "../models/index.js";
+import InventoryTransactionService from './inventoryTransaction.service.js';
 
 const ExternalJobOrdersService = {
   getAll: async () => {
@@ -90,6 +95,15 @@ const ExternalJobOrdersService = {
         const materialCost = parseFloat(bomItem.material?.cost_price || 0);
         const totalCost = requiredQty * materialCost;
 
+        // Get Available Quantity from CurrentInventory
+        const inventory = await CurrentInventory.findOne({
+          where: {
+            product_id: bomItem.material_id,
+            warehouse_id: warehouseId
+          }
+        });
+        const availableQty = inventory ? parseFloat(inventory.quantity) : 0;
+
         totalMaterialCost += totalCost;
 
         details.push({
@@ -97,6 +111,7 @@ const ExternalJobOrdersService = {
           material_name: bomItem.material?.name,
           quantity_per_unit: parseFloat(bomItem.quantity_per_unit),
           required_quantity: requiredQty,
+          available_quantity: availableQty, // Added available quantity
           unit_cost: materialCost,
           total_cost: totalCost
         });
@@ -139,22 +154,76 @@ const ExternalJobOrdersService = {
         }, { transaction: t });
 
         // 2. Inventory Transaction (OUT)
-        await InventoryTransaction.create({
+        // Try to allocate batches (FIFO)
+        const { batches, remainingNeeded } = await InventoryTransactionService.getBatchesFIFO(
+          item.product_id,
+          item.warehouse_id,
+          Number(item.quantity),
+          t
+        );
+
+        const transactionData = {
           product_id: item.product_id,
           warehouse_id: item.warehouse_id,
           transaction_type: 'out',
           quantity: item.quantity,
           transaction_date: new Date(),
-          reference_type: 'JobOrder', // Ensure this exists in ReferenceType enum/table if strictly enforced
-          reference_id: jobOrderId,
-          notes: `External Job Order #${jobOrderId} - Material Sent`
-        }, { transaction: t });
+          source_type: 'external_job_order',
+          source_id: jobOrderId,
+          notes: `Material issue for Job Order #${jobOrderId}`
+        };
+
+        if (batches && batches.length > 0) {
+          if (remainingNeeded > 0.001) { // Tolerance for float math
+            throw new Error(`Not enough batched inventory for product ${item.product_id}. Required: ${item.quantity}, Available in batches: ${item.quantity - remainingNeeded}`);
+          }
+          transactionData.batches = batches;
+        }
+
+        await InventoryTransactionService.create(transactionData, { transaction: t });
 
         totalMaterialCost += totalLineCost;
       }
 
-      // 3. Update Order Status
-      await order.update({ status: 'in_progress' }, { transaction: t });
+      // 3. Create Journal Entry (Issue Materials)
+      // Debit WIP (109), Credit Raw Materials (49)
+      const wipAccountId = 109;
+      const rmInvAccountId = 49;
+
+      if (totalMaterialCost > 0) {
+        const je = await JournalEntry.create({
+          entry_type_id: 13, // Production/Manufacturing
+          reference_type_id: 1, // JobOrder
+          reference_id: jobOrderId,
+          date: new Date(),
+          description: `صرف خامات لأمر تشغيل خارجي #${jobOrderId}`,
+          status: 'posted'
+        }, { transaction: t });
+
+        await JournalEntryLine.bulkCreate([
+          {
+            journal_entry_id: je.id,
+            account_id: wipAccountId,
+            debit: totalMaterialCost,
+            credit: 0,
+            description: `منصرف خامات ومستلزمات - أمر #${jobOrderId}`
+          },
+          {
+            journal_entry_id: je.id,
+            account_id: rmInvAccountId,
+            debit: 0,
+            credit: totalMaterialCost,
+            description: `منصرف خامات ومستلزمات - أمر #${jobOrderId}`
+          }
+        ], { transaction: t });
+      }
+
+      // 4. Update Order Status
+      // Update raw_material_cost on the order
+      await order.update({
+        status: 'in_progress',
+        raw_material_cost: Number(order.raw_material_cost || 0) + totalMaterialCost
+      }, { transaction: t });
 
       await t.commit();
       return { success: true, totalMaterialCost };
@@ -190,111 +259,108 @@ const ExternalJobOrdersService = {
       const producedQty = Number(data.produced_quantity);
       const unitCost = producedQty > 0 ? totalCost / producedQty : 0;
 
-      // 2. Update Product Cost (Weighted Average or just update cost_price)
-      // For simplicity, we update the cost_price to the new unit cost (or you might want a more complex average)
+      // 2. Update Product Cost
       const product = await Product.findByPk(order.product_id, { transaction: t });
       await product.update({ cost_price: unitCost }, { transaction: t });
 
-      // 3. Inventory Transaction (IN) - Finished Good
-      await InventoryTransaction.create({
+      // 3. Inventory Transaction (IN) - Finished Good (Using Service to create Batches)
+      await InventoryTransactionService.create({
         product_id: order.product_id,
         warehouse_id: order.warehouse_id, // Target warehouse
         transaction_type: 'in',
-        quantity: producedQty,
+        quantity: producedQty, // Used for validation/current inventory
         transaction_date: new Date(),
-        reference_type: 'JobOrder',
-        reference_id: jobOrderId,
-        notes: `External Job Order #${jobOrderId} - Finished Goods Received`
+        source_type: 'external_job_order',
+        source_id: jobOrderId,
+        notes: `External Job Order #${jobOrderId} - Finished Goods Received`,
+        batches: [{
+          quantity: producedQty,
+          batch_number: `PROD-${jobOrderId}`,
+          expiry_date: null, // Or derive if needed
+          cost_per_unit: unitCost // Explicitly pass the correct cost
+        }]
       }, { transaction: t });
 
       // 4. Journal Entry
-      // Debit: Inventory (Finished Goods) - Total Cost
-      // Credit: Inventory (Raw Materials) - Material Cost (This is tricky. Usually we credit WIP. But here we already deducted inventory. 
-      // If we deducted inventory in sendMaterials, we should have debited WIP. 
-      // Let's assume sendMaterials debited WIP.
-
-      // Let's refine the accounting flow:
-      // Step 1 (Send): Credit Raw Material Inventory, Debit WIP (Work In Progress - External)
-      // Step 2 (Receive): Credit WIP (Material Cost), Credit Supplier (Service), Credit Cash/Payable (Transport), Debit Finished Goods Inventory (Total)
-
-      // Since sendMaterials didn't create a JE in my previous step, I should add it there or do it all here if "Send" is just a physical move.
-      // But usually "Send" is a distinct event.
-      // Let's assume for now we do the full JE here for simplicity, OR we assume Send moved it to a "WIP Warehouse" physically.
-
-      // Better approach:
-      // Send Materials: Credit Raw Material Inv, Debit WIP Account.
-      // Receive Goods: Debit Finished Goods Inv, Credit WIP Account (Material Portion), Credit Supplier (Service), Credit Cash (Transport).
-
-      // I will implement the JE for Receive here.
-      // We need Account IDs.
-      // Supplier Account: order.party.account_id
-      // Inventory Account: We need a default or product-specific inventory account.
-      // WIP Account: We need a default WIP account.
-
-      // For this implementation, I will skip the WIP interim step JE in 'sendMaterials' to avoid complexity if accounts aren't set up, 
-      // and just do one big entry here? No, that's wrong because inventory counts change at different times.
-
-      // Let's stick to: 
-      // Send: Physical Inventory Out. (No financial entry? Or maybe just Expense? No, it's asset conversion).
-      // If we don't have WIP accounts set up, we might just Credit Inventory (Raw) and Debit Inventory (Finished) in one go?
-      // But they happen at different times.
-
-      // Let's assume the user wants the "Professional Way".
-      // We need a WIP Account. I'll assume one exists or use a placeholder.
+      // Accounts
+      const rmInvAccountId = 49; // المخزون (Raw Materials)
+      const wipAccountId = 109; // تحت التشغيل (WIP)
+      const fgInvAccountId = 110; // مخزون تام الصنع (Finished Goods)
 
       const supplierAccountId = order.party?.account_id;
       if (!supplierAccountId) throw new Error("Supplier does not have a linked account");
 
-      // We need to fetch/create a Journal Entry
-      // Debit: Finished Goods Inventory (Total Cost)
-      // Credit: Raw Materials Inventory (Material Cost) <-- This effectively reduces the raw material value from the books
-      // Credit: Supplier (Service Cost)
-      // Credit: Cash/Bank (Transport Cost) - Assuming paid or payable. Let's assume Payable to a generic Transport account or Cash.
+      const je = await JournalEntry.create({
+        entry_type_id: 13, // Production/Manufacturing
+        reference_type_id: 1, // JobOrder
+        reference_id: jobOrderId,
+        date: new Date(),
+        description: `تسويات إنتاج تام - أمر تشغيل #${jobOrderId} (خامات + تشغيل + نقل)`,
+        status: 'posted'
+      }, { transaction: t });
 
-      // Wait, `sendMaterials` already did `InventoryTransaction` 'out'. 
-      // If `InventoryTransaction` 'out' automatically triggers a JE (via hooks), then we are double counting.
-      // I checked `inventoryTransactionHooks.js`? It doesn't seem to exist in the file list I saw earlier.
-      // `inventoryTransaction.model.js` exists.
+      const jeLines = [];
 
-      // Let's assume InventoryTransaction does NOT create JE automatically for 'JobOrder' type.
+      // 1. (REMOVED) Issue Materials to WIP 
+      // This is now done in 'sendMaterials' step to reflect accurate timing.
 
-      // So, JE here:
-      const jeLines = [
-        {
-          account_id: 1, // Placeholder for Finished Goods Inventory Account. In real app, get from Product/Category.
-          debit: totalCost,
+      // 2. Load Service Cost to WIP (Debit WIP, Credit Supplier)
+      if (serviceCost > 0) {
+        jeLines.push({
+          journal_entry_id: je.id,
+          account_id: wipAccountId,
+          debit: serviceCost,
           credit: 0,
-          description: `استلام منتج تام - أمر تشغيل #${jobOrderId}`
-        },
-        // Credit Raw Materials (Asset decrease)
-        // We might need to group by account if materials have different inventory accounts.
-        // For simplicity, assume one Inventory Account for Materials.
-        {
-          account_id: 1, // Placeholder for Raw Materials Inventory Account.
-          debit: 0,
-          credit: totalMaterialCost,
-          description: `صرف خامات - أمر تشغيل #${jobOrderId}`
-        },
-        // Credit Supplier (Service Liability)
-        {
+          description: `تحميل تكلفة تشغيل خارجي - أمر #${jobOrderId}`
+        });
+        jeLines.push({
+          journal_entry_id: je.id,
           account_id: supplierAccountId,
           debit: 0,
           credit: serviceCost,
-          description: `تكلفة تشغيل خارجي - أمر تشغيل #${jobOrderId}`
-        }
-      ];
-
-      if (transportCost > 0) {
-        jeLines.push({
-          account_id: 1, // Placeholder for Cash/Bank or Transport Payable
-          debit: 0,
-          credit: transportCost,
-          description: `تكلفة نقل - أمر تشغيل #${jobOrderId}`
+          description: `استحقاق تشغيل خارجي - أمر #${jobOrderId}`
         });
       }
 
-      // Create JE (Commented out until we have real account IDs logic, or use a helper if available)
-      // await createJournalEntry({ ... }, { transaction: t });
+      // 3. Load Transport Cost to WIP (Debit WIP, Credit Supplier/Cash)
+      if (transportCost > 0) {
+        jeLines.push({
+          journal_entry_id: je.id,
+          account_id: wipAccountId,
+          debit: transportCost,
+          credit: 0,
+          description: `تحميل تكلفة نقل - أمر #${jobOrderId}`
+        });
+        // Assuming paid by Supplier or added to Supplier account as requested ("Credit Suppliers...").
+        // If Cash is needed, logic would differ, but defaulting to Supplier matches the context of outsourcing liabilities.
+        jeLines.push({
+          journal_entry_id: je.id,
+          account_id: supplierAccountId,
+          debit: 0,
+          credit: transportCost,
+          description: `استحقاق نقل - أمر #${jobOrderId}`
+        });
+      }
+
+      // 4. Close WIP to Finished Goods (Debit FG Inv, Credit WIP)
+      if (totalCost > 0) {
+        jeLines.push({
+          journal_entry_id: je.id,
+          account_id: fgInvAccountId,
+          debit: totalCost,
+          credit: 0,
+          description: `استلام منتج تام - أمر #${jobOrderId}`
+        });
+        jeLines.push({
+          journal_entry_id: je.id,
+          account_id: wipAccountId,
+          debit: 0,
+          credit: totalCost,
+          description: `إقفال تحت التشغيل - أمر #${jobOrderId}`
+        });
+      }
+
+      await JournalEntryLine.bulkCreate(jeLines, { transaction: t });
 
       // 5. Update Order
       await order.update({
@@ -305,7 +371,10 @@ const ExternalJobOrdersService = {
         actual_raw_material_cost_per_unit: totalMaterialCost / producedQty,
         total_actual_cost: totalCost,
         transport_cost: transportCost
-      }, { transaction: t });
+      }, {
+        transaction: t,
+        hooks: false // Disable hooks to prevent duplicate InventoryTransaction from externalJobOrderHooks.js
+      });
 
       await t.commit();
       return { success: true, totalCost, unitCost };
@@ -318,4 +387,3 @@ const ExternalJobOrdersService = {
 };
 
 export default ExternalJobOrdersService;
-

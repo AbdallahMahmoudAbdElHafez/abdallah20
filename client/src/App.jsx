@@ -39,6 +39,13 @@ import SalesInvoicePaymentsPage from "./pages/salesInvoicePaymentsPage";
 import CustomerStatementPage from "./pages/CustomerStatementPage";
 import SalesReturnsPage from "./pages/salesReturnsPage";
 import CompaniesPage from "./pages/CompaniesPage";
+import ReportsPage from "./pages/ReportsPage";
+import ReportsDashboard from "./pages/ReportsDashboard";
+import SalesReportPage from "./pages/SalesReportPage";
+import PurchasesReportPage from "./pages/PurchasesReportPage";
+import ExpensesReportPage from "./pages/ExpensesReportPage";
+import JobOrdersReportPage from "./pages/JobOrdersReportPage";
+import ServicePaymentsPage from "./pages/servicePaymentsPage";
 
 const drawerWidth = 240;
 
@@ -88,6 +95,13 @@ export default function App() {
           <Route path="/customers/:customerId/statement" element={<CustomerStatementPage />} />
           <Route path="/sales-returns" element={<SalesReturnsPage />} />
           <Route path="/companies" element={<CompaniesPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/reports-dashboard" element={<ReportsDashboard />} />
+          <Route path="/reports/sales" element={<SalesReportPage />} />
+          <Route path="/reports/purchases" element={<PurchasesReportPage />} />
+          <Route path="/reports/expenses" element={<ExpensesReportPage />} />
+          <Route path="/reports/job-orders" element={<JobOrdersReportPage />} />
+          <Route path="/service-payments" element={<ServicePaymentsPage />} />
         </Routes>
       </Box>
     </BrowserRouter>

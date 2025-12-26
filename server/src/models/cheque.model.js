@@ -55,6 +55,11 @@ export default (sequelize) => {
                 allowNull: true,
                 references: { model: "purchase_invoice_payments", key: "id" }
             },
+            service_payment_id: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                references: { model: "service_payments", key: "id" }
+            },
 
             created_at: {
                 type: DataTypes.DATE,

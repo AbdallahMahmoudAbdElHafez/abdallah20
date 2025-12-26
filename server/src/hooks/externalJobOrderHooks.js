@@ -9,78 +9,7 @@ import {
 import InventoryTransactionService from '../services/inventoryTransaction.service.js';
 import { sequelize } from '../models/index.js';
 
-/**
- * Get batches using FIFO method
- */
-async function getBatchesFIFO(productId, warehouseId, requiredQty, transaction) {
-    const batches = await InventoryTransactionBatches.findAll({
-        include: [
-            {
-                model: Batches,
-                as: 'batch',
-                required: true,
-                where: { product_id: productId }
-            }
-        ],
-        where: {
-            '$transaction.warehouse_id$': warehouseId,
-            '$transaction.transaction_type$': 'in'
-        },
-        include: [
-            {
-                association: 'transaction',
-                required: true
-            }
-        ],
-        order: [['transaction', 'transaction_date', 'ASC'], ['id', 'ASC']],
-        transaction
-    });
 
-    // Calculate available quantity per batch
-    const result = [];
-    let remaining = requiredQty;
-
-    for (const txBatch of batches) {
-        if (remaining <= 0) break;
-
-        // Get all transactions for this batch
-        const allTransactions = await InventoryTransactionBatches.findAll({
-            where: { batch_id: txBatch.batch_id },
-            include: [{
-                association: 'transaction',
-                where: { warehouse_id: warehouseId }
-            }],
-            transaction
-        });
-
-        // Calculate net quantity for this batch
-        let netQty = 0;
-        allTransactions.forEach(tx => {
-            const qty = parseFloat(tx.quantity);
-            if (tx.transaction.transaction_type === 'in') {
-                netQty += qty;
-            } else {
-                netQty -= qty;
-            }
-        });
-
-        if (netQty > 0) {
-            const qtyToUse = Math.min(netQty, remaining);
-            result.push({
-                batch_id: txBatch.batch_id,
-                quantity: qtyToUse,
-                cost_per_unit: parseFloat(txBatch.cost_per_unit)
-            });
-            remaining -= qtyToUse;
-        }
-    }
-
-    if (remaining > 0) {
-        throw new Error(`Not enough inventory for product ${productId}. Required: ${requiredQty}, Available: ${requiredQty - remaining}`);
-    }
-
-    return result;
-}
 
 export default function externalJobOrderHooks(sequelize) {
     const ExternalJobOrder = sequelize.models.ExternalJobOrder;
@@ -123,12 +52,16 @@ export default function externalJobOrderHooks(sequelize) {
                 const requiredQty = parseFloat(material.quantity_per_unit) * parseFloat(jobOrder.produced_quantity);
 
                 // Get batches using FIFO
-                const batches = await getBatchesFIFO(
+                const { batches, remainingNeeded } = await InventoryTransactionService.getBatchesFIFO(
                     material.material_id,
                     jobOrder.warehouse_id,
                     requiredQty,
                     transaction
                 );
+
+                if (remainingNeeded > 0) {
+                    throw new Error(`Not enough inventory for product ${material.product_id}. Required: ${requiredQty}, Available: ${requiredQty - remainingNeeded}`);
+                }
 
                 // Calculate material cost
                 const materialCost = batches.reduce((sum, b) => {

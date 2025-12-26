@@ -34,15 +34,26 @@ class InventoryTransactionService {
 
   static async create(data, options = {}) {
     if (data.source_id === "") data.source_id = null;
-    const trx = await InventoryTransaction.create(data, options);
 
     let totalQuantity = 0;
 
+    // 1. Calculate total quantity first
+    if (data.batches && data.batches.length > 0) {
+      totalQuantity = data.batches.reduce((sum, b) => sum + Number(b.quantity), 0);
+    } else if (data.quantity) {
+      totalQuantity = Number(data.quantity);
+    }
+
+    // 2. Ensure data.quantity is set for the transaction header
+    data.quantity = totalQuantity;
+
+    const trx = await InventoryTransaction.create(data, options);
+
+    // 3. Process batches if they exist
     if (data.batches && data.batches.length > 0) {
       for (const batchData of data.batches) {
         let batchId = null;
 
-        // If batch_number and expiry_date provided, find or create batch
         if (batchData.batch_number && batchData.expiry_date) {
           const [batch] = await Batches.findOrCreate({
             where: {
@@ -56,20 +67,16 @@ class InventoryTransactionService {
           });
           batchId = batch.id;
         } else if (batchData.batch_id) {
-          // Use provided batch_id if available
           batchId = batchData.batch_id;
         }
 
-        // Always create InventoryTransactionBatches record (batch_id can be null)
         await InventoryTransactionBatches.create({
           inventory_transaction_id: trx.id,
           batch_id: batchId,
           quantity: batchData.quantity,
           cost_per_unit: batchData.cost_per_unit || 0
         }, options);
-        totalQuantity += Number(batchData.quantity);
 
-        // Update batch_inventory for this batch
         if (batchId) {
           const batchQtyChange = data.transaction_type === "in"
             ? Number(batchData.quantity)
@@ -84,10 +91,7 @@ class InventoryTransactionService {
       }
     }
 
-    // If no batches, maybe we should throw error? 
-    // But for now, if totalQuantity is 0, we just don't update current inventory or update with 0.
-    // Assuming data.quantity might be passed for validation but we use calculated totalQuantity.
-
+    // 4. Update Current Inventory
     const quantityChange = data.transaction_type === "in"
       ? totalQuantity
       : -totalQuantity;
@@ -251,6 +255,85 @@ class InventoryTransactionService {
 
     await trx.destroy(options);
     return true;
+  }
+  /**
+   * Get batches using FIFO method
+   * @param {number} productId 
+   * @param {number} warehouseId 
+   * @param {number} requiredQty 
+   * @param {object} transaction 
+   */
+  static async getBatchesFIFO(productId, warehouseId, requiredQty, transaction) {
+    const batches = await InventoryTransactionBatches.findAll({
+      include: [
+        {
+          model: Batches,
+          as: 'batch',
+          required: true,
+          where: { product_id: productId }
+        }
+      ],
+      where: {
+        '$transaction.warehouse_id$': warehouseId,
+        '$transaction.transaction_type$': 'in'
+      },
+      include: [
+        {
+          association: 'transaction',
+          required: true
+        }
+      ],
+      order: [['transaction', 'transaction_date', 'ASC'], ['id', 'ASC']],
+      transaction
+    });
+
+    // Calculate available quantity per batch
+    const result = [];
+    let remaining = requiredQty;
+
+    for (const txBatch of batches) {
+      if (remaining <= 0) break;
+
+      // Get all transactions for this batch
+      const allTransactions = await InventoryTransactionBatches.findAll({
+        where: { batch_id: txBatch.batch_id },
+        include: [{
+          association: 'transaction',
+          where: { warehouse_id: warehouseId }
+        }],
+        transaction
+      });
+
+      // Calculate net quantity for this batch
+      let netQty = 0;
+      allTransactions.forEach(tx => {
+        const qty = parseFloat(tx.quantity);
+        if (tx.transaction.transaction_type === 'in') {
+          netQty += qty;
+        } else {
+          netQty -= qty;
+        }
+      });
+
+      if (netQty > 0) {
+        const qtyToUse = Math.min(netQty, remaining);
+
+        // Find batch info to return complete data if needed
+        // txBatch.batch is available from the first query
+
+        result.push({
+          batch_id: txBatch.batch_id,
+          quantity: qtyToUse,
+          cost_per_unit: parseFloat(txBatch.cost_per_unit)
+        });
+        remaining -= qtyToUse;
+      }
+    }
+
+    return {
+      batches: result,
+      remainingNeeded: remaining
+    };
   }
 }
 
