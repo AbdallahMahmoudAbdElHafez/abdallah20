@@ -24,6 +24,10 @@ const IssueVoucherModel = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    doctor_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     warehouse_id: {
       type: DataTypes.INTEGER,
       allowNull: false

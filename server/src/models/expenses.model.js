@@ -25,6 +25,7 @@ export default (sequelize) => {
             credit_account_id: { type: DataTypes.INTEGER, allowNull: false },
             city_id: { type: DataTypes.INTEGER, allowNull: true },
             employee_id: { type: DataTypes.INTEGER, allowNull: true },
+            doctor_id: { type: DataTypes.INTEGER, allowNull: true },
             party_id: { type: DataTypes.INTEGER, allowNull: true },
             created_at: {
                 type: DataTypes.DATE,
@@ -39,6 +40,7 @@ export default (sequelize) => {
                 { fields: ["credit_account_id"] },
                 { fields: ["city_id"] },
                 { fields: ["employee_id"] },
+                { fields: ["doctor_id"] },
                 { fields: ["party_id"] },
             ]
         }

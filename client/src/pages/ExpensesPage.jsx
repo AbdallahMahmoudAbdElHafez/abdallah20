@@ -23,6 +23,7 @@ import { fetchAccounts } from "../features/accounts/accountsSlice";
 import { fetchCities } from "../features/cities/citiesSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
 import { fetchParties } from "../features/parties/partiesSlice";
+import { fetchDoctors } from "../features/doctors/doctorsSlice";
 
 export default function ExpensesPage() {
     const dispatch = useDispatch();
@@ -31,6 +32,7 @@ export default function ExpensesPage() {
     const { items: cities } = useSelector((state) => state.cities);
     const { list: employees } = useSelector((state) => state.employees);
     const { items: parties } = useSelector((state) => state.parties);
+    const { list: doctors } = useSelector((state) => state.doctors);
 
     const [open, setOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -42,6 +44,7 @@ export default function ExpensesPage() {
         credit_account_id: "",
         city_id: "",
         employee_id: "",
+        doctor_id: "",
         party_id: "",
     });
 
@@ -51,6 +54,7 @@ export default function ExpensesPage() {
         dispatch(fetchCities());
         dispatch(fetchEmployees());
         dispatch(fetchParties());
+        dispatch(fetchDoctors());
     }, [dispatch]);
 
     const handleOpen = (expense = null) => {
@@ -64,6 +68,7 @@ export default function ExpensesPage() {
                 credit_account_id: expense.credit_account_id,
                 city_id: expense.city_id || "",
                 employee_id: expense.employee_id || "",
+                doctor_id: expense.doctor_id || "",
                 party_id: expense.party_id || "",
             });
         } else {
@@ -76,6 +81,7 @@ export default function ExpensesPage() {
                 credit_account_id: "",
                 city_id: "",
                 employee_id: "",
+                doctor_id: "",
                 party_id: "",
             });
         }
@@ -96,6 +102,7 @@ export default function ExpensesPage() {
         // Convert empty strings to null for optional foreign keys
         if (payload.city_id === "") payload.city_id = null;
         if (payload.employee_id === "") payload.employee_id = null;
+        if (payload.doctor_id === "") payload.doctor_id = null;
         if (payload.party_id === "") payload.party_id = null;
 
         if (editingId) {
@@ -126,6 +133,10 @@ export default function ExpensesPage() {
         {
             header: "الموظف",
             accessorFn: (row) => row.employee?.name ?? "غير متوفر",
+        },
+        {
+            header: "الدكتور",
+            accessorFn: (row) => row.doctor?.name ?? "غير متوفر",
         },
         {
             header: "الطرف",
@@ -241,6 +252,22 @@ export default function ExpensesPage() {
                         {employees.map((emp) => (
                             <MenuItem key={emp.id} value={emp.id}>
                                 {emp.name}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                    <TextField
+                        select
+                        margin="dense"
+                        label="الدكتور"
+                        name="doctor_id"
+                        fullWidth
+                        value={formData.doctor_id}
+                        onChange={handleChange}
+                    >
+                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
+                        {doctors.map((doctor) => (
+                            <MenuItem key={doctor.id} value={doctor.id}>
+                                {doctor.name}
                             </MenuItem>
                         ))}
                     </TextField>
