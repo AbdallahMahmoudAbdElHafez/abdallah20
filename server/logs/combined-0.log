@@ -1,0 +1,24 @@
+2025-12-27T12:09:30: ✅ Database connected
+2025-12-27T12:09:30: 🚀 Server listening on http://localhost:5000
+2025-12-27T12:29:17: Service: getDashboardSummary { startDate: undefined, endDate: undefined, dateFilter: {} }
+2025-12-27T12:29:17: Service: getDashboardSummary { startDate: undefined, endDate: undefined, dateFilter: {} }
+2025-12-27T12:46:33: EagerLoadingError [SequelizeEagerLoadingError]: Account is not associated to PurchaseInvoicePayment!
+    at PurchaseInvoicePayment._getIncludedAssociation (d:\db\server\node_modules\sequelize\lib\model.js:565:13)
+    at PurchaseInvoicePayment._validateIncludedElement (d:\db\server\node_modules\sequelize\lib\model.js:502:53)
+    at d:\db\server\node_modules\sequelize\lib\model.js:421:37
+    at Array.map (<anonymous>)
+    at PurchaseInvoicePayment._validateIncludedElements (d:\db\server\node_modules\sequelize\lib\model.js:417:39)
+    at PurchaseInvoicePayment.findAll (d:\db\server\node_modules\sequelize\lib\model.js:1124:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.listPayments (file:///d:/db/server/src/services/purchasePayment.service.js:149:10)
+    at async getPayments (file:///d:/db/server/src/controllers/purchasePayment.controller.js:23:18)
+2025-12-27T12:46:33: EagerLoadingError [SequelizeEagerLoadingError]: Account is not associated to PurchaseInvoicePayment!
+    at PurchaseInvoicePayment._getIncludedAssociation (d:\db\server\node_modules\sequelize\lib\model.js:565:13)
+    at PurchaseInvoicePayment._validateIncludedElement (d:\db\server\node_modules\sequelize\lib\model.js:502:53)
+    at d:\db\server\node_modules\sequelize\lib\model.js:421:37
+    at Array.map (<anonymous>)
+    at PurchaseInvoicePayment._validateIncludedElements (d:\db\server\node_modules\sequelize\lib\model.js:417:39)
+    at PurchaseInvoicePayment.findAll (d:\db\server\node_modules\sequelize\lib\model.js:1124:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Module.listPayments (file:///d:/db/server/src/services/purchasePayment.service.js:149:10)
+    at async getPayments (file:///d:/db/server/src/controllers/purchasePayment.controller.js:23:18)
