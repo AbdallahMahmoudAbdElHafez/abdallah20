@@ -543,9 +543,12 @@ CREATE TABLE `external_job_order_items` (
   `quantity_sent` decimal(12,3) NOT NULL,
   `unit_cost` decimal(12,2) NOT NULL,
   `total_cost` decimal(14,2) NOT NULL,
+  `batch_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `job_order_id` (`job_order_id`),
-  CONSTRAINT `external_job_order_items_ibfk_1` FOREIGN KEY (`job_order_id`) REFERENCES `external_job_orders` (`id`) ON DELETE CASCADE
+  KEY `fk_batch_id` (`batch_id`),
+  CONSTRAINT `external_job_order_items_ibfk_1` FOREIGN KEY (`job_order_id`) REFERENCES `external_job_orders` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_batch_id` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -3028,4 +3031,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-26 22:22:12
+-- Dump completed on 2025-12-28 22:04:04

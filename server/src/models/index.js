@@ -383,6 +383,16 @@ ExternalJobOrderItem.belongsTo(Warehouse, {
   foreignKey: 'warehouse_id',
   as: 'warehouse',
 });
+
+ExternalJobOrderItem.belongsTo(Batches, {
+  foreignKey: 'batch_id',
+  as: 'batch',
+});
+
+Batches.hasMany(ExternalJobOrderItem, {
+  foreignKey: 'batch_id',
+  as: 'job_order_items',
+});
 Employee.belongsTo(JobTitle, {
   foreignKey: "job_title_id",
   as: "job_title",

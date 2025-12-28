@@ -141,19 +141,8 @@ const ExternalJobOrdersService = {
       for (const item of items) {
         const product = await Product.findByPk(item.product_id, { transaction: t });
         const cost = Number(product.cost_price || 0);
-        const totalLineCost = Number(item.quantity) * cost;
 
-        // 1. Create Job Order Item
-        await ExternalJobOrderItem.create({
-          job_order_id: jobOrderId,
-          product_id: item.product_id,
-          warehouse_id: item.warehouse_id,
-          quantity_sent: item.quantity,
-          unit_cost: cost,
-          total_cost: totalLineCost
-        }, { transaction: t });
-
-        // 2. Inventory Transaction (OUT)
+        // 1. Inventory Transaction (OUT)
         // Try to allocate batches (FIFO)
         const { batches, remainingNeeded } = await InventoryTransactionService.getBatchesFIFO(
           item.product_id,
@@ -161,6 +150,10 @@ const ExternalJobOrdersService = {
           Number(item.quantity),
           t
         );
+
+        if (batches && batches.length > 0 && remainingNeeded > 0.001) {
+          throw new Error(`Not enough batched inventory for product ${item.product_id}. Required: ${item.quantity}, Available in batches: ${item.quantity - remainingNeeded}`);
+        }
 
         const transactionData = {
           product_id: item.product_id,
@@ -170,19 +163,45 @@ const ExternalJobOrdersService = {
           transaction_date: new Date(),
           source_type: 'external_job_order',
           source_id: jobOrderId,
-          notes: `Material issue for Job Order #${jobOrderId}`
+          notes: `Material issue for Job Order #${jobOrderId}`,
+          batches: batches && batches.length > 0 ? batches : [{
+            batch_id: null,
+            quantity: item.quantity,
+            cost_per_unit: cost
+          }]
         };
-
-        if (batches && batches.length > 0) {
-          if (remainingNeeded > 0.001) { // Tolerance for float math
-            throw new Error(`Not enough batched inventory for product ${item.product_id}. Required: ${item.quantity}, Available in batches: ${item.quantity - remainingNeeded}`);
-          }
-          transactionData.batches = batches;
-        }
 
         await InventoryTransactionService.create(transactionData, { transaction: t });
 
-        totalMaterialCost += totalLineCost;
+        // 2. Create Job Order Items (One row per batch if available)
+        if (batches && batches.length > 0) {
+          for (const batch of batches) {
+            const batchCost = Number(batch.cost_per_unit || cost);
+            const lineCost = Number(batch.quantity) * batchCost;
+            await ExternalJobOrderItem.create({
+              job_order_id: jobOrderId,
+              product_id: item.product_id,
+              warehouse_id: item.warehouse_id,
+              quantity_sent: batch.quantity,
+              unit_cost: batchCost,
+              total_cost: lineCost,
+              batch_id: batch.batch_id
+            }, { transaction: t });
+            totalMaterialCost += lineCost;
+          }
+        } else {
+          const lineCost = Number(item.quantity) * cost;
+          await ExternalJobOrderItem.create({
+            job_order_id: jobOrderId,
+            product_id: item.product_id,
+            warehouse_id: item.warehouse_id,
+            quantity_sent: item.quantity,
+            unit_cost: cost,
+            total_cost: lineCost,
+            batch_id: null
+          }, { transaction: t });
+          totalMaterialCost += lineCost;
+        }
       }
 
       // 3. Create Journal Entry (Issue Materials)
@@ -275,8 +294,8 @@ const ExternalJobOrdersService = {
         notes: `External Job Order #${jobOrderId} - Finished Goods Received`,
         batches: [{
           quantity: producedQty,
-          batch_number: `PROD-${jobOrderId}`,
-          expiry_date: null, // Or derive if needed
+          batch_number: data.batch_number || `PROD-${jobOrderId}`,
+          expiry_date: data.expiry_date || null,
           cost_per_unit: unitCost // Explicitly pass the correct cost
         }]
       }, { transaction: t });
