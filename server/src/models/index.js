@@ -64,6 +64,7 @@ import CompanyModel from "./company.model.js";
 import ChequeModel from "./cheque.model.js";
 import ServicePaymentModel from "./servicePayments.model.js";
 import DoctorModel from "./doctors.model.js";
+import ProductTypeModel from "./productTypes.model.js";
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -127,6 +128,7 @@ const Company = CompanyModel(sequelize);
 const Cheque = ChequeModel(sequelize);
 const ServicePayment = ServicePaymentModel(sequelize);
 const Doctor = DoctorModel(sequelize);
+const ProductType = ProductTypeModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -147,6 +149,10 @@ ExternalJobOrder.hasMany(ServicePayment, { foreignKey: "external_job_order_id", 
 // Product - Unit relationship
 Unit.hasMany(Product, { foreignKey: 'unit_id', as: 'products' });
 Product.belongsTo(Unit, { foreignKey: 'unit_id', as: 'unit' });
+
+// Product - ProductType relationship
+ProductType.hasMany(Product, { foreignKey: 'type_id', as: 'products' });
+Product.belongsTo(ProductType, { foreignKey: 'type_id', as: 'type' });
 // Country - Governate relationship
 Country.hasMany(Governate, { foreignKey: "country_id", as: "governates" });
 Governate.belongsTo(Country, { foreignKey: "country_id", as: "country" });
@@ -780,5 +786,6 @@ export {
   Cheque,
   ServicePayment,
   Doctor,
+  ProductType,
 
 };

@@ -1,8 +1,11 @@
-import { Product, Unit, CurrentInventory } from "../models/index.js";
+import { Product, Unit, CurrentInventory, ProductType } from "../models/index.js";
 
 class ProductService {
   static async getAll(params = {}) {
-    const include = [{ model: Unit, as: "unit" }];
+    const include = [
+      { model: Unit, as: "unit" },
+      { model: ProductType, as: "type" }
+    ];
 
     if (params.warehouse_id) {
       include.push({
@@ -21,7 +24,12 @@ class ProductService {
   }
 
   static async getById(id) {
-    return await Product.findByPk(id, { include: [{ model: Unit, as: "unit" }] });
+    return await Product.findByPk(id, {
+      include: [
+        { model: Unit, as: "unit" },
+        { model: ProductType, as: "type" }
+      ]
+    });
   }
 
   static async update(id, data) {

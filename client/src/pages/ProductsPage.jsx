@@ -39,6 +39,7 @@ import { MaterialReactTable } from "material-react-table";
 import { defaultTableProps } from "../config/tableConfig";
 import { fetchProducts, addProduct, updateProduct, deleteProduct } from "../features/products/productsSlice";
 import { fetchUnits } from "../features/units/unitsSlice";
+import { fetchProductTypes, addProductType } from "../features/productTypes/productTypesSlice";
 
 // Form validation hook for products
 const useProductFormValidation = (initialData = {}) => {
@@ -47,6 +48,7 @@ const useProductFormValidation = (initialData = {}) => {
     price: "",
     cost_price: "",
     unit_id: "",
+    type_id: "",
     ...initialData,
   });
   const [errors, setErrors] = useState({});
@@ -124,6 +126,7 @@ const useProductFormValidation = (initialData = {}) => {
       price: "",
       cost_price: "",
       unit_id: "",
+      type_id: "",
       ...newData,
     };
     setFormData(resetData);
@@ -228,6 +231,7 @@ export default function ProductsPage() {
   const dispatch = useDispatch();
   const { items: products, loading, error } = useSelector((state) => state.products);
   const { items: units } = useSelector((state) => state.units);
+  const { items: productTypes } = useSelector((state) => state.productTypes);
 
   // Form management
   const productForm = useProductFormValidation();
@@ -246,10 +250,35 @@ export default function ProductsPage() {
   // Snackbar
   const { snackbar, showSnackbar, hideSnackbar } = useSnackbar();
 
+  // Add Product Type Dialog
+  const [openTypeDialog, setOpenTypeDialog] = useState(false);
+  const [newTypeName, setNewTypeName] = useState("");
+  const [savingType, setSavingType] = useState(false);
+
+  const handleAddType = useCallback(async () => {
+    if (!newTypeName.trim()) {
+      showSnackbar("اسم النوع مطلوب", "error");
+      return;
+    }
+    setSavingType(true);
+    try {
+      const result = await dispatch(addProductType({ name: newTypeName.trim() })).unwrap();
+      showSnackbar("تم إضافة نوع المنتج بنجاح", "success");
+      productForm.handleFieldChange('type_id', result.id);
+      setOpenTypeDialog(false);
+      setNewTypeName("");
+    } catch (err) {
+      showSnackbar(err.message || "فشل في إضافة نوع المنتج", "error");
+    } finally {
+      setSavingType(false);
+    }
+  }, [dispatch, newTypeName, showSnackbar, productForm]);
+
   // Load data
   useEffect(() => {
     dispatch(fetchProducts());
     dispatch(fetchUnits());
+    dispatch(fetchProductTypes());
   }, [dispatch]);
 
   // Handle Redux errors
@@ -267,6 +296,7 @@ export default function ProductsPage() {
         price: row.price || "",
         cost_price: row.cost_price || "",
         unit_id: row.unit_id || "",
+        type_id: row.type_id || "",
       });
     } else {
       setEditRow(null);
@@ -447,6 +477,25 @@ export default function ProductsPage() {
             size="small"
             variant="outlined"
             icon={<CategoryIcon />}
+          />
+        ) : (
+          <Typography variant="body2" color="text.disabled">
+            غير محدد
+          </Typography>
+        );
+      },
+    },
+    {
+      accessorKey: "type",
+      header: "نوع المنتج",
+      Cell: ({ row }) => {
+        const type = row.original.type;
+        return type ? (
+          <Chip
+            label={type.name}
+            size="small"
+            color="secondary"
+            variant="outlined"
           />
         ) : (
           <Typography variant="body2" color="text.disabled">
@@ -718,6 +767,40 @@ export default function ProductsPage() {
                 ))}
               </TextField>
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <Stack direction="row" spacing={1} alignItems="flex-start">
+                <TextField
+                  fullWidth
+                  select
+                  label="نوع المنتج"
+                  value={productForm.formData.type_id}
+                  onChange={(e) => productForm.handleFieldChange('type_id', e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CategoryIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                >
+                  <MenuItem value="">اختر نوع المنتج</MenuItem>
+                  {productTypes.map(type => (
+                    <MenuItem key={type.id} value={type.id}>
+                      {type.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Tooltip title="إضافة نوع منتج جديد">
+                  <IconButton
+                    color="primary"
+                    onClick={() => setOpenTypeDialog(true)}
+                    sx={{ mt: 1 }}
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+            </Grid>
             {/* Profit Margin Preview */}
             {productForm.formData.price && productForm.formData.cost_price && (
               <Grid item xs={12}>
@@ -769,6 +852,43 @@ export default function ProductsPage() {
         message={`هل أنت متأكد من حذف المنتج "${confirmDialog.productName}"؟ لا يمكن التراجع عن هذا الإجراء.`}
         loading={deleting}
       />
+
+      {/* Add Product Type Dialog */}
+      <Dialog
+        open={openTypeDialog}
+        onClose={() => setOpenTypeDialog(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: 2 } }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CategoryIcon color="primary" />
+          إضافة نوع منتج جديد
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="اسم النوع"
+            value={newTypeName}
+            onChange={(e) => setNewTypeName(e.target.value)}
+            sx={{ mt: 1 }}
+            autoFocus
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setOpenTypeDialog(false)} disabled={savingType}>
+            إلغاء
+          </Button>
+          <Button
+            onClick={handleAddType}
+            variant="contained"
+            disabled={savingType || !newTypeName.trim()}
+            startIcon={savingType ? <CircularProgress size={16} /> : <AddIcon />}
+          >
+            {savingType ? "جاري الحفظ..." : "إضافة"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Snackbar */}
       <Snackbar
