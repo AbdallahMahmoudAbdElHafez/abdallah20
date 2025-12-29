@@ -4,51 +4,53 @@ import response from "../utils/response.js";
 class AccountController {
   static async getAll(req, res, next) {
     try {
-        const accounts = await AccountService.getAll();
-        response.ok(res, accounts);
+      const accounts = await AccountService.getAll();
+      response.ok(res, accounts);
     } catch (err) {
-        next(err);
-    }   
+      next(err);
     }
-    static async create(req, res, next) {
+  }
+
+  static async create(req, res, next) {
     try {
       const account = await AccountService.create(req.body);
       response.ok(res, account, 201);
-    }
-    catch (err) {
+    } catch (err) {
       next(err);
     }
-    }
-    static async getById(req, res, next) {
+  }
+
+  static async getById(req, res, next) {
     try {
       const account = await AccountService.getById(req.params.id);
-        if (!account) return response.notFound(res, "Account not found");
-        response.ok(res, account);
+      if (!account) return response.notFound(res, "Account not found");
+      response.ok(res, account);
     } catch (err) {
-        next(err);
+      next(err);
     }
-    }
-    static async update(req, res, next) {
+  }
+
+  static async update(req, res, next) {
     try {
       const account = await AccountService.update(req.params.id, req.body);
-        if (!account) return response.notFound(res, "Account not found");
-        response.ok(res, account);
+      if (!account) return response.notFound(res, "Account not found");
+      response.ok(res, account);
     } catch (err) {
-        next(err);
+      next(err);
     }
-    }
-    static async delete(req, res, next) {
+  }
+
+  static async delete(req, res, next) {
     try {
       const account = await AccountService.delete(req.params.id);
-        if (!account) return response.notFound(res, "Account not found");
-        response.ok(res, { message: "Account deleted" });
+      if (!account) return response.notFound(res, "Account not found");
+      response.ok(res, { message: "Account deleted" });
+    } catch (err) {
+      next(err);
     }
-    catch (err) {
-        next(err);
-    }
-    }
+  }
 
-      /** 🔑 أكشن جديد */
+  /** 🔑 أكشن جديد */
   static async getByRoot(req, res, next) {
     try {
       const { rootId } = req.params;
@@ -58,6 +60,16 @@ class AccountController {
       next(err);
     }
   }
-}
-export default AccountController;
 
+  static async postOpeningBalances(req, res, next) {
+    try {
+      const { contraAccountId } = req.body;
+      const result = await AccountService.postOpeningBalancesBatch(contraAccountId);
+      response.ok(res, result);
+    } catch (err) {
+      next(err);
+    }
+  }
+}
+
+export default AccountController;

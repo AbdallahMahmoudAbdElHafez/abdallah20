@@ -26,3 +26,36 @@
 2025-12-27T15:11:40: 🚀 Server listening on http://localhost:5000
 2025-12-29T09:52:40: ✅ Database connected
 2025-12-29T09:52:40: 🚀 Server listening on http://localhost:5000
+2025-12-29T10:09:30: === Creating Sales Invoice ===
+2025-12-29T10:09:30: Request body: {
+  "invoice_number": "",
+  "party_id": 1,
+  "sales_order_id": null,
+  "warehouse_id": null,
+  "employee_id": null,
+  "invoice_date": "2025-12-29",
+  "due_date": null,
+  "invoice_type": "opening",
+  "status": "unpaid",
+  "shipping_amount": 0,
+  "subtotal": 0,
+  "additional_discount": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 30000,
+  "items": []
+}
+2025-12-29T10:09:30: Service: Starting invoice creation
+2025-12-29T10:09:30: SalesInvoice Hook: No Sales Account found (id or name 'المبيعات'). Skipping Journal Entry.
+2025-12-29T10:09:30: JE Debug: SI Accounts Resolved {
+  customer: 'العملاء',
+  sales: 'مبيعات',
+  vat: '65-ضريبة القيمه المضافه',
+  discount: '108-خصم مسموح به',
+  cogs: 'تكلفة البضاعة المباعة',
+  inventory: 'المخزون'
+}
+2025-12-29T10:09:30: JE Success: SI Revenue Entry Created
+2025-12-29T10:09:30: Service: Transaction committed

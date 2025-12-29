@@ -18,3 +18,4 @@
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
     at async Module.listPayments (file:///d:/db/server/src/services/purchasePayment.service.js:149:10)
     at async getPayments (file:///d:/db/server/src/controllers/purchasePayment.controller.js:23:18)
+2025-12-29T10:09:30: SalesInvoice Hook: No Sales Account found (id or name 'المبيعات'). Skipping Journal Entry.

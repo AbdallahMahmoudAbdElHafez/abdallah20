@@ -21,6 +21,7 @@ import {
   addAccount,
   updateAccount,
   deleteAccount,
+  postOpeningBalances,
 } from "../features/accounts/accountsSlice";
 import { Link } from "react-router-dom";
 
@@ -84,6 +85,20 @@ const AccountsPage = () => {
     }
   };
 
+  const handlePostOpeningBalances = () => {
+    if (window.confirm("هل أنت متأكد من ترحيل جميع الأرصدة الافتتاحية؟ سيتم إنشاء قيد مجمع للحسابات التي لم يتم ترحيلها بعد.")) {
+      dispatch(postOpeningBalances({ contraAccountId: 14 }))
+        .unwrap()
+        .then((res) => {
+          alert(res.message);
+          dispatch(fetchAccounts());
+        })
+        .catch((err) => {
+          alert("خطأ أثناء الترحيل: " + err);
+        });
+    }
+  };
+
   const columns = [
     { accessorKey: "id", header: "الرقم التعريفي" },
     { accessorKey: "name", header: "اسم الحساب" },
@@ -111,9 +126,18 @@ const AccountsPage = () => {
       {/* Title */}
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Typography variant="h5">دليل الحسابات</Typography>
-        <Button variant="contained" onClick={() => handleOpenDialog()}>
-          إضافة حساب
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handlePostOpeningBalances}
+          >
+            ترحيل الأرصدة الافتتاحية
+          </Button>
+          <Button variant="contained" onClick={() => handleOpenDialog()}>
+            إضافة حساب
+          </Button>
+        </Box>
       </Box>
 
       {/* Table */}

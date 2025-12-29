@@ -1,14 +1,15 @@
 
 import { Router } from "express";
-const router = Router();    
+const router = Router();
 import Account from "../models/account.model.js"; // أو المسار المناسب إلى موديل الـAccount
-import  AccountController from "../controllers/account.controller.js";
+import AccountController from "../controllers/account.controller.js";
 
 
 // ✅ بقية الـCRUD
 router.get("/", AccountController.getAll);
 router.get("/:id", AccountController.getById);
 router.post("/", AccountController.create);
+router.post("/post-opening-balances", AccountController.postOpeningBalances);
 router.put("/:id", AccountController.update);
 router.delete("/:id", AccountController.delete);
 

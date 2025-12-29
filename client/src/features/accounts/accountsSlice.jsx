@@ -5,8 +5,8 @@ import accountsApi from "../../api/accountsApi";
 export const fetchAccounts = createAsyncThunk(
   "accounts/fetchAccounts",
   async () => {
-  const res = await accountsApi.getAll();
-  return res.data;
+    const res = await accountsApi.getAll();
+    return res.data;
   }
 );
 
@@ -14,8 +14,8 @@ export const addAccount = createAsyncThunk(
   "accounts/addAccount",
   async (data) => {
     console.log(data);
-  const res = await accountsApi.create(data);
-  return res.data;
+    const res = await accountsApi.create(data);
+    return res.data;
   }
 );
 
@@ -33,6 +33,18 @@ export const deleteAccount = createAsyncThunk(
     try {
       await accountsApi.delete(id);
       return id;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
+export const postOpeningBalances = createAsyncThunk(
+  "accounts/postOpeningBalances",
+  async (data, { rejectWithValue }) => {
+    try {
+      const res = await accountsApi.postOpeningBalances(data);
+      return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
@@ -77,6 +89,18 @@ const accountsSlice = createSlice({
       // Delete
       .addCase(deleteAccount.fulfilled, (state, action) => {
         state.items = state.items.filter((acc) => acc.id !== action.payload);
+      })
+      // Post Opening Balances
+      .addCase(postOpeningBalances.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(postOpeningBalances.fulfilled, (state, action) => {
+        state.loading = false;
+        // Optionally show success message or refresh data
+      })
+      .addCase(postOpeningBalances.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
