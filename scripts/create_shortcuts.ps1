@@ -1,6 +1,6 @@
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $BaseDir = Split-Path -Parent $ScriptDir
-$Logo = Join-Path $BaseDir "server\src\assets\images\2c2a2437-62b6-4446-8701-4269d9bef3d9.png"
+$Logo = Join-Path $BaseDir "server\src\assets\images\2c2a2437-62b6-4446-8701-4269d9bef3d9.icon"
 $VbsPath = Join-Path $ScriptDir "run_hidden.vbs"
 
 $WshShell = New-Object -ComObject WScript.Shell
