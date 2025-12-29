@@ -53,7 +53,9 @@ export default function ExternalJobOrdersPage() {
     produced_quantity: "",
     waste_quantity: 0,
     service_cost: 0,
-    transport_cost: 0
+    transport_cost: 0,
+    batch_number: "",
+    expiry_date: ""
   });
 
   // Payment
@@ -203,7 +205,9 @@ export default function ExternalJobOrdersPage() {
       produced_quantity: order.order_quantity,
       waste_quantity: 0,
       service_cost: 0,
-      transport_cost: 0
+      transport_cost: 0,
+      batch_number: `PROD-${order.id}`,
+      expiry_date: ""
     });
     setReceiveGoodsOpen(true);
   };
@@ -419,6 +423,20 @@ export default function ExternalJobOrdersPage() {
               type="number"
               value={receiveData.transport_cost}
               onChange={(e) => setReceiveData({ ...receiveData, transport_cost: e.target.value })}
+            />
+            <TextField
+              label="رقم التشغيلة (Batch Number)"
+              value={receiveData.batch_number}
+              onChange={(e) => setReceiveData({ ...receiveData, batch_number: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="تاريخ الصلاحية"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              value={receiveData.expiry_date}
+              onChange={(e) => setReceiveData({ ...receiveData, expiry_date: e.target.value })}
+              fullWidth
             />
           </Box>
         </DialogContent>

@@ -3,6 +3,10 @@ import { createJournalEntry } from "./journal.service.js";
 import { Op } from "sequelize"; // 👈 مهم جداً
 
 export async function createPayment(data) {
+  // Sanitize input data
+  if (data.employee_id === '') data.employee_id = null;
+  if (data.account_id === '') delete data.account_id;
+
   const t = await sequelize.transaction();
   try {
     // 1️⃣ اجلب الفاتورة مع بيانات المورد
@@ -96,6 +100,10 @@ export async function createPayment(data) {
 
 // تحديث دفعة
 export async function updatePayment(id, data) {
+  // Sanitize input data
+  if (data.employee_id === '') data.employee_id = null;
+  if (data.account_id === '') delete data.account_id;
+
   const t = await sequelize.transaction();
   try {
     const payment = await PurchaseInvoicePayment.findByPk(id, { transaction: t });

@@ -4,6 +4,10 @@ import ENTRY_TYPES from "../constants/entryTypes.js";
 import { Op } from "sequelize";
 
 export async function createPayment(data) {
+    // Sanitize input data to handle empty strings for integer columns
+    if (data.employee_id === '') data.employee_id = null;
+    if (data.account_id === '') delete data.account_id; // Let validation handle missing required fields
+
     const t = await sequelize.transaction();
     try {
         // 1️⃣ اجلب الفاتورة مع بيانات العميل
@@ -94,6 +98,10 @@ export async function createPayment(data) {
 }
 
 export async function updatePayment(id, data) {
+    // Sanitize input data
+    if (data.employee_id === '') data.employee_id = null;
+    if (data.account_id === '') delete data.account_id;
+
     const t = await sequelize.transaction();
     try {
         const payment = await SalesInvoicePayment.findByPk(id, { transaction: t });
