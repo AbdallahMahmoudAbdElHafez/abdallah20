@@ -2,3 +2,5 @@
 2025-12-27T12:09:30: 🚀 Server listening on http://localhost:5000
 2025-12-27T12:29:17: Service: getDashboardSummary { startDate: undefined, endDate: undefined, dateFilter: {} }
 2025-12-27T12:29:17: Service: getDashboardSummary { startDate: undefined, endDate: undefined, dateFilter: {} }
+2025-12-27T15:11:40: ✅ Database connected
+2025-12-27T15:11:40: 🚀 Server listening on http://localhost:5000
