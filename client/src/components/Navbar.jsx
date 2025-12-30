@@ -10,9 +10,10 @@ import {
 } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
+import DatabaseManagementDialog from "./DatabaseManagementDialog";
 
 const navItems = [
-  {label:"مكونات التصنيع",path:'/bill-of-material'},
+  { label: "مكونات التصنيع", path: '/bill-of-material' },
   { label: "الرئيسية", path: "/" },
   { label: "لوحة التحكم", path: "/dashboard" },
   { label: "الوحدات", path: "/units" },
@@ -42,6 +43,7 @@ const purchasesMenu = [
 function Navbar() {
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState(null);
+  const [dbDialogOpen, setDbDialogOpen] = useState(false);
 
   const handleOpen = (e) => setAnchorEl(e.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -54,6 +56,15 @@ function Navbar() {
         <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "right" }}>
           نظام إدارة الحسابات
         </Typography>
+
+        <Button color="inherit" onClick={() => setDbDialogOpen(true)} sx={{ ml: 1 }}>
+          قاعدة البيانات
+        </Button>
+
+        <DatabaseManagementDialog
+          open={dbDialogOpen}
+          onClose={() => setDbDialogOpen(false)}
+        />
 
         {/* المشتريات */}
         <Box>

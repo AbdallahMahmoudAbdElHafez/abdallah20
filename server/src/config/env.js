@@ -13,5 +13,6 @@ export const env = {
         pass: process.env.DB_PASS || 'Abdallah20203040',
         name: process.env.DB_NAME || 'nurivina',
     },
+    dbMgmtPassword: process.env.DB_MGMT_PASSWORD || 'Abdallah20203040',
 
 };
