@@ -59,3 +59,5 @@
 }
 2025-12-29T10:09:30: JE Success: SI Revenue Entry Created
 2025-12-29T10:09:30: Service: Transaction committed
+2025-12-30T09:58:45: ✅ Database connected
+2025-12-30T09:58:45: 🚀 Server listening on http://localhost:5000
