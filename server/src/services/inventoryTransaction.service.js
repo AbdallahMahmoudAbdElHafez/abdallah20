@@ -1,4 +1,4 @@
-import { InventoryTransaction, Product, Warehouse, InventoryTransactionBatches, Batches } from "../models/index.js";
+import { InventoryTransaction, Product, Warehouse, InventoryTransactionBatches, Batches, ReferenceType } from "../models/index.js";
 import CurrentInventoryService from "./currentInventory.service.js";
 import BatchInventoryService from "./batchInventory.service.js";
 
@@ -105,6 +105,15 @@ class InventoryTransactionService {
       );
     }
 
+    // 5. Create Journal Entry for Adjustments
+    if (data.source_type === 'adjustment' && totalQuantity > 0) {
+      try {
+        await InventoryTransactionService.syncJournalEntry(trx, options);
+      } catch (err) {
+        console.error("Failed to sync journal entry for inventory adjustment:", err);
+      }
+    }
+
     return trx;
   }
 
@@ -205,6 +214,15 @@ class InventoryTransactionService {
       );
     }
 
+    // Update Journal Entry for Adjustments
+    if ((data.source_type || trx.source_type) === 'adjustment') {
+      try {
+        await InventoryTransactionService.syncJournalEntry(trx, options);
+      } catch (err) {
+        console.error("Failed to sync journal entry for inventory adjustment update:", err);
+      }
+    }
+
     return trx;
   }
 
@@ -253,8 +271,114 @@ class InventoryTransactionService {
     // Delete associated batches first
     await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id }, ...options });
 
+    // Delete associated Journal Entry for Adjustments
+    if (trx.source_type === 'adjustment') {
+      try {
+        const { JournalEntry } = await import("../models/index.js");
+        const refType = await ReferenceType.findOne({ where: { code: 'inventory_adjustment' }, ...options });
+        if (refType) {
+          await JournalEntry.destroy({ where: { reference_type_id: refType.id, reference_id: id }, ...options });
+        }
+      } catch (err) {
+        console.error("Failed to delete journal entry for inventory adjustment:", err);
+      }
+    }
+
     await trx.destroy(options);
     return true;
+  }
+
+  static async syncJournalEntry(trx, options = {}) {
+    const { createJournalEntry } = await import('./journal.service.js');
+    const { JournalEntry, Product: ProductModel } = await import('../models/index.js');
+
+    // 1. Ensure ReferenceType exists
+    let refType = await ReferenceType.findOne({ where: { code: 'inventory_adjustment' }, ...options });
+    if (!refType) {
+      refType = await ReferenceType.create({
+        code: 'inventory_adjustment',
+        name: 'تسوية مخزنية',
+        label: 'تسوية مخزنية',
+        description: 'Inventory Adjustment Transaction'
+      }, options);
+    }
+
+    // 2. Delete existing entry if any (to update)
+    await JournalEntry.destroy({
+      where: { reference_type_id: refType.id, reference_id: trx.id },
+      ...options
+    });
+
+    // 3. Prepare Account Mapping
+    const INVENTORY_ACCOUNTS = {
+      FINISHED_GOODS: 110,    // مخزون تام الصنع
+      RAW_MATERIALS: 111,     // مخزون أولي
+      DEFAULT: 49             // المخزون
+    };
+
+    const product = await ProductModel.findByPk(trx.product_id, options);
+    const accountId = product?.type_id === 1 ? INVENTORY_ACCOUNTS.FINISHED_GOODS :
+      (product?.type_id === 2 ? INVENTORY_ACCOUNTS.RAW_MATERIALS : INVENTORY_ACCOUNTS.DEFAULT);
+
+    const CONTRA_ACCOUNT = 14; // أرباح مرحلة / تسويات
+
+    // 4. Calculate total cost
+    // Use the cost from transaction batches if available, otherwise fallback to product cost
+    const trxBatches = await InventoryTransactionBatches.findAll({
+      where: { inventory_transaction_id: trx.id },
+      ...options
+    });
+
+    let totalCost = 0;
+    if (trxBatches.length > 0) {
+      totalCost = trxBatches.reduce((sum, b) => sum + (Number(b.quantity) * Number(b.cost_per_unit || product?.cost_price || 0)), 0);
+    } else {
+      totalCost = Number(trx.quantity) * Number(product?.cost_price || 0);
+    }
+
+    if (totalCost <= 0) return;
+
+    // 5. Create Lines
+    const lines = [];
+    if (trx.transaction_type === 'in') {
+      // Dr Inventory, Cr Contra
+      lines.push({
+        account_id: accountId,
+        debit: totalCost,
+        credit: 0,
+        description: `إضافة مخزون (تسوية) - ${trx.note || ''}`
+      });
+      lines.push({
+        account_id: CONTRA_ACCOUNT,
+        debit: 0,
+        credit: totalCost,
+        description: `مواجهة تسوية إضافة مخزون - ${trx.note || ''}`
+      });
+    } else {
+      // Dr Contra, Cr Inventory
+      lines.push({
+        account_id: CONTRA_ACCOUNT,
+        debit: totalCost,
+        credit: 0,
+        description: `صرف مخزون (تسوية) - ${trx.note || ''}`
+      });
+      lines.push({
+        account_id: accountId,
+        debit: 0,
+        credit: totalCost,
+        description: `مواجهة تسوية صرف مخزون - ${trx.note || ''}`
+      });
+    }
+
+    // 6. Create Journal Entry
+    await createJournalEntry({
+      refCode: 'inventory_adjustment',
+      refId: trx.id,
+      entryDate: trx.transaction_date,
+      description: `قيد تسوية مخزنية #${trx.id} - ${trx.note || ''}`,
+      lines: lines,
+      entryTypeId: 10 // Adjustment/Settlement
+    }, options);
   }
   /**
    * Get batches using FIFO method
