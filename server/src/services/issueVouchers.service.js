@@ -109,12 +109,31 @@ export class IssueVouchersService {
         if (createdItems.length > 0) {
           const { createJournalEntry } = await import('./journal.service.js');
 
-          const inventoryAccount = await Account.findOne({ where: { name: 'المخزون' }, transaction });
+          // Inventory Account IDs by Product Type
+          const INVENTORY_ACCOUNTS = {
+            FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
+            RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
+            DEFAULT: 49             // المخزون (fallback)
+          };
+
+          const PRODUCT_TYPE_TO_ACCOUNT = {
+            1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
+            2: INVENTORY_ACCOUNTS.RAW_MATERIALS
+          };
+
           // voucher.account_id acts as the debit account
           const debitAccount = await Account.findByPk(voucher.account_id, { transaction });
 
           // Import FIFO Cost Service
           const FIFOCostService = (await import('./fifoCost.service.js')).default;
+
+          // Get products with type_id
+          const productIds = createdItems.map(i => i.product_id);
+          const products = await Product.findAll({
+            where: { id: { [Op.in]: productIds } },
+            transaction
+          });
+          const productMap = new Map(products.map(p => [p.id, p]));
 
           // Prepare items for FIFO cost calculation
           const itemsForCost = createdItems.map(item => ({
@@ -123,35 +142,51 @@ export class IssueVouchersService {
             quantity: Number(item.quantity)
           }));
 
+          // Calculate costs grouped by product type
+          const costsByType = {};
           let totalCost = 0;
+
           try {
             const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
               itemsForCost,
               transaction
             );
             totalCost = fifoCost;
+
+            // Group costs by product type
+            for (const itemCost of itemCosts) {
+              const product = productMap.get(itemCost.product_id);
+              const typeId = product?.type_id || null;
+              const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+              if (!costsByType[accountId]) {
+                costsByType[accountId] = 0;
+              }
+              costsByType[accountId] += itemCost.totalCost;
+            }
             console.log('Issue Voucher: FIFO Cost Calculation Success. Total:', totalCost);
           } catch (error) {
             console.error('Issue Voucher: FIFO Cost Calculation Failed:', error.message);
-            // Fallback to product cost_price if FIFO fails
             console.warn('Issue Voucher: Falling back to product cost_price due to FIFO error');
-
-            const productIds = createdItems.map(i => i.product_id);
-            const products = await Product.findAll({
-              where: { id: { [Op.in]: productIds } },
-              transaction
-            });
-            const productMap = new Map(products.map(p => [p.id, p]));
 
             for (const item of createdItems) {
               const product = productMap.get(item.product_id);
               if (product && Number(product.cost_price) > 0) {
-                totalCost += Number(item.quantity) * Number(product.cost_price);
+                const itemCost = Number(item.quantity) * Number(product.cost_price);
+                totalCost += itemCost;
+
+                const typeId = product?.type_id || null;
+                const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+                if (!costsByType[accountId]) {
+                  costsByType[accountId] = 0;
+                }
+                costsByType[accountId] += itemCost;
               }
             }
           }
 
-          if (totalCost > 0 && inventoryAccount && debitAccount) {
+          if (totalCost > 0 && debitAccount) {
             let refType = await ReferenceType.findOne({ where: { code: 'issue_voucher' }, transaction });
             if (!refType) {
               refType = await ReferenceType.create({
@@ -162,25 +197,35 @@ export class IssueVouchersService {
               }, { transaction });
             }
 
+            // Build journal entry lines
+            const lines = [
+              {
+                account_id: debitAccount.id,
+                debit: totalCost,
+                credit: 0,
+                description: `Issue Voucher #${voucher.voucher_no}`
+              }
+            ];
+
+            // Add credit lines for each inventory account
+            for (const [accountId, cost] of Object.entries(costsByType)) {
+              if (cost > 0) {
+                const account = await Account.findByPk(accountId, { transaction });
+                lines.push({
+                  account_id: parseInt(accountId),
+                  debit: 0,
+                  credit: cost,
+                  description: `${account?.name || 'مخزون'} - Issue Voucher #${voucher.voucher_no}`
+                });
+              }
+            }
+
             await createJournalEntry({
               refCode: 'issue_voucher',
               refId: voucher.id,
               entryDate: voucher.issue_date,
               description: `Issue Voucher #${voucher.voucher_no} - ${voucher.note || ''}`,
-              lines: [
-                {
-                  account_id: debitAccount.id,
-                  debit: totalCost,
-                  credit: 0,
-                  description: `Issue Voucher #${voucher.voucher_no}`
-                },
-                {
-                  account_id: inventoryAccount.id,
-                  debit: 0,
-                  credit: totalCost,
-                  description: `Inventory - Issue Voucher #${voucher.voucher_no}`
-                }
-              ],
+              lines,
               entryTypeId: 1
             }, { transaction });
           }

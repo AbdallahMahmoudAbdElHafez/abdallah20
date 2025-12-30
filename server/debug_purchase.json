@@ -1,0 +1,88 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Nurivina Argan Oil 100ml",
+      "type_id": 1,
+      "type_name": "منتج تام"
+    },
+    {
+      "id": 2,
+      "name": "Nurivina Argan Oil Hair Serum 100ml",
+      "type_id": 1,
+      "type_name": "منتج تام"
+    },
+    {
+      "id": 3,
+      "name": "Nurivina Omega Anti-Hair Loss Shampoo 220ml",
+      "type_id": 1,
+      "type_name": "منتج تام"
+    },
+    {
+      "id": 4,
+      "name": "Nurivina Argan oil Leave in Conditioner 220ml",
+      "type_id": 1,
+      "type_name": "منتج تام"
+    },
+    {
+      "id": 5,
+      "name": "Nurivina whitening Cream 50gm",
+      "type_id": 1,
+      "type_name": "منتج تام"
+    },
+    {
+      "id": 6,
+      "name": "Nurivina Anti-Hair Loss Spray 100ml",
+      "type_id": 1,
+      "type_name": "منتج تام"
+    },
+    {
+      "id": 10,
+      "name": "Nurivina Omega Anti-Hair Loss Shampoo Cap",
+      "type_id": 2,
+      "type_name": "مستلزم انتاج"
+    },
+    {
+      "id": 11,
+      "name": "Nurivina Omega Anti-Hair Loss Shampoo Bottle 220ml",
+      "type_id": 2,
+      "type_name": "مستلزم انتاج"
+    },
+    {
+      "id": 12,
+      "name": "Nurivina Omega Anti-Hair Loss Shampoo Sticker",
+      "type_id": 2,
+      "type_name": "مستلزم انتاج"
+    }
+  ],
+  "recentInvoicesWithItems": [
+    {
+      "id": 2,
+      "status": "unpaid",
+      "total_amount": "33000.00",
+      "product_id": 10,
+      "total_price": "9000.00",
+      "product_name": "Nurivina Omega Anti-Hair Loss Shampoo Cap",
+      "type_id": 2
+    },
+    {
+      "id": 2,
+      "status": "unpaid",
+      "total_amount": "33000.00",
+      "product_id": 11,
+      "total_price": "18000.00",
+      "product_name": "Nurivina Omega Anti-Hair Loss Shampoo Bottle 220ml",
+      "type_id": 2
+    },
+    {
+      "id": 2,
+      "status": "unpaid",
+      "total_amount": "33000.00",
+      "product_id": 12,
+      "total_price": "6000.00",
+      "product_name": "Nurivina Omega Anti-Hair Loss Shampoo Sticker",
+      "type_id": 2
+    }
+  ],
+  "recentJournalEntries": []
+}
