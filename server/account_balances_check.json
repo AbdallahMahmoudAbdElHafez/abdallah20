@@ -1,0 +1,44 @@
+[
+  {
+    "id": 41,
+    "name": "خزينه",
+    "account_type": "asset",
+    "normal_balance": "debit",
+    "opening_balance": "50000.00"
+  },
+  {
+    "id": 43,
+    "name": "البنك الأهلي الخاص",
+    "account_type": "asset",
+    "normal_balance": "debit",
+    "opening_balance": "120000.00"
+  },
+  {
+    "id": 47,
+    "name": "العملاء",
+    "account_type": "asset",
+    "normal_balance": "debit",
+    "opening_balance": "80000.00"
+  },
+  {
+    "id": 49,
+    "name": "المخزون",
+    "account_type": "asset",
+    "normal_balance": "debit",
+    "opening_balance": "150000.00"
+  },
+  {
+    "id": 62,
+    "name": "الموردين",
+    "account_type": "liability",
+    "normal_balance": "credit",
+    "opening_balance": "140000.00"
+  },
+  {
+    "id": 65,
+    "name": "ضريبة القيمه المضافه",
+    "account_type": "liability",
+    "normal_balance": "credit",
+    "opening_balance": "30000.00"
+  }
+]

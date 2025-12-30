@@ -267,29 +267,94 @@ export default {
             // 2. COGS Reversal Entry
             // Invoice: Dr COGS, Cr Inventory.
             // Return: Dr Inventory, Cr COGS.
-            if (totalCost > 0 && cogsAccount && inventoryAccount) {
-                // Ensure ref Code exists if we want separate one, or reuse sales_return
-                // Reuse sales_return for simplicity or create sales_return_cost
+            if (totalCost > 0 && cogsAccount && createdItems.length > 0) {
+                // Inventory Account IDs by Product Type
+                const INVENTORY_ACCOUNTS = {
+                    FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
+                    RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
+                    DEFAULT: 49             // المخزون (fallback)
+                };
+
+                const PRODUCT_TYPE_TO_ACCOUNT = {
+                    1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
+                    2: INVENTORY_ACCOUNTS.RAW_MATERIALS
+                };
+
+                // Group costs by product type
+                const productIds = createdItems.map(i => i.product_id);
+                const products = await Product.findAll({
+                    where: { id: { [Op.in]: productIds } },
+                    transaction
+                });
+                const productMap = new Map(products.map(p => [p.id, p]));
+
+                const costsByType = {};
+
+                // We need to fetch itemCosts again or reuse if possible. 
+                // Since this is a reversal, we can calculate it from the items and their cost_price or FIFO.
+                // The totalCost was already calculated above. Let's re-calculate grouping.
+
+                try {
+                    const FIFOCostService = (await import('./fifoCost.service.js')).default;
+                    const itemsForCost = createdItems.map(item => ({
+                        product_id: item.product_id,
+                        warehouse_id: salesReturn.warehouse_id,
+                        quantity: Number(item.quantity)
+                    }));
+
+                    const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(itemsForCost, transaction);
+
+                    for (const itemCost of itemCosts) {
+                        const product = productMap.get(itemCost.product_id);
+                        const typeId = product?.type_id || null;
+                        const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+                        if (!costsByType[accountId]) costsByType[accountId] = 0;
+                        costsByType[accountId] += itemCost.totalCost;
+                    }
+                } catch (error) {
+                    // Fallback to cost_price
+                    for (const item of createdItems) {
+                        const product = productMap.get(item.product_id);
+                        const costPrice = product ? Number(product.cost_price) : 0;
+                        const itemCost = Number(item.quantity) * costPrice;
+
+                        const typeId = product?.type_id || null;
+                        const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+                        if (!costsByType[accountId]) costsByType[accountId] = 0;
+                        costsByType[accountId] += itemCost;
+                    }
+                }
+
+                const lines = [
+                    {
+                        account_id: cogsAccount.id,
+                        debit: 0,
+                        credit: totalCost,
+                        description: `COGS Reversal - Return #${salesReturn.id}`
+                    }
+                ];
+
+                // Add debit lines for each inventory account
+                for (const [accountId, amount] of Object.entries(costsByType)) {
+                    if (amount > 0) {
+                        const account = await Account.findByPk(accountId, { transaction });
+                        lines.push({
+                            account_id: parseInt(accountId),
+                            debit: amount,
+                            credit: 0,
+                            description: `Inventory Restock (${account?.name || 'المخزون'}) - Return #${salesReturn.id}`
+                        });
+                    }
+                }
 
                 await createJournalEntry({
                     refCode: 'sales_return',
                     refId: salesReturn.id,
                     entryDate: salesReturn.return_date,
                     description: `COGS Reversal - Sales Return #${salesReturn.id}`,
-                    lines: [
-                        {
-                            account_id: inventoryAccount.id,
-                            debit: totalCost,
-                            credit: 0,
-                            description: `Inventory Restock - Return #${salesReturn.id}`
-                        },
-                        {
-                            account_id: cogsAccount.id,
-                            debit: 0,
-                            credit: totalCost,
-                            description: `COGS Reversal - Return #${salesReturn.id}`
-                        }
-                    ],
+                    lines,
                     entryTypeId: 4
                 }, { transaction });
             }

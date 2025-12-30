@@ -136,9 +136,19 @@ class PurchaseInvoiceService {
 
       // --- Journal Entry Creation ---
       const { createJournalEntry } = await import('./journal.service.js');
+      const { Product: ProductModel } = await import('../models/index.js');
 
-      // Resolve Accounts
-      const inventoryAccount = await Account.findOne({ where: { name: 'المخزون' }, transaction });
+      // Inventory Account IDs by Product Type
+      const INVENTORY_ACCOUNTS = {
+        FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
+        RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
+        DEFAULT: 49             // المخزون (fallback)
+      };
+
+      const PRODUCT_TYPE_TO_ACCOUNT = {
+        1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
+        2: INVENTORY_ACCOUNTS.RAW_MATERIALS
+      };
 
       // VAT: Try specific "ضريبة القيمه المضافه" (ID 65 specific) or standard.
       let vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمه المضافه' }, transaction });
@@ -149,7 +159,6 @@ class PurchaseInvoiceService {
       const taxAccount = await Account.findOne({ where: { name: 'خصم و اضافه ضرائب مشتريات' }, transaction });
 
       console.log('JE Debug: PI Accounts Resolved', {
-        inventory: !!inventoryAccount,
         vat: !!vatAccount,
         supplier: !!supplierAccount
       });
@@ -165,17 +174,47 @@ class PurchaseInvoiceService {
         }, { transaction });
       }
 
-      if (inventoryAccount && supplierAccount) {
+      if (supplierAccount && items && items.length > 0) {
         const lines = [];
 
-        // 1. Dr Inventory (Subtotal)
-        if (Number(invoice.subtotal) > 0) {
-          lines.push({
-            account_id: inventoryAccount.id,
-            debit: invoice.subtotal,
-            credit: 0,
-            description: `Inventory - PI #${invoice.invoice_number}`
-          });
+        // Get products with type_id
+        const productIds = items.map(i => parseInt(i.product_id));
+
+        const products = await ProductModel.findAll({
+          where: { id: { [Op.in]: productIds } },
+          transaction
+        });
+
+        const productMap = new Map(products.map(p => [p.id, p]));
+
+        // Group subtotal by product type
+        const subtotalByType = {};
+        for (const item of items) {
+          const productId = parseInt(item.product_id);
+          const product = productMap.get(productId);
+          const typeId = product?.type_id || null;
+          const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+          // Calculate item total from quantity * unit_price
+          const itemTotal = parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0);
+
+          if (!subtotalByType[accountId]) {
+            subtotalByType[accountId] = 0;
+          }
+          subtotalByType[accountId] += itemTotal;
+        }
+
+        // 1. Dr Inventory accounts by product type
+        for (const [accountId, amount] of Object.entries(subtotalByType)) {
+          if (amount > 0) {
+            const account = await Account.findByPk(accountId, { transaction });
+            lines.push({
+              account_id: parseInt(accountId),
+              debit: amount,
+              credit: 0,
+              description: `${account?.name || 'مخزون'} - PI #${invoice.invoice_number}`
+            });
+          }
         }
 
         // 2. Dr VAT
@@ -246,9 +285,9 @@ class PurchaseInvoiceService {
           }
         }
       } else {
-        console.error('JE Error: PI Entry Skipped. Missing Essential Accounts:', {
-          inventory: !!inventoryAccount ? inventoryAccount.name : 'MISSING',
-          supplier: !!supplierAccount ? supplierAccount.name : 'MISSING'
+        console.error('JE Error: PI Entry Skipped. Missing Essential Data:', {
+          supplier: !!supplierAccount ? supplierAccount.name : 'MISSING',
+          items: items?.length || 0
         });
       }
 

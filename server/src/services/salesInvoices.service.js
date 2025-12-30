@@ -159,110 +159,22 @@ export default {
             const DISCOUNT_ALLOWED_ID = 108;
             const COGS_ACCOUNT_ID = 15;
 
-            // Resolve Inventory Account (49 or fallback to 110)
-            let inventoryAccount = await Account.findByPk(49, { transaction });
-            if (!inventoryAccount) inventoryAccount = await Account.findByPk(110, { transaction });
-
-            // Determine Collection Account (Debit side)
-            // If data.payment_type is 'نقدي', use the provided collection_account_id or a default cash account (e.g. 41)
-            let debitAccountId = CUSTOMER_ACCOUNT_ID;
-            let debitDescription = `العملاء - فاتورة رقم #${invoice.invoice_number}`;
-
-            if (data.payment_type === 'نقدي' || data.invoice_type_label === 'نقدي') {
-                debitAccountId = data.collection_account_id || 41; // Default to 41 if not provided
-                debitDescription = `الصندوق/البنك - فاتورة نقدي رقم #${invoice.invoice_number}`;
-            }
-
-            console.log('JE Debug: SI Professional Mapping', {
-                debitAccount: debitAccountId,
-                sales: SALES_ACCOUNT_ID,
-                vat: VAT_ACCOUNT_ID,
-                wht: WHT_ACCOUNT_ID,
-                inventory: inventoryAccount ? inventoryAccount.id : 'MISSING'
-            });
-
-            // Ensure ReferenceType exists
-            let refType = await ReferenceType.findOne({ where: { code: 'sales_invoice' }, transaction });
-            if (!refType) {
-                refType = await ReferenceType.create({
-                    code: 'sales_invoice',
-                    label: 'فاتورة مبيعات',
-                    name: 'فاتورة مبيعات',
-                    description: 'Journal Entry for Sales Invoice'
-                }, { transaction });
-            }
-
-            // 1. Revenue Entry
-            const revenueLines = [];
-
-            // Dr Debit Account (Net Total after WHT and Discounts)
-            const netReceivable = Number(invoice.total_amount);
-            if (netReceivable > 0) {
-                revenueLines.push({
-                    account_id: debitAccountId,
-                    debit: netReceivable,
-                    credit: 0,
-                    description: debitDescription
-                });
-            }
-
-            // Dr WHT Asset (Account 56)
-            const whtAmount = Number(invoice.tax_amount);
-            if (whtAmount > 0) {
-                revenueLines.push({
-                    account_id: WHT_ACCOUNT_ID,
-                    debit: whtAmount,
-                    credit: 0,
-                    description: `خصم ضرائب (1%) - فاتورة #${invoice.invoice_number}`
-                });
-            }
-
-            // Note: Cash Discount (108) would go here if provided separately.
-            // Currently, additional_discount is treated as Trade Discount (deducted from Sales).
-
-            // Cr Sales Revenue (Account 28) - Deduct Trade Discount
-            // As per user: "خصم تجاري أو خصم إضافي (يُخصم من قيمة المبيعات ولا يُقيد بحساب مستقل)"
-            const netSales = Number(invoice.subtotal) - Number(invoice.additional_discount);
-            if (netSales > 0) {
-                revenueLines.push({
-                    account_id: SALES_ACCOUNT_ID,
-                    debit: 0,
-                    credit: netSales,
-                    description: `المبيعات (صافي) - فاتورة #${invoice.invoice_number}`
-                });
-            }
-
-            // Cr VAT (Account 65)
-            const vatAmount = Number(invoice.vat_amount);
-            if (vatAmount > 0) {
-                revenueLines.push({
-                    account_id: VAT_ACCOUNT_ID,
-                    debit: 0,
-                    credit: vatAmount,
-                    description: `ضريبة القيمة المضافة - فاتورة #${invoice.invoice_number}`
-                });
-            }
-
-            if (revenueLines.length > 0) {
-                try {
-                    await createJournalEntry({
-                        refCode: 'sales_invoice',
-                        refId: invoice.id,
-                        entryDate: invoice.invoice_date,
-                        description: `قيد مبيعات - فاتورة #${invoice.invoice_number}`,
-                        lines: revenueLines,
-                        entryTypeId: 2
-                    }, { transaction });
-                    console.log('JE Success: SI Professional Revenue Entry Created');
-                } catch (err) {
-                    console.error('JE Error: SI Professional Revenue Entry Failed', err);
-                }
-            }
-
             // 2. Cost Entry (COGS)
-            if (inventoryAccount && createdItems.length > 0) {
+            if (createdItems.length > 0) {
                 // Import FIFO Cost Service
                 const FIFOCostService = (await import('./fifoCost.service.js')).default;
+
+                // Inventory Account IDs by Product Type
+                const INVENTORY_ACCOUNTS = {
+                    FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
+                    RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
+                    DEFAULT: 49             // المخزون (fallback)
+                };
+
+                const PRODUCT_TYPE_TO_ACCOUNT = {
+                    1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
+                    2: INVENTORY_ACCOUNTS.RAW_MATERIALS
+                };
 
                 // Prepare items for FIFO cost calculation
                 const itemsForCost = createdItems.map(item => ({
@@ -271,54 +183,87 @@ export default {
                     quantity: Number(item.quantity) + Number(item.bonus || 0)
                 }));
 
+                // Get products with type_id
+                const productIds = createdItems.map(i => i.product_id);
+                const products = await Product.findAll({
+                    where: { id: { [Op.in]: productIds } },
+                    transaction
+                });
+                const productMap = new Map(products.map(p => [p.id, p]));
+
+                let costsByType = {};
                 let totalCost = 0;
+
                 try {
-                    const { totalCost: fifoCost } = await FIFOCostService.calculateFIFOCostForItems(
+                    const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
                         itemsForCost,
                         transaction
                     );
                     totalCost = fifoCost;
+
+                    // Group costs by product type
+                    for (const itemCost of itemCosts) {
+                        const product = productMap.get(itemCost.product_id);
+                        const typeId = product?.type_id || null;
+                        const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+                        if (!costsByType[accountId]) {
+                            costsByType[accountId] = 0;
+                        }
+                        costsByType[accountId] += itemCost.totalCost;
+                    }
                 } catch (error) {
                     console.error('JE Error: COGS FIFO Calculation Failed:', error.message);
                     // Fallback to product cost_price
-                    const productIds = createdItems.map(i => i.product_id);
-                    const products = await Product.findAll({
-                        where: { id: { [Op.in]: productIds } },
-                        transaction
-                    });
-                    const productMap = new Map(products.map(p => [p.id, p]));
-
                     for (const item of createdItems) {
                         const product = productMap.get(item.product_id);
                         const costPrice = product ? Number(product.cost_price) : 0;
                         if (costPrice > 0) {
                             const qty = Number(item.quantity) + Number(item.bonus || 0);
-                            totalCost += qty * costPrice;
+                            const itemCost = qty * costPrice;
+                            totalCost += itemCost;
+
+                            const typeId = product?.type_id || null;
+                            const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+                            if (!costsByType[accountId]) {
+                                costsByType[accountId] = 0;
+                            }
+                            costsByType[accountId] += itemCost;
                         }
                     }
                 }
 
                 if (totalCost > 0) {
                     try {
+                        const lines = [
+                            {
+                                account_id: COGS_ACCOUNT_ID,
+                                debit: totalCost,
+                                credit: 0,
+                                description: `تكلفة البضاعة المباعة - فاتورة #${invoice.invoice_number}`
+                            }
+                        ];
+
+                        // Add credit lines for each inventory account
+                        for (const [accountId, amount] of Object.entries(costsByType)) {
+                            if (amount > 0) {
+                                const account = await Account.findByPk(accountId, { transaction });
+                                lines.push({
+                                    account_id: parseInt(accountId),
+                                    debit: 0,
+                                    credit: amount,
+                                    description: `${account?.name || 'المخزون'} - فاتورة #${invoice.invoice_number}`
+                                });
+                            }
+                        }
+
                         await createJournalEntry({
                             refCode: 'sales_invoice_cost',
                             refId: invoice.id,
                             entryDate: invoice.invoice_date,
                             description: `قيد تكلفة مبيعات - فاتورة #${invoice.invoice_number}`,
-                            lines: [
-                                {
-                                    account_id: COGS_ACCOUNT_ID,
-                                    debit: totalCost,
-                                    credit: 0,
-                                    description: `تكلفة البضاعة المباعة - فاتورة #${invoice.invoice_number}`
-                                },
-                                {
-                                    account_id: inventoryAccount.id,
-                                    debit: 0,
-                                    credit: totalCost,
-                                    description: `المخزون - فاتورة #${invoice.invoice_number}`
-                                }
-                            ],
+                            lines,
                             entryTypeId: 2
                         }, { transaction });
                         console.log('JE Success: SI Professional COGS Entry Created');

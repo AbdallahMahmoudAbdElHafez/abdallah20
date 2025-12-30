@@ -1,0 +1,65 @@
+{
+  "accounts": [
+    {
+      "id": 41,
+      "name": "خزينه",
+      "account_type": "asset",
+      "parent_account_id": 40,
+      "opening_balance": "50000.00"
+    },
+    {
+      "id": 43,
+      "name": "البنك الأهلي الخاص",
+      "account_type": "asset",
+      "parent_account_id": 40,
+      "opening_balance": "120000.00"
+    },
+    {
+      "id": 47,
+      "name": "العملاء",
+      "account_type": "asset",
+      "parent_account_id": 9,
+      "opening_balance": "80000.00"
+    },
+    {
+      "id": 49,
+      "name": "المخزون",
+      "account_type": "asset",
+      "parent_account_id": 9,
+      "opening_balance": "150000.00"
+    },
+    {
+      "id": 62,
+      "name": "الموردين",
+      "account_type": "liability",
+      "parent_account_id": 12,
+      "opening_balance": "140000.00"
+    },
+    {
+      "id": 65,
+      "name": "ضريبة القيمه المضافه",
+      "account_type": "liability",
+      "parent_account_id": 12,
+      "opening_balance": "30000.00"
+    }
+  ],
+  "parentAccountIds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    8,
+    9,
+    40,
+    50,
+    60,
+    12,
+    69,
+    71,
+    22,
+    25,
+    90,
+    28
+  ]
+}
