@@ -168,12 +168,14 @@ export default {
                 const INVENTORY_ACCOUNTS = {
                     FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
                     RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
-                    DEFAULT: 49             // المخزون (fallback)
+                    WIP: 109,               // تحت التشغيل (type_id: 3 or other)
+                    DEFAULT: 110            // Fallback to Finished Goods
                 };
 
                 const PRODUCT_TYPE_TO_ACCOUNT = {
                     1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
-                    2: INVENTORY_ACCOUNTS.RAW_MATERIALS
+                    2: INVENTORY_ACCOUNTS.RAW_MATERIALS,
+                    3: INVENTORY_ACCOUNTS.WIP
                 };
 
                 // Prepare items for FIFO cost calculation
@@ -254,6 +256,25 @@ export default {
                                     debit: 0,
                                     credit: amount,
                                     description: `${account?.name || 'المخزون'} - فاتورة #${invoice.invoice_number}`
+                                });
+                            }
+                        }
+
+                        // Final check: ensure the entry is balanced
+                        const totalDebit = lines.reduce((sum, l) => sum + (parseFloat(l.debit) || 0), 0);
+                        const totalCredit = lines.reduce((sum, l) => sum + (parseFloat(l.credit) || 0), 0);
+
+                        if (Math.abs(totalDebit - totalCredit) > 0.01) {
+                            console.warn(`JE Warning: COGS Entry for SI #${invoice.id} is unbalanced (D:${totalDebit}, C:${totalCredit}). Adjusting...`);
+                            // Adjust the first credit line or add a fallback credit line if none exist
+                            if (lines.length > 1) {
+                                lines[1].credit += (totalDebit - totalCredit);
+                            } else {
+                                lines.push({
+                                    account_id: INVENTORY_ACCOUNTS.DEFAULT,
+                                    debit: 0,
+                                    credit: totalDebit,
+                                    description: `المخزون (تعديل تلقائي) - فاتورة #${invoice.invoice_number}`
                                 });
                             }
                         }
