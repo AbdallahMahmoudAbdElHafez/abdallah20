@@ -21,7 +21,7 @@ export default (sequelize) => {
         },
         expiry_date: {
             type: DataTypes.DATEONLY,
-            allowNull: false
+            allowNull: true
         }
     }, {
         tableName: 'batches',
