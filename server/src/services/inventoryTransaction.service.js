@@ -64,14 +64,14 @@ class InventoryTransactionService {
       for (const batchData of data.batches) {
         let batchId = null;
 
-        if (batchData.batch_number && batchData.expiry_date) {
+        if (batchData.batch_number) {
           const [batch] = await Batches.findOrCreate({
             where: {
               product_id: data.product_id,
               batch_number: batchData.batch_number
             },
             defaults: {
-              expiry_date: batchData.expiry_date
+              expiry_date: batchData.expiry_date || null
             },
             ...options
           });
@@ -181,10 +181,10 @@ class InventoryTransactionService {
       for (const batchData of data.batches) {
         let batchId = null;
 
-        if (batchData.batch_number && batchData.expiry_date) {
+        if (batchData.batch_number) {
           const [batch] = await Batches.findOrCreate({
             where: { product_id: data.product_id || trx.product_id, batch_number: batchData.batch_number },
-            defaults: { expiry_date: batchData.expiry_date },
+            defaults: { expiry_date: batchData.expiry_date || null },
             ...options
           });
           batchId = batch.id;
