@@ -35,6 +35,16 @@ class InventoryTransactionService {
   static async create(data, options = {}) {
     if (data.source_id === "") data.source_id = null;
 
+    // Support flat batch fields if batches array is missing
+    if ((!data.batches || data.batches.length === 0) && data.batch_number && data.expiry_date) {
+      data.batches = [{
+        batch_number: data.batch_number,
+        expiry_date: data.expiry_date,
+        quantity: data.quantity,
+        cost_per_unit: data.cost_per_unit
+      }];
+    }
+
     let totalQuantity = 0;
 
     // 1. Calculate total quantity first
@@ -119,6 +129,16 @@ class InventoryTransactionService {
 
   static async update(id, data, options = {}) {
     if (data.source_id === "") data.source_id = null;
+
+    // Support flat batch fields if batches array is missing
+    if ((!data.batches || data.batches.length === 0) && data.batch_number && data.expiry_date) {
+      data.batches = [{
+        batch_number: data.batch_number,
+        expiry_date: data.expiry_date,
+        quantity: data.quantity,
+        cost_per_unit: data.cost_per_unit
+      }];
+    }
     const trx = await InventoryTransaction.findByPk(id, {
       include: [{ model: InventoryTransactionBatches, as: "transaction_batches" }],
       ...options
