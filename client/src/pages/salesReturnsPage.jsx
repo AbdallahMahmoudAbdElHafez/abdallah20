@@ -171,7 +171,9 @@ export default function SalesReturnsPage() {
             [itemId]: {
                 ...prev[itemId],
                 isSelected,
-                quantity: isSelected ? (prev[itemId]?.quantity || 1) : 0
+                isSelected,
+                quantity: isSelected ? (prev[itemId]?.quantity || 1) : 0,
+                return_condition: isSelected ? (prev[itemId]?.return_condition || 'good') : 'good'
             }
         }));
     };
@@ -186,6 +188,16 @@ export default function SalesReturnsPage() {
         }));
     };
 
+    const handleItemConditionChange = (itemId, condition) => {
+        setSelectedItems(prev => ({
+            ...prev,
+            [itemId]: {
+                ...prev[itemId],
+                return_condition: condition
+            }
+        }));
+    };
+
     const handleSave = async () => {
         // Prepare items array from selected items
         const itemsArray = Object.entries(selectedItems)
@@ -195,7 +207,9 @@ export default function SalesReturnsPage() {
                 return {
                     product_id: item.product_id,
                     quantity: data.quantity,
-                    price: item.price
+                    quantity: data.quantity,
+                    price: item.price,
+                    return_condition: data.return_condition || 'good'
                 };
             });
 
@@ -459,6 +473,7 @@ export default function SalesReturnsPage() {
                                             <TableCell>الكمية المتاحة</TableCell>
                                             <TableCell>السعر</TableCell>
                                             <TableCell>الكمية المرتجعة</TableCell>
+                                            <TableCell>حالة المرتجع</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -482,6 +497,20 @@ export default function SalesReturnsPage() {
                                                         disabled={!selectedItems[item.id]?.isSelected}
                                                         inputProps={{ max: item.quantity, min: 1 }}
                                                     />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <TextField
+                                                        select
+                                                        size="small"
+                                                        value={selectedItems[item.id]?.return_condition || "good"}
+                                                        onChange={(e) => handleItemConditionChange(item.id, e.target.value)}
+                                                        disabled={!selectedItems[item.id]?.isSelected}
+                                                        fullWidth
+                                                    >
+                                                        <MenuItem value="good">سليم</MenuItem>
+                                                        <MenuItem value="damaged">تالف</MenuItem>
+                                                        <MenuItem value="expired">منتهي الصلاحية</MenuItem>
+                                                    </TextField>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

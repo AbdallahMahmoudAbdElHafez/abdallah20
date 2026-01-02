@@ -11,32 +11,28 @@ const sequelize = new Sequelize('nurivina', 'root', 'Abdallah20203040', {
         await sequelize.authenticate();
         console.log('Connected.');
 
-        // Get valid ID
-        const invoice = await sequelize.query("SELECT id FROM sales_invoices LIMIT 1", { type: sequelize.QueryTypes.SELECT });
-        const warehouse = await sequelize.query("SELECT id FROM warehouses LIMIT 1", { type: sequelize.QueryTypes.SELECT });
-
-        if (!invoice[0] || !warehouse[0]) {
-            console.log('No invoice/warehouse found to test with.');
-            return;
+        // 1. Raw Insert Test
+        console.log('Testing Raw Insert...');
+        try {
+            await sequelize.query(`
+                INSERT INTO sales_returns 
+                (sales_invoice_id, warehouse_id, return_date, notes, return_type, created_at) 
+                VALUES 
+                (1, 1, CURDATE(), 'Test Insert', 'cash', NOW())
+            `);
+            console.log('Insert SUCCESS!');
+        } catch (err) {
+            console.error('Insert FAILED:', err.original ? err.original.sqlMessage : err.message);
         }
 
-        const invId = invoice[0].id;
-        const whId = warehouse[0].id;
+        // 2. Simple Schema Dump
+        console.log('\nChecking Columns:');
+        const cols = await sequelize.query("SHOW COLUMNS FROM sales_returns", { type: sequelize.QueryTypes.SELECT });
+        cols.forEach(c => console.log(`- ${c.Field}`));
 
-        console.log(`Testing Insert with InvID: ${invId}, WhID: ${whId}`);
+        console.log('\nChecking Triggers:');
+        const trigs = await sequelize.query("SHOW TRIGGERS LIKE 'sales_returns'", { type: sequelize.QueryTypes.SELECT });
+        trigs.forEach(t => console.log(`- Trigger: ${t.Trigger}`));
 
-        // Raw Insert
-        await sequelize.query(`
-            INSERT INTO sales_returns 
-            (sales_invoice_id, warehouse_id, return_date, notes, return_type, created_at) 
-            VALUES 
-            (${invId}, ${whId}, CURDATE(), 'Test Return', 'cash', NOW())
-        `);
-
-        console.log('INSERT SUCCESSFUL!');
-
-    } catch (e) {
-        console.error('INSERT FAILED:', e.original ? e.original.message : e.message);
-        console.error('Full Error:', e);
-    } finally { await sequelize.close(); }
+    } catch (e) { console.error('Generic Error:', e); } finally { await sequelize.close(); }
 })();

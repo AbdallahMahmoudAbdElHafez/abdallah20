@@ -83,6 +83,7 @@ export default function SalesInvoiceDialog({
         shipping_amount: 0,
         subtotal: 0,
         additional_discount: 0,
+        additional_discount_percent: 0,
         vat_rate: 0,
         vat_amount: 0,
         tax_rate: 0,
@@ -136,6 +137,7 @@ export default function SalesInvoiceDialog({
                 shipping_amount: Number(invoice.shipping_amount) || 0,
                 subtotal: Number(invoice.subtotal) || 0,
                 additional_discount: Number(invoice.additional_discount) || 0,
+                additional_discount_percent: invoice.subtotal > 0 ? (Number(invoice.additional_discount) / Number(invoice.subtotal)) * 100 : 0,
                 vat_rate: Number(invoice.vat_rate) || 0,
                 vat_amount: Number(invoice.vat_amount) || 0,
                 tax_rate: Number(invoice.tax_rate) || 0,
@@ -159,6 +161,7 @@ export default function SalesInvoiceDialog({
                 shipping_amount: 0,
                 subtotal: 0,
                 additional_discount: 0,
+                additional_discount_percent: 0,
                 vat_rate: 0,
                 vat_amount: 0,
                 tax_rate: 0,
@@ -781,15 +784,39 @@ export default function SalesInvoiceDialog({
                 <Card>
                     <CardContent>
                         <Grid container spacing={2} sx={{ mb: 2 }}>
-                            <Grid item xs={12} md={3}>
+                            <Grid item xs={12} md={2}>
                                 <TextField
                                     type="number"
                                     fullWidth
-                                    label="خصم إضافي"
+                                    label="خصم إضافي %"
+                                    value={invoiceHead.additional_discount_percent}
+                                    onChange={(e) => {
+                                        const percent = Number(e.target.value) || 0;
+                                        const amount = (Number(invoiceHead.subtotal) * percent) / 100;
+                                        setInvoiceHead({
+                                            ...invoiceHead,
+                                            additional_discount_percent: e.target.value,
+                                            additional_discount: amount.toFixed(2)
+                                        });
+                                    }}
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="خصم إضافي (مبلغ)"
                                     value={invoiceHead.additional_discount}
-                                    onChange={(e) =>
-                                        setInvoiceHead({ ...invoiceHead, additional_discount: e.target.value })
-                                    }
+                                    onChange={(e) => {
+                                        const amount = Number(e.target.value) || 0;
+                                        const percent = invoiceHead.subtotal > 0 ? (amount / Number(invoiceHead.subtotal)) * 100 : 0;
+                                        setInvoiceHead({
+                                            ...invoiceHead,
+                                            additional_discount: e.target.value,
+                                            additional_discount_percent: percent.toFixed(2)
+                                        });
+                                    }}
                                     size="small"
                                 />
                             </Grid>

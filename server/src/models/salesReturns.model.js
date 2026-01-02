@@ -5,7 +5,7 @@ export default (sequelize) => {
         "sales_returns",
         {
             id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-            sales_invoice_id: { type: DataTypes.INTEGER, allowNull: false },
+            sales_invoice_id: { type: DataTypes.INTEGER, allowNull: true },
             warehouse_id: { type: DataTypes.INTEGER, allowNull: false },
             return_date: { type: DataTypes.DATEONLY, allowNull: false, defaultValue: sequelize.literal("CURDATE()") },
             notes: { type: DataTypes.TEXT },

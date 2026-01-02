@@ -1,14 +1,15 @@
-import { SalesReturn, SalesReturnItem, sequelize, InventoryTransaction, Account, Product, ReferenceType, SalesInvoice } from "../models/index.js";
+import { SalesReturn, SalesReturnItem, sequelize, InventoryTransaction, InventoryTransactionBatches, Account, Product, SalesInvoice, SalesInvoiceItem } from "../models/index.js";
 import { Op } from "sequelize";
-// Dynamically import to avoid circular dependency issues if any, though static import is usually fine here
 import InventoryTransactionService from './inventoryTransaction.service.js';
 
 export default {
     getAll: async () => {
         return await SalesReturn.findAll({
             include: [
-                { association: "invoice" },
-                { association: "warehouse" },
+                {
+                    association: "invoice",
+                    include: ["party"]
+                },
                 { association: "items", include: ["product"] }
             ]
         });
@@ -17,369 +18,349 @@ export default {
     getById: async (id) => {
         return await SalesReturn.findByPk(id, {
             include: [
-                { association: "invoice" },
-                { association: "warehouse" },
+                {
+                    association: "invoice",
+                    include: ["party"]
+                },
                 { association: "items", include: ["product"] }
             ]
         });
     },
 
-    create: async (data, options = {}) => {
-        const transaction = options.transaction || await sequelize.transaction();
+    create: async (data) => {
+        const transaction = await sequelize.transaction();
         try {
-            console.log('Service: Starting Sales Return creation', data);
             const { items, ...returnData } = data;
 
-            // 1. Create Sales Return Record
-            const salesReturn = await SalesReturn.create(returnData, { transaction });
-
-            // 2. Create Items & Inventory Transactions
-            let createdItems = [];
-            let totalCost = 0; // For COGS Reversal
-
-            if (items && items.length > 0) {
-                const itemsWithReturnId = items.map(item => ({
-                    ...item,
-                    sales_return_id: salesReturn.id,
-                    product_id: item.product_id,
-                    quantity: item.quantity,
-                    price: item.price
-                }));
-
-                createdItems = await SalesReturnItem.bulkCreate(itemsWithReturnId, { transaction });
-
-                // Calculate FIFO cost for the returned items
-                const FIFOCostService = (await import('./fifoCost.service.js')).default;
-                const itemsForCost = createdItems.map(item => ({
-                    product_id: item.product_id,
-                    warehouse_id: salesReturn.warehouse_id,
-                    quantity: Number(item.quantity)
-                }));
-
-                let fifoBatchesMap = new Map();
-                try {
-                    const { totalCost: fifoTotalCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
-                        itemsForCost,
-                        transaction
-                    );
-                    totalCost = fifoTotalCost;
-
-                    // Store batches for each item
-                    for (const itemCost of itemCosts) {
-                        const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
-                        if (createdItem) {
-                            fifoBatchesMap.set(createdItem.id, itemCost.batches);
-                        }
-                    }
-
-                    console.log('Sales Return: FIFO Cost Calculation Success. Total:', totalCost);
-                } catch (error) {
-                    console.error('Sales Return: FIFO Cost Calculation Failed:', error.message);
-                    // Fallback to product cost_price
-                    const productIds = items.map(i => i.product_id);
-                    const products = await Product.findAll({
-                        where: { id: { [Op.in]: productIds } },
-                        transaction
-                    });
-                    const productMap = new Map(products.map(p => [p.id, p]));
-
-                    for (const item of createdItems) {
-                        const product = productMap.get(item.product_id);
-                        const costPrice = product ? Number(product.cost_price) : 0;
-                        totalCost += Number(item.quantity) * costPrice;
-                    }
-                }
-
-                // Create Inventory Transactions (IN - Return to Stock) using the same batches
-                for (const item of createdItems) {
-                    if (Number(item.quantity) > 0) {
-                        const fifoBatches = fifoBatchesMap.get(item.id);
-
-                        if (fifoBatches && fifoBatches.length > 0) {
-                            // Return to the same batches that were sold (FIFO)
-                            for (const fifoBatch of fifoBatches) {
-                                await InventoryTransactionService.create({
-                                    product_id: item.product_id,
-                                    warehouse_id: salesReturn.warehouse_id,
-                                    transaction_type: 'in', // Returning to stock
-                                    transaction_date: salesReturn.return_date || new Date(),
-                                    note: `Sales Return #${salesReturn.id} for Invoice #${salesReturn.sales_invoice_id}`,
-                                    source_type: 'sales_return',
-                                    source_id: item.id,
-                                    batches: [{
-                                        batch_id: fifoBatch.batchId,
-                                        quantity: fifoBatch.quantity,
-                                        cost_per_unit: fifoBatch.costPerUnit
-                                    }]
-                                }, { transaction });
-                            }
-                        } else {
-                            // Fallback: create generic IN transaction
-                            const product = await Product.findByPk(item.product_id, { transaction });
-                            const costPrice = product ? Number(product.cost_price) : 0;
-
-                            await InventoryTransactionService.create({
-                                product_id: item.product_id,
-                                warehouse_id: salesReturn.warehouse_id,
-                                transaction_type: 'in',
-                                transaction_date: salesReturn.return_date || new Date(),
-                                note: `Sales Return #${salesReturn.id} for Invoice #${salesReturn.sales_invoice_id}`,
-                                source_type: 'sales_return',
-                                source_id: item.id,
-                                batches: [{
-                                    batch_id: null,
-                                    quantity: Number(item.quantity),
-                                    cost_per_unit: costPrice
-                                }]
-                            }, { transaction });
-                        }
-                    }
-                }
+            // 1. Validate & Link Invoice
+            if (!returnData.sales_invoice_id) {
+                throw new Error("Sales Return must be linked to a Sales Invoice.");
             }
-
-            // --- Journal Entry Creation ---
-            const { createJournalEntry } = await import('./journal.service.js');
-
-            // Resolve Accounts
-            const VAT_ACCOUNT_ID = 65;
-            const SALES_DISCOUNT_ACCOUNT_ID = 108;
-
-            const customerAccount = await Account.findOne({ where: { name: 'العملاء' }, transaction });
-            const salesAccount = await Account.findOne({ where: { name: 'مبيعات' }, transaction }); // Or "مردودات المبيعات" if exists? Usually straight reversal or specific return account.
-            const salesReturnAccount = await Account.findOne({ where: { name: 'مردودات المبيعات' }, transaction }); // Prefer this if exists
-
-            // VAT Lookups
-            let vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمه المضافه' }, transaction });
-            if (!vatAccount) vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمة المضافة' }, transaction });
-            if (!vatAccount) vatAccount = await Account.findByPk(VAT_ACCOUNT_ID, { transaction });
-
-            const cogsAccount = await Account.findOne({ where: { name: 'تكلفة البضاعة المباعة' }, transaction });
-            const inventoryAccount = await Account.findOne({ where: { name: 'المخزون' }, transaction });
-
-            // Discount Lookups
-            let discountAccount = await Account.findOne({ where: { name: 'خصم مسموح به' }, transaction });
-            if (!discountAccount) discountAccount = await Account.findByPk(SALES_DISCOUNT_ACCOUNT_ID, { transaction });
-
-            // Tax Discount Lookups
-            const whtAccount = await Account.findOne({ where: { name: 'خصم ضرائب مبيعات' }, transaction });
-
-            // Identify Accounts to use
-            // If "مردودات المبيعات" exists, use it. Else debit "مبيعات".
-            const revenueAccountToDebit = salesReturnAccount || salesAccount;
-
-            console.log('JE Debug: Sales Return Accounts Resolved', {
-                customer: !!customerAccount,
-                revenueDebit: !!revenueAccountToDebit ? revenueAccountToDebit.name : 'MISSING',
-                vat: !!vatAccount,
-                cogs: !!cogsAccount,
-                inventory: !!inventoryAccount
+            const invoice = await SalesInvoice.findByPk(returnData.sales_invoice_id, {
+                include: ["items"],
+                transaction
             });
-
-            // Ensure ReferenceType exists
-            let refType = await ReferenceType.findOne({ where: { code: 'sales_return' }, transaction });
-            if (!refType) {
-                refType = await ReferenceType.create({
-                    code: 'sales_return',
-                    label: 'مرتجع مبيعات',
-                    name: 'مرتجع مبيعات',
-                    description: 'Journal Entry for Sales Return'
-                }, { transaction });
+            if (!invoice) {
+                throw new Error("Sales Invoice not found.");
             }
 
-            // Use data passed from frontend, as model might not have them
-            // Fallback: Calculate from items if not in data (though VAT logic might be complex)
-            const totalAmount = Number(data.total_amount || 0);
-            const subtotal = Number(data.subtotal || 0); // Ex: Revenue amount
-            const vatAmount = Number(data.vat_amount || 0);
-            const taxAmount = Number(data.tax_amount || 0);
-            const discountAmount = Number(data.additional_discount || 0); // This was DEBITED in Invoice, so CREDIT here to reverse? 
-            // Warning: Reversing discount is tricky. If we return full invoice, we reverse everything.
+            // 2. Validate Items & Quantities
+            // Map items to original invoice items for validation
+            const processedItems = [];
+            let totalReturnNet = 0; // Net Sales to reverse (Gross - Discount)
+            let totalReturnGross = 0; // Gross Sales to reverse (Price * Qty)
+            let totalReturnDiscount = 0; // Discount to reverse
+            let totalReturnTax = 0; // Tax to reverse
 
-            // 1. Revenue Reversal Entry
-            // Normal Invoice: Dr Customer, Cr Sales, Cr VAT.
-            // Return: Dr Sales (or Returns), Dr VAT, Cr Customer.
-            if (customerAccount && revenueAccountToDebit) {
-                const lines = [];
+            // Prepare Cost Reversal Data
+            const costReversalItems = [];
 
-                // Dr Sales Return / Sales
-                if (subtotal > 0) {
-                    lines.push({
-                        account_id: revenueAccountToDebit.id,
-                        debit: subtotal,
-                        credit: 0,
-                        description: `Sales Return - Ref #${salesReturn.id}`
-                    });
+            for (const item of items) {
+                // Find original invoice item
+                const originalItem = invoice.items.find(i => i.product_id == item.product_id);
+                if (!originalItem) {
+                    throw new Error(`Product ${item.product_id} not found in original Invoice.`);
                 }
 
-                // Dr VAT
-                if (vatAmount > 0 && vatAccount) {
-                    lines.push({
-                        account_id: vatAccount.id,
-                        debit: vatAmount,
-                        credit: 0,
-                        description: `VAT Reversal - Ref #${salesReturn.id}`
-                    });
+                if (!item.return_condition) {
+                    throw new Error(`Return condition is required for product ${item.product_id}.`);
                 }
 
-                // Cr Discount (Reversal) - If we gave discount, we take it back? 
-                // Invoice: Dr Discount. Return: Cr Discount (Revenue increase technically, or expense reduction).
-                if (discountAmount > 0 && discountAccount) {
-                    lines.push({
-                        account_id: discountAccount.id,
-                        debit: 0,
-                        credit: discountAmount,
-                        description: `Discount Reversal - Ref #${salesReturn.id}`
-                    });
+                // 2a. Cumulative Validation - Don't return more than sold across all returns
+                const previousReturns = await SalesReturnItem.findAll({
+                    include: [{
+                        association: "sales_return",
+                        where: { sales_invoice_id: invoice.id }
+                    }],
+                    where: {
+                        product_id: item.product_id
+                    },
+                    transaction
+                });
+                const alreadyReturned = previousReturns.reduce((sum, r) => sum + Number(r.quantity), 0);
+                const totalAttempted = alreadyReturned + Number(item.quantity);
+
+                if (totalAttempted > Number(originalItem.quantity)) {
+                    throw new Error(`Total returned/attempted quantity (${totalAttempted}) for product ${item.product_id} exceeds invoiced quantity (${originalItem.quantity}). Previously returned: ${alreadyReturned}.`);
                 }
 
-                // Cr WHT Asset (Reversal) - Invoice: Dr WHT. Return: Cr WHT.
-                if (taxAmount > 0 && whtAccount) {
-                    lines.push({
-                        account_id: whtAccount.id,
-                        debit: 0,
-                        credit: taxAmount,
-                        description: `WHT Reversal - Ref #${salesReturn.id}`
-                    });
+                // 3. Financial Calculation (Pro-rated)
+                // Use Original Price from Invoice
+                const unitPrice = Number(originalItem.price);
+                const returnQty = Number(item.quantity);
+                const lineGross = unitPrice * returnQty;
+
+                const invoiceSubtotal = Number(invoice.subtotal);
+                const invoiceDiscount = Number(invoice.additional_discount);
+                const globalDiscountRate = invoiceSubtotal > 0 ? (invoiceDiscount / invoiceSubtotal) : 0;
+
+                const lineDiscountInfo = lineGross * globalDiscountRate; // Pro-rated discount for this return line
+                const lineNet = lineGross - lineDiscountInfo;
+
+                // Validate Tax
+                const vatRate = Number(invoice.vat_rate) / 100 || 0;
+                const lineTax = lineNet * vatRate;
+
+                totalReturnGross += lineGross;
+                totalReturnDiscount += lineDiscountInfo;
+                totalReturnNet += lineNet;
+                totalReturnTax += lineTax;
+
+                processedItems.push({
+                    sales_return_id: null, // set later
+                    sales_invoice_id: invoice.id,
+                    product_id: item.product_id,
+                    quantity: returnQty,
+                    price: unitPrice,
+                    return_condition: item.return_condition
+                });
+
+                // 4. Cost Logic Retrieval - STRICT
+                // Find original Inventory Transaction (OUT) for this Invoice Item
+                const invTrx = await InventoryTransaction.findOne({
+                    where: {
+                        source_type: 'sales_invoice',
+                        source_id: originalItem.id
+                    },
+                    include: [{
+                        association: 'transaction_batches',
+                        attributes: ['quantity', 'cost_per_unit']
+                    }],
+                    transaction
+                });
+
+                let originalCostPerUnit = 0;
+
+                if (invTrx && invTrx.transaction_batches && invTrx.transaction_batches.length > 0) {
+                    // Calculate Weighted Average Cost from the batches used in the sale
+                    let totalBatchCost = 0;
+                    let totalBatchQty = 0;
+
+                    for (const b of invTrx.transaction_batches) {
+                        const qty = Number(b.quantity);
+                        const cost = Number(b.cost_per_unit);
+                        totalBatchCost += (qty * cost);
+                        totalBatchQty += qty;
+                    }
+
+                    if (totalBatchQty > 0) {
+                        originalCostPerUnit = totalBatchCost / totalBatchQty;
+                    } else {
+                        // Should not happen if data integrity is good
+                        const product = await Product.findByPk(item.product_id, { transaction });
+                        originalCostPerUnit = Number(product.cost_price);
+                    }
+                } else {
+                    // Fallback to Product Master Cost ONLY if no transaction batches found (e.g. non-stock item or legacy data)
+                    const product = await Product.findByPk(item.product_id, { transaction });
+                    originalCostPerUnit = Number(product.cost_price);
                 }
 
-                // Cr Customer (Total Refundable)
-                if (totalAmount > 0) {
-                    lines.push({
-                        account_id: customerAccount.id,
-                        debit: 0,
-                        credit: totalAmount,
-                        description: `Customer Refund - Ref #${salesReturn.id}`
-                    });
+                // Final Safety Check
+                if (originalCostPerUnit <= 0) {
+                    // Could throw error if strict cost is required
+                    // throw new Error(`Could not determine original cost for Product ${item.product_id}`);
                 }
 
-                if (lines.length > 0) {
-                    await createJournalEntry({
-                        refCode: 'sales_return',
-                        refId: salesReturn.id,
-                        entryDate: salesReturn.return_date,
-                        description: `Sales Return #${salesReturn.id} (Inv #${salesReturn.sales_invoice_id})`,
-                        lines: lines,
-                        entryTypeId: 4 // entry_type 4 is 'قيد مرتجع مبيعات'
+                costReversalItems.push({
+                    product_id: item.product_id,
+                    condition: item.return_condition || 'good',
+                    quantity: returnQty,
+                    totalCost: originalCostPerUnit * returnQty,
+                    type_id: 1 // Default to 1 (Finished Goods) if product lookup skipped, but we need type_id for account mapping.
+                    // We must ensure type_id is fetched.
+                });
+
+                // If we didn't fetch product above, we need to fetch it now for type_id or use originalItem info if available
+                const productForType = await Product.findByPk(item.product_id, { attributes: ['type_id'], transaction });
+                costReversalItems[costReversalItems.length - 1].type_id = productForType.type_id;
+            }
+
+            // Create Header
+            const salesReturn = await SalesReturn.create({
+                ...returnData,
+                return_type: returnData.return_type || 'cash' // Validation handled below
+            }, { transaction });
+
+            // 5. Create Items and Stock In
+            const createdItems = [];
+            for (const pItem of processedItems) {
+                pItem.sales_return_id = salesReturn.id;
+                const newItem = await SalesReturnItem.create(pItem, { transaction });
+                createdItems.push(newItem);
+
+                // --- INVENTORY TRANSACTION (Only Good) ---
+                if (newItem.return_condition === 'good') {
+                    await InventoryTransactionService.create({
+                        product_id: newItem.product_id,
+                        warehouse_id: salesReturn.warehouse_id,
+                        transaction_type: 'in',
+                        transaction_date: salesReturn.return_date,
+                        note: `Sales Return #${salesReturn.id} (Good)`,
+                        source_type: 'sales_return',
+                        source_id: newItem.id,
+                        batches: [] // Logic for batches would be complex, keeping simple for now
                     }, { transaction });
                 }
             }
 
-            // 2. COGS Reversal Entry
-            // Invoice: Dr COGS, Cr Inventory.
-            // Return: Dr Inventory, Cr COGS.
-            if (totalCost > 0 && cogsAccount && createdItems.length > 0) {
-                // Inventory Account IDs by Product Type
-                const INVENTORY_ACCOUNTS = {
-                    FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
-                    RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
-                    DEFAULT: 49             // المخزون (fallback)
-                };
+            // --- JOURNAL ENTRY 1: Revenue Reversal ---
+            const { createJournalEntry } = await import('./journal.service.js');
+            const ACC_SALES_RETURN = 6;
+            const ACC_VAT = 65;
+            const ACC_DISCOUNT = 108;
 
-                const PRODUCT_TYPE_TO_ACCOUNT = {
-                    1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
-                    2: INVENTORY_ACCOUNTS.RAW_MATERIALS
-                };
+            // Treasury/Customer
+            let creditAccount = 0;
+            if (returnData.return_type === 'cash') {
+                // Precedence: Explicitly defined in data > Inherited from Invoice > Default 41
+                if (returnData.treasury_account_id) {
+                    creditAccount = returnData.treasury_account_id;
+                } else {
+                    const invoiceWithPayments = await SalesInvoice.findByPk(invoice.id, {
+                        include: [{ association: "payments" }],
+                        transaction
+                    });
 
-                // Group costs by product type
-                const productIds = createdItems.map(i => i.product_id);
-                const products = await Product.findAll({
-                    where: { id: { [Op.in]: productIds } },
-                    transaction
+                    if (invoiceWithPayments && invoiceWithPayments.payments && invoiceWithPayments.payments.length > 0) {
+                        const lastPayment = invoiceWithPayments.payments[invoiceWithPayments.payments.length - 1];
+                        if (lastPayment.account_id) creditAccount = lastPayment.account_id;
+                    }
+                }
+
+                if (!creditAccount) {
+                    creditAccount = 41;
+                }
+            } else {
+                creditAccount = 47; // Customer
+            }
+
+            const je1Lines = [];
+
+            // 1. Debit Sales Returns (Gross Amount)
+            je1Lines.push({
+                account_id: ACC_SALES_RETURN, // 6
+                debit: totalReturnGross,
+                credit: 0,
+                description: `Sales Return #${salesReturn.id} - Revenue Reversal`
+            });
+
+            // 2. Debit VAT (Pro-rated)
+            if (totalReturnTax > 0) {
+                je1Lines.push({
+                    account_id: ACC_VAT, // 65
+                    debit: totalReturnTax,
+                    credit: 0,
+                    description: `VAT Reversal - Return #${salesReturn.id}`
                 });
-                const productMap = new Map(products.map(p => [p.id, p]));
+            }
 
-                const costsByType = {};
+            // 3. Credit Discount (if any)
+            if (totalReturnDiscount > 0) {
+                je1Lines.push({
+                    account_id: ACC_DISCOUNT, // 108
+                    debit: 0,
+                    credit: totalReturnDiscount,
+                    description: `Discount Reversal - Return #${salesReturn.id}`
+                });
+            }
 
-                // We need to fetch itemCosts again or reuse if possible. 
-                // Since this is a reversal, we can calculate it from the items and their cost_price or FIFO.
-                // The totalCost was already calculated above. Let's re-calculate grouping.
+            // 4. Credit Customer/Cash (Total Payable)
+            // Total Payable = Net + Tax [TotalReturnNet + TotalReturnTax] = [Gross - Discount + Tax]
+            // Which matches (Gross + Tax) - Discount.
+            // Debit Side: Gross + Tax. Credit Side: Discount + (Payable).
+            // Payable = (Gross + Tax) - Discount. Correct.
+            const totalPayable = (totalReturnGross + totalReturnTax) - totalReturnDiscount;
 
-                try {
-                    const FIFOCostService = (await import('./fifoCost.service.js')).default;
-                    const itemsForCost = createdItems.map(item => ({
-                        product_id: item.product_id,
-                        warehouse_id: salesReturn.warehouse_id,
-                        quantity: Number(item.quantity)
-                    }));
+            je1Lines.push({
+                account_id: creditAccount,
+                debit: 0,
+                credit: totalPayable,
+                description: `Refund/Credit - Return #${salesReturn.id}`
+            });
 
-                    const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(itemsForCost, transaction);
+            await createJournalEntry({
+                refCode: 'sales_return',
+                refId: salesReturn.id,
+                entryDate: salesReturn.return_date,
+                description: `مرتجع مبيعات فاتورة #${invoice.invoice_number}`,
+                lines: je1Lines,
+                entryTypeId: 4
+            }, { transaction });
 
-                    for (const itemCost of itemCosts) {
-                        const product = productMap.get(itemCost.product_id);
-                        const typeId = product?.type_id || null;
-                        const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
 
-                        if (!costsByType[accountId]) costsByType[accountId] = 0;
-                        costsByType[accountId] += itemCost.totalCost;
-                    }
-                } catch (error) {
-                    // Fallback to cost_price
-                    for (const item of createdItems) {
-                        const product = productMap.get(item.product_id);
-                        const costPrice = product ? Number(product.cost_price) : 0;
-                        const itemCost = Number(item.quantity) * costPrice;
+            // --- JOURNAL ENTRY 2: Cost Reversal ---
+            const ACC_COGS = 15;
+            const ACC_INVENTORY_GOODS = 110;
+            const ACC_INVENTORY_RAW = 111;
+            const ACC_INVENTORY_DEF = 49;
+            const ACC_DAMAGED = 112;
+            const ACC_EXPIRED = 113;
 
-                        const typeId = product?.type_id || null;
-                        const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+            const je2Lines = [];
+            let totalCostReversed = 0;
 
-                        if (!costsByType[accountId]) costsByType[accountId] = 0;
-                        costsByType[accountId] += itemCost;
-                    }
+            for (const item of costReversalItems) {
+                if (item.totalCost <= 0) continue;
+                totalCostReversed += item.totalCost;
+
+                let debitAcc = ACC_INVENTORY_DEF;
+
+                if (item.condition === 'good') {
+                    // Logic: Type 1 -> 110, Type 2 -> 111, Else -> 49
+                    if (item.type_id === 1) debitAcc = ACC_INVENTORY_GOODS;
+                    else if (item.type_id === 2) debitAcc = ACC_INVENTORY_RAW;
+                    else debitAcc = ACC_INVENTORY_DEF; // Fallback
+                } else if (item.condition === 'damaged') {
+                    debitAcc = ACC_DAMAGED;
+                } else if (item.condition === 'expired') {
+                    debitAcc = ACC_EXPIRED;
                 }
 
-                const lines = [
-                    {
-                        account_id: cogsAccount.id,
-                        debit: 0,
-                        credit: totalCost,
-                        description: `COGS Reversal - Return #${salesReturn.id}`
-                    }
-                ];
+                // Aggregate per account if possible, but distinct lines are fine for clarity
+                je2Lines.push({
+                    account_id: debitAcc,
+                    debit: item.totalCost,
+                    credit: 0,
+                    description: `Restock/Write-off (${item.condition}) - Item ${item.product_id}`
+                });
+            }
 
-                // Add debit lines for each inventory account
-                for (const [accountId, amount] of Object.entries(costsByType)) {
-                    if (amount > 0) {
-                        const account = await Account.findByPk(accountId, { transaction });
-                        lines.push({
-                            account_id: parseInt(accountId),
-                            debit: amount,
-                            credit: 0,
-                            description: `Inventory Restock (${account?.name || 'المخزون'}) - Return #${salesReturn.id}`
-                        });
-                    }
-                }
+            if (totalCostReversed > 0) {
+                // Credit COGS
+                je2Lines.push({
+                    account_id: ACC_COGS,
+                    debit: 0,
+                    credit: totalCostReversed,
+                    description: `COGS Reversal - Return #${salesReturn.id}`
+                });
 
                 await createJournalEntry({
-                    refCode: 'sales_return',
+                    refCode: 'sales_return', // Using same refCode to link easier or differentiate if system allows multiple
                     refId: salesReturn.id,
                     entryDate: salesReturn.return_date,
-                    description: `COGS Reversal - Sales Return #${salesReturn.id}`,
-                    lines,
+                    description: `تكلة مبيعات (مرتجع) فاتورة #${invoice.invoice_number}`,
+                    lines: je2Lines,
                     entryTypeId: 4
                 }, { transaction });
             }
 
-            if (!options.transaction) await transaction.commit();
+
+
+            await transaction.commit();
             return salesReturn;
+
         } catch (error) {
-            console.error('Service: Sales Return Creation Error', error);
-            if (!options.transaction) await transaction.rollback();
+            await transaction.rollback();
             throw error;
         }
     },
 
     update: async (id, data) => {
-        // Implement full update logic if needed (delete old trx/JE, recreate)
-        const row = await SalesReturn.findByPk(id);
-        if (!row) return null;
-        return await row.update(data);
+        return await SalesReturn.update(data, { where: { id } });
     },
 
     delete: async (id) => {
-        // Implement full delete logic (reverse inventory, delete JE)
-        const row = await SalesReturn.findByPk(id);
-        if (!row) return null;
-        await row.destroy();
-        return true;
+        return await SalesReturn.destroy({ where: { id } });
     }
 };
