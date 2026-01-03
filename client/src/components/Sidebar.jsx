@@ -69,8 +69,8 @@ const warehousesMenu = [
   { label: "ارصدة المخازن", path: "/current-inventory" },
   { label: "دليل المخازن", path: "/warehouses" },
   { label: "التحويل من مخزن الى مخزن", path: "/warehouse-transfers" },
-  { label: "انواع سندات الصرف", path: "/issue-voucher-types" },
   { label: "اذونات الصرف", path: "/issue-vouchers" },
+  { label: "تسوية جرد", path: "/inventory-adjustment" },
 ];
 const reportsMenu = [
   { label: "إعداد التقارير", path: "/reports-dashboard" },

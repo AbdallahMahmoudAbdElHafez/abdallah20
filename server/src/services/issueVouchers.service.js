@@ -3,12 +3,12 @@ import {
   IssueVoucherItem,
   Product,
   Warehouse,
-  IssueVoucherType,
   Party,
   Employee,
   sequelize,
   Account,
-  ReferenceType
+  ReferenceType,
+  Doctor
 } from '../models/index.js';
 import { Op } from 'sequelize';
 
@@ -266,11 +266,6 @@ export class IssueVouchersService {
         where: whereClause,
         include: [
           {
-            model: IssueVoucherType,
-            as: 'type',
-            attributes: ['id', 'name']
-          },
-          {
             model: Party,
             as: 'party',
             attributes: ['id', 'name']
@@ -283,6 +278,11 @@ export class IssueVouchersService {
           {
             model: Employee,
             as: 'responsible_employee',
+            attributes: ['id', 'name']
+          },
+          {
+            model: Doctor,
+            as: 'doctor',
             attributes: ['id', 'name']
           }
         ],
@@ -298,11 +298,6 @@ export class IssueVouchersService {
   async getIssueVoucherById(id, includeItems = false) {
     try {
       const include = [
-        {
-          model: IssueVoucherType,
-          as: 'type',
-          attributes: ['id', 'name']
-        },
         {
           model: Party,
           as: 'party',
@@ -326,6 +321,11 @@ export class IssueVouchersService {
         {
           model: Employee,
           as: 'approver',
+          attributes: ['id', 'name']
+        },
+        {
+          model: Doctor,
+          as: 'doctor',
           attributes: ['id', 'name']
         }
       ];
@@ -360,11 +360,6 @@ export class IssueVouchersService {
     try {
       const include = [
         {
-          model: IssueVoucherType,
-          as: 'type',
-          attributes: ['id', 'name']
-        },
-        {
           model: Party,
           as: 'party',
           attributes: ['id', 'name']
@@ -377,6 +372,11 @@ export class IssueVouchersService {
         {
           model: Employee,
           as: 'responsible_employee',
+          attributes: ['id', 'name']
+        },
+        {
+          model: Doctor,
+          as: 'doctor',
           attributes: ['id', 'name']
         }
       ];

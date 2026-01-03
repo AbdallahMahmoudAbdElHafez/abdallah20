@@ -29,7 +29,6 @@ import CurrentInventoryPage from "./pages/CurrentInventoryPage";
 import DepartmentsPage from "./pages/DepartmentsPage";
 import JobTitlesPage from "./pages/JobTitlesPage";
 import EmployeesPage from "./pages/EmployeesPage";
-import IssueVoucherTypesPage from "./pages/IssueVoucherTypesPage";
 import IssueVouchersPage from "./pages/issueVouchersPage";
 import PurchaseReturnsPage from "./pages/purchaseReturnsPage";
 import ExpensesPage from "./pages/ExpensesPage";
@@ -47,6 +46,7 @@ import ExpensesReportPage from "./pages/ExpensesReportPage";
 import JobOrdersReportPage from "./pages/JobOrdersReportPage";
 import ServicePaymentsPage from "./pages/servicePaymentsPage";
 import DoctorsPage from "./pages/DoctorsPage";
+import InventoryAdjustmentPage from "./pages/InventoryAdjustmentPage";
 
 const drawerWidth = 240;
 
@@ -85,7 +85,6 @@ export default function App() {
           <Route path="/departments" element={<DepartmentsPage />} />
           <Route path="/job-titles" element={<JobTitlesPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
-          <Route path="/issue-voucher-types" element={<IssueVoucherTypesPage />} />
           <Route path="/issue-vouchers" element={<IssueVouchersPage />} />
           <Route path="/purchase-returns" element={<PurchaseReturnsPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
@@ -104,6 +103,7 @@ export default function App() {
           <Route path="/reports/job-orders" element={<JobOrdersReportPage />} />
           <Route path="/service-payments" element={<ServicePaymentsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
+          <Route path="/inventory-adjustment" element={<InventoryAdjustmentPage />} />
         </Routes>
       </Box>
     </BrowserRouter>

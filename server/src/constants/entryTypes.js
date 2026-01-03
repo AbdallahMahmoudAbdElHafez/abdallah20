@@ -13,7 +13,8 @@ export const ENTRY_TYPES = {
     DEPRECIATION: 11,              // قيد إهلاك
     WAREHOUSE_TRANSFER: 12,        // قيد تحويل مخزني
     MANUFACTURING: 13,             // قيد إنتاج / تصنيع
-    MANUAL_ADJUSTMENT: 14          // قيد تعديل يدوي
+    MANUAL_ADJUSTMENT: 14,          // قيد تعديل يدوي
+    INVENTORY_COUNT: 44            // قيد جرد المخزون
 };
 
 export default ENTRY_TYPES;

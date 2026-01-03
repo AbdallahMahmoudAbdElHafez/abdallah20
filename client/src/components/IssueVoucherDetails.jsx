@@ -86,10 +86,10 @@ const IssueVoucherDetails = ({ open, onClose, voucher, onStatusUpdate }) => {
                     </Grid>
 
                     <Grid item xs={4}>
-                      <Typography variant="body2" color="textSecondary">Type:</Typography>
+                      <Typography variant="body2" color="textSecondary">Doctor:</Typography>
                     </Grid>
                     <Grid item xs={8}>
-                      <Typography variant="body1">{voucher.type?.name}</Typography>
+                      <Typography variant="body1">{voucher.doctor?.name || 'N/A'}</Typography>
                     </Grid>
 
                     <Grid item xs={4}>

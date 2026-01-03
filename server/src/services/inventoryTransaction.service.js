@@ -1,6 +1,7 @@
 import { InventoryTransaction, Product, Warehouse, InventoryTransactionBatches, Batches, ReferenceType } from "../models/index.js";
 import CurrentInventoryService from "./currentInventory.service.js";
 import BatchInventoryService from "./batchInventory.service.js";
+import { ENTRY_TYPES } from "../constants/entryTypes.js";
 
 class InventoryTransactionService {
   static async getByAll() {
@@ -340,7 +341,7 @@ class InventoryTransactionService {
     const accountId = product?.type_id === 1 ? INVENTORY_ACCOUNTS.FINISHED_GOODS :
       (product?.type_id === 2 ? INVENTORY_ACCOUNTS.RAW_MATERIALS : INVENTORY_ACCOUNTS.DEFAULT);
 
-    const CONTRA_ACCOUNT = 14; // أرباح مرحلة / تسويات
+    const CONTRA_ACCOUNT = 114; // فروقات جرد مخزون
 
     // 4. Calculate total cost
     // Use the cost from transaction batches if available, otherwise fallback to product cost
@@ -395,9 +396,9 @@ class InventoryTransactionService {
       refCode: 'inventory_adjustment',
       refId: trx.id,
       entryDate: trx.transaction_date,
-      description: `قيد تسوية مخزنية #${trx.id} - ${trx.note || ''}`,
+      description: `قيد جرد مخزون – تسوية فرق فعلي #${trx.id} - ${trx.note || ''}`,
       lines: lines,
-      entryTypeId: 10 // Adjustment/Settlement
+      entryTypeId: ENTRY_TYPES.INVENTORY_COUNT // 44
     }, options);
   }
   /**

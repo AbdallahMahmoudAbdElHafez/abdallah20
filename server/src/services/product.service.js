@@ -1,4 +1,5 @@
-import { Product, Unit, CurrentInventory, ProductType } from "../models/index.js";
+import { Product, Unit, CurrentInventory, ProductType, Batches, BatchInventory } from "../models/index.js";
+import { Op } from "sequelize";
 
 class ProductService {
   static async getAll(params = {}) {
@@ -12,7 +13,18 @@ class ProductService {
         model: CurrentInventory,
         as: "current_inventory",
         where: { warehouse_id: params.warehouse_id },
-        required: false // Keep products even if no inventory record exists (stock 0)
+        required: false
+      });
+      include.push({
+        model: Batches,
+        as: "batches",
+        include: [{
+          model: BatchInventory,
+          as: "batch_inventories",
+          where: { warehouse_id: params.warehouse_id, quantity: { [Op.gt]: 0 } },
+          required: false
+        }],
+        required: false
       });
     }
 
@@ -42,6 +54,7 @@ class ProductService {
     // لو فيه قيمة cost جديدة يتم تحديثها أو إضافتها في product_costs
     if (data.cost) {
       // أغلق آخر سجل تكلفة مفتوح
+      const { ProductCost } = await import("../models/index.js");
       await ProductCost.update(
         { end_date: new Date() },
         { where: { product_id: id, end_date: null } }

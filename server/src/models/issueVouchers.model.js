@@ -12,10 +12,6 @@ const IssueVoucherModel = (sequelize) => {
       allowNull: false,
       unique: true
     },
-    type_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true
-    },
     party_id: {
       type: DataTypes.INTEGER,
       allowNull: true
