@@ -148,148 +148,245 @@ export default {
                 }
             }
 
-            // --- Journal Entry Creation (Professional Refactor) ---
+            // --- Journal Entry Creation (Strict Professional Implementation) ---
             const { createJournalEntry } = await import('./journal.service.js');
 
-            // Use Strict Account IDs as requested
+            // Strict Account IDs
             const SALES_ACCOUNT_ID = 28;
             const CUSTOMER_ACCOUNT_ID = 47;
             const VAT_ACCOUNT_ID = 65;
-            const WHT_ACCOUNT_ID = 56;
             const DISCOUNT_ALLOWED_ID = 108;
             const COGS_ACCOUNT_ID = 15;
+            const OPENING_BALANCE_OFFSET_ID = 14; // ارباح مرحلة (Equity/Balance Sheet Offset)
 
-            // 2. Cost Entry (COGS)
-            if (createdItems.length > 0) {
-                // Import FIFO Cost Service
-                const FIFOCostService = (await import('./fifoCost.service.js')).default;
+            // Calculations derived from invoice details
+            const subtotal = Number(invoice.subtotal) || 0;
+            const totalVat = Number(invoice.total_vat) || 0;
+            const discount = Number(invoice.additional_discount) || 0;
+            const finalTotal = Number(invoice.total_amount) || 0;
 
-                // Inventory Account IDs by Product Type
-                const INVENTORY_ACCOUNTS = {
-                    FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
-                    RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
-                    WIP: 109,               // تحت التشغيل (type_id: 3 or other)
-                    DEFAULT: 110            // Fallback to Finished Goods
-                };
-
-                const PRODUCT_TYPE_TO_ACCOUNT = {
-                    1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
-                    2: INVENTORY_ACCOUNTS.RAW_MATERIALS,
-                    3: INVENTORY_ACCOUNTS.WIP
-                };
-
-                // Prepare items for FIFO cost calculation
-                const itemsForCost = createdItems.map(item => ({
-                    product_id: item.product_id,
-                    warehouse_id: item.warehouse_id || invoice.warehouse_id,
-                    quantity: Number(item.quantity) + Number(item.bonus || 0)
-                }));
-
-                // Get products with type_id
-                const productIds = createdItems.map(i => i.product_id);
-                const products = await Product.findAll({
-                    where: { id: { [Op.in]: productIds } },
-                    transaction
-                });
-                const productMap = new Map(products.map(p => [p.id, p]));
-
-                let costsByType = {};
-                let totalCost = 0;
-
-                try {
-                    const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
-                        itemsForCost,
-                        transaction
-                    );
-                    totalCost = fifoCost;
-
-                    // Group costs by product type
-                    for (const itemCost of itemCosts) {
-                        const product = productMap.get(itemCost.product_id);
-                        const typeId = product?.type_id || null;
-                        const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
-
-                        if (!costsByType[accountId]) {
-                            costsByType[accountId] = 0;
+            if (invoice.invoice_type === 'opening') {
+                // --- JE 1 (Opening): Balance Forward ---
+                await createJournalEntry({
+                    refCode: 'opening_balance',
+                    refId: invoice.id,
+                    entryDate: invoice.invoice_date,
+                    description: `رصيد أول المدة - فاتورة #${invoice.invoice_number}`,
+                    lines: [
+                        {
+                            account_id: CUSTOMER_ACCOUNT_ID,
+                            debit: finalTotal,
+                            credit: 0,
+                            description: `إثبات رصيد افتتاحى للعميل - فاتورة #${invoice.invoice_number}`
+                        },
+                        {
+                            account_id: OPENING_BALANCE_OFFSET_ID,
+                            debit: 0,
+                            credit: finalTotal,
+                            description: `مقابل رصيد افتتاحى - فاتورة #${invoice.invoice_number}`
                         }
-                        costsByType[accountId] += itemCost.totalCost;
-                    }
-                } catch (error) {
-                    console.error('JE Error: COGS FIFO Calculation Failed:', error.message);
-                    // Fallback to product cost_price
-                    for (const item of createdItems) {
-                        const product = productMap.get(item.product_id);
-                        const costPrice = product ? Number(product.cost_price) : 0;
-                        if (costPrice > 0) {
-                            const qty = Number(item.quantity) + Number(item.bonus || 0);
-                            const itemCost = qty * costPrice;
-                            totalCost += itemCost;
+                    ],
+                    entryTypeId: 1 // قيد افتتاحي
+                }, { transaction });
 
-                            const typeId = product?.type_id || null;
-                            const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+                console.log('JE Success: SI Opening Balance Entry Created');
+            } else {
+                // --- Regular Sales Invoice Flow ---
+
+                // --- JE 1: Revenue & VAT ---
+                const je1Lines = [];
+
+                // 1. Credit Sales Revenue (Gross Subtotal)
+                je1Lines.push({
+                    account_id: SALES_ACCOUNT_ID,
+                    debit: 0,
+                    credit: subtotal,
+                    description: `إيراد مبيعات - فاتورة #${invoice.invoice_number}`
+                });
+
+                // 2. Credit VAT (Liability)
+                if (totalVat > 0) {
+                    je1Lines.push({
+                        account_id: VAT_ACCOUNT_ID,
+                        debit: 0,
+                        credit: totalVat,
+                        description: `ضريبة القيمة المضافة - فاتورة #${invoice.invoice_number}`
+                    });
+                }
+
+                // 3. Debit Discount Allowed (Contra-Revenue/Expense)
+                if (discount > 0) {
+                    je1Lines.push({
+                        account_id: DISCOUNT_ALLOWED_ID,
+                        debit: discount,
+                        credit: 0,
+                        description: `خصم مسموح به - فاتورة #${invoice.invoice_number}`
+                    });
+                }
+
+                // 4. Debit Customer (Accounts Receivable)
+                je1Lines.push({
+                    account_id: CUSTOMER_ACCOUNT_ID,
+                    debit: finalTotal,
+                    credit: 0,
+                    description: `مديونية عميل - فاتورة #${invoice.invoice_number}`
+                });
+
+                await createJournalEntry({
+                    refCode: 'sales_invoice',
+                    refId: invoice.id,
+                    entryDate: invoice.invoice_date,
+                    description: `قيد إثبات مبيعات - فاتورة #${invoice.invoice_number}`,
+                    lines: je1Lines,
+                    entryTypeId: 2 // قيد مبيعات
+                }, { transaction });
+
+
+                // --- JE 2: Cost Entry (COGS) ---
+                if (createdItems.length > 0) {
+                    // Import FIFO Cost Service
+                    const FIFOCostService = (await import('./fifoCost.service.js')).default;
+
+                    // Inventory Account IDs by Product Type
+                    const INVENTORY_ACCOUNTS = {
+                        FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
+                        RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
+                        WIP: 109,               // تحت التشغيل (type_id: 3 or other)
+                        DEFAULT: 49             // المخزون (Default fallback)
+                    };
+
+                    const PRODUCT_TYPE_TO_ACCOUNT = {
+                        1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
+                        2: INVENTORY_ACCOUNTS.RAW_MATERIALS,
+                        3: INVENTORY_ACCOUNTS.WIP
+                    };
+
+                    // Prepare items for FIFO cost calculation
+                    const itemsForCost = createdItems.map(item => ({
+                        product_id: item.product_id,
+                        warehouse_id: item.warehouse_id || invoice.warehouse_id,
+                        quantity: Number(item.quantity) + Number(item.bonus || 0)
+                    }));
+
+                    // Get products with type_id
+                    const productIds = createdItems.map(i => i.product_id);
+                    const products = await Product.findAll({
+                        where: { id: { [Op.in]: productIds } },
+                        transaction
+                    });
+                    const productMap = new Map(products.map(p => [p.id, p]));
+
+                    let costsByType = {};
+                    let totalCost = 0;
+
+                    try {
+                        const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
+                            itemsForCost,
+                            transaction
+                        );
+                        totalCost = fifoCost;
+
+                        // Group costs by product type
+                        for (const itemCost of itemCosts) {
+                            const product = productMap.get(Number(itemCost.product_id));
+                            const typeId = product ? Number(product.type_id) : null;
+
+                            // Reference from provided table:
+                            // 110: مخزون تام الصنع (asset, parent 49)
+                            // 111: مخزون أولي (asset, parent 49)
+                            // 109: تحت التشغيل (asset, parent 49)
+                            let accountId = INVENTORY_ACCOUNTS.DEFAULT;
+                            if (typeId === 1) accountId = INVENTORY_ACCOUNTS.FINISHED_GOODS;
+                            else if (typeId === 2) accountId = INVENTORY_ACCOUNTS.RAW_MATERIALS;
+                            else if (typeId === 3) accountId = INVENTORY_ACCOUNTS.WIP;
+
+                            console.log(`Product ID: ${itemCost.product_id}, Type ID: ${typeId}, Resolved Account ID: ${accountId}`);
 
                             if (!costsByType[accountId]) {
                                 costsByType[accountId] = 0;
                             }
-                            costsByType[accountId] += itemCost;
+                            costsByType[accountId] += Number(itemCost.cost) || 0;
+                        }
+                    } catch (error) {
+                        console.error('JE Error: COGS FIFO Calculation Failed:', error.message);
+                        // Fallback to product cost_price
+                        for (const item of createdItems) {
+                            const product = productMap.get(Number(item.product_id));
+                            const costPrice = product ? Number(product.cost_price) : 0;
+                            if (costPrice > 0) {
+                                const qty = Number(item.quantity) + Number(item.bonus || 0);
+                                const itemCost = qty * costPrice;
+                                totalCost += itemCost;
+
+                                const typeId = product ? Number(product.type_id) : null;
+                                let accountId = INVENTORY_ACCOUNTS.DEFAULT;
+                                if (typeId === 1) accountId = INVENTORY_ACCOUNTS.FINISHED_GOODS;
+                                else if (typeId === 2) accountId = INVENTORY_ACCOUNTS.RAW_MATERIALS;
+                                else if (typeId === 3) accountId = INVENTORY_ACCOUNTS.WIP;
+
+                                if (!costsByType[accountId]) {
+                                    costsByType[accountId] = 0;
+                                }
+                                costsByType[accountId] += itemCost;
+                            }
                         }
                     }
-                }
 
-                if (totalCost > 0) {
-                    try {
-                        const lines = [
-                            {
-                                account_id: COGS_ACCOUNT_ID,
-                                debit: totalCost,
-                                credit: 0,
-                                description: `تكلفة البضاعة المباعة - فاتورة #${invoice.invoice_number}`
-                            }
-                        ];
+                    if (totalCost > 0) {
+                        try {
+                            const lines = [
+                                {
+                                    account_id: COGS_ACCOUNT_ID,
+                                    debit: totalCost,
+                                    credit: 0,
+                                    description: `تكلفة البضاعة المباعة - فاتورة #${invoice.invoice_number}`
+                                }
+                            ];
 
-                        // Add credit lines for each inventory account
-                        for (const [accountId, amount] of Object.entries(costsByType)) {
-                            if (amount > 0) {
-                                const account = await Account.findByPk(accountId, { transaction });
-                                lines.push({
-                                    account_id: parseInt(accountId),
-                                    debit: 0,
-                                    credit: amount,
-                                    description: `${account?.name || 'المخزون'} - فاتورة #${invoice.invoice_number}`
-                                });
+                            // Add credit lines for each inventory account
+                            for (const [accountId, amount] of Object.entries(costsByType)) {
+                                if (amount > 0) {
+                                    const account = await Account.findByPk(accountId, { transaction });
+                                    lines.push({
+                                        account_id: parseInt(accountId),
+                                        debit: 0,
+                                        credit: amount,
+                                        description: `${account?.name || 'المخزون'} - فاتورة #${invoice.invoice_number}`
+                                    });
+                                }
                             }
+
+                            // Final check: ensure the entry is balanced
+                            const totalDebit = lines.reduce((sum, l) => sum + (parseFloat(l.debit) || 0), 0);
+                            const totalCredit = lines.reduce((sum, l) => sum + (parseFloat(l.credit) || 0), 0);
+
+                            if (Math.abs(totalDebit - totalCredit) > 0.01) {
+                                console.warn(`JE Warning: COGS Entry for SI #${invoice.id} is unbalanced (D:${totalDebit}, C:${totalCredit}). Adjusting...`);
+                                // Adjust the first credit line or add a fallback credit line if none exist
+                                if (lines.length > 1) {
+                                    lines[1].credit += (totalDebit - totalCredit);
+                                } else {
+                                    lines.push({
+                                        account_id: INVENTORY_ACCOUNTS.DEFAULT,
+                                        debit: 0,
+                                        credit: totalDebit,
+                                        description: `المخزون (تعديل تلقائي) - فاتورة #${invoice.invoice_number}`
+                                    });
+                                }
+                            }
+
+                            await createJournalEntry({
+                                refCode: 'sales_invoice_cost',
+                                refId: invoice.id,
+                                entryDate: invoice.invoice_date,
+                                description: `قيد تكلفة مبيعات - فاتورة #${invoice.invoice_number}`,
+                                lines,
+                                entryTypeId: 2 // قيد فاتورة مبيعات
+                            }, { transaction });
+                            console.log('JE Success: SI Professional COGS Entry Created');
+                        } catch (err) {
+                            console.error('JE Error: SI Professional COGS Entry Failed', err);
                         }
-
-                        // Final check: ensure the entry is balanced
-                        const totalDebit = lines.reduce((sum, l) => sum + (parseFloat(l.debit) || 0), 0);
-                        const totalCredit = lines.reduce((sum, l) => sum + (parseFloat(l.credit) || 0), 0);
-
-                        if (Math.abs(totalDebit - totalCredit) > 0.01) {
-                            console.warn(`JE Warning: COGS Entry for SI #${invoice.id} is unbalanced (D:${totalDebit}, C:${totalCredit}). Adjusting...`);
-                            // Adjust the first credit line or add a fallback credit line if none exist
-                            if (lines.length > 1) {
-                                lines[1].credit += (totalDebit - totalCredit);
-                            } else {
-                                lines.push({
-                                    account_id: INVENTORY_ACCOUNTS.DEFAULT,
-                                    debit: 0,
-                                    credit: totalDebit,
-                                    description: `المخزون (تعديل تلقائي) - فاتورة #${invoice.invoice_number}`
-                                });
-                            }
-                        }
-
-                        await createJournalEntry({
-                            refCode: 'sales_invoice_cost',
-                            refId: invoice.id,
-                            entryDate: invoice.invoice_date,
-                            description: `قيد تكلفة مبيعات - فاتورة #${invoice.invoice_number}`,
-                            lines,
-                            entryTypeId: 2
-                        }, { transaction });
-                        console.log('JE Success: SI Professional COGS Entry Created');
-                    } catch (err) {
-                        console.error('JE Error: SI Professional COGS Entry Failed', err);
                     }
                 }
             }
