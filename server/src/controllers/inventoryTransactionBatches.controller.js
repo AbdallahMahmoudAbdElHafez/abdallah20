@@ -13,7 +13,8 @@ class InventoryTransactionBatchesController {
 
     static async getLatestCost(req, res, next) {
         try {
-            const cost = await InventoryTransactionBatchesService.getLatestCost(req.params.productId);
+            const { batchNumber } = req.query;
+            const cost = await InventoryTransactionBatchesService.getLatestCost(req.params.productId, batchNumber);
             return response.ok(res, { cost });
         } catch (err) {
             next(err);

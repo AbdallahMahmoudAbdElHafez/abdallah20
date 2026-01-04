@@ -22,15 +22,31 @@ class InventoryTransactionBatchesService {
         });
     }
 
-    static async getLatestCost(productId) {
-        const { InventoryTransaction } = await import("../models/index.js");
+    static async getLatestCost(productId, batchNumber = null) {
+        const { InventoryTransaction, Batches } = await import("../models/index.js");
+
+        let whereClause = { product_id: productId };
+        let batchInclude = {
+            model: Batches,
+            as: 'batch',
+            required: false
+        };
+
+        if (batchNumber) {
+            batchInclude.where = { batch_number: batchNumber };
+            batchInclude.required = true;
+        }
+
         const result = await InventoryTransactionBatches.findOne({
-            include: [{
-                model: InventoryTransaction,
-                as: 'transaction',
-                where: { product_id: productId },
-                attributes: []
-            }],
+            include: [
+                {
+                    model: InventoryTransaction,
+                    as: 'transaction',
+                    where: whereClause,
+                    attributes: []
+                },
+                batchInclude
+            ],
             order: [[{ model: InventoryTransaction, as: 'transaction' }, 'transaction_date', 'DESC']],
             attributes: ['cost_per_unit']
         });

@@ -101,7 +101,7 @@ const IssueVouchersPage = () => {
       size: 120,
     },
     {
-      accessorKey: 'type.name',
+      accessorFn: (row) => row.type?.name || 'N/A',
       header: 'Type',
       size: 120,
     },

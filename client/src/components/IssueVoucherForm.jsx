@@ -40,6 +40,7 @@ import { fetchEmployees } from '../features/employees/employeesSlice';
 import { fetchParties } from '../features/parties/partiesSlice';
 import { fetchAccounts } from '../features/accounts/accountsSlice';
 import { fetchDoctors } from '../features/doctors/doctorsSlice';
+import inventoryTransactionBatchesApi from '../api/inventoryTransactionBatchesApi';
 
 const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const dispatch = useDispatch();
@@ -127,37 +128,31 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     }
   };
 
+  const handleProductChange = async (productId) => {
+    const selectedProduct = products.find(p => p.id === productId);
+
+    let cost = 0;
+    try {
+      const response = await inventoryTransactionBatchesApi.getLatestCost(productId);
+      cost = response.data.cost || 0;
+    } catch (error) {
+      console.error('Error fetching cost:', error);
+    }
+
+    setCurrentItem(prev => ({
+      ...prev,
+      product_id: productId,
+      cost_per_unit: cost,
+      batch_number: '', // Reset batch when product changes
+      expiry_date: null
+    }));
+  };
+
   const handleItemChange = (field, value) => {
     setCurrentItem(prev => ({
       ...prev,
       [field]: value
     }));
-  };
-
-  const handleProductChange = (productId) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      // Find the first batch with stock in this warehouse
-      const availableBatch = product.batches?.find(b =>
-        b.batch_inventories?.some(bi => bi.warehouse_id === formData.warehouse_id && bi.quantity > 0)
-      );
-
-      setCurrentItem(prev => ({
-        ...prev,
-        product_id: productId,
-        cost_per_unit: product.cost_price || 0,
-        batch_number: availableBatch ? availableBatch.batch_number : '',
-        expiry_date: availableBatch ? (availableBatch.expiry_date ? new Date(availableBatch.expiry_date) : null) : null
-      }));
-    } else {
-      setCurrentItem(prev => ({
-        ...prev,
-        product_id: productId,
-        cost_per_unit: '',
-        batch_number: '',
-        expiry_date: null
-      }));
-    }
   };
 
   const addItem = () => {
@@ -173,12 +168,10 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
 
     const selectedProduct = products.find(p => p.id === currentItem.product_id);
 
-
     const newItem = {
-      id: Date.now(), // مؤقت لحين الحفظ
+      id: Date.now(),
       ...currentItem,
       product: selectedProduct,
-
     };
 
     setItems(prev => [...prev, newItem]);
@@ -221,11 +214,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       issue_date: formData.issue_date.toISOString().split('T')[0],
       items: items.map(item => ({
         product_id: item.product_id,
-        // warehouse_id: item.warehouse_id, // Removed from backend
         batch_number: item.batch_number,
         expiry_date: item.expiry_date ? item.expiry_date.toISOString().split('T')[0] : null,
         quantity: parseFloat(item.quantity),
-
         cost_per_unit: parseFloat(item.cost_per_unit || 0),
         note: item.note
       }))
