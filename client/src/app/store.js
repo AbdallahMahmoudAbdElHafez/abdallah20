@@ -28,8 +28,6 @@ import currentInventoryReducer from "../features/currentInventory/currentInvento
 import DepartmentsReducer from "../features/departments/departmentsSlice";
 import jobTitlesReducer from "../features/jobTitles/jobTitlesSlice";
 import employeesReducer from "../features/employees/employeesSlice";
-import issueVoucherTypesReducer from "../features/issueVoucherTypes/issueVoucherTypesSlice";
-import issueVoucherTypeAccountsReducer from "../features/issueVoucherTypeAccounts/issueVoucherTypeAccountsSlice";
 import issueVouchersReducer from "../features/issueVouchers/issueVouchersSlice";
 import purchaseReturnsReducer from "../features/purchaseReturns/purchaseReturnsSlice";
 import expensesReducer from "../features/expenses/expensesSlice";
@@ -78,8 +76,6 @@ export const store = configureStore({
     departments: DepartmentsReducer,
     jobTitles: jobTitlesReducer,
     employees: employeesReducer,
-    issueVoucherTypes: issueVoucherTypesReducer,
-    issueVoucherTypeAccounts: issueVoucherTypeAccountsReducer,
     issueVouchers: issueVouchersReducer,
     purchaseReturns: purchaseReturnsReducer,
     expenses: expensesReducer,

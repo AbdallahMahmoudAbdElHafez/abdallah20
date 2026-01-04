@@ -27,8 +27,6 @@ import CurrentInventoryModel from "./currentInventory.model.js";
 import DepartmentModel from "./departments.model.js";
 import jobTitleModel from "./jobTitles.model.js";
 import employeeModel from "./employees.model.js";
-import IssueVoucherTypesModel from "./issueVoucherTypes.model.js";
-import IssueVoucherTypeAccountsModel from "./issueVoucherTypeAccounts.model.js";
 import IssueVoucherModel from './issueVouchers.model.js';
 import IssueVoucherItemModel from './issueVoucherItems.model.js';
 import PurchaseReturnModel from "./purchaseReturns.model.js";
@@ -106,8 +104,6 @@ const CurrentInventory = CurrentInventoryModel(sequelize);
 const Department = DepartmentModel(sequelize);
 const JobTitle = jobTitleModel(sequelize);
 const Employee = employeeModel(sequelize);
-const IssueVoucherType = IssueVoucherTypesModel(sequelize);
-const IssueVoucherTypeAccount = IssueVoucherTypeAccountsModel(sequelize);
 const IssueVoucher = IssueVoucherModel(sequelize);
 const IssueVoucherItem = IssueVoucherItemModel(sequelize);
 const PurchaseReturn = PurchaseReturnModel(sequelize);
@@ -412,22 +408,6 @@ Employee.belongsTo(Department, {
 Employee.belongsTo(Employee, { foreignKey: "parent_id", as: "parent_employee", });
 Employee.hasMany(Employee, { foreignKey: "parent_id", as: "children", });
 
-IssueVoucherType.hasMany(IssueVoucherTypeAccount, { foreignKey: "issue_voucher_type_id", as: "accounts", onDelete: "CASCADE", });
-Account.hasMany(IssueVoucherTypeAccount, { foreignKey: "account_id", as: "voucher_types", onDelete: "CASCADE", });
-IssueVoucherTypeAccount.belongsTo(IssueVoucherType, { foreignKey: "issue_voucher_type_id", as: "type", onDelete: "CASCADE", });
-IssueVoucherTypeAccount.belongsTo(Account, { foreignKey: "account_id", as: "account", onDelete: "CASCADE", });
-// === علاقات Issue Voucher ===
-
-// IssueVoucher ↔ IssueVoucherType
-IssueVoucherType.hasMany(IssueVoucher, {
-  foreignKey: "type_id",
-  as: "vouchers"
-});
-IssueVoucher.belongsTo(IssueVoucherType, {
-  foreignKey: "type_id",
-  as: "type"
-});
-
 // IssueVoucher ↔ Party
 Party.hasMany(IssueVoucher, {
   foreignKey: "party_id",
@@ -730,6 +710,9 @@ Employee.hasMany(ServicePayment, { foreignKey: "employee_id", as: "service_payme
 Doctor.belongsTo(City, { foreignKey: "city_id", as: "city" });
 City.hasMany(Doctor, { foreignKey: "city_id", as: "doctors" });
 
+IssueVoucher.belongsTo(Doctor, { foreignKey: 'doctor_id', as: 'doctor' });
+Doctor.hasMany(IssueVoucher, { foreignKey: 'doctor_id', as: 'issue_vouchers' });
+
 export {
   sequelize,
   Company,
@@ -765,8 +748,6 @@ export {
   Department,
   JobTitle,
   Employee,
-  IssueVoucherType,
-  IssueVoucherTypeAccount,
   IssueVoucher,
   IssueVoucherItem,
   PurchaseReturn,

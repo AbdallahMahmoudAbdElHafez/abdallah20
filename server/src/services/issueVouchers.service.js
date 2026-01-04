@@ -3,14 +3,16 @@ import {
   IssueVoucherItem,
   Product,
   Warehouse,
-  IssueVoucherType,
   Party,
   Employee,
   sequelize,
   Account,
-  ReferenceType
+  ReferenceType,
+  Doctor,
+  EntryType
 } from '../models/index.js';
 import { Op } from 'sequelize';
+import { ENTRY_TYPES } from '../constants/entryTypes.js';
 
 export class IssueVouchersService {
 
@@ -24,68 +26,49 @@ export class IssueVouchersService {
   }
 
   async createIssueVoucherWithItems(voucherData, itemsData = []) {
+    const transaction = await sequelize.transaction();
     try {
-      const transaction = await sequelize.transaction();
+      const voucher = await IssueVoucher.create(voucherData, { transaction });
 
-      try {
-        const voucher = await IssueVoucher.create(voucherData, { transaction });
+      if (itemsData.length > 0) {
+        const itemsWithVoucherId = itemsData.map(item => ({
+          ...item,
+          voucher_id: voucher.id
+        }));
 
-        let createdItems = [];
-        if (itemsData.length > 0) {
-          const itemsWithVoucherId = itemsData.map(item => ({
-            ...item,
-            voucher_id: voucher.id
-          }));
+        const createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
 
-          createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+        // Import InventoryTransactionService
+        const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
 
-          // Import InventoryTransactionService
-          const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
+        // Create Inventory Transactions (OUT) using FIFO batches
+        const FIFOCostService = (await import('./fifoCost.service.js')).default;
+        const itemsForCost = createdItems.map(item => ({
+          product_id: item.product_id,
+          warehouse_id: voucher.warehouse_id,
+          quantity: Number(item.quantity)
+        }));
 
-          // Create Inventory Transactions (OUT) using FIFO batches
-          const FIFOCostService = (await import('./fifoCost.service.js')).default;
-          const itemsForCost = createdItems.map(item => ({
-            product_id: item.product_id,
-            warehouse_id: voucher.warehouse_id,
-            quantity: Number(item.quantity)
-          }));
-
-          let fifoBatchesMap = new Map();
-          try {
-            const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(itemsForCost, transaction);
-            for (const itemCost of itemCosts) {
-              const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
-              if (createdItem) {
-                fifoBatchesMap.set(createdItem.id, itemCost.batches);
-              }
+        let fifoBatchesMap = new Map();
+        try {
+          const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(itemsForCost, transaction);
+          for (const itemCost of itemCosts) {
+            const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
+            if (createdItem) {
+              fifoBatchesMap.set(createdItem.id, itemCost.batches);
             }
-          } catch (error) {
-            console.error('Issue Voucher: FIFO batch calculation failed:', error.message);
           }
+        } catch (error) {
+          console.error('Issue Voucher: FIFO batch calculation failed:', error.message);
+        }
 
-          // Create inventory OUT transactions using FIFO batches
-          for (const item of createdItems) {
-            if (Number(item.quantity) > 0) {
-              const fifoBatches = fifoBatchesMap.get(item.id);
+        // Create inventory OUT transactions using FIFO batches
+        for (const item of createdItems) {
+          if (Number(item.quantity) > 0) {
+            const fifoBatches = fifoBatchesMap.get(item.id);
 
-              if (fifoBatches && fifoBatches.length > 0) {
-                for (const fifoBatch of fifoBatches) {
-                  await InventoryTransactionService.create({
-                    product_id: item.product_id,
-                    warehouse_id: voucher.warehouse_id,
-                    transaction_type: 'out',
-                    transaction_date: voucher.issue_date,
-                    note: `Issue Voucher #${voucher.voucher_no}`,
-                    source_type: 'issue_voucher',
-                    source_id: item.id,
-                    batches: [{
-                      batch_id: fifoBatch.batchId,
-                      quantity: fifoBatch.quantity,
-                      cost_per_unit: fifoBatch.costPerUnit
-                    }]
-                  }, { transaction });
-                }
-              } else {
+            if (fifoBatches && fifoBatches.length > 0) {
+              for (const fifoBatch of fifoBatches) {
                 await InventoryTransactionService.create({
                   product_id: item.product_id,
                   warehouse_id: voucher.warehouse_id,
@@ -95,151 +78,41 @@ export class IssueVouchersService {
                   source_type: 'issue_voucher',
                   source_id: item.id,
                   batches: [{
-                    batch_id: null,
-                    quantity: Number(item.quantity),
-                    cost_per_unit: 0
+                    batch_id: fifoBatch.batchId,
+                    quantity: fifoBatch.quantity,
+                    cost_per_unit: fifoBatch.costPerUnit
                   }]
                 }, { transaction });
               }
-            }
-          }
-        }
-
-        // --- Journal Entry Creation ---
-        if (createdItems.length > 0) {
-          const { createJournalEntry } = await import('./journal.service.js');
-
-          // Inventory Account IDs by Product Type
-          const INVENTORY_ACCOUNTS = {
-            FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
-            RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
-            DEFAULT: 49             // المخزون (fallback)
-          };
-
-          const PRODUCT_TYPE_TO_ACCOUNT = {
-            1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
-            2: INVENTORY_ACCOUNTS.RAW_MATERIALS
-          };
-
-          // voucher.account_id acts as the debit account
-          const debitAccount = await Account.findByPk(voucher.account_id, { transaction });
-
-          // Import FIFO Cost Service
-          const FIFOCostService = (await import('./fifoCost.service.js')).default;
-
-          // Get products with type_id
-          const productIds = createdItems.map(i => i.product_id);
-          const products = await Product.findAll({
-            where: { id: { [Op.in]: productIds } },
-            transaction
-          });
-          const productMap = new Map(products.map(p => [p.id, p]));
-
-          // Prepare items for FIFO cost calculation
-          const itemsForCost = createdItems.map(item => ({
-            product_id: item.product_id,
-            warehouse_id: voucher.warehouse_id,
-            quantity: Number(item.quantity)
-          }));
-
-          // Calculate costs grouped by product type
-          const costsByType = {};
-          let totalCost = 0;
-
-          try {
-            const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
-              itemsForCost,
-              transaction
-            );
-            totalCost = fifoCost;
-
-            // Group costs by product type
-            for (const itemCost of itemCosts) {
-              const product = productMap.get(itemCost.product_id);
-              const typeId = product?.type_id || null;
-              const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
-
-              if (!costsByType[accountId]) {
-                costsByType[accountId] = 0;
-              }
-              costsByType[accountId] += itemCost.totalCost;
-            }
-            console.log('Issue Voucher: FIFO Cost Calculation Success. Total:', totalCost);
-          } catch (error) {
-            console.error('Issue Voucher: FIFO Cost Calculation Failed:', error.message);
-            console.warn('Issue Voucher: Falling back to product cost_price due to FIFO error');
-
-            for (const item of createdItems) {
-              const product = productMap.get(item.product_id);
-              if (product && Number(product.cost_price) > 0) {
-                const itemCost = Number(item.quantity) * Number(product.cost_price);
-                totalCost += itemCost;
-
-                const typeId = product?.type_id || null;
-                const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
-
-                if (!costsByType[accountId]) {
-                  costsByType[accountId] = 0;
-                }
-                costsByType[accountId] += itemCost;
-              }
-            }
-          }
-
-          if (totalCost > 0 && debitAccount) {
-            let refType = await ReferenceType.findOne({ where: { code: 'issue_voucher' }, transaction });
-            if (!refType) {
-              refType = await ReferenceType.create({
-                code: 'issue_voucher',
-                label: 'سند صرف',
-                name: 'سند صرف',
-                description: 'Journal Entry for Issue Voucher'
+            } else {
+              await InventoryTransactionService.create({
+                product_id: item.product_id,
+                warehouse_id: voucher.warehouse_id,
+                transaction_type: 'out',
+                transaction_date: voucher.issue_date,
+                note: `Issue Voucher #${voucher.voucher_no}`,
+                source_type: 'issue_voucher',
+                source_id: item.id,
+                batches: [{
+                  batch_id: null,
+                  quantity: Number(item.quantity),
+                  cost_per_unit: 0
+                }]
               }, { transaction });
             }
-
-            // Build journal entry lines
-            const lines = [
-              {
-                account_id: debitAccount.id,
-                debit: totalCost,
-                credit: 0,
-                description: `Issue Voucher #${voucher.voucher_no}`
-              }
-            ];
-
-            // Add credit lines for each inventory account
-            for (const [accountId, cost] of Object.entries(costsByType)) {
-              if (cost > 0) {
-                const account = await Account.findByPk(accountId, { transaction });
-                lines.push({
-                  account_id: parseInt(accountId),
-                  debit: 0,
-                  credit: cost,
-                  description: `${account?.name || 'مخزون'} - Issue Voucher #${voucher.voucher_no}`
-                });
-              }
-            }
-
-            await createJournalEntry({
-              refCode: 'issue_voucher',
-              refId: voucher.id,
-              entryDate: voucher.issue_date,
-              description: `Issue Voucher #${voucher.voucher_no} - ${voucher.note || ''}`,
-              lines,
-              entryTypeId: 1
-            }, { transaction });
           }
         }
-
-        await transaction.commit();
-        return await this.getIssueVoucherById(voucher.id, true);
-      } catch (error) {
-        if (!transaction.finished) {
-          await transaction.rollback();
-        }
-        throw error;
       }
+
+      // --- Journal Entry Creation ---
+      await this._syncJournalEntry(voucher.id, itemsData, transaction);
+
+      await transaction.commit();
+      return await this.getIssueVoucherById(voucher.id, true);
     } catch (error) {
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
       throw new Error(`Error creating issue voucher with items: ${error.message}`);
     }
   }
@@ -266,11 +139,6 @@ export class IssueVouchersService {
         where: whereClause,
         include: [
           {
-            model: IssueVoucherType,
-            as: 'type',
-            attributes: ['id', 'name']
-          },
-          {
             model: Party,
             as: 'party',
             attributes: ['id', 'name']
@@ -283,6 +151,11 @@ export class IssueVouchersService {
           {
             model: Employee,
             as: 'responsible_employee',
+            attributes: ['id', 'name']
+          },
+          {
+            model: Doctor,
+            as: 'doctor',
             attributes: ['id', 'name']
           }
         ],
@@ -298,11 +171,6 @@ export class IssueVouchersService {
   async getIssueVoucherById(id, includeItems = false) {
     try {
       const include = [
-        {
-          model: IssueVoucherType,
-          as: 'type',
-          attributes: ['id', 'name']
-        },
         {
           model: Party,
           as: 'party',
@@ -326,6 +194,11 @@ export class IssueVouchersService {
         {
           model: Employee,
           as: 'approver',
+          attributes: ['id', 'name']
+        },
+        {
+          model: Doctor,
+          as: 'doctor',
           attributes: ['id', 'name']
         }
       ];
@@ -360,11 +233,6 @@ export class IssueVouchersService {
     try {
       const include = [
         {
-          model: IssueVoucherType,
-          as: 'type',
-          attributes: ['id', 'name']
-        },
-        {
           model: Party,
           as: 'party',
           attributes: ['id', 'name']
@@ -377,6 +245,11 @@ export class IssueVouchersService {
         {
           model: Employee,
           as: 'responsible_employee',
+          attributes: ['id', 'name']
+        },
+        {
+          model: Doctor,
+          as: 'doctor',
           attributes: ['id', 'name']
         }
       ];
@@ -425,40 +298,38 @@ export class IssueVouchersService {
   }
 
   async updateIssueVoucherWithItems(id, updateData, itemsData = []) {
+    const transaction = await sequelize.transaction();
     try {
-      const transaction = await sequelize.transaction();
-
-      try {
-        const voucher = await IssueVoucher.findByPk(id, { transaction });
-        if (!voucher) {
-          throw new Error('Issue voucher not found');
-        }
-
-        await voucher.update(updateData, { transaction });
-
-        await IssueVoucherItem.destroy({
-          where: { voucher_id: id },
-          transaction
-        });
-
-        if (itemsData.length > 0) {
-          const itemsWithVoucherId = itemsData.map(item => ({
-            ...item,
-            voucher_id: id
-          }));
-
-          await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
-        }
-
-        await transaction.commit();
-        return await this.getIssueVoucherById(id, true);
-      } catch (error) {
-        if (!transaction.finished) {
-          await transaction.rollback();
-        }
-        throw error;
+      const voucher = await IssueVoucher.findByPk(id, { transaction });
+      if (!voucher) {
+        throw new Error('Issue voucher not found');
       }
+
+      await voucher.update(updateData, { transaction });
+
+      await IssueVoucherItem.destroy({
+        where: { voucher_id: id },
+        transaction
+      });
+
+      if (itemsData.length > 0) {
+        const itemsWithVoucherId = itemsData.map(item => ({
+          ...item,
+          voucher_id: id
+        }));
+
+        await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+      }
+
+      // --- Journal Entry Update ---
+      await this._syncJournalEntry(id, itemsData, transaction);
+
+      await transaction.commit();
+      return await this.getIssueVoucherById(id, true);
     } catch (error) {
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
       throw new Error(`Error updating issue voucher with items: ${error.message}`);
     }
   }
@@ -556,6 +427,166 @@ export class IssueVouchersService {
       return availability;
     } catch (error) {
       throw new Error(`Error checking inventory availability: ${error.message}`);
+    }
+  }
+
+  /**
+   * Sync Journal Entry for Issue Voucher
+   */
+  async _syncJournalEntry(voucherId, itemsData, transaction) {
+    try {
+      const { createJournalEntry } = await import('./journal.service.js');
+      const { JournalEntry } = await import('../models/index.js');
+
+      const voucher = await IssueVoucher.findByPk(voucherId, { transaction });
+      if (!voucher) return;
+
+      // 1. Delete existing entry if any
+      let refType = await ReferenceType.findOne({ where: { code: 'issue_voucher' }, transaction });
+      if (!refType) {
+        refType = await ReferenceType.create({
+          code: 'issue_voucher',
+          label: 'سند صرف مخزني',
+          name: 'سند صرف مخزني',
+          description: 'Journal Entry for Issue Voucher'
+        }, { transaction });
+      }
+
+      await JournalEntry.destroy({
+        where: { reference_type_id: refType.id, reference_id: voucher.id },
+        transaction
+      });
+
+      if (!itemsData || itemsData.length === 0) return;
+
+      // 2. Resolve Accounts
+      const INVENTORY_ACCOUNTS = {
+        FINISHED_GOODS: 110,    // مخزون تام الصنع
+        RAW_MATERIALS: 111,     // مخزون أولي
+        DEFAULT: 49             // المخزون
+      };
+
+      const PRODUCT_TYPE_TO_ACCOUNT = {
+        1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
+        2: INVENTORY_ACCOUNTS.RAW_MATERIALS
+      };
+
+      const debitAccount = await Account.findByPk(voucher.account_id, { transaction });
+      if (!debitAccount) {
+        console.warn(`Issue Voucher: Debit account not found for ID ${voucher.account_id}`);
+        return;
+      }
+
+      // 3. Calculate Costs
+      const FIFOCostService = (await import('./fifoCost.service.js')).default;
+      const productIds = itemsData.map(i => i.product_id);
+      const products = await Product.findAll({
+        where: { id: { [Op.in]: productIds } },
+        transaction
+      });
+      const productMap = new Map(products.map(p => [p.id, p]));
+
+      const itemsForCost = itemsData.map(item => ({
+        product_id: item.product_id,
+        warehouse_id: voucher.warehouse_id,
+        quantity: Number(item.quantity)
+      }));
+
+      const costsByType = {};
+      let totalCost = 0;
+
+      try {
+        const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
+          itemsForCost,
+          transaction
+        );
+        totalCost = fifoCost;
+
+        for (const itemCost of itemCosts) {
+          const product = productMap.get(Number(itemCost.product_id));
+          const typeId = product?.type_id || null;
+          const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+          if (!costsByType[accountId]) costsByType[accountId] = 0;
+          costsByType[accountId] += itemCost.cost; // Corrected from totalCost to cost
+        }
+      } catch (error) {
+        console.warn('Issue Voucher: FIFO Cost Failed, falling back to cost_price');
+        for (const item of itemsData) {
+          const product = productMap.get(Number(item.product_id));
+          if (product && Number(product.cost_price) > 0) {
+            const itemCost = Number(item.quantity) * Number(product.cost_price);
+            totalCost += itemCost;
+            const typeId = product?.type_id || null;
+            const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+            if (!costsByType[accountId]) costsByType[accountId] = 0;
+            costsByType[accountId] += itemCost;
+          }
+        }
+      }
+
+      if (totalCost <= 0) return;
+
+      // 4. Ensure EntryType exists
+      let entryType = await EntryType.findByPk(ENTRY_TYPES.ISSUE_VOUCHER, { transaction });
+      if (!entryType) {
+        await EntryType.create({
+          id: ENTRY_TYPES.ISSUE_VOUCHER,
+          name: 'قيد سند صرف',
+          note: 'سند صرف مخزني'
+        }, { transaction });
+      }
+
+      // 5. Create Lines
+      const lines = [
+        {
+          account_id: debitAccount.id,
+          debit: totalCost,
+          credit: 0,
+          description: `سند صرف مخزني رقم #${voucher.voucher_no}`
+        }
+      ];
+
+      let checkTotalCredit = 0;
+      for (const [accountId, cost] of Object.entries(costsByType)) {
+        if (cost > 0) {
+          const account = await Account.findByPk(accountId, { transaction });
+          lines.push({
+            account_id: parseInt(accountId),
+            debit: 0,
+            credit: Math.round(cost * 100) / 100,
+            description: `${account?.name || 'مخزون'} - سند صرف مخزني رقم #${voucher.voucher_no}`
+          });
+          checkTotalCredit += cost;
+        }
+      }
+
+      // Final balance safety check - ensure total credit matches total debit (allowing for small rounding diffs)
+      if (Math.abs(totalCost - checkTotalCredit) > 0.01) {
+        console.warn(`Issue Voucher JE Balance Mismatch: Debit ${totalCost}, Credit ${checkTotalCredit}. Adjusting last line.`);
+        // Adjust the last credit line or the debit line to force balance if necessary
+        if (lines.length > 1) {
+          const lastLine = lines[lines.length - 1];
+          if (lastLine.credit > 0) {
+            lastLine.credit = Math.round((lastLine.credit + (totalCost - checkTotalCredit)) * 100) / 100;
+          }
+        }
+      }
+
+      // 6. Create Journal Entry
+      await createJournalEntry({
+        refCode: 'issue_voucher',
+        refId: voucher.id,
+        entryDate: voucher.issue_date,
+        description: `قيد سند صرف مخزني رقم #${voucher.voucher_no} - ${voucher.note || ''}`,
+        lines,
+        entryTypeId: ENTRY_TYPES.ISSUE_VOUCHER
+      }, { transaction });
+
+      console.log(`Issue Voucher: Journal Entry successfully synced for Voucher #${voucher.voucher_no}`);
+    } catch (error) {
+      console.error(`Issue Voucher: Failed to sync journal entry for Voucher ID ${voucherId}:`, error.message);
+      throw error;
     }
   }
 }

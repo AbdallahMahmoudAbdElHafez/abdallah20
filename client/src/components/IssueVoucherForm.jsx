@@ -38,8 +38,8 @@ import { fetchProducts } from '../features/products/productsSlice';
 import { fetchWarehouses } from '../features/warehouses/warehousesSlice';
 import { fetchEmployees } from '../features/employees/employeesSlice';
 import { fetchParties } from '../features/parties/partiesSlice';
-import { fetchIssueVoucherTypes } from '../features/issueVoucherTypes/issueVoucherTypesSlice';
 import { fetchAccounts } from '../features/accounts/accountsSlice';
+import { fetchDoctors } from '../features/doctors/doctorsSlice';
 
 const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const dispatch = useDispatch();
@@ -50,14 +50,14 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const { items: warehouses, loading: warehousesLoading } = useSelector(state => state.warehouses);
   const { list: employees, loading: employeesLoading } = useSelector(state => state.employees);
   const { items: parties, loading: partiesLoading } = useSelector(state => state.parties);
-  const { list: voucherTypes, loading: voucherTypesLoading } = useSelector(state => state.issueVoucherTypes);
   const { items: accounts, loading: accountsLoading } = useSelector(state => state.accounts);
+  const { list: doctors, loading: doctorsLoading } = useSelector(state => state.doctors);
 
   const [formData, setFormData] = useState({
     voucher_no: '',
-    type_id: '',
     party_id: '',
     employee_id: '',
+    doctor_id: '',
     warehouse_id: '',
     account_id: '',
     issue_date: new Date(),
@@ -75,55 +75,6 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     note: ''
   });
 
-  const [filteredAccounts, setFilteredAccounts] = useState([]);
-  const [filteredTypes, setFilteredTypes] = useState([]);
-
-  // Initialize filtered lists
-  useEffect(() => {
-    setFilteredAccounts(accounts);
-    setFilteredTypes(voucherTypes);
-  }, [accounts, voucherTypes]);
-
-  // Filter accounts when type changes
-  useEffect(() => {
-    if (formData.type_id) {
-      const selectedType = voucherTypes.find(t => t.id === formData.type_id);
-      if (selectedType && selectedType.accounts && selectedType.accounts.length > 0) {
-        const linkedAccountIds = selectedType.accounts.map(a => a.account_id);
-        const newFilteredAccounts = accounts.filter(acc => linkedAccountIds.includes(acc.id));
-        setFilteredAccounts(newFilteredAccounts);
-
-        // If current account is not in the new filtered list, clear it
-        if (formData.account_id && !linkedAccountIds.includes(formData.account_id)) {
-          handleFormChange('account_id', '');
-        }
-      } else {
-        // If type has no specific accounts linked, show all
-        setFilteredAccounts(accounts);
-      }
-    } else {
-      setFilteredAccounts(accounts);
-    }
-  }, [formData.type_id, voucherTypes, accounts]);
-
-  // Filter types when account changes
-  useEffect(() => {
-    if (formData.account_id) {
-      // Find types that are linked to this account
-      const newFilteredTypes = voucherTypes.filter(type => {
-        if (!type.accounts || type.accounts.length === 0) return true; // Keep types with no restrictions
-        return type.accounts.some(acc => acc.account_id === formData.account_id);
-      });
-      setFilteredTypes(newFilteredTypes);
-
-      // If current type is not in new list, clear it
-      if (formData.type_id && !newFilteredTypes.find(t => t.id === formData.type_id)) {
-        handleFormChange('type_id', '');
-      }
-    } else {
-      setFilteredTypes(voucherTypes);
-    }
-  }, [formData.account_id, voucherTypes]);
 
   useEffect(() => {
     if (open) {
@@ -132,8 +83,8 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       dispatch(fetchWarehouses());
       dispatch(fetchEmployees());
       dispatch(fetchParties());
-      dispatch(fetchIssueVoucherTypes());
       dispatch(fetchAccounts());
+      dispatch(fetchDoctors());
     }
   }, [open, dispatch]);
 
@@ -141,9 +92,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     if (voucher && editMode) {
       setFormData({
         voucher_no: voucher.voucher_no || '',
-        type_id: voucher.type_id || '',
         party_id: voucher.party_id || '',
         employee_id: voucher.employee_id || '',
+        doctor_id: voucher.doctor_id || '',
         warehouse_id: voucher.warehouse_id || '',
         account_id: voucher.account_id || '',
         issue_date: voucher.issue_date ? new Date(voucher.issue_date) : new Date(),
@@ -158,6 +109,13 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       }));
     }
   }, [voucher, editMode]);
+
+  // Fetch products when warehouse changes
+  useEffect(() => {
+    if (formData.warehouse_id) {
+      dispatch(fetchProducts({ warehouse_id: formData.warehouse_id }));
+    }
+  }, [dispatch, formData.warehouse_id]);
 
   const handleFormChange = (field, value) => {
     setFormData(prev => ({
@@ -176,11 +134,36 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     }));
   };
 
+  const handleProductChange = (productId) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      // Find the first batch with stock in this warehouse
+      const availableBatch = product.batches?.find(b =>
+        b.batch_inventories?.some(bi => bi.warehouse_id === formData.warehouse_id && bi.quantity > 0)
+      );
+
+      setCurrentItem(prev => ({
+        ...prev,
+        product_id: productId,
+        cost_per_unit: product.cost_price || 0,
+        batch_number: availableBatch ? availableBatch.batch_number : '',
+        expiry_date: availableBatch ? (availableBatch.expiry_date ? new Date(availableBatch.expiry_date) : null) : null
+      }));
+    } else {
+      setCurrentItem(prev => ({
+        ...prev,
+        product_id: productId,
+        cost_per_unit: '',
+        batch_number: '',
+        expiry_date: null
+      }));
+    }
+  };
+
   const addItem = () => {
     const newErrors = {};
 
     if (!currentItem.product_id) newErrors.product_id = 'Product is required';
-    if (!currentItem.quantity || currentItem.quantity <= 0) newErrors.quantity = 'Valid quantity is required';
     if (!currentItem.quantity || currentItem.quantity <= 0) newErrors.quantity = 'Valid quantity is required';
 
     if (Object.keys(newErrors).length > 0) {
@@ -218,7 +201,6 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     const newErrors = {};
 
     if (!formData.voucher_no) newErrors.voucher_no = 'Voucher number is required';
-    if (!formData.type_id) newErrors.type_id = 'Type is required';
     if (!formData.warehouse_id) newErrors.warehouse_id = 'Warehouse is required';
     if (!formData.account_id) newErrors.account_id = 'Account is required';
     if (!formData.issue_date) newErrors.issue_date = 'Issue date is required';
@@ -233,9 +215,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
 
     const submitData = {
       ...formData,
-      type_id: formData.type_id || null,
       party_id: formData.party_id || null,
       employee_id: formData.employee_id || null,
+      doctor_id: formData.doctor_id || null,
       issue_date: formData.issue_date.toISOString().split('T')[0],
       items: items.map(item => ({
         product_id: item.product_id,
@@ -276,7 +258,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   };
 
   // دالة للتحقق من التحميل
-  const isLoading = productsLoading || warehousesLoading || employeesLoading || partiesLoading || voucherTypesLoading || accountsLoading;
+  const isLoading = productsLoading || warehousesLoading || employeesLoading || partiesLoading || accountsLoading || doctorsLoading;
 
   if (isLoading) {
     return (
@@ -324,20 +306,20 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <FormControl fullWidth error={!!errors.type_id}>
-              <InputLabel>Type</InputLabel>
+            <FormControl fullWidth>
+              <InputLabel>Doctor</InputLabel>
               <Select
-                value={formData.type_id}
-                label="Type"
-                onChange={(e) => handleFormChange('type_id', e.target.value)}
+                value={formData.doctor_id}
+                label="Doctor"
+                onChange={(e) => handleFormChange('doctor_id', e.target.value)}
               >
-                {filteredTypes.map(type => (
-                  <MenuItem key={type.id} value={type.id}>
-                    {type.name}
+                <MenuItem value="">None</MenuItem>
+                {doctors.map(doctor => (
+                  <MenuItem key={doctor.id} value={doctor.id}>
+                    {doctor.name}
                   </MenuItem>
                 ))}
               </Select>
-              {errors.type_id && <Typography color="error" variant="caption">{errors.type_id}</Typography>}
             </FormControl>
           </Grid>
 
@@ -403,7 +385,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 label="Account"
                 onChange={(e) => handleFormChange('account_id', e.target.value)}
               >
-                {filteredAccounts.map(acc => (
+                {accounts.map(acc => (
                   <MenuItem key={acc.id} value={acc.id}>
                     {acc.name}
                   </MenuItem>
@@ -459,13 +441,20 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                     <Select
                       value={currentItem.product_id}
                       label="Product"
-                      onChange={(e) => handleItemChange('product_id', e.target.value)}
+                      onChange={(e) => handleProductChange(e.target.value)}
                     >
-                      {products.map(product => (
-                        <MenuItem key={product.id} value={product.id}>
-                          {product.name}
-                        </MenuItem>
-                      ))}
+                      {products.map(product => {
+                        const stock = product.current_inventory?.[0]?.quantity || 0;
+                        return (
+                          <MenuItem
+                            key={product.id}
+                            value={product.id}
+                            disabled={!!(formData.warehouse_id && stock <= 0)}
+                          >
+                            {product.name} {formData.warehouse_id ? `(Stock: ${stock})` : ''}
+                          </MenuItem>
+                        );
+                      })}
                     </Select>
                   </FormControl>
                 </Grid>

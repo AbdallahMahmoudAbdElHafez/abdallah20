@@ -4,7 +4,7 @@ import { IssueVouchersService } from '../services/issueVouchers.service.js';
 const issueVouchersService = new IssueVouchersService();
 const voucherSchema = Joi.object({
   voucher_no: Joi.string().max(100).required(),
-  type_id: Joi.number().integer().allow(null),
+  doctor_id: Joi.number().integer().allow(null),
   party_id: Joi.number().integer().allow(null),
   employee_id: Joi.number().integer().allow(null),
   warehouse_id: Joi.number().integer().required(),
@@ -18,7 +18,7 @@ const voucherSchema = Joi.object({
 
 const voucherWithItemsSchema = Joi.object({
   voucher_no: Joi.string().max(100).required(),
-  type_id: Joi.number().integer().allow(null),
+  doctor_id: Joi.number().integer().allow(null),
   party_id: Joi.number().integer().allow(null),
   employee_id: Joi.number().integer().allow(null),
   warehouse_id: Joi.number().integer().required(),
