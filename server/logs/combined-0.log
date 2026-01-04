@@ -22391,3 +22391,67 @@ Error: bind EADDRINUSE null:5000
     at process.emit (node:events:530:35)
     at emit (node:internal/child_process:949:14)
     at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-01-03T09:56:21: ✅ Database connected
+2026-01-03T09:56:21: 🚀 Server listening on http://localhost:5000
+2026-01-03T12:12:16: Received shutdown request
+2026-01-03T12:12:18: Shutting down server by user request...
+2026-01-03T12:12:22: ✅ Database connected
+2026-01-03T12:12:22: 🚀 Server listening on http://localhost:5000
+2026-01-03T12:13:03: Received shutdown request
+2026-01-03T12:13:05: Shutting down server by user request...
+2026-01-03T12:13:07: ✅ Database connected
+2026-01-03T12:13:07: 🚀 Server listening on http://localhost:5000
+2026-01-03T12:13:30: Received shutdown request
+2026-01-03T12:13:32: Shutting down server by user request...
+2026-01-03T12:13:34: ✅ Database connected
+2026-01-03T12:13:34: 🚀 Server listening on http://localhost:5000
+2026-01-03T12:15:42: Received shutdown request
+2026-01-03T12:15:44: Shutting down server by user request...
+2026-01-03T12:15:46: ✅ Database connected
+2026-01-03T12:15:46: 🚀 Server listening on http://localhost:5000
+2026-01-03T12:41:24: Received shutdown request
+2026-01-03T12:41:26: Shutting down server by user request...
+2026-01-03T12:41:28: ✅ Database connected
+2026-01-03T12:41:28: 🚀 Server listening on http://localhost:5000
+2026-01-03T12:41:59: Received shutdown request
+2026-01-03T12:42:01: Shutting down server by user request...
+2026-01-03T12:42:03: ✅ Database connected
+2026-01-03T12:42:03: 🚀 Server listening on http://localhost:5000
+2026-01-03T13:01:50: Received shutdown request
+2026-01-03T13:01:52: Shutting down server by user request...
+2026-01-03T13:01:54: ✅ Database connected
+2026-01-03T13:01:54: 🚀 Server listening on http://localhost:5000
+2026-01-03T13:01:54: Received shutdown request
+2026-01-03T13:01:56: Shutting down server by user request...
+2026-01-03T13:01:58: ✅ Database connected
+2026-01-03T13:01:58: 🚀 Server listening on http://localhost:5000
+2026-01-03T13:05:56: ❌ DB connection error: 
+2026-01-03T13:05:58: ❌ DB connection error: 
+2026-01-03T13:05:59: ❌ DB connection error: 
+2026-01-03T13:06:01: ❌ DB connection error: 
+2026-01-03T13:06:03: ❌ DB connection error: 
+2026-01-03T13:06:05: ❌ DB connection error: 
+2026-01-03T13:06:07: ❌ DB connection error: 
+2026-01-03T13:06:08: ❌ DB connection error: 
+2026-01-03T13:06:10: ❌ DB connection error: 
+2026-01-03T13:06:12: ❌ DB connection error: 
+2026-01-03T13:06:14: ❌ DB connection error: 
+2026-01-03T13:06:15: ❌ DB connection error: 
+2026-01-03T13:06:17: ❌ DB connection error: 
+2026-01-03T13:06:19: ❌ DB connection error: 
+2026-01-03T13:06:21: ❌ DB connection error: 
+2026-01-03T13:06:22: ❌ DB connection error: 
+2026-01-03T13:06:25: ❌ DB connection error: 
+2026-01-03T13:06:27: ❌ DB connection error: 
+2026-01-03T13:06:28: ❌ DB connection error: 
+2026-01-03T13:06:30: ❌ DB connection error: 
+2026-01-03T13:06:32: ❌ DB connection error: 
+2026-01-03T13:06:34: ❌ DB connection error: 
+2026-01-03T13:06:35: ❌ DB connection error: 
+2026-01-03T13:06:37: ❌ DB connection error: 
+2026-01-03T13:06:39: ❌ DB connection error: 
+2026-01-03T13:06:41: ❌ DB connection error: 
+2026-01-03T13:06:42: ❌ DB connection error: 
+2026-01-03T13:06:44: ❌ DB connection error: 
+2026-01-04T09:48:51: ✅ Database connected
+2026-01-04T09:48:51: 🚀 Server listening on http://localhost:5000

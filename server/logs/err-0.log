@@ -19891,3 +19891,31 @@ Error: bind EADDRINUSE null:5000
     at process.emit (node:events:530:35)
     at emit (node:internal/child_process:949:14)
     at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-01-03T13:05:56: ❌ DB connection error: 
+2026-01-03T13:05:58: ❌ DB connection error: 
+2026-01-03T13:05:59: ❌ DB connection error: 
+2026-01-03T13:06:01: ❌ DB connection error: 
+2026-01-03T13:06:03: ❌ DB connection error: 
+2026-01-03T13:06:05: ❌ DB connection error: 
+2026-01-03T13:06:07: ❌ DB connection error: 
+2026-01-03T13:06:08: ❌ DB connection error: 
+2026-01-03T13:06:10: ❌ DB connection error: 
+2026-01-03T13:06:12: ❌ DB connection error: 
+2026-01-03T13:06:14: ❌ DB connection error: 
+2026-01-03T13:06:15: ❌ DB connection error: 
+2026-01-03T13:06:17: ❌ DB connection error: 
+2026-01-03T13:06:19: ❌ DB connection error: 
+2026-01-03T13:06:21: ❌ DB connection error: 
+2026-01-03T13:06:22: ❌ DB connection error: 
+2026-01-03T13:06:25: ❌ DB connection error: 
+2026-01-03T13:06:27: ❌ DB connection error: 
+2026-01-03T13:06:28: ❌ DB connection error: 
+2026-01-03T13:06:30: ❌ DB connection error: 
+2026-01-03T13:06:32: ❌ DB connection error: 
+2026-01-03T13:06:34: ❌ DB connection error: 
+2026-01-03T13:06:35: ❌ DB connection error: 
+2026-01-03T13:06:37: ❌ DB connection error: 
+2026-01-03T13:06:39: ❌ DB connection error: 
+2026-01-03T13:06:41: ❌ DB connection error: 
+2026-01-03T13:06:42: ❌ DB connection error: 
+2026-01-03T13:06:44: ❌ DB connection error: 
