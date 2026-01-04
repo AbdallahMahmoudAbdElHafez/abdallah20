@@ -11,7 +11,7 @@ export const env = {
         port: Number(process.env.DB_PORT || 3306),
         user: process.env.DB_USER || 'root',
         pass: process.env.DB_PASS || 'Abdallah20203040',
-        name: process.env.DB_NAME || 'nurivina',
+        name: process.env.DB_NAME || 'nurivina_erp',
     },
     dbMgmtPassword: process.env.DB_MGMT_PASSWORD || 'Abdallah20203040',
 
