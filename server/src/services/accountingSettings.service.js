@@ -1,4 +1,12 @@
-import { AccountingSetting } from "../models/index.js";
+import {
+  AccountingSetting,
+  sequelize,
+  PurchaseInvoicePayment,
+  PurchaseInvoice,
+  JournalEntry,
+  JournalEntryLine,
+  ReferenceType
+} from "../models/index.js";
 
 export function listSettings(filter = {}) {
   return AccountingSetting.findAll({ where: filter });
@@ -25,6 +33,7 @@ export function deleteSetting(id) {
 export function findByOperation(operation_type, scope = null) {
   return AccountingSetting.findOne({ where: { operation_type, scope } });
 }
+
 export async function createPayment(data) {
   return sequelize.transaction(async (t) => {
     // أنشئ سجل الدفع
@@ -36,10 +45,21 @@ export async function createPayment(data) {
 
     // قم بإنشاء القيد المحاسبي
     const invoice = await PurchaseInvoice.findByPk(data.purchase_invoice_id, { transaction: t });
+
+    let refType = await ReferenceType.findOne({ where: { code: 'purchase_payment' }, transaction: t });
+    if (!refType) {
+      refType = await ReferenceType.create({
+        code: 'purchase_payment',
+        label: 'سداد مشتريات',
+        name: 'سداد مشتريات',
+        description: 'Journal Entry for Purchase Payment'
+      }, { transaction: t });
+    }
+
     const entry = await JournalEntry.create({
       entry_date: new Date(),
       description: `Payment ${payment.id} for invoice ${invoice.id}`,
-      reference_type_id: 1,
+      reference_type_id: refType.id,
       reference_id: payment.id
     }, { transaction: t });
 

@@ -29,6 +29,16 @@ class BatchInventoryController {
             res.status(500).json({ message: error.message });
         }
     }
+
+    static async getAvailableBatches(req, res) {
+        try {
+            const { productId, warehouseId } = req.params;
+            const data = await BatchInventoryService.getAvailableBatches(productId, warehouseId);
+            res.json(data);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 }
 
 export default BatchInventoryController;

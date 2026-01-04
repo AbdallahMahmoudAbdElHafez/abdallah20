@@ -87,6 +87,50 @@ class BatchInventoryService {
             include: [{ model: Batches, as: "batch" }]
         });
     }
+
+    /**
+     * Get available batches for a product in a specific warehouse
+     */
+    static async getAvailableBatches(productId, warehouseId) {
+        const { Batches, InventoryTransactionBatches, InventoryTransaction } = await import("../models/index.js");
+        const { Op } = await import("sequelize");
+
+        const batchInventories = await BatchInventory.findAll({
+            where: {
+                warehouse_id: warehouseId,
+                quantity: { [Op.gt]: 0 }
+            },
+            include: [
+                {
+                    model: Batches,
+                    as: "batch",
+                    where: { product_id: productId },
+                    required: true
+                }
+            ]
+        });
+
+        // For each batch, get the latest cost
+        const results = await Promise.all(batchInventories.map(async (bi) => {
+            const latestTransaction = await InventoryTransactionBatches.findOne({
+                where: { batch_id: bi.batch_id },
+                include: [{
+                    model: InventoryTransaction,
+                    as: 'transaction',
+                    attributes: ['transaction_date']
+                }],
+                order: [[{ model: InventoryTransaction, as: 'transaction' }, 'transaction_date', 'DESC']],
+                attributes: ['cost_per_unit']
+            });
+
+            return {
+                ...bi.toJSON(),
+                latest_cost: latestTransaction ? latestTransaction.cost_per_unit : 0
+            };
+        }));
+
+        return results;
+    }
 }
 
 export default BatchInventoryService;

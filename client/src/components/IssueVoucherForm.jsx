@@ -40,7 +40,7 @@ import { fetchEmployees } from '../features/employees/employeesSlice';
 import { fetchParties } from '../features/parties/partiesSlice';
 import { fetchAccounts } from '../features/accounts/accountsSlice';
 import { fetchDoctors } from '../features/doctors/doctorsSlice';
-import inventoryTransactionBatchesApi from '../api/inventoryTransactionBatchesApi';
+import batchInventoryApi from '../api/batchInventoryApi';
 
 const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const dispatch = useDispatch();
@@ -67,12 +67,15 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
 
   const [items, setItems] = useState([]);
   const [errors, setErrors] = useState({});
+  const [availableBatches, setAvailableBatches] = useState([]);
   const [currentItem, setCurrentItem] = useState({
     product_id: '',
+    batch_id: '',
     batch_number: '',
     expiry_date: null,
     quantity: '',
     cost_per_unit: '',
+    available_stock: 0,
     note: ''
   });
 
@@ -129,23 +132,50 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   };
 
   const handleProductChange = async (productId) => {
-    const selectedProduct = products.find(p => p.id === productId);
-
-    let cost = 0;
-    try {
-      const response = await inventoryTransactionBatchesApi.getLatestCost(productId);
-      cost = response.data.cost || 0;
-    } catch (error) {
-      console.error('Error fetching cost:', error);
-    }
-
     setCurrentItem(prev => ({
       ...prev,
       product_id: productId,
-      cost_per_unit: cost,
-      batch_number: '', // Reset batch when product changes
-      expiry_date: null
+      batch_id: '',
+      batch_number: '',
+      expiry_date: null,
+      cost_per_unit: '',
+      available_stock: 0
     }));
+
+    if (formData.warehouse_id && productId) {
+      try {
+        const response = await batchInventoryApi.getAvailableBatches(productId, formData.warehouse_id);
+        setAvailableBatches(response.data || []);
+      } catch (error) {
+        console.error('Error fetching available batches:', error);
+        setAvailableBatches([]);
+      }
+    } else {
+      setAvailableBatches([]);
+    }
+  };
+
+  const handleBatchChange = (batchId) => {
+    const selectedBatch = availableBatches.find(b => b.batch_id === batchId);
+    if (selectedBatch) {
+      setCurrentItem(prev => ({
+        ...prev,
+        batch_id: batchId,
+        batch_number: selectedBatch.batch.batch_number,
+        expiry_date: selectedBatch.batch.expiry_date ? new Date(selectedBatch.batch.expiry_date) : null,
+        cost_per_unit: selectedBatch.latest_cost || 0,
+        available_stock: selectedBatch.quantity
+      }));
+    } else {
+      setCurrentItem(prev => ({
+        ...prev,
+        batch_id: '',
+        batch_number: '',
+        expiry_date: null,
+        cost_per_unit: '',
+        available_stock: 0
+      }));
+    }
   };
 
   const handleItemChange = (field, value) => {
@@ -160,6 +190,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
 
     if (!currentItem.product_id) newErrors.product_id = 'Product is required';
     if (!currentItem.quantity || currentItem.quantity <= 0) newErrors.quantity = 'Valid quantity is required';
+    if (currentItem.available_stock > 0 && parseFloat(currentItem.quantity) > currentItem.available_stock) {
+      newErrors.quantity = `Quantity exceeds available stock (${currentItem.available_stock})`;
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -177,12 +210,15 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     setItems(prev => [...prev, newItem]);
     setCurrentItem({
       product_id: '',
+      batch_id: '',
       batch_number: '',
       expiry_date: null,
       quantity: '',
       cost_per_unit: '',
+      available_stock: 0,
       note: ''
     });
+    setAvailableBatches([]);
     setErrors({});
   };
 
@@ -214,8 +250,9 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       issue_date: formData.issue_date.toISOString().split('T')[0],
       items: items.map(item => ({
         product_id: item.product_id,
+        batch_id: item.batch_id || null,
         batch_number: item.batch_number,
-        expiry_date: item.expiry_date ? item.expiry_date.toISOString().split('T')[0] : null,
+        expiry_date: item.expiry_date ? (typeof item.expiry_date === 'string' ? item.expiry_date : item.expiry_date.toISOString().split('T')[0]) : null,
         quantity: parseFloat(item.quantity),
         cost_per_unit: parseFloat(item.cost_per_unit || 0),
         note: item.note
@@ -450,20 +487,30 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={6} md={1}>
-                  <TextField
-                    fullWidth
-                    label="Batch"
-                    value={currentItem.batch_number}
-                    onChange={(e) => handleItemChange('batch_number', e.target.value)}
-                  />
+                <Grid item xs={12} md={2}>
+                  <FormControl fullWidth>
+                    <InputLabel>Batch</InputLabel>
+                    <Select
+                      value={currentItem.batch_id}
+                      label="Batch"
+                      onChange={(e) => handleBatchChange(e.target.value)}
+                      disabled={!currentItem.product_id || availableBatches.length === 0}
+                    >
+                      {availableBatches.map(b => (
+                        <MenuItem key={b.batch_id} value={b.batch_id}>
+                          {b.batch.batch_number} (Qty: {b.quantity})
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
 
-                <Grid item xs={6} md={1}>
+                <Grid item xs={6} md={1.5}>
                   <DatePicker
                     label="Expiry"
                     value={currentItem.expiry_date}
                     onChange={(date) => handleItemChange('expiry_date', date)}
+                    disabled
                     slotProps={{
                       textField: {
                         fullWidth: true,
@@ -473,7 +520,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   />
                 </Grid>
 
-                <Grid item xs={6} md={1}>
+                <Grid item xs={6} md={1.5}>
                   <TextField
                     fullWidth
                     label="Qty"
@@ -481,11 +528,11 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                     value={currentItem.quantity}
                     onChange={(e) => handleItemChange('quantity', e.target.value)}
                     error={!!errors.quantity}
-                    helperText={errors.quantity}
+                    helperText={errors.quantity || (currentItem.available_stock > 0 ? `Max: ${currentItem.available_stock}` : '')}
                   />
                 </Grid>
 
-                <Grid item xs={6} md={1}>
+                <Grid item xs={6} md={1.5}>
                   <TextField
                     fullWidth
                     label="Cost"
@@ -495,7 +542,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                   />
                 </Grid>
 
-                <Grid item xs={12} md={1}>
+                <Grid item xs={12} md={1.5}>
                   <Button
                     fullWidth
                     variant="contained"

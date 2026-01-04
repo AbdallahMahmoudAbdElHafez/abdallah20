@@ -1,4 +1,4 @@
-import { ServicePayment, JournalEntry, JournalEntryLine, Party, Account, Cheque, sequelize } from '../models/index.js';
+import { ServicePayment, JournalEntry, JournalEntryLine, Party, Account, Cheque, sequelize, ReferenceType } from '../models/index.js';
 
 const ServicePaymentsService = {
     getAll: async (filters = {}) => {
@@ -54,9 +54,19 @@ const ServicePaymentsService = {
             const supplier = await Party.findByPk(data.party_id, { transaction: t });
             if (!supplier || !supplier.account_id) throw new Error("Supplier account not found");
 
+            let refType = await ReferenceType.findOne({ where: { code: 'service_payment' }, transaction: t });
+            if (!refType) {
+                refType = await ReferenceType.create({
+                    code: 'service_payment',
+                    label: 'سداد خدمات',
+                    name: 'سداد خدمات',
+                    description: 'Journal Entry for Service Payment'
+                }, { transaction: t });
+            }
+
             const je = await JournalEntry.create({
                 entry_type_id: 1, // Default type
-                reference_type_id: 1, // Placeholder for ServicePayment reference type
+                reference_type_id: refType.id,
                 reference_id: payment.id,
                 date: data.payment_date,
                 description: `دفعة خدمة - ${supplier.name} - ${data.note || ''}`,

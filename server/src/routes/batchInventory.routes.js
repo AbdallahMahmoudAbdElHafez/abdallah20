@@ -7,5 +7,6 @@ const router = express.Router();
 router.get("/", BatchInventoryController.getAll);
 router.get("/batch/:batchId", BatchInventoryController.getByBatch);
 router.get("/warehouse/:warehouseId", BatchInventoryController.getByWarehouse);
+router.get("/available/:productId/:warehouseId", BatchInventoryController.getAvailableBatches);
 
 export default router;

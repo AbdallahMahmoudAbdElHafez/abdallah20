@@ -13,7 +13,8 @@ import {
   Warehouse,
   CurrentInventory,
   ServicePayment,
-  EntryType
+  EntryType,
+  ReferenceType
 } from "../models/index.js";
 import InventoryTransactionService from './inventoryTransaction.service.js';
 
@@ -137,10 +138,21 @@ const ExternalJobOrdersService = {
       if (!order) throw new Error("Job Order not found");
 
       let totalMaterialCost = 0;
+      const INVENTORY_ACCOUNTS = {
+        FINISHED_GOODS: 110,
+        RAW_MATERIALS: 111,
+        DEFAULT: 49
+      };
+      const costsByAccount = {};
 
       for (const item of items) {
         const product = await Product.findByPk(item.product_id, { transaction: t });
         const cost = Number(product.cost_price || 0);
+        const typeId = product?.type_id;
+        const accountId = typeId === 1 ? INVENTORY_ACCOUNTS.FINISHED_GOODS :
+          (typeId === 2 ? INVENTORY_ACCOUNTS.RAW_MATERIALS : INVENTORY_ACCOUNTS.DEFAULT);
+
+        if (!costsByAccount[accountId]) costsByAccount[accountId] = 0;
 
         // 1. Inventory Transaction (OUT)
         // Try to allocate batches (FIFO)
@@ -188,6 +200,7 @@ const ExternalJobOrdersService = {
               batch_id: batch.batch_id
             }, { transaction: t });
             totalMaterialCost += lineCost;
+            costsByAccount[accountId] += lineCost;
           }
         } else {
           const lineCost = Number(item.quantity) * cost;
@@ -201,40 +214,57 @@ const ExternalJobOrdersService = {
             batch_id: null
           }, { transaction: t });
           totalMaterialCost += lineCost;
+          costsByAccount[accountId] += lineCost;
         }
       }
 
       // 3. Create Journal Entry (Issue Materials)
-      // Debit WIP (109), Credit Raw Materials (49)
+      // Credit account depends on product type: 1 -> 110 (Finished Goods), 2 -> 111 (Raw Materials), Else -> 49 (Inventory)
       const wipAccountId = 109;
-      const rmInvAccountId = 49;
 
       if (totalMaterialCost > 0) {
+        let refType = await ReferenceType.findOne({ where: { code: 'external_job_order_issue' }, transaction: t });
+        if (!refType) {
+          refType = await ReferenceType.create({
+            code: 'external_job_order_issue',
+            label: 'أمر تشغيل خارجي - صرف',
+            name: 'أمر تشغيل خارجي - صرف',
+            description: 'Journal Entry for External Job Order (Material Issue)'
+          }, { transaction: t });
+        }
+
         const je = await JournalEntry.create({
           entry_type_id: 13, // Production/Manufacturing
-          reference_type_id: 1, // JobOrder
+          reference_type_id: refType.id,
           reference_id: jobOrderId,
           date: new Date(),
           description: `صرف خامات لأمر تشغيل خارجي #${jobOrderId}`,
           status: 'posted'
         }, { transaction: t });
 
-        await JournalEntryLine.bulkCreate([
+        const lines = [
           {
             journal_entry_id: je.id,
             account_id: wipAccountId,
             debit: totalMaterialCost,
             credit: 0,
             description: `منصرف خامات ومستلزمات - أمر #${jobOrderId}`
-          },
-          {
-            journal_entry_id: je.id,
-            account_id: rmInvAccountId,
-            debit: 0,
-            credit: totalMaterialCost,
-            description: `منصرف خامات ومستلزمات - أمر #${jobOrderId}`
           }
-        ], { transaction: t });
+        ];
+
+        for (const [accountId, amount] of Object.entries(costsByAccount)) {
+          if (amount > 0) {
+            lines.push({
+              journal_entry_id: je.id,
+              account_id: parseInt(accountId),
+              debit: 0,
+              credit: amount,
+              description: `منصرف خامات ومستلزمات - أمر #${jobOrderId}`
+            });
+          }
+        }
+
+        await JournalEntryLine.bulkCreate(lines, { transaction: t });
       }
 
       // 4. Update Order Status
@@ -309,9 +339,19 @@ const ExternalJobOrdersService = {
       const supplierAccountId = order.party?.account_id;
       if (!supplierAccountId) throw new Error("Supplier does not have a linked account");
 
+      let refType = await ReferenceType.findOne({ where: { code: 'external_job_order_receive' }, transaction: t });
+      if (!refType) {
+        refType = await ReferenceType.create({
+          code: 'external_job_order_receive',
+          label: 'أمر تشغيل خارجي - استلام',
+          name: 'أمر تشغيل خارجي - استلام',
+          description: 'Journal Entry for External Job Order (Finished Goods Receipt)'
+        }, { transaction: t });
+      }
+
       const je = await JournalEntry.create({
         entry_type_id: 13, // Production/Manufacturing
-        reference_type_id: 1, // JobOrder
+        reference_type_id: refType.id,
         reference_id: jobOrderId,
         date: new Date(),
         description: `تسويات إنتاج تام - أمر تشغيل #${jobOrderId} (خامات + تشغيل + نقل)`,

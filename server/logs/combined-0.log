@@ -22459,3 +22459,25 @@ Error: bind EADDRINUSE null:5000
 2026-01-04T10:11:30: Shutting down server by user request...
 2026-01-04T10:11:32: ✅ Database connected
 2026-01-04T10:11:32: 🚀 Server listening on http://localhost:5000
+2026-01-04T13:08:28: ✅ Database connected
+2026-01-04T13:08:28: 🚀 Server listening on http://localhost:5000
+2026-01-04T13:23:18: JE Debug: PI Accounts Resolved { vat: true, supplier: true }
+2026-01-04T13:23:18: JE Success: PI Entry Created
+You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+Error
+    at Query.run (d:\db\server\node_modules\sequelize\lib\dialects\mysql\query.js:52:25)
+    at d:\db\server\node_modules\sequelize\lib\sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async MySQLQueryInterface.select (d:\db\server\node_modules\sequelize\lib\dialects\abstract\query-interface.js:407:12)
+    at async ExternalJobOrder.findAll (d:\db\server\node_modules\sequelize\lib\model.js:1140:21)
+    at async Object.getAll (file:///d:/db/server/src/services/externalJobOrders.service.js:22:12)
+    at async getAll (file:///d:/db/server/src/controllers/externalJobOrders.controller.js:28:18)
+You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+Error
+    at Query.run (d:\db\server\node_modules\sequelize\lib\dialects\mysql\query.js:52:25)
+    at d:\db\server\node_modules\sequelize\lib\sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async MySQLQueryInterface.select (d:\db\server\node_modules\sequelize\lib\dialects\abstract\query-interface.js:407:12)
+    at async ExternalJobOrder.findAll (d:\db\server\node_modules\sequelize\lib\model.js:1140:21)
+    at async Object.getAll (file:///d:/db/server/src/services/externalJobOrders.service.js:22:12)
+    at async getAll (file:///d:/db/server/src/controllers/externalJobOrders.controller.js:28:18)

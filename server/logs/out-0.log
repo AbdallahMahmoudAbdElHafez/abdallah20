@@ -2570,3 +2570,7 @@
 2026-01-04T10:11:30: Shutting down server by user request...
 2026-01-04T10:11:32: ✅ Database connected
 2026-01-04T10:11:32: 🚀 Server listening on http://localhost:5000
+2026-01-04T13:08:28: ✅ Database connected
+2026-01-04T13:08:28: 🚀 Server listening on http://localhost:5000
+2026-01-04T13:23:18: JE Debug: PI Accounts Resolved { vat: true, supplier: true }
+2026-01-04T13:23:18: JE Success: PI Entry Created

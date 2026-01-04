@@ -67,7 +67,7 @@ CREATE TABLE `accounts` (
   PRIMARY KEY (`id`),
   KEY `parent_account_id` (`parent_account_id`),
   CONSTRAINT `accounts_ibfk_1` FOREIGN KEY (`parent_account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=114 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=115 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,7 +76,7 @@ CREATE TABLE `accounts` (
 
 LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,'','debit'),(2,'خصوم','liability',NULL,0.00,'','credit'),(3,'مصروفات مباشره','expense',NULL,0.00,'','debit'),(4,'مصروفات غير مباشره','expense',NULL,0.00,'','debit'),(5,'ايرادات','revenue',NULL,0.00,'','credit'),(6,'مردودات المبيعات','revenue',NULL,0.00,'','credit'),(7,'صافي الدخل','equity',NULL,0.00,'','credit'),(8,'اصول ثابته','asset',1,0.00,'','debit'),(9,'اصول متداوله','asset',1,0.00,'','debit'),(10,'رأس المال','liability',2,0.00,'','credit'),(11,'قروض','liability',2,0.00,'','credit'),(12,'خصوم متادوله','liability',2,0.00,'','credit'),(13,'صافي الربح','liability',2,0.00,'','credit'),(14,'ارباح مرحلة','liability',2,0.00,'','credit'),(15,'تكلفة البضاعة المباعة','expense',3,0.00,'','debit'),(16,'مصروفات نقل بضاعة','expense',3,0.00,'','debit'),(17,'مرتبات المبيعات','expense',3,0.00,'','debit'),(18,'عمولات المبيعات','expense',3,0.00,'','debit'),(19,'خصم خاص','expense',3,0.00,'','debit'),(20,'دمغه','expense',3,0.00,'','debit'),(21,'مصروفات خطابات ضمان','expense',3,0.00,'','debit'),(22,'مصروفات تسويقيه','expense',3,0.00,'','debit'),(23,'جرد تالف تصنيع','expense',3,0.00,'','debit'),(24,'تكاليف تشغيل مباشره','expense',3,0.00,'','debit'),(25,'مصروفات عموميه','expense',4,0.00,'','debit'),(26,'اهلاكات','expense',4,0.00,'','debit'),(27,'مرتبات','expense',4,0.00,'','debit'),(28,'مبيعات','revenue',5,0.00,'','credit'),(29,'خدمات','revenue',5,0.00,'','credit'),(30,'خصم مكتسب','revenue',5,0.00,'','credit'),(31,'آلات','asset',8,0.00,'','debit'),(32,'آراضي','asset',8,0.00,'','debit'),(33,'مباني','asset',8,0.00,'','debit'),(34,'أدوات مكتبية','asset',8,0.00,'','debit'),(35,'سيارات','asset',8,0.00,'','debit'),(36,'أثاث','asset',8,0.00,'','debit'),(37,'ملفات','asset',8,0.00,'','debit'),(38,'برامج محاسبيه','asset',8,0.00,'','debit'),(39,'جهاز كمبيوتر','asset',8,0.00,'','debit'),(40,'صندوق وبنوك','asset',9,0.00,'','debit'),(41,'خزينه','asset',40,0.00,'','debit'),(42,'خزينة شركة الشحن','asset',40,0.00,'','debit'),(43,'البنك الأهلي الخاص','asset',40,0.00,'','debit'),(44,'البنك شركه','asset',40,0.00,'','debit'),(45,'فودافون كاش','asset',40,0.00,'','debit'),(46,'كارد فيزا','asset',40,0.00,'','debit'),(47,'العملاء','asset',9,0.00,'','debit'),(48,'اوراق قبض','asset',9,0.00,'','debit'),(49,'المخزون','asset',9,0.00,'','debit'),(50,'جاري الشركاء','asset',9,0.00,'','debit'),(51,'جاري هاني صلاح','asset',50,0.00,'','debit'),(52,'صافي الخسارة','asset',9,0.00,'','debit'),(53,'خسارة مرحلة','asset',9,0.00,'','debit'),(54,'تأمينات لدى الغير','asset',9,0.00,'','debit'),(55,'سلف العاملين','asset',9,0.00,'','debit'),(56,'خصم ضرائب','asset',9,0.00,'','debit'),(57,'خصم ضرائب مبيعات','asset',9,0.00,'','debit'),(58,'غطاء خطابات ضمان','asset',9,0.00,'','debit'),(59,'اعتمادات مستندية','asset',9,0.00,'','debit'),(60,'مدينون متنوعون','asset',9,0.00,'','debit'),(61,'عائلة ','asset',60,0.00,'','debit'),(62,'الموردين','liability',12,0.00,'','credit'),(63,'مخصصات','liability',12,0.00,'','credit'),(64,'اوراق دفع','liability',12,0.00,'','credit'),(65,'ضريبة القيمه المضافه','liability',12,0.00,'','credit'),(66,'مصلحة الضرائب','liability',12,0.00,'','credit'),(67,'مقاولين من الباطل','liability',12,0.00,'','credit'),(68,'خصم و اضافه ضرائب مشتريات','liability',12,0.00,'','credit'),(69,'دائنون متنوعون ','liability',12,0.00,'','credit'),(70,'دائن فيزا كارد','liability',69,0.00,'','credit'),(71,'ديون شخصيه','liability',12,0.00,'','credit'),(72,'الأولاد','liability',71,0.00,'','credit'),(73,'نيفين','liability',71,0.00,'','credit'),(74,'إيهاب','liability',71,0.00,'','credit'),(75,'مرتبات مستحقه','liability',12,0.00,'','credit'),(76,'نسبة تحصيل','expense',22,0.00,'','debit'),(77,'هدايا تسويقية','expense',22,0.00,'','debit'),(78,'تعويضات عروض تسويقيه','expense',22,0.00,'','debit'),(79,'مصاريف تصميمات','expense',22,0.00,'','debit'),(80,'عينات مجانية للدكاترة','expense',22,0.00,'','debit'),(81,'عينات للتصوير والتصميمات','expense',22,0.00,'','debit'),(82,'عينات للbloggers','expense',22,0.00,'','debit'),(83,'مشاركات مؤتمرات','expense',22,0.00,'','debit'),(84,'مشاركه فى معرض الجامعات','expense',22,0.00,'','debit'),(85,'مطبوعات تسويقيه','expense',22,0.00,'','debit'),(86,'sponsor health day','expense',22,0.00,'','debit'),(87,'social media ','expense',22,0.00,'','debit'),(88,'اجتماع للدكاتره','expense',22,0.00,'','debit'),(89,'مصروفات بلوجر blogger','expense',22,0.00,'','debit'),(90,'ايجارات','expense',25,0.00,'','debit'),(91,'ايجار مكتب','expense',90,0.00,'','debit'),(92,'ايجار سياره','expense',90,0.00,'','debit'),(93,'ايجار مخزن','expense',90,0.00,'','debit'),(94,'كهرباء','expense',25,0.00,'','debit'),(95,'بوفيه','expense',25,0.00,'','debit'),(96,'ضيافه','expense',25,0.00,'','debit'),(97,'مصاريف سيارة المدير','expense',25,0.00,'','debit'),(98,'زكاة','expense',25,0.00,'','debit'),(99,'مصاريف مكتب الإداره','expense',25,0.00,'','debit'),(100,'هدايا','expense',25,0.00,'','debit'),(101,'عمولات بنكيه','expense',25,0.00,'','debit'),(102,'مصاريف اجتماعات','expense',25,0.00,'','debit'),(103,'بدل سفر','expense',25,0.00,'','debit'),(104,'كروت بيزنيس b.c','expense',25,0.00,'','debit'),(105,'مصاريف وزارة الصحة','expense',25,0.00,'','debit'),(106,'اتعاب مكتب المحاسب القانونى','expense',25,0.00,'','debit'),(107,'فندق ','expense',25,0.00,'','debit'),(108,'خصم مسموح به','revenue',28,0.00,'','debit'),(109,'تحت التشغيل','asset',49,0.00,'','debit'),(110,'مخزون تام الصنع','asset',49,0.00,'','debit'),(111,'مخزون أولي','asset',49,0.00,NULL,'debit'),(112,'هالك مرتجعات مبيعات','expense',3,0.00,'مصروف هالك ناتج عن مرتجعات مبيعات تالفة','debit'),(113,'خسائر انتهاء صلاحية مرتجعات','expense',3,0.00,'مصروف خسائر ناتج عن مرتجعات منتهية الصلاحية','debit');
+INSERT INTO `accounts` VALUES (1,'اصول','asset',NULL,0.00,'','debit'),(2,'خصوم','liability',NULL,0.00,'','credit'),(3,'مصروفات مباشره','expense',NULL,0.00,'','debit'),(4,'مصروفات غير مباشره','expense',NULL,0.00,'','debit'),(5,'ايرادات','revenue',NULL,0.00,'','credit'),(6,'مردودات المبيعات','revenue',NULL,0.00,'','credit'),(7,'صافي الدخل','equity',NULL,0.00,'','credit'),(8,'اصول ثابته','asset',1,0.00,'','debit'),(9,'اصول متداوله','asset',1,0.00,'','debit'),(10,'رأس المال','liability',2,0.00,'','credit'),(11,'قروض','liability',2,0.00,'','credit'),(12,'خصوم متادوله','liability',2,0.00,'','credit'),(13,'صافي الربح','liability',2,0.00,'','credit'),(14,'ارباح مرحلة','liability',2,0.00,'','credit'),(15,'تكلفة البضاعة المباعة','expense',3,0.00,'','debit'),(16,'مصروفات نقل بضاعة','expense',3,0.00,'','debit'),(17,'مرتبات المبيعات','expense',3,0.00,'','debit'),(18,'عمولات المبيعات','expense',3,0.00,'','debit'),(19,'خصم خاص','expense',3,0.00,'','debit'),(20,'دمغه','expense',3,0.00,'','debit'),(21,'مصروفات خطابات ضمان','expense',3,0.00,'','debit'),(22,'مصروفات تسويقيه','expense',3,0.00,'','debit'),(23,'جرد تالف تصنيع','expense',3,0.00,'','debit'),(24,'تكاليف تشغيل مباشره','expense',3,0.00,'','debit'),(25,'مصروفات عموميه','expense',4,0.00,'','debit'),(26,'اهلاكات','expense',4,0.00,'','debit'),(27,'مرتبات','expense',4,0.00,'','debit'),(28,'مبيعات','revenue',5,0.00,'','credit'),(29,'خدمات','revenue',5,0.00,'','credit'),(30,'خصم مكتسب','revenue',5,0.00,'','credit'),(31,'آلات','asset',8,0.00,'','debit'),(32,'آراضي','asset',8,0.00,'','debit'),(33,'مباني','asset',8,0.00,'','debit'),(34,'أدوات مكتبية','asset',8,0.00,'','debit'),(35,'سيارات','asset',8,0.00,'','debit'),(36,'أثاث','asset',8,0.00,'','debit'),(37,'ملفات','asset',8,0.00,'','debit'),(38,'برامج محاسبيه','asset',8,0.00,'','debit'),(39,'جهاز كمبيوتر','asset',8,0.00,'','debit'),(40,'صندوق وبنوك','asset',9,0.00,'','debit'),(41,'خزينه','asset',40,0.00,'','debit'),(42,'خزينة شركة الشحن','asset',40,0.00,'','debit'),(43,'البنك الأهلي الخاص','asset',40,0.00,'','debit'),(44,'البنك شركه','asset',40,0.00,'','debit'),(45,'فودافون كاش','asset',40,0.00,'','debit'),(46,'كارد فيزا','asset',40,0.00,'','debit'),(47,'العملاء','asset',9,0.00,'','debit'),(48,'اوراق قبض','asset',9,0.00,'','debit'),(49,'المخزون','asset',9,0.00,'','debit'),(50,'جاري الشركاء','asset',9,0.00,'','debit'),(51,'جاري هاني صلاح','asset',50,0.00,'','debit'),(52,'صافي الخسارة','asset',9,0.00,'','debit'),(53,'خسارة مرحلة','asset',9,0.00,'','debit'),(54,'تأمينات لدى الغير','asset',9,0.00,'','debit'),(55,'سلف العاملين','asset',9,0.00,'','debit'),(56,'خصم ضرائب','asset',9,0.00,'','debit'),(57,'خصم ضرائب مبيعات','asset',9,0.00,'','debit'),(58,'غطاء خطابات ضمان','asset',9,0.00,'','debit'),(59,'اعتمادات مستندية','asset',9,0.00,'','debit'),(60,'مدينون متنوعون','asset',9,0.00,'','debit'),(61,'عائلة ','asset',60,0.00,'','debit'),(62,'الموردين','liability',12,0.00,'','credit'),(63,'مخصصات','liability',12,0.00,'','credit'),(64,'اوراق دفع','liability',12,0.00,'','credit'),(65,'ضريبة القيمه المضافه','liability',12,0.00,'','credit'),(66,'مصلحة الضرائب','liability',12,0.00,'','credit'),(67,'مقاولين من الباطل','liability',12,0.00,'','credit'),(68,'خصم و اضافه ضرائب مشتريات','liability',12,0.00,'','credit'),(69,'دائنون متنوعون ','liability',12,0.00,'','credit'),(70,'دائن فيزا كارد','liability',69,0.00,'','credit'),(71,'ديون شخصيه','liability',12,0.00,'','credit'),(72,'الأولاد','liability',71,0.00,'','credit'),(73,'نيفين','liability',71,0.00,'','credit'),(74,'إيهاب','liability',71,0.00,'','credit'),(75,'مرتبات مستحقه','liability',12,0.00,'','credit'),(76,'نسبة تحصيل','expense',22,0.00,'','debit'),(77,'هدايا تسويقية','expense',22,0.00,'','debit'),(78,'تعويضات عروض تسويقيه','expense',22,0.00,'','debit'),(79,'مصاريف تصميمات','expense',22,0.00,'','debit'),(80,'عينات مجانية للدكاترة','expense',22,0.00,'','debit'),(81,'عينات للتصوير والتصميمات','expense',22,0.00,'','debit'),(82,'عينات للbloggers','expense',22,0.00,'','debit'),(83,'مشاركات مؤتمرات','expense',22,0.00,'','debit'),(84,'مشاركه فى معرض الجامعات','expense',22,0.00,'','debit'),(85,'مطبوعات تسويقيه','expense',22,0.00,'','debit'),(86,'sponsor health day','expense',22,0.00,'','debit'),(87,'social media ','expense',22,0.00,'','debit'),(88,'اجتماع للدكاتره','expense',22,0.00,'','debit'),(89,'مصروفات بلوجر blogger','expense',22,0.00,'','debit'),(90,'ايجارات','expense',25,0.00,'','debit'),(91,'ايجار مكتب','expense',90,0.00,'','debit'),(92,'ايجار سياره','expense',90,0.00,'','debit'),(93,'ايجار مخزن','expense',90,0.00,'','debit'),(94,'كهرباء','expense',25,0.00,'','debit'),(95,'بوفيه','expense',25,0.00,'','debit'),(96,'ضيافه','expense',25,0.00,'','debit'),(97,'مصاريف سيارة المدير','expense',25,0.00,'','debit'),(98,'زكاة','expense',25,0.00,'','debit'),(99,'مصاريف مكتب الإداره','expense',25,0.00,'','debit'),(100,'هدايا','expense',25,0.00,'','debit'),(101,'عمولات بنكيه','expense',25,0.00,'','debit'),(102,'مصاريف اجتماعات','expense',25,0.00,'','debit'),(103,'بدل سفر','expense',25,0.00,'','debit'),(104,'كروت بيزنيس b.c','expense',25,0.00,'','debit'),(105,'مصاريف وزارة الصحة','expense',25,0.00,'','debit'),(106,'اتعاب مكتب المحاسب القانونى','expense',25,0.00,'','debit'),(107,'فندق ','expense',25,0.00,'','debit'),(108,'خصم مسموح به','revenue',28,0.00,'','debit'),(109,'تحت التشغيل','asset',49,0.00,'','debit'),(110,'مخزون تام الصنع','asset',49,0.00,'','debit'),(111,'مخزون أولي','asset',49,0.00,NULL,'debit'),(112,'هالك مرتجعات مبيعات','expense',3,0.00,'مصروف هالك ناتج عن مرتجعات مبيعات تالفة','debit'),(113,'خسائر انتهاء صلاحية مرتجعات','expense',3,0.00,'مصروف خسائر ناتج عن مرتجعات منتهية الصلاحية','debit'),(114,'فروقات جرد مخزون','expense',3,0.00,NULL,'debit');
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -145,6 +145,7 @@ CREATE TABLE `batch_inventory` (
 
 LOCK TABLES `batch_inventory` WRITE;
 /*!40000 ALTER TABLE `batch_inventory` DISABLE KEYS */;
+INSERT INTO `batch_inventory` VALUES (1,1,2688),(2,1,1440),(3,1,2511),(4,1,3456),(5,1,2352);
 /*!40000 ALTER TABLE `batch_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -163,7 +164,7 @@ CREATE TABLE `batches` (
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
   CONSTRAINT `batches_ibfk_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -172,6 +173,7 @@ CREATE TABLE `batches` (
 
 LOCK TABLES `batches` WRITE;
 /*!40000 ALTER TABLE `batches` DISABLE KEYS */;
+INSERT INTO `batches` VALUES (1,2,'006','2028-12-01'),(2,10,'001','2028-01-01'),(3,4,'001','2028-01-04'),(4,3,'001','2028-10-01'),(5,1,'001','2028-08-01');
 /*!40000 ALTER TABLE `batches` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -304,7 +306,7 @@ CREATE TABLE `companies` (
   PRIMARY KEY (`id`),
   KEY `fk_companies_city` (`city_id`),
   CONSTRAINT `fk_companies_city` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -313,6 +315,7 @@ CREATE TABLE `companies` (
 
 LOCK TABLES `companies` WRITE;
 /*!40000 ALTER TABLE `companies` DISABLE KEYS */;
+INSERT INTO `companies` VALUES (1,'نيوريفينا','Nurivina','126067','686642732','','تجارية','01554789988⁩','business.support@nurivina.com','https://nurivina.com/?srsltid=AfmBOopJeOYmRujkt49kV2ortcLMH_3l9TsVcfNK2VyJCcvVowmSAn3x','uploads/companies/logo-1767470648310-949472272.png',' المنصورة-المجزر الالى -التعاونيات عماره 12 \r\n المنصورة-المجزر الالى -التعاونيات عماره 12\r\n',4,'2020-01-03',1,'2026-01-03 20:04:08','2026-01-03 20:04:08');
 /*!40000 ALTER TABLE `companies` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -358,7 +361,7 @@ CREATE TABLE `current_inventory` (
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `current_inventory_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `current_inventory_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -367,6 +370,7 @@ CREATE TABLE `current_inventory` (
 
 LOCK TABLES `current_inventory` WRITE;
 /*!40000 ALTER TABLE `current_inventory` DISABLE KEYS */;
+INSERT INTO `current_inventory` VALUES (1,2,1,2688,'2026-01-04 12:26:36'),(2,10,1,1440,'2026-01-04 12:28:53'),(3,4,1,2511,'2026-01-04 12:33:57'),(4,3,1,3456,'2026-01-04 12:37:54'),(5,1,1,2352,'2026-01-04 12:44:38');
 /*!40000 ALTER TABLE `current_inventory` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -383,7 +387,7 @@ CREATE TABLE `departments` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -392,6 +396,7 @@ CREATE TABLE `departments` (
 
 LOCK TABLES `departments` WRITE;
 /*!40000 ALTER TABLE `departments` DISABLE KEYS */;
+INSERT INTO `departments` VALUES (1,'المبيعات','2026-01-03 20:04:39'),(2,'المشتريات','2026-01-03 20:04:51'),(3,'الحسابات','2026-01-03 20:05:11'),(4,'الادارة العامه','2026-01-03 20:09:03');
 /*!40000 ALTER TABLE `departments` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -450,7 +455,7 @@ CREATE TABLE `employees` (
   CONSTRAINT `fk_department_id` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`),
   CONSTRAINT `fk_job_title` FOREIGN KEY (`job_title_id`) REFERENCES `job_titles` (`id`),
   CONSTRAINT `fk_parent_employee` FOREIGN KEY (`parent_id`) REFERENCES `employees` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -459,6 +464,7 @@ CREATE TABLE `employees` (
 
 LOCK TABLES `employees` WRITE;
 /*!40000 ALTER TABLE `employees` DISABLE KEYS */;
+INSERT INTO `employees` VALUES (1,'هاني احمد صلاح',1,4,'01555522404⁩','business.support@nurivina.com','2020-01-03','ACTIVE',NULL),(2,'ساره محمود عبد الحفيظ صالح',2,1,'01006882671⁩','sarah.mahmoud.ze@gmail.com','2022-07-06','ACTIVE',1),(3,'بيتر وجدي',2,1,'01270353334⁩','','2022-01-01','ACTIVE',1),(4,'عبدالله محمود عبد الحفيظ صالح',7,1,'01065819852','abdallah.mahmoud.te@gmail.com','2025-03-11','ACTIVE',1),(5,'يمنى ايمن',3,1,'01022027104','','2025-09-01','ACTIVE',2),(6,'منه خالد المصري',3,1,'01067072078⁩','','2025-08-03','ACTIVE',2),(7,'احمد فريد',7,1,'01280227610','','2025-11-01','ACTIVE',3);
 /*!40000 ALTER TABLE `employees` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -473,7 +479,7 @@ CREATE TABLE `entry_types` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=83 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -482,7 +488,7 @@ CREATE TABLE `entry_types` (
 
 LOCK TABLES `entry_types` WRITE;
 /*!40000 ALTER TABLE `entry_types` DISABLE KEYS */;
-INSERT INTO `entry_types` VALUES (1,'قيد افتتاحي'),(2,'قيد فاتورة مبيعات'),(3,'قيد تحصيل مبيعات'),(4,'قيد مرتجع مبيعات'),(5,'قيد فاتورة مشتريات'),(6,'قيد سداد مشتريات'),(7,'قيد مرتجع مشتريات'),(8,'قيد مصروف'),(9,'قيد إيراد'),(10,'قيد تسوية'),(11,'قيد إهلاك'),(12,'قيد تحويل مخزني'),(13,'قيد إنتاج / تصنيع'),(14,'قيد تعديل يدوي'),(15,'قيد دفع نقدي'),(16,'قيد استلام نقدي'),(17,'قيد دفع بنكي'),(18,'قيد استلام بنكي'),(19,'قيد رسوم بنكية'),(20,'قيد فروق عملة'),(21,'قيد صرف رواتب'),(22,'قيد مكافآت ومزايا'),(23,'قيد سلفة موظف'),(24,'قيد تسوية سلفة موظف'),(25,'قيد مطالبات مصاريف موظفين'),(26,'قيد استحقاق ضريبي'),(27,'قيد دفع ضريبي'),(28,'قيد مخصصات'),(29,'قيد دخل مستحق'),(30,'قيد مصروف مستحق'),(31,'قيد دخل مدفوع مسبقاً'),(32,'قيد مصروف مدفوع مسبقاً'),(33,'قيد شراء أصل ثابت'),(34,'قيد إهلاك أصل ثابت'),(35,'قيد إعادة تقييم أصول'),(36,'قيد شطب أصول'),(37,'قيد شطب ديون معدومة'),(38,'قيد أرباح / خسائر استثمار'),(39,'قيد إدخال رأس المال'),(40,'قيد سحب رأس المال'),(41,'قيد توزيع أرباح'),(42,'قيد استلام أرباح'),(43,'قيد توزيع أرباح داخلي'),(44,'قيد جرد المخزون'),(45,'قيد تعديل تكلفة بضاعة مباعة'),(46,'قيد نقل مخزون بين المخازن'),(47,'قيد شطب مخزون غير صالح'),(48,'قيد مرتجع مخزون من المورد'),(49,'قيد مرتجع مخزون للعميل'),(50,'قيد دفعة مقدمة للعميل'),(51,'قيد دفعة مقدمة للمورد'),(52,'قيد دفع مقدم مصاريف'),(53,'قيد تحصيل مقدم إيراد'),(54,'قيد استلام قرض'),(55,'قيد سداد قرض'),(56,'قيد استحقاق فوائد قرض'),(57,'قيد استحقاق أصل قرض'),(58,'قيد دفع فوائد قرض'),(59,'قيد استلام فوائد قرض'),(60,'قيد تعديل حسابات'),(61,'قيد إعادة تصنيف حسابات'),(62,'قيد تصحيح قيود سابقة'),(63,'قيد تسوية بين الحسابات'),(64,'قيد إغلاق حسابات شهرية'),(65,'قيد افتتاح حسابات جديدة'),(66,'قيد إعداد ميزان مراجعة'),(67,'قيد إقفال سنوي'),(68,'قيد فتح سنوي'),(69,'قيد إعداد تقرير مالي'),(70,'قيد تسجيل دخل متفرّق'),(71,'قيد تسجيل مصروف متفرّق'),(72,'قيد تعديل عملة أجنبية'),(73,'قيد ضبط فروق سعر الصرف'),(74,'قيد إعادة تسعير المخزون'),(75,'قيد محاسبة عقود طويلة الأجل'),(76,'قيد تسجيل التزامات مستقبلية'),(77,'قيد تعديل إيرادات مؤجلة'),(78,'قيد تعديل مصروفات مؤجلة'),(79,'قيد معالجة خصومات / عروض'),(80,'قيد تسوية بين شركات تابعة'),(81,'قيد محاسبة مشاريع / أقسام');
+INSERT INTO `entry_types` VALUES (1,'قيد افتتاحي'),(2,'قيد فاتورة مبيعات'),(3,'قيد تحصيل مبيعات'),(4,'قيد مرتجع مبيعات'),(5,'قيد فاتورة مشتريات'),(6,'قيد سداد مشتريات'),(7,'قيد مرتجع مشتريات'),(8,'قيد مصروف'),(9,'قيد إيراد'),(10,'قيد تسوية'),(11,'قيد إهلاك'),(12,'قيد تحويل مخزني'),(13,'قيد إنتاج / تصنيع'),(14,'قيد تعديل يدوي'),(15,'قيد دفع نقدي'),(16,'قيد استلام نقدي'),(17,'قيد دفع بنكي'),(18,'قيد استلام بنكي'),(19,'قيد رسوم بنكية'),(20,'قيد فروق عملة'),(21,'قيد صرف رواتب'),(22,'قيد مكافآت ومزايا'),(23,'قيد سلفة موظف'),(24,'قيد تسوية سلفة موظف'),(25,'قيد مطالبات مصاريف موظفين'),(26,'قيد استحقاق ضريبي'),(27,'قيد دفع ضريبي'),(28,'قيد مخصصات'),(29,'قيد دخل مستحق'),(30,'قيد مصروف مستحق'),(31,'قيد دخل مدفوع مسبقاً'),(32,'قيد مصروف مدفوع مسبقاً'),(33,'قيد شراء أصل ثابت'),(34,'قيد إهلاك أصل ثابت'),(35,'قيد إعادة تقييم أصول'),(36,'قيد شطب أصول'),(37,'قيد شطب ديون معدومة'),(38,'قيد أرباح / خسائر استثمار'),(39,'قيد إدخال رأس المال'),(40,'قيد سحب رأس المال'),(41,'قيد توزيع أرباح'),(42,'قيد استلام أرباح'),(43,'قيد توزيع أرباح داخلي'),(44,'قيد جرد المخزون'),(45,'قيد تعديل تكلفة بضاعة مباعة'),(46,'قيد نقل مخزون بين المخازن'),(47,'قيد شطب مخزون غير صالح'),(48,'قيد مرتجع مخزون من المورد'),(49,'قيد مرتجع مخزون للعميل'),(50,'قيد دفعة مقدمة للعميل'),(51,'قيد دفعة مقدمة للمورد'),(52,'قيد دفع مقدم مصاريف'),(53,'قيد تحصيل مقدم إيراد'),(54,'قيد استلام قرض'),(55,'قيد سداد قرض'),(56,'قيد استحقاق فوائد قرض'),(57,'قيد استحقاق أصل قرض'),(58,'قيد دفع فوائد قرض'),(59,'قيد استلام فوائد قرض'),(60,'قيد تعديل حسابات'),(61,'قيد إعادة تصنيف حسابات'),(62,'قيد تصحيح قيود سابقة'),(63,'قيد تسوية بين الحسابات'),(64,'قيد إغلاق حسابات شهرية'),(65,'قيد افتتاح حسابات جديدة'),(66,'قيد إعداد ميزان مراجعة'),(67,'قيد إقفال سنوي'),(68,'قيد فتح سنوي'),(69,'قيد إعداد تقرير مالي'),(70,'قيد تسجيل دخل متفرّق'),(71,'قيد تسجيل مصروف متفرّق'),(72,'قيد تعديل عملة أجنبية'),(73,'قيد ضبط فروق سعر الصرف'),(74,'قيد إعادة تسعير المخزون'),(75,'قيد محاسبة عقود طويلة الأجل'),(76,'قيد تسجيل التزامات مستقبلية'),(77,'قيد تعديل إيرادات مؤجلة'),(78,'قيد تعديل مصروفات مؤجلة'),(79,'قيد معالجة خصومات / عروض'),(80,'قيد تسوية بين شركات تابعة'),(81,'قيد محاسبة مشاريع / أقسام'),(82,'قيد سند صرف');
 /*!40000 ALTER TABLE `entry_types` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -584,6 +590,12 @@ CREATE TABLE `external_job_orders` (
   `reference_no` varchar(100) DEFAULT NULL,
   `waste_quantity` decimal(12,3) DEFAULT '0.000',
   `transport_cost` decimal(12,2) DEFAULT '0.00',
+  `estimated_processing_cost_per_unit` decimal(12,2) DEFAULT '0.00',
+  `actual_processing_cost_per_unit` decimal(12,2) DEFAULT '0.00',
+  `estimated_raw_material_cost_per_unit` decimal(12,2) DEFAULT '0.00',
+  `actual_raw_material_cost_per_unit` decimal(12,2) DEFAULT '0.00',
+  `total_estimated_cost` decimal(14,2) DEFAULT '0.00',
+  `total_actual_cost` decimal(14,2) DEFAULT '0.00',
   PRIMARY KEY (`id`),
   KEY `party_id` (`party_id`),
   KEY `product_id` (`product_id`),
@@ -683,7 +695,7 @@ CREATE TABLE `inventory_transaction_batches` (
   KEY `batch_id` (`batch_id`),
   CONSTRAINT `itb_ibfk_batch` FOREIGN KEY (`batch_id`) REFERENCES `batches` (`id`),
   CONSTRAINT `itb_ibfk_transaction` FOREIGN KEY (`inventory_transaction_id`) REFERENCES `inventory_transactions` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -692,6 +704,7 @@ CREATE TABLE `inventory_transaction_batches` (
 
 LOCK TABLES `inventory_transaction_batches` WRITE;
 /*!40000 ALTER TABLE `inventory_transaction_batches` DISABLE KEYS */;
+INSERT INTO `inventory_transaction_batches` VALUES (1,1,1,2688,98.89),(2,2,2,1440,47.50),(3,3,3,2511,39.83),(5,4,4,3456,44.75),(6,5,5,2352,55.30);
 /*!40000 ALTER TABLE `inventory_transaction_batches` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -709,14 +722,14 @@ CREATE TABLE `inventory_transactions` (
   `transaction_type` enum('in','out') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `transaction_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `source_type` enum('purchase','manufacturing','transfer','adjustment','sales_invoice','sales_return','purchase_return','external_job_order') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'adjustment',
+  `source_type` enum('purchase','manufacturing','transfer','adjustment','sales_invoice','sales_return','purchase_return','external_job_order','issue_voucher') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'adjustment',
   `source_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`),
   KEY `warehouse_id` (`warehouse_id`),
   CONSTRAINT `inventory_transactions_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `inventory_transactions_ibfk_2` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -725,6 +738,7 @@ CREATE TABLE `inventory_transactions` (
 
 LOCK TABLES `inventory_transactions` WRITE;
 /*!40000 ALTER TABLE `inventory_transactions` DISABLE KEYS */;
+INSERT INTO `inventory_transactions` VALUES (1,2,1,'in','2026-01-01 00:00:00','','adjustment',NULL),(2,10,1,'in','2026-01-01 00:00:00','','adjustment',NULL),(3,4,1,'in','2026-01-01 00:00:00','','adjustment',NULL),(4,3,1,'in','2026-01-01 00:00:00','','adjustment',NULL),(5,1,1,'in','2026-01-01 00:00:00','','adjustment',NULL);
 /*!40000 ALTER TABLE `inventory_transactions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -828,7 +842,6 @@ DROP TABLE IF EXISTS `issue_vouchers`;
 CREATE TABLE `issue_vouchers` (
   `id` int NOT NULL AUTO_INCREMENT,
   `voucher_no` varchar(100) NOT NULL,
-  `type_id` int DEFAULT NULL,
   `party_id` int DEFAULT NULL,
   `employee_id` int DEFAULT NULL,
   `warehouse_id` int NOT NULL,
@@ -843,7 +856,6 @@ CREATE TABLE `issue_vouchers` (
   `doctor_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `voucher_no` (`voucher_no`),
-  KEY `fk_iv_type` (`type_id`),
   KEY `fk_iv_party` (`party_id`),
   KEY `fk_iv_warehouse` (`warehouse_id`),
   KEY `fk_iv_employee` (`employee_id`),
@@ -851,7 +863,6 @@ CREATE TABLE `issue_vouchers` (
   CONSTRAINT `fk_issueVoucher_doctor` FOREIGN KEY (`doctor_id`) REFERENCES `doctors` (`id`),
   CONSTRAINT `fk_iv_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `fk_iv_party` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`),
-  CONSTRAINT `fk_iv_type` FOREIGN KEY (`type_id`) REFERENCES `issue_voucher_types` (`id`),
   CONSTRAINT `fk_iv_warehouse` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -932,7 +943,7 @@ CREATE TABLE `job_titles` (
   `id` int NOT NULL AUTO_INCREMENT,
   `title_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -941,6 +952,7 @@ CREATE TABLE `job_titles` (
 
 LOCK TABLES `job_titles` WRITE;
 /*!40000 ALTER TABLE `job_titles` DISABLE KEYS */;
+INSERT INTO `job_titles` VALUES (1,'مدير عام'),(2,'مشرف مبيعات و دعايا'),(3,'مندوب مبيعات ودعايا'),(4,'محاسب'),(5,'مندوب توزيع'),(6,'مندوب تحصيل'),(7,'مندوب توزيع وتحصيل');
 /*!40000 ALTER TABLE `job_titles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -966,7 +978,7 @@ CREATE TABLE `journal_entries` (
   KEY `fk_journal_entries_entry_type` (`entry_type_id`),
   CONSTRAINT `fk_journal_entries_entry_type` FOREIGN KEY (`entry_type_id`) REFERENCES `entry_types` (`id`),
   CONSTRAINT `fk_journal_reference_type` FOREIGN KEY (`reference_type_id`) REFERENCES `reference_types` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -975,6 +987,7 @@ CREATE TABLE `journal_entries` (
 
 LOCK TABLES `journal_entries` WRITE;
 /*!40000 ALTER TABLE `journal_entries` DISABLE KEYS */;
+INSERT INTO `journal_entries` VALUES (1,'2026-01-01','قيد جرد مخزون – تسوية فرق فعلي #1 - ',27,1,'2026-01-04 12:26:36','2026-01-04 12:26:36',44),(2,'2026-01-01','قيد جرد مخزون – تسوية فرق فعلي #2 - ',27,2,'2026-01-04 12:28:53','2026-01-04 12:28:53',44),(3,'2026-01-01','قيد جرد مخزون – تسوية فرق فعلي #3 - ',27,3,'2026-01-04 12:33:57','2026-01-04 12:33:57',44),(4,'2026-01-01','قيد جرد مخزون – تسوية فرق فعلي #4 - ',27,4,'2026-01-04 12:41:09','2026-01-04 12:41:09',44),(5,'2026-01-01','قيد جرد مخزون – تسوية فرق فعلي #5 - ',27,5,'2026-01-04 12:44:38','2026-01-04 12:44:38',44);
 /*!40000 ALTER TABLE `journal_entries` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1001,7 +1014,7 @@ CREATE TABLE `journal_entry_lines` (
   CONSTRAINT `fk_line_entry` FOREIGN KEY (`journal_entry_id`) REFERENCES `journal_entries` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `chk_credit_nonneg` CHECK ((`credit` >= 0)),
   CONSTRAINT `chk_debit_nonneg` CHECK ((`debit` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1010,6 +1023,7 @@ CREATE TABLE `journal_entry_lines` (
 
 LOCK TABLES `journal_entry_lines` WRITE;
 /*!40000 ALTER TABLE `journal_entry_lines` DISABLE KEYS */;
+INSERT INTO `journal_entry_lines` VALUES (1,1,110,265816.32,0.00,'إضافة مخزون (تسوية) - ','2026-01-04 12:26:36','2026-01-04 12:26:36'),(2,1,114,0.00,265816.32,'مواجهة تسوية إضافة مخزون - ','2026-01-04 12:26:36','2026-01-04 12:26:36'),(3,2,110,68400.00,0.00,'إضافة مخزون (تسوية) - ','2026-01-04 12:28:53','2026-01-04 12:28:53'),(4,2,114,0.00,68400.00,'مواجهة تسوية إضافة مخزون - ','2026-01-04 12:28:53','2026-01-04 12:28:53'),(5,3,110,100013.13,0.00,'إضافة مخزون (تسوية) - ','2026-01-04 12:33:57','2026-01-04 12:33:57'),(6,3,114,0.00,100013.13,'مواجهة تسوية إضافة مخزون - ','2026-01-04 12:33:57','2026-01-04 12:33:57'),(7,4,110,154656.00,0.00,'إضافة مخزون (تسوية) - ','2026-01-04 12:41:09','2026-01-04 12:41:09'),(8,4,114,0.00,154656.00,'مواجهة تسوية إضافة مخزون - ','2026-01-04 12:41:09','2026-01-04 12:41:09'),(9,5,110,130065.60,0.00,'إضافة مخزون (تسوية) - ','2026-01-04 12:44:38','2026-01-04 12:44:38'),(10,5,114,0.00,130065.60,'مواجهة تسوية إضافة مخزون - ','2026-01-04 12:44:38','2026-01-04 12:44:38');
 /*!40000 ALTER TABLE `journal_entry_lines` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1198,7 +1212,7 @@ CREATE TABLE `product_types` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1207,6 +1221,7 @@ CREATE TABLE `product_types` (
 
 LOCK TABLES `product_types` WRITE;
 /*!40000 ALTER TABLE `product_types` DISABLE KEYS */;
+INSERT INTO `product_types` VALUES (1,'منتج تام'),(2,'مستلزم انتاج');
 /*!40000 ALTER TABLE `product_types` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1230,7 +1245,7 @@ CREATE TABLE `products` (
   KEY `products_ibfk_2` (`type_id`),
   CONSTRAINT `products_ibfk_1` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`),
   CONSTRAINT `products_ibfk_2` FOREIGN KEY (`type_id`) REFERENCES `product_types` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1239,7 +1254,7 @@ CREATE TABLE `products` (
 
 LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
-INSERT INTO `products` VALUES (1,'Nurivina Argan Oil 100ml',NULL,330.00,1,'2025-12-13 15:00:23',0.00),(2,'Nurivina Argan Oil Hair Serum 100ml',NULL,430.00,1,'2025-12-13 15:01:00',0.00),(3,'Nurivina Omega Anti-Hair Loss Shampoo 220ml',NULL,250.00,1,'2025-12-13 15:01:39',0.00),(4,'Nurivina Argan oil Leave in Conditioner 220ml',NULL,270.00,1,'2025-12-13 15:02:34',0.00),(5,'Nurivina whitening Cream 50gm',NULL,240.00,1,'2025-12-13 15:03:07',0.00),(6,'Nurivina Anti-Hair Loss Spray 100ml',NULL,520.00,1,'2025-12-13 15:04:41',0.00);
+INSERT INTO `products` VALUES (1,'Nurivina Argan Oil 100ml',1,330.00,1,'2025-12-13 15:00:23',0.00),(2,'Nurivina Argan Oil Hair Serum 100ml',1,430.00,1,'2025-12-13 15:01:00',0.00),(3,'Nurivina Omega Anti-Hair Loss Shampoo 220ml',1,250.00,1,'2025-12-13 15:01:39',0.00),(4,'Nurivina Argan oil Leave in Conditioner 220ml',1,270.00,1,'2025-12-13 15:02:34',0.00),(5,'Nurivina whitening Cream 50gm',1,240.00,1,'2025-12-13 15:03:07',0.00),(6,'Nurivina Anti-Hair Loss Spray 100ml',1,520.00,1,'2025-12-13 15:04:41',0.00),(10,'Nurivina Anti-Dandruff Shampoo 150ml',1,220.00,1,'2026-01-03 20:26:00',0.00);
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2084,7 +2099,7 @@ CREATE TABLE `sales_return_items` (
   `product_id` int NOT NULL,
   `quantity` int NOT NULL,
   `price` decimal(10,2) NOT NULL,
-  `return_condition` enum('good','damaged','expired') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'good',
+  `return_condition` enum('good','damaged','expired') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'good',
   PRIMARY KEY (`id`),
   KEY `sales_return_id` (`sales_return_id`),
   KEY `product_id` (`product_id`),
@@ -3005,4 +3020,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-02 22:24:34
+-- Dump completed on 2026-01-04 15:59:00
