@@ -22481,3 +22481,15 @@ Error
     at async ExternalJobOrder.findAll (d:\db\server\node_modules\sequelize\lib\model.js:1140:21)
     at async Object.getAll (file:///d:/db/server/src/services/externalJobOrders.service.js:22:12)
     at async getAll (file:///d:/db/server/src/controllers/externalJobOrders.controller.js:28:18)
+2026-01-05T09:50:41: ✅ Database connected
+2026-01-05T09:50:41: 🚀 Server listening on http://localhost:5000
+2026-01-05T09:53:46: Received shutdown request
+2026-01-05T09:53:48: Shutting down server by user request...
+2026-01-05T09:53:50: ✅ Database connected
+2026-01-05T09:53:50: 🚀 Server listening on http://localhost:5000
+2026-01-05T09:55:11: ✅ Database connected
+2026-01-05T09:55:11: 🚀 Server listening on http://localhost:5000
+2026-01-05T09:55:16: ✅ Database connected
+2026-01-05T09:55:16: 🚀 Server listening on http://localhost:5000
+2026-01-05T09:55:20: ✅ Database connected
+2026-01-05T09:55:20: 🚀 Server listening on http://localhost:5000

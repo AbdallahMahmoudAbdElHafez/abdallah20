@@ -155,13 +155,16 @@ export default {
             const SALES_ACCOUNT_ID = 28;
             const CUSTOMER_ACCOUNT_ID = 47;
             const VAT_ACCOUNT_ID = 65;
+            const TAX_ACCOUNT_ID = 66; // مصلحة الضرائب
             const DISCOUNT_ALLOWED_ID = 108;
             const COGS_ACCOUNT_ID = 15;
             const OPENING_BALANCE_OFFSET_ID = 14; // ارباح مرحلة (Equity/Balance Sheet Offset)
 
             // Calculations derived from invoice details
             const subtotal = Number(invoice.subtotal) || 0;
-            const totalVat = Number(invoice.total_vat) || 0;
+            const shippingAmount = Number(invoice.shipping_amount) || 0;
+            const vatAmount = Number(invoice.vat_amount) || 0;
+            const taxAmount = Number(invoice.tax_amount) || 0;
             const discount = Number(invoice.additional_discount) || 0;
             const finalTotal = Number(invoice.total_amount) || 0;
 
@@ -204,17 +207,37 @@ export default {
                     description: `إيراد مبيعات - فاتورة #${invoice.invoice_number}`
                 });
 
+                // 1.1 Credit Shipping Revenue (if applicable)
+                if (shippingAmount > 0) {
+                    je1Lines.push({
+                        account_id: 115, // إيراد شحن
+                        debit: 0,
+                        credit: shippingAmount,
+                        description: `إيراد شحن - فاتورة #${invoice.invoice_number}`
+                    });
+                }
+
                 // 2. Credit VAT (Liability)
-                if (totalVat > 0) {
+                if (vatAmount > 0) {
                     je1Lines.push({
                         account_id: VAT_ACCOUNT_ID,
                         debit: 0,
-                        credit: totalVat,
+                        credit: vatAmount,
                         description: `ضريبة القيمة المضافة - فاتورة #${invoice.invoice_number}`
                     });
                 }
 
-                // 3. Debit Discount Allowed (Contra-Revenue/Expense)
+                // 3. Credit Other Taxes (Liability)
+                if (taxAmount > 0) {
+                    je1Lines.push({
+                        account_id: TAX_ACCOUNT_ID,
+                        debit: 0,
+                        credit: taxAmount,
+                        description: `ضرائب أخرى - فاتورة #${invoice.invoice_number}`
+                    });
+                }
+
+                // 4. Debit Discount Allowed (Contra-Revenue/Expense)
                 if (discount > 0) {
                     je1Lines.push({
                         account_id: DISCOUNT_ALLOWED_ID,
@@ -224,7 +247,7 @@ export default {
                     });
                 }
 
-                // 4. Debit Customer (Accounts Receivable)
+                // 5. Debit Customer (Accounts Receivable)
                 je1Lines.push({
                     account_id: CUSTOMER_ACCOUNT_ID,
                     debit: finalTotal,
