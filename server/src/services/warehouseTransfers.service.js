@@ -1,5 +1,5 @@
 // src/services/warehouseTransfers.service.js
-import { WarehouseTransfer, Warehouse, WarehouseTransferItem, InventoryTransaction } from '../models/index.js';
+import { WarehouseTransfer, Warehouse, WarehouseTransferItem, InventoryTransaction, Product } from '../models/index.js';
 import InventoryTransactionService from './inventoryTransaction.service.js';
 class WarehouseTransfersService {
 
@@ -9,7 +9,11 @@ class WarehouseTransfersService {
       include: [
         { model: Warehouse, as: 'fromWarehouse', attributes: ['id', 'name'] },
         { model: Warehouse, as: 'toWarehouse', attributes: ['id', 'name'] },
-        { model: WarehouseTransferItem, as: 'items' }
+        {
+          model: WarehouseTransferItem,
+          as: 'items',
+          include: [{ model: Product, as: 'product', attributes: ['id', 'name'] }]
+        }
       ],
       order: [['transfer_date', 'DESC']],
     });
@@ -20,6 +24,11 @@ class WarehouseTransfersService {
       include: [
         { model: Warehouse, as: 'fromWarehouse', attributes: ['id', 'name'] },
         { model: Warehouse, as: 'toWarehouse', attributes: ['id', 'name'] },
+        {
+          model: WarehouseTransferItem,
+          as: 'items',
+          include: [{ model: Product, as: 'product', attributes: ['id', 'name'] }]
+        }
       ],
     });
   }

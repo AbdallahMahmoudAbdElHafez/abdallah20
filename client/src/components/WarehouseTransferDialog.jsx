@@ -27,37 +27,59 @@ export default function WarehouseTransferDialog({ open, onClose, initial, onSave
   // تحميل بيانات التعديل إن وجدت
   useEffect(() => {
     setForm(initial || { from_warehouse_id: '', to_warehouse_id: '', transfer_date: '', note: '' });
-    setItems(initial?.items || []);
+    setItems((initial?.items || []).map(item => ({
+      ...item,
+      product_name: item.product?.name || item.product_name
+    })));
   }, [initial]);
 
-  // تحميل المخازن والمنتجات
+  const [batches, setBatches] = useState([]);
+
+  // تحميل المخازن
   useEffect(() => {
-    let mounted = true;
-    Promise.all([
-      api.get('/warehouses'),
-      api.get('/products'),
-    ]).then(([wRes, pRes]) => {
-      if (mounted) {
-        setWarehouses(wRes.data);
-        setProducts(pRes.data);
-      }
-    }).catch(() => { });
-    return () => { mounted = false; };
+    api.get('/warehouses').then(res => setWarehouses(res.data)).catch(() => { });
   }, []);
+
+  // تحميل المنتجات بناءً على المخزن المختار
+  useEffect(() => {
+    if (form.from_warehouse_id) {
+      api.get(`/warehouse-inventory/products/${form.from_warehouse_id}`)
+        .then(res => setProducts(res.data))
+        .catch(() => setProducts([]));
+    } else {
+      setProducts([]);
+    }
+    setNewItem(prev => ({ ...prev, product_id: '', batch_id: '', batch_number: '', expiry_date: '', cost_per_unit: '' }));
+  }, [form.from_warehouse_id]);
 
   const handleProductChange = async (e) => {
     const productId = e.target.value;
-    setNewItem({ ...newItem, product_id: productId });
+    setNewItem({ ...newItem, product_id: productId, batch_id: '', batch_number: '', expiry_date: '', cost_per_unit: '' });
 
-    if (productId) {
+    if (productId && form.from_warehouse_id) {
       try {
-        const res = await api.get(`/inventory-transaction-batches/cost/${productId}`);
-        if (res.data && res.data.cost) {
-          setNewItem(prev => ({ ...prev, cost_per_unit: res.data.cost }));
-        }
+        const res = await api.get(`/warehouse-inventory/batches/${form.from_warehouse_id}/${productId}`);
+        setBatches(res.data);
       } catch (err) {
-        console.error("Failed to fetch cost", err);
+        console.error("Failed to fetch batches", err);
+        setBatches([]);
       }
+    } else {
+      setBatches([]);
+    }
+  };
+
+  const handleBatchChange = (e) => {
+    const batchId = e.target.value;
+    const selectedBatch = batches.find(b => b.id === batchId);
+    if (selectedBatch) {
+      setNewItem({
+        ...newItem,
+        batch_id: batchId,
+        batch_number: selectedBatch.batch_number,
+        expiry_date: selectedBatch.expiry_date,
+        cost_per_unit: selectedBatch.cost_per_unit
+      });
     }
   };
 
@@ -65,7 +87,8 @@ export default function WarehouseTransferDialog({ open, onClose, initial, onSave
     if (!newItem.product_id || !newItem.quantity || !newItem.cost_per_unit) return;
     const product = products.find(p => p.id === parseInt(newItem.product_id));
     setItems([...items, { ...newItem, product_name: product?.name }]);
-    setNewItem({ product_id: '', quantity: '', cost_per_unit: '', batch_number: '', expiry_date: '' });
+    setNewItem({ product_id: '', quantity: '', cost_per_unit: '', batch_id: '', batch_number: '', expiry_date: '' });
+    setBatches([]);
   };
 
   const handleDeleteItem = (index) => {
@@ -133,10 +156,28 @@ export default function WarehouseTransferDialog({ open, onClose, initial, onSave
               value={newItem.product_id}
               onChange={handleProductChange}
               sx={{ flex: 2, minWidth: '200px' }}
+              disabled={!form.from_warehouse_id}
             >
               <MenuItem value="">اختر المنتج</MenuItem>
               {products.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
             </TextField>
+
+            <TextField
+              select
+              label="رقم التشغيلة / تاريخ الانتهاء"
+              value={newItem.batch_id || ''}
+              onChange={handleBatchChange}
+              sx={{ flex: 2, minWidth: '200px' }}
+              disabled={!newItem.product_id}
+            >
+              <MenuItem value="">اختر التشغيلة</MenuItem>
+              {batches.map(b => (
+                <MenuItem key={b.id} value={b.id}>
+                  {b.batch_number} - {b.expiry_date || 'بدون تاريخ'} (المتاح: {b.available_quantity})
+                </MenuItem>
+              ))}
+            </TextField>
+
             <TextField
               label="الكمية"
               type="number"
@@ -150,20 +191,7 @@ export default function WarehouseTransferDialog({ open, onClose, initial, onSave
               value={newItem.cost_per_unit}
               onChange={(e) => setNewItem({ ...newItem, cost_per_unit: e.target.value })}
               sx={{ flex: 1, minWidth: '100px' }}
-            />
-            <TextField
-              label="رقم التشغيلة"
-              value={newItem.batch_number || ''}
-              onChange={(e) => setNewItem({ ...newItem, batch_number: e.target.value })}
-              sx={{ flex: 1, minWidth: '120px' }}
-            />
-            <TextField
-              label="تاريخ الصلاحية"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              value={newItem.expiry_date || ''}
-              onChange={(e) => setNewItem({ ...newItem, expiry_date: e.target.value })}
-              sx={{ flex: 1, minWidth: '150px' }}
+              InputProps={{ readOnly: true }}
             />
             <IconButton color="primary" onClick={handleAddItem}>
               <Add />

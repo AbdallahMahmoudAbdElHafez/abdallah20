@@ -192,7 +192,12 @@ const InventoryTransactionsPage = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <MaterialReactTable {...defaultTableProps} columns={columns} data={transactions} />
+        <MaterialReactTable
+          columns={columns} data={transactions}
+          enableGlobalFilter
+          enableTopToolbar
+          {...defaultTableProps}
+        />
       )}
 
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm" dir="rtl">

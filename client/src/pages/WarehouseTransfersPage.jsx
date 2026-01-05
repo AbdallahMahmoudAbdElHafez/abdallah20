@@ -61,6 +61,8 @@ export default function WarehouseTransfersPage() {
         data={list || []}
         state={{ isLoading: status === 'loading' }}
         enableRowActions
+        enableGlobalFilter
+        {...defaultTableProps}
         positionActionsColumn="last"
         renderRowActions={({ row }) => (
           <Box sx={{ display: 'flex', gap: 1 }}>

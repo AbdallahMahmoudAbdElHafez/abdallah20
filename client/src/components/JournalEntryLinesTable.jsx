@@ -195,6 +195,7 @@ export const JournalEntryLinesTable = () => {
           enablePagination
           enableSorting
           enableGlobalFilter
+
           muiTablePaperProps={{ elevation: 0 }}
           muiTableContainerProps={{ sx: { maxHeight: 'calc(100vh - 300px)' } }}
         />
