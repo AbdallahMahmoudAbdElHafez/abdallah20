@@ -1,5 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Typography,
+    Paper,
+    Chip,
+    IconButton,
+    Tooltip,
+} from "@mui/material";
+import {
+    Add as AddIcon,
+    Visibility as ViewIcon,
+    Payment as PaymentIcon,
+    Edit as EditIcon,
+    Receipt as ReceiptIcon,
+    TrendingUp as TrendingUpIcon,
+    AccountBalanceWallet as WalletIcon,
+    Description as InvoiceIcon,
+} from "@mui/icons-material";
 import { MaterialReactTable } from "material-react-table";
 import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,6 +38,7 @@ import { fetchProducts } from "../features/products/productsSlice";
 import SalesInvoiceDialog from "../components/SalesInvoiceDialog";
 import SalesInvoicePaymentsManager from "../components/SalesInvoicePaymentsManager";
 import InvoicePreviewDialog from "../components/InvoicePreview/InvoicePreviewDialog";
+import "./SalesInvoicesPage.css";
 
 export default function SalesInvoicesPage() {
     const dispatch = useDispatch();
@@ -89,71 +113,171 @@ export default function SalesInvoicesPage() {
         setOpenDialog(false);
     };
 
-    const columns = [
-        { accessorKey: "invoice_number", header: "رقم الفاتورة" },
+    // Summary Statistics
+    const stats = useMemo(() => {
+        const totalAmount = invoices.reduce((sum, inv) => sum + (Number(inv.total_amount) || 0), 0);
+        const count = invoices.length;
+        const pendingCount = invoices.filter(inv => inv.status?.toLowerCase() === 'pending' || inv.status === 'مسودة').length;
+
+        return [
+            { label: "إجمالي المبيعات", value: `${totalAmount.toLocaleString()} ج.م`, icon: <TrendingUpIcon color="primary" />, trend: "+12%", trendUp: true },
+            { label: "عدد الفواتير", value: count, icon: <InvoiceIcon color="secondary" /> },
+            { label: "فواتير معلقة", value: pendingCount, icon: <WalletIcon color="warning" />, trend: "تحتاج مراجعة", trendUp: false },
+        ];
+    }, [invoices]);
+
+    const columns = useMemo(() => [
+        {
+            accessorKey: "invoice_number",
+            header: "رقم الفاتورة",
+            Cell: ({ cell }) => (
+                <Typography variant="body2" fontWeight="600" color="primary">
+                    {cell.getValue()}
+                </Typography>
+            )
+        },
         { accessorKey: "party.name", header: "العميل" },
-        { accessorKey: "invoice_date", header: "تاريخ الفاتورة" },
-        { accessorKey: "status", header: "الحالة" },
-        { accessorKey: "total_amount", header: "الإجمالي" },
+        {
+            accessorKey: "invoice_date",
+            header: "تاريخ الفاتورة",
+            Cell: ({ cell }) => new Date(cell.getValue()).toLocaleDateString('ar-EG')
+        },
+        {
+            accessorKey: "status",
+            header: "الحالة",
+            Cell: ({ cell }) => {
+                const status = cell.getValue();
+                let color = "default";
+                if (status === "معتمد" || status === "Approved") color = "success";
+                if (status === "مسودة" || status === "Draft") color = "warning";
+                if (status === "ملغي" || status === "Cancelled") color = "error";
+
+                return (
+                    <Chip
+                        label={status}
+                        color={color}
+                        size="small"
+                        className="status-chip"
+                        variant="outlined"
+                    />
+                );
+            }
+        },
+        {
+            accessorKey: "total_amount",
+            header: "الإجمالي",
+            Cell: ({ cell }) => (
+                <Typography variant="body2" fontWeight="700">
+                    {Number(cell.getValue()).toLocaleString()} ج.م
+                </Typography>
+            )
+        },
         {
             header: "إجراءات",
             Cell: ({ row }) => (
-                <Box sx={{ display: "flex", gap: 1 }}>
-                    <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleEdit(row.original)}
-                    >
-                        تعديل
-                    </Button>
-                    <Button
-                        size="small"
-                        variant="contained"
-                        color="secondary"
-                        onClick={() =>
-                            navigate(`/sales-orders?order_id=${row.original.sales_order_id}`)
-                        }
-                    >
-                        عرض الطلب
-                    </Button>
-                    <Button
-                        size="small"
-                        variant="outlined"
-                        color="info"
-                        onClick={() => handleOpenPayments(row.original)}
-                    >
-                        قبض
-                    </Button>
-                    <Button
-                        size="small"
-                        variant="contained"
-                        color="warning"
-                        onClick={() => handlePreview(row.original)}
-                    >
-                        معاينة
-                    </Button>
+                <Box className="action-buttons">
+                    <Tooltip title="تعديل">
+                        <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => handleEdit(row.original)}
+                        >
+                            <EditIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="عرض الطلب">
+                        <IconButton
+                            size="small"
+                            color="secondary"
+                            onClick={() =>
+                                navigate(`/sales-orders?order_id=${row.original.sales_order_id}`)
+                            }
+                        >
+                            <ViewIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="قبض">
+                        <IconButton
+                            size="small"
+                            color="info"
+                            onClick={() => handleOpenPayments(row.original)}
+                        >
+                            <PaymentIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title="معاينة">
+                        <IconButton
+                            size="small"
+                            color="warning"
+                            onClick={() => handlePreview(row.original)}
+                        >
+                            <ReceiptIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
                 </Box>
             ),
         },
-    ];
+    ], [products, navigate]);
 
     if (loading === "loading") {
         return (
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}>
                 <CircularProgress />
             </Box>
         );
     }
 
     return (
-        <Box p={2}>
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-                <Button variant="contained" onClick={handleCreate}>
-                    إضافة فاتورة مبيعات
+        <Box className="sales-invoices-container">
+            <Box className="page-header">
+                <Typography className="page-title">فواتير المبيعات</Typography>
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={handleCreate}
+                    className="action-button"
+                    sx={{ borderRadius: '12px', px: 3, py: 1 }}
+                >
+                    إضافة فاتورة
                 </Button>
             </Box>
 
-            <MaterialReactTable {...defaultTableProps} columns={columns} data={invoices} />
+            <Box className="summary-cards">
+                {stats.map((stat, index) => (
+                    <Paper key={index} className="summary-card">
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <Box>
+                                <Typography className="summary-card-label">{stat.label}</Typography>
+                                <Typography className="summary-card-value">{stat.value}</Typography>
+                            </Box>
+                            <Box sx={{ p: 1, borderRadius: '12px', bgcolor: 'rgba(0,0,0,0.03)' }}>
+                                {stat.icon}
+                            </Box>
+                        </Box>
+                        {stat.trend && (
+                            <Typography className={`summary-card-trend ${stat.trendUp ? 'trend-up' : 'trend-down'}`}>
+                                {stat.trend}
+                            </Typography>
+                        )}
+                    </Paper>
+                ))}
+            </Box>
+
+            <Paper className="table-container">
+                <MaterialReactTable
+                    {...defaultTableProps}
+                    columns={columns}
+                    data={invoices}
+                    enableColumnActions={false}
+                    enableColumnFilters={false}
+                    enablePagination={true}
+                    enableSorting={true}
+                    muiTablePaperProps={{
+                        elevation: 0,
+                        sx: { borderRadius: '16px' }
+                    }}
+                />
+            </Paper>
 
             {openDialog && (
                 <SalesInvoiceDialog

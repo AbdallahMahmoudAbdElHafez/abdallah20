@@ -10,7 +10,16 @@ export default {
             where,
             include: [
                 { association: "product" },
-                { association: "warehouse" }
+                { association: "warehouse" },
+                {
+                    association: "inventory_transactions",
+                    include: [
+                        {
+                            association: "transaction_batches",
+                            include: ["batch"]
+                        }
+                    ]
+                }
             ]
         });
     },
