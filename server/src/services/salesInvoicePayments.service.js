@@ -1,4 +1,4 @@
-import { sequelize, SalesInvoicePayment, SalesInvoice, Party, Account, Cheque } from "../models/index.js";
+import { sequelize, SalesInvoicePayment, SalesInvoice, Party, Account, Cheque, ReferenceType } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
 import ENTRY_TYPES from "../constants/entryTypes.js";
 import { Op } from "sequelize";
@@ -49,9 +49,19 @@ export async function createPayment(data) {
             }, { transaction: t });
         }
 
+        let refType = await ReferenceType.findOne({ where: { code: 'sales_payment' }, transaction: t });
+        if (!refType) {
+            refType = await ReferenceType.create({
+                code: 'sales_payment',
+                label: 'تحصيل مبيعات',
+                name: 'تحصيل مبيعات',
+                description: 'Journal Entry for Sales Payment/Collection'
+            }, { transaction: t });
+        }
+
         await createJournalEntry(
             {
-                refCode: "sales_invoice",
+                refCode: "sales_payment",
                 refId: payment.id,
                 entryDate: payment.payment_date,
                 description: `تحصيل فاتورة مبيعات #${invoice.invoice_number} - ${data.payment_method}`,

@@ -1,4 +1,4 @@
-import { sequelize, PurchaseInvoicePayment, PurchaseInvoice, Party, Cheque, Account } from "../models/index.js";
+import { sequelize, PurchaseInvoicePayment, PurchaseInvoice, Party, Cheque, Account, ReferenceType } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
 import { Op } from "sequelize"; // 👈 مهم جداً
 
@@ -52,9 +52,19 @@ export async function createPayment(data) {
       }, { transaction: t });
     }
 
+    let refType = await ReferenceType.findOne({ where: { code: 'purchase_payment' }, transaction: t });
+    if (!refType) {
+      refType = await ReferenceType.create({
+        code: 'purchase_payment',
+        label: 'سداد مشتريات',
+        name: 'سداد مشتريات',
+        description: 'Journal Entry for Purchase Payment'
+      }, { transaction: t });
+    }
+
     await createJournalEntry(
       {
-        refCode: "purchase_invoice",
+        refCode: "purchase_payment",
         refId: payment.id,
         entryDate: payment.payment_date,
         description: `سداد فاتورة مشتريات #${invoice.invoice_number} - ${data.payment_method}`,
