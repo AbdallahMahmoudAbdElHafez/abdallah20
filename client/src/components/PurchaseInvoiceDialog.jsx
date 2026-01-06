@@ -32,7 +32,7 @@ import {
   ExpandLess as ExpandLessIcon,
   FileDownload as FileDownloadIcon,
 } from "@mui/icons-material";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
@@ -301,68 +301,142 @@ export default function PurchaseInvoiceDialog({
     { key: "total_amount", label: "الإجمالي النهائي" },
   ];
 
-  const handleExportExcel = (selectedColumns) => {
-    const wb = XLSX.utils.book_new();
+  const handleExportExcel = async (selectedColumns) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Purchase Invoice", {
+      views: [{ rightToLeft: true }]
+    });
 
     // Helper to check if column is selected
     const isSelected = (key) => selectedColumns.includes(key);
 
-    // Prepare Header Data based on selection
-    const headData = [];
-    if (isSelected("invoice_number")) headData.push(["رقم الفاتورة", invoiceHead.invoice_number || invoice?.invoice_number]);
-    if (isSelected("supplier")) headData.push(["المورد", selectedSupplier?.name || ""]);
-    if (isSelected("invoice_date")) headData.push(["التاريخ", invoiceHead.invoice_date]);
-    if (isSelected("due_date")) headData.push(["تاريخ الاستحقاق", invoiceHead.due_date]);
-    if (isSelected("payment_terms")) headData.push(["شروط الدفع", invoiceHead.payment_terms]);
-    if (isSelected("invoice_type")) headData.push(["نوع الفاتورة", invoiceHead.invoice_type === 'opening' ? 'رصيد افتتاحي' : 'فاتورة عادية']);
-    if (isSelected("status")) headData.push(["الحالة", statusConfig[invoiceHead.status]?.label || invoiceHead.status]);
+    // Styling Constants
+    const colors = {
+      primary: "2e7d32", // Green for purchases
+      secondary: "d32f2f",
+      header: "f8f9fa",
+      border: "dee2e6"
+    };
 
-    headData.push([]); // Spacer
+    // 1. Header Section
+    worksheet.mergeCells("A1:H2");
+    const titleCell = worksheet.getCell("A1");
+    titleCell.value = `فاتورة مشتريات رقم: ${invoiceHead.invoice_number || invoice?.invoice_number || "جديدة"}`;
+    titleCell.font = { name: "Arial", size: 20, bold: true, color: { argb: "FFFFFF" } };
+    titleCell.alignment = { vertical: "middle", horizontal: "center" };
+    titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.primary } };
 
-    // Items Section
-    let itemsHeader = [];
-    let itemsData = [];
+    let currRow = 4;
 
+    // 2. Metadata Info Table
+    const addMetadataRow = (label, value) => {
+      const row = worksheet.getRow(currRow);
+      row.getCell(1).value = label;
+      row.getCell(2).value = value;
+
+      row.getCell(1).font = { bold: true };
+      row.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.header } };
+      row.getCell(1).border = { bottom: { style: 'thin' }, left: { style: 'thin' } };
+      row.getCell(2).border = { bottom: { style: 'thin' }, right: { style: 'thin' } };
+
+      currRow++;
+    };
+
+    if (isSelected("invoice_number")) addMetadataRow("رقم الفاتورة", invoiceHead.invoice_number || invoice?.invoice_number);
+    if (isSelected("supplier")) addMetadataRow("المورد", selectedSupplier?.name || "");
+    if (isSelected("invoice_date")) addMetadataRow("التاريخ", invoiceHead.invoice_date);
+    if (isSelected("due_date")) addMetadataRow("تاريخ الاستحقاق", invoiceHead.due_date);
+    if (isSelected("payment_terms")) addMetadataRow("شروط الدفع", invoiceHead.payment_terms);
+    if (isSelected("invoice_type")) addMetadataRow("نوع الفاتورة", invoiceHead.invoice_type === 'opening' ? 'رصيد افتتاحي' : 'فاتورة عادية');
+    if (isSelected("status")) addMetadataRow("الحالة", statusConfig[invoiceHead.status]?.label || invoiceHead.status);
+
+    currRow += 2;
+
+    // 3. Items Section
     if (isSelected("items")) {
-      headData.push(["الأصناف"]);
-      itemsHeader = ["المنتج", "المخزن", "رقم التشغيلة", "تاريخ الانتهاء", "الكمية", "سعر الوحدة", "الخصم", "الإجمالي"];
-      itemsData = items.map(item => {
+      const itemsHeaderRow = worksheet.getRow(currRow);
+      const headers = ["المنتج", "المخزن", "رقم التشغيلة", "تاريخ الانتهاء", "الكمية", "السعر", "الخصم", "الإجمالي"];
+
+      headers.forEach((h, i) => {
+        const cell = itemsHeaderRow.getCell(i + 1);
+        cell.value = h;
+        cell.font = { bold: true, color: { argb: "FFFFFF" } };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "444444" } };
+        cell.alignment = { horizontal: "center" };
+        cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+      });
+
+      currRow++;
+
+      items.forEach((item) => {
         const product = products.find(p => p.id === item.product_id);
         const warehouse = warehouses.find(w => w.id === item.warehouse_id);
-        return [
-          product?.name || "",
-          warehouse?.name || "",
-          item.batch_number,
-          item.expiry_date,
-          item.quantity,
-          item.unit_price,
-          item.discount,
-          ((item.quantity * item.unit_price) - item.discount).toFixed(2)
-        ];
+        const row = worksheet.getRow(currRow);
+
+        const total = (Number(item.quantity) * Number(item.unit_price)) - Number(item.discount);
+
+        row.getCell(1).value = product?.name || "";
+        row.getCell(2).value = warehouse?.name || "";
+        row.getCell(3).value = item.batch_number;
+        row.getCell(4).value = item.expiry_date;
+        row.getCell(5).value = Number(item.quantity);
+        row.getCell(6).value = Number(item.unit_price);
+        row.getCell(7).value = Number(item.discount);
+        row.getCell(8).value = Number(total.toFixed(2));
+
+        // Apply borders to cells
+        for (let i = 1; i <= 8; i++) {
+          row.getCell(i).border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
+          if (i > 4) row.getCell(i).alignment = { horizontal: "center" };
+        }
+        currRow++;
       });
     }
 
-    // Footer Data based on selection
-    const footerData = [];
-    footerData.push([]); // Spacer
-    if (isSelected("subtotal")) footerData.push(["المجموع الفرعي", invoiceHead.subtotal]);
-    if (isSelected("additional_discount")) footerData.push(["الخصم الإضافي", invoiceHead.additional_discount]);
-    if (isSelected("vat_amount")) footerData.push(["ضريبة القيمة المضافة", invoiceHead.vat_amount]);
-    if (isSelected("tax_amount")) footerData.push(["ضريبة أخرى", invoiceHead.tax_amount]);
-    if (isSelected("total_amount")) footerData.push(["الإجمالي النهائي", invoiceHead.total_amount]);
+    currRow += 2;
 
-    const wsData = [
-      ...headData,
-      ...(isSelected("items") ? [itemsHeader, ...itemsData] : []),
-      ...footerData
-    ];
+    // 4. Financial Summary (Totals)
+    const addSummaryRow = (label, value, isGrandTotal = false) => {
+      const row = worksheet.getRow(currRow);
+      worksheet.mergeCells(`F${currRow}:G${currRow}`);
+      row.getCell(6).value = label;
+      row.getCell(8).value = Number(Number(value).toFixed(2));
 
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    XLSX.utils.book_append_sheet(wb, ws, "Purchase Invoice");
+      row.getCell(6).font = { bold: true };
+      row.getCell(6).alignment = { horizontal: "left" };
+      row.getCell(8).alignment = { horizontal: "center" };
 
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([wbout], { type: 'application/octet-stream' });
-    saveAs(blob, `فاتورة_مشتريات_${invoiceHead.invoice_number || invoice?.invoice_number || 'جديدة'}.xlsx`);
+      if (isGrandTotal) {
+        row.getCell(6).fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.secondary } };
+        row.getCell(6).font = { bold: true, color: { argb: "FFFFFF" } };
+        row.getCell(8).fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.secondary } };
+        row.getCell(8).font = { bold: true, color: { argb: "FFFFFF" }, size: 14 };
+      } else {
+        row.getCell(6).fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.header } };
+        row.getCell(8).border = { bottom: { style: 'thin' }, right: { style: 'thin' }, left: { style: 'thin' } };
+      }
+      currRow++;
+    };
+
+    if (isSelected("subtotal")) addSummaryRow("المجموع الفرعي", invoiceHead.subtotal);
+    if (isSelected("additional_discount")) addSummaryRow("الخصم الإضافي", invoiceHead.additional_discount);
+    if (isSelected("vat_amount")) addSummaryRow("ضريبة القيمة المضافة", invoiceHead.vat_amount);
+    if (isSelected("tax_amount")) addSummaryRow("ضريبة أخرى", invoiceHead.tax_amount);
+    if (isSelected("total_amount")) addSummaryRow("الإجمالي النهائي", invoiceHead.total_amount, true);
+
+    // Set column widths
+    worksheet.getColumn(1).width = 25;
+    worksheet.getColumn(2).width = 20;
+    worksheet.getColumn(3).width = 15;
+    worksheet.getColumn(4).width = 15;
+    worksheet.getColumn(5).width = 10;
+    worksheet.getColumn(6).width = 12;
+    worksheet.getColumn(7).width = 10;
+    worksheet.getColumn(8).width = 18;
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `PurchaseInvoice_${invoiceHead.invoice_number || invoice?.invoice_number || 'New'}.xlsx`);
   };
 
   const itemColumns = [
@@ -394,7 +468,7 @@ export default function PurchaseInvoiceDialog({
         const q = Number(row.original.quantity) || 0;
         const p = Number(row.original.unit_price) || 0;
         const d = Number(row.original.discount) || 0;
-        return <Typography>${(q * p - d).toFixed(2)}</Typography>;
+        return <Typography>{(q * p - d).toFixed(2)} ج.م</Typography>;
       },
     },
     {
@@ -745,7 +819,7 @@ export default function PurchaseInvoiceDialog({
                 <MoneyIcon /> إجمالي الفاتورة
               </Typography>
               <Typography variant="h4" color="primary">
-                ${Number(invoiceHead.total_amount || 0).toFixed(2)}
+                {Number(invoiceHead.total_amount || 0).toFixed(2)} ج.م
               </Typography>
             </Stack>
           </CardContent>

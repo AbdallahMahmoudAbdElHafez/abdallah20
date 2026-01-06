@@ -233,7 +233,7 @@ export default function SalesOrderDialog({ open, onClose, order, itemsInit = [] 
                 const total =
                     Number(it.quantity) * Number(it.price) -
                     Number(it.discount);
-                return <Typography>${total.toFixed(2)}</Typography>;
+                return <Typography>{total.toFixed(2)} ج.م</Typography>;
             },
         },
         {

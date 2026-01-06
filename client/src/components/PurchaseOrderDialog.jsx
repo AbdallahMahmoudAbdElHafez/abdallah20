@@ -232,7 +232,7 @@ export default function PurchaseOrderDialog({ open, onClose, order }) {
         const total =
           Number(it.quantity) * Number(it.unit_price) -
           Number(it.discount);
-        return <Typography>${total.toFixed(2)}</Typography>;
+        return <Typography>{total.toFixed(2)} ج.م</Typography>;
       },
     },
     {
