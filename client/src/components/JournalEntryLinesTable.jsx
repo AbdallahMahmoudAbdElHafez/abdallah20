@@ -2,8 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { MaterialReactTable } from "material-react-table";
 import { Button, Snackbar, Alert, Box, Typography, Paper, Tooltip, IconButton } from "@mui/material";
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
 import { fetchJournalEntryLines } from "../features/journalEntryLines/journalEntryLinesSlice";
 import ManualJournalEntryDialog from "./ManualJournalEntryDialog";
 import { defaultTableProps } from "../config/tableConfig";
@@ -27,72 +26,22 @@ export const JournalEntryLinesTable = () => {
     dispatch(fetchJournalEntryLines());
   }, [dispatch]);
 
-  const handleExportExcel = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("القيود", {
-      views: [{ rightToLeft: true }]
-    });
+  const handleExportExcel = () => {
+    const dataToExport = lines.map((row) => ({
+      "رقم القيد": row.journal_entry_id,
+      "تاريخ القيد": row.journal_entry?.entry_date || "-",
+      "نوع القيد": row.journal_entry?.entry_type?.name || "-",
+      "وصف القيد": row.journal_entry?.description || "-",
+      "الحساب": row.Account?.name || "-",
+      "مدين": Number(row.debit) || 0,
+      "دائن": Number(row.credit) || 0,
+      "الوصف": row.description
+    }));
 
-    // Styling
-    const headerColor = "1976d2";
-    const subHeaderColor = "e3f2fd";
-
-    // Header Row
-    const columns = [
-      { header: "رقم القيد", key: "id", width: 12 },
-      { header: "تاريخ القيد", key: "date", width: 15 },
-      { header: "نوع القيد", key: "type", width: 15 },
-      { header: "وصف القيد", key: "entry_desc", width: 30 },
-      { header: "الحساب", key: "account", width: 25 },
-      { header: "مدين", key: "debit", width: 15 },
-      { header: "دائن", key: "credit", width: 15 },
-      { header: "الوصف", key: "line_desc", width: 30 }
-    ];
-
-    worksheet.columns = columns;
-
-    // Style the header
-    const headerRow = worksheet.getRow(1);
-    headerRow.eachCell((cell) => {
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: headerColor } };
-      cell.font = { bold: true, color: { argb: 'FFFFFF' } };
-      cell.alignment = { horizontal: 'center' };
-      cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
-    });
-
-    // Add data
-    lines.forEach((row, index) => {
-      const addedRow = worksheet.addRow({
-        id: row.journal_entry_id,
-        date: row.journal_entry?.entry_date || "-",
-        type: row.journal_entry?.entry_type?.name || "-",
-        entry_desc: row.journal_entry?.description || "-",
-        account: row.Account?.name || "-",
-        debit: Number(row.debit) || 0,
-        credit: Number(row.credit) || 0,
-        line_desc: row.description || "-"
-      });
-
-      // Alternate row colors
-      if (index % 2 === 0) {
-        addedRow.eachCell((cell) => {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'f9f9f9' } };
-        });
-      }
-
-      // Add borders
-      addedRow.eachCell((cell) => {
-        cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
-      });
-
-      // Align numbers
-      addedRow.getCell(6).alignment = { horizontal: 'center' };
-      addedRow.getCell(7).alignment = { horizontal: 'center' };
-    });
-
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, "JournalEntries.xlsx");
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "القيود");
+    XLSX.writeFile(workbook, "JournalEntries.xlsx");
   };
 
   const normalizeArabic = (text = '') =>

@@ -48,8 +48,6 @@ import ServicePaymentsPage from "./pages/servicePaymentsPage";
 import DoctorsPage from "./pages/DoctorsPage";
 import InventoryAdjustmentPage from "./pages/InventoryAdjustmentPage";
 
-import ThemeSettingsPage from "./pages/ThemeSettingsPage";
-
 const drawerWidth = 240;
 
 export default function App() {
@@ -106,7 +104,6 @@ export default function App() {
           <Route path="/service-payments" element={<ServicePaymentsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/inventory-adjustment" element={<InventoryAdjustmentPage />} />
-          <Route path="/theme-settings" element={<ThemeSettingsPage />} />
         </Routes>
       </Box>
     </BrowserRouter>

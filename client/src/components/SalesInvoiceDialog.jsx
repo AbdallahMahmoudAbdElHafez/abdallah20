@@ -18,9 +18,6 @@ import {
     Collapse,
     Paper,
     Stack,
-    useTheme,
-    Divider,
-    Tooltip,
 } from "@mui/material";
 import {
     Add as AddIcon,
@@ -32,9 +29,8 @@ import {
     Money as MoneyIcon,
     ExpandLess as ExpandLessIcon,
     FileDownload as FileDownloadIcon,
-    People as PeopleIcon,
 } from "@mui/icons-material";
-import ExcelJS from "exceljs";
+import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
@@ -62,7 +58,6 @@ export default function SalesInvoiceDialog({
     itemsInit = [],
     onSave,
 }) {
-    const theme = useTheme();
     const dispatch = useDispatch();
     const customers = useSelector((s) => s.parties?.items ?? []);
     const products = useSelector((s) => s.products?.items ?? []);
@@ -333,143 +328,68 @@ export default function SalesInvoiceDialog({
         { key: "total_amount", label: "الإجمالي النهائي" },
     ];
 
-    const handleExportExcel = async (selectedColumns) => {
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("Invoice", {
-            views: [{ rightToLeft: true }]
-        });
+    const handleExportExcel = (selectedColumns) => {
+        const wb = XLSX.utils.book_new();
 
         // Helper to check if column is selected
         const isSelected = (key) => selectedColumns.includes(key);
 
-        // Styling Constants
-        const colors = {
-            primary: "1976d2",
-            secondary: "f50057",
-            header: "f8f9fa",
-            border: "dee2e6"
-        };
+        // Prepare Header Data based on selection
+        const headData = [];
+        if (isSelected("invoice_number")) headData.push(["رقم الفاتورة", invoiceHead.invoice_number]);
+        if (isSelected("customer")) headData.push(["العميل", selectedCustomer?.name || ""]);
+        if (isSelected("invoice_date")) headData.push(["التاريخ", invoiceHead.invoice_date]);
+        if (isSelected("due_date")) headData.push(["تاريخ الاستحقاق", invoiceHead.due_date]);
+        if (isSelected("warehouse")) headData.push(["المخزن", warehouses.find(w => w.id === invoiceHead.warehouse_id)?.name || ""]);
+        if (isSelected("employee")) headData.push(["الموظف", employees.find(e => e.id === invoiceHead.employee_id)?.name || ""]);
+        if (isSelected("invoice_type")) headData.push(["نوع الفاتورة", invoiceHead.invoice_type === 'opening' ? 'رصيد افتتاحي' : 'فاتورة عادية']);
+        if (isSelected("status")) headData.push(["الحالة", statusConfig[invoiceHead.status]?.label || invoiceHead.status]);
 
-        // 1. Header Section
-        worksheet.mergeCells("A1:G2");
-        const titleCell = worksheet.getCell("A1");
-        titleCell.value = `فاتورة مبيعات رقم: ${invoiceHead.invoice_number || "جديدة"}`;
-        titleCell.font = { name: "Arial", size: 20, bold: true, color: { argb: "FFFFFF" } };
-        titleCell.alignment = { vertical: "middle", horizontal: "center" };
-        titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.primary } };
+        headData.push([]); // Spacer
 
-        let currRow = 4;
+        // Items Section
+        let itemsHeader = [];
+        let itemsData = [];
 
-        // 2. Metadata Info Table
-        const addMetadataRow = (label, value) => {
-            const row = worksheet.getRow(currRow);
-            row.getCell(1).value = label;
-            row.getCell(2).value = value;
-
-            row.getCell(1).font = { bold: true };
-            row.getCell(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.header } };
-            row.getCell(1).border = { bottom: { style: 'thin' }, left: { style: 'thin' } };
-            row.getCell(2).border = { bottom: { style: 'thin' }, right: { style: 'thin' } };
-
-            currRow++;
-        };
-
-        if (isSelected("invoice_number")) addMetadataRow("رقم الفاتورة", invoiceHead.invoice_number);
-        if (isSelected("customer")) addMetadataRow("العميل", selectedCustomer?.name || "");
-        if (isSelected("invoice_date")) addMetadataRow("التاريخ", invoiceHead.invoice_date);
-        if (isSelected("due_date")) addMetadataRow("تاريخ الاستحقاق", invoiceHead.due_date);
-        if (isSelected("warehouse")) addMetadataRow("المخزن", warehouses.find(w => w.id === invoiceHead.warehouse_id)?.name || "");
-        if (isSelected("employee")) addMetadataRow("الموظف", employees.find(e => e.id === invoiceHead.employee_id)?.name || "");
-        if (isSelected("invoice_type")) addMetadataRow("نوع الفاتورة", invoiceHead.invoice_type === 'opening' ? 'رصيد افتتاحي' : 'فاتورة عادية');
-        if (isSelected("status")) addMetadataRow("الحالة", statusConfig[invoiceHead.status]?.label || invoiceHead.status);
-
-        currRow += 2;
-
-        // 3. Items Section
         if (isSelected("items")) {
-            const itemsHeaderRow = worksheet.getRow(currRow);
-            const headers = ["المنتج", "الكمية", "السعر", "الخصم", "الضريبة %", "بونص", "الإجمالي"];
-
-            headers.forEach((h, i) => {
-                const cell = itemsHeaderRow.getCell(i + 1);
-                cell.value = h;
-                cell.font = { bold: true, color: { argb: "FFFFFF" } };
-                cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "444444" } };
-                cell.alignment = { horizontal: "center" };
-                cell.border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
-            });
-
-            currRow++;
-
-            items.forEach((item) => {
+            headData.push(["الأصناف"]);
+            itemsHeader = ["المنتج", "الكمية", "السعر", "الخصم", "الضريبة %", "بونص", "الإجمالي"];
+            itemsData = items.map(item => {
                 const product = products.find((p) => p.id === item.product_id);
-                const row = worksheet.getRow(currRow);
-
-                const subtotal = (Number(item.quantity) * Number(item.price)) - Number(item.discount);
-                const taxAmount = (subtotal * (Number(item.tax_percent) || 0)) / 100;
-                const total = subtotal + taxAmount;
-
-                row.getCell(1).value = product?.name || "";
-                row.getCell(2).value = Number(item.quantity);
-                row.getCell(3).value = Number(item.price);
-                row.getCell(4).value = Number(item.discount);
-                row.getCell(5).value = Number(item.tax_percent) || 0;
-                row.getCell(6).value = Number(item.bonus) || 0;
-                row.getCell(7).value = Number(total.toFixed(2));
-
-                // Apply borders to cells
-                for (let i = 1; i <= 7; i++) {
-                    row.getCell(i).border = { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } };
-                    if (i > 1) row.getCell(i).alignment = { horizontal: "center" };
-                }
-                currRow++;
+                return [
+                    product?.name || "",
+                    item.quantity,
+                    item.price,
+                    `${item.discount_percent || 0}% (${item.discount})`,
+                    item.tax_percent,
+                    item.bonus,
+                    ((item.quantity * item.price) - item.discount + ((item.quantity * item.price - item.discount) * item.tax_percent / 100)).toFixed(2)
+                ];
             });
         }
 
-        currRow += 2;
+        // Footer Data based on selection
+        const footerData = [];
+        footerData.push([]); // Spacer
+        if (isSelected("subtotal")) footerData.push(["المجموع الفرعي", invoiceHead.subtotal]);
+        if (isSelected("additional_discount")) footerData.push(["الخصم الإضافي", invoiceHead.additional_discount]);
+        if (isSelected("shipping_amount")) footerData.push(["الشحن", invoiceHead.shipping_amount]);
+        if (isSelected("vat_amount")) footerData.push(["ضريبة القيمة المضافة", invoiceHead.vat_amount]);
+        if (isSelected("tax_amount")) footerData.push(["ضريبة أخرى", invoiceHead.tax_amount]);
+        if (isSelected("total_amount")) footerData.push(["الإجمالي النهائي", invoiceHead.total_amount]);
 
-        // 4. Financial Summary (Totals)
-        const addSummaryRow = (label, value, isGrandTotal = false) => {
-            const row = worksheet.getRow(currRow);
-            worksheet.mergeCells(`E${currRow}:F${currRow}`);
-            row.getCell(5).value = label;
-            row.getCell(7).value = Number(Number(value).toFixed(2));
+        const wsData = [
+            ...headData,
+            ...(isSelected("items") ? [itemsHeader, ...itemsData] : []),
+            ...footerData
+        ];
 
-            row.getCell(5).font = { bold: true };
-            row.getCell(5).alignment = { horizontal: "left" };
-            row.getCell(7).alignment = { horizontal: "center" };
+        const ws = XLSX.utils.aoa_to_sheet(wsData);
+        XLSX.utils.book_append_sheet(wb, ws, "Sales Invoice");
 
-            if (isGrandTotal) {
-                row.getCell(5).fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.secondary } };
-                row.getCell(5).font = { bold: true, color: { argb: "FFFFFF" } };
-                row.getCell(7).fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.secondary } };
-                row.getCell(7).font = { bold: true, color: { argb: "FFFFFF" }, size: 14 };
-            } else {
-                row.getCell(5).fill = { type: "pattern", pattern: "solid", fgColor: { argb: colors.header } };
-                row.getCell(7).border = { bottom: { style: 'thin' }, right: { style: 'thin' }, left: { style: 'thin' } };
-            }
-            currRow++;
-        };
-
-        if (isSelected("subtotal")) addSummaryRow("المجموع الفرعي", invoiceHead.subtotal);
-        if (isSelected("additional_discount")) addSummaryRow("الخصم الإضافي", invoiceHead.additional_discount);
-        if (isSelected("shipping_amount")) addSummaryRow("الشحن", invoiceHead.shipping_amount);
-        if (isSelected("vat_amount")) addSummaryRow("ضريبة القيمة المضافة", invoiceHead.vat_amount);
-        if (isSelected("tax_amount")) addSummaryRow("ضريبة أخرى", invoiceHead.tax_amount);
-        if (isSelected("total_amount")) addSummaryRow("الإجمالي النهائي", invoiceHead.total_amount, true);
-
-        // Set column widths
-        worksheet.getColumn(1).width = 30;
-        worksheet.getColumn(2).width = 12;
-        worksheet.getColumn(3).width = 12;
-        worksheet.getColumn(4).width = 12;
-        worksheet.getColumn(5).width = 12;
-        worksheet.getColumn(6).width = 12;
-        worksheet.getColumn(7).width = 18;
-
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        saveAs(blob, `Invoice_${invoiceHead.invoice_number || 'New'}.xlsx`);
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], { type: 'application/octet-stream' });
+        saveAs(blob, `فاتورة_مبيعات_${invoiceHead.invoice_number || 'جديدة'}.xlsx`);
     };
 
     const itemColumns = [
@@ -504,7 +424,7 @@ export default function SalesInvoiceDialog({
                 const tax = Number(row.original.tax_percent) || 0;
                 const subtotal = (q * p) - d;
                 const taxAmount = (subtotal * tax) / 100;
-                return <Typography>{(subtotal + taxAmount).toFixed(2)} ج.م</Typography>;
+                return <Typography>${(subtotal + taxAmount).toFixed(2)}</Typography>;
             },
         },
         {
@@ -520,55 +440,21 @@ export default function SalesInvoiceDialog({
     const selectedCustomer = customers.find((c) => c.id === invoiceHead.party_id);
 
     return (
-        <Dialog
-            open={open}
-            onClose={onClose}
-            fullWidth
-            maxWidth="lg"
-            PaperProps={{
-                sx: {
-                    borderRadius: 4,
-                    backgroundImage: 'none',
-                    bgcolor: 'background.default'
-                }
-            }}
-        >
-            <DialogTitle sx={{
-                p: 3,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                bgcolor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                borderBottom: `1px solid ${theme.palette.divider}`
-            }}>
-                <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-                    <Box sx={{
-                        p: 1,
-                        borderRadius: 2,
-                        bgcolor: 'primary.main',
-                        color: 'primary.contrastText',
-                        display: 'flex'
-                    }}>
-                        <ReceiptIcon />
-                    </Box>
-                    <Box>
-                        <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                            {invoice ? "تعديل فاتورة مبيعات" : "إنشاء فاتورة مبيعات جديدة"}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                            يرجى إكمال البيانات المطلوبة بدقة لضمان صحة القيود المحاسبية.
-                        </Typography>
-                    </Box>
+        <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
+            <DialogTitle sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                    <ReceiptIcon />
+                    <Typography variant="h6">
+                        {invoice ? "تعديل فاتورة بيع" : "إنشاء فاتورة بيع"}
+                    </Typography>
                 </Box>
                 <Box>
                     {invoice && (
-                        <Tooltip title="تصدير Excel">
-                            <IconButton onClick={() => setExportDialogOpen(true)}>
-                                <FileDownloadIcon />
-                            </IconButton>
-                        </Tooltip>
+                        <IconButton onClick={() => setExportDialogOpen(true)} title="تصدير Excel">
+                            <FileDownloadIcon />
+                        </IconButton>
                     )}
-                    <IconButton onClick={onClose} sx={{ ml: 1 }}>
+                    <IconButton onClick={onClose}>
                         <CloseIcon />
                     </IconButton>
                 </Box>
@@ -581,295 +467,432 @@ export default function SalesInvoiceDialog({
                 columns={exportColumns}
             />
 
-            <DialogContent sx={{ p: 4 }}>
+            <DialogContent>
                 {error && (
-                    <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setError("")}>
+                    <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
                         {error}
                     </Alert>
                 )}
 
-                <Grid container spacing={3}>
-                    {/* Header Info Section */}
-                    <Grid item xs={12} md={8}>
-                        <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 3 }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <PeopleIcon fontSize="small" color="primary" /> بيانات العميل واللوجستيات
-                            </Typography>
+                <Card sx={{ mb: 3 }}>
+                    <CardContent>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    fullWidth
+                                    label="رقم الفاتورة"
+                                    value={invoiceHead.invoice_number}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, invoice_number: e.target.value })
+                                    }
+                                    placeholder="تلقائي في حال تركه فارغاً"
+                                    helperText="اتركه فارغاً للتوليد التلقائي"
+                                />
+                            </Grid>
+
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="العميل"
+                                    value={invoiceHead.party_id}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, party_id: e.target.value })
+                                    }
+                                >
+                                    <MenuItem value="">اختر العميل</MenuItem>
+                                    {customers
+                                        .filter((p) => p.party_type === "customer")
+                                        .map((c) => (
+                                            <MenuItem key={c.id} value={c.id}>
+                                                {c.name} {c.City?.name ? `(${c.City.name})` : ""}
+                                            </MenuItem>
+                                        ))}
+                                </TextField>
+                                {selectedCustomer && (
+                                    <Typography variant="caption">
+                                        رقم الهاتف: {selectedCustomer.phone || "غير متوفر"}
+                                    </Typography>
+                                )}
+                            </Grid>
+
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="المخزن"
+                                    value={invoiceHead.warehouse_id}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, warehouse_id: e.target.value })
+                                    }
+                                >
+                                    <MenuItem value="">اختر المخزن</MenuItem>
+                                    {warehouses.map((w) => (
+                                        <MenuItem key={w.id} value={w.id}>
+                                            {w.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
+
+                            <Grid item xs={12} md={4}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="الموظف"
+                                    value={invoiceHead.employee_id}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, employee_id: e.target.value })
+                                    }
+                                >
+                                    <MenuItem value="">اختر الموظف</MenuItem>
+                                    {employees.map((e) => (
+                                        <MenuItem key={e.id} value={e.id}>
+                                            {e.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="date"
+                                    fullWidth
+                                    label="تاريخ الفاتورة"
+                                    InputLabelProps={{ shrink: true }}
+                                    value={invoiceHead.invoice_date}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, invoice_date: e.target.value })
+                                    }
+                                />
+                            </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="date"
+                                    fullWidth
+                                    label="تاريخ الاستحقاق"
+                                    InputLabelProps={{ shrink: true }}
+                                    value={invoiceHead.due_date}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, due_date: e.target.value })
+                                    }
+                                />
+                            </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="نوع الفاتورة"
+                                    value={invoiceHead.invoice_type}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, invoice_type: e.target.value })
+                                    }
+                                >
+                                    <MenuItem value="normal">فاتورة عادية</MenuItem>
+                                    <MenuItem value="opening">رصيد افتتاحي</MenuItem>
+                                </TextField>
+                            </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="الحالة"
+                                    value={invoiceHead.status}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, status: e.target.value })
+                                    }
+                                >
+                                    {Object.entries(statusConfig).map(([key, cfg]) => (
+                                        <MenuItem key={key} value={key}>
+                                            {cfg.label}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
+                        </Grid>
+                    </CardContent>
+                </Card>
+
+                {/* === Items Section (Only for Normal Invoices) === */}
+                {invoiceHead.invoice_type === "normal" ? (
+                    <Card sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                                <Typography variant="h6">
+                                    <InventoryIcon /> أصناف الفاتورة ({items.length})
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
+                                    onClick={() => setShowItemForm(!showItemForm)}
+                                >
+                                    {showItemForm ? "إخفاء النموذج" : "إضافة صنف"}
+                                </Button>
+                            </Box>
+
+                            <Collapse in={showItemForm}>
+                                <Paper sx={{ p: 2, mb: 2 }}>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6} md={3}>
+                                            <TextField
+                                                select
+                                                fullWidth
+                                                label="المنتج"
+                                                value={itemForm.product_id}
+                                                onChange={(e) => handleItemProductChange(e.target.value)}
+                                                size="small"
+                                            >
+                                                <MenuItem value="">اختر المنتج</MenuItem>
+                                                {products.map((p) => {
+                                                    const stock = p.current_inventory?.[0]?.quantity || 0;
+                                                    return (
+                                                        <MenuItem key={p.id} value={p.id} disabled={stock <= 0}>
+                                                            {p.name} (الرصيد: {stock})
+                                                        </MenuItem>
+                                                    );
+                                                })}
+                                            </TextField>
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={2}>
+                                            <TextField
+                                                type="number"
+                                                fullWidth
+                                                label="الكمية"
+                                                value={itemForm.quantity}
+                                                onChange={(e) =>
+                                                    setItemForm((f) => ({ ...f, quantity: e.target.value }))
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={2}>
+                                            <TextField
+                                                type="number"
+                                                fullWidth
+                                                label="السعر"
+                                                value={itemForm.price}
+                                                onChange={(e) =>
+                                                    setItemForm((f) => ({ ...f, price: e.target.value }))
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={1.5}>
+                                            <TextField
+                                                type="number"
+                                                fullWidth
+                                                label="الخصم %"
+                                                value={itemForm.discount_percent || ""}
+                                                onChange={(e) =>
+                                                    setItemForm((f) => ({ ...f, discount_percent: e.target.value }))
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={1.5}>
+                                            <TextField
+                                                type="number"
+                                                fullWidth
+                                                label="الضريبة %"
+                                                value={itemForm.tax_percent}
+                                                onChange={(e) =>
+                                                    setItemForm((f) => ({ ...f, tax_percent: e.target.value }))
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={1.5}>
+                                            <TextField
+                                                type="number"
+                                                fullWidth
+                                                label="بونص"
+                                                value={itemForm.bonus}
+                                                onChange={(e) =>
+                                                    setItemForm((f) => ({ ...f, bonus: e.target.value }))
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={1.5}>
+                                            <Button
+                                                variant="contained"
+                                                fullWidth
+                                                onClick={addItemTemp}
+                                                startIcon={<AddIcon />}
+                                            >
+                                                إضافة
+                                            </Button>
+                                        </Grid>
+                                    </Grid>
+                                </Paper>
+                            </Collapse>
+
+                            {loadingMeta ? (
+                                <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+                                    <CircularProgress />
+                                </Box>
+                            ) : (
+                                <MaterialReactTable
+                                    columns={itemColumns}
+                                    data={items}
+                                    enablePagination={false}
+                                    enableTopToolbar={false}
+                                />
+                            )}
+                        </CardContent>
+                    </Card>
+                ) : (
+                    // === Opening Balance Input (Only for Opening Invoices) ===
+                    <Card sx={{ mb: 2 }}>
+                        <CardContent>
+                            <Box sx={{ mb: 2 }}>
+                                <Typography variant="h6" gutterBottom>
+                                    <MoneyIcon /> الرصيد الافتتاحي
+                                </Typography>
+                                <Alert severity="info" sx={{ mb: 2 }}>
+                                    للفواتير الافتتاحية، أدخل المبلغ الإجمالي مباشرة. الأصناف غير مطلوبة.
+                                </Alert>
+                            </Box>
                             <Grid container spacing={2}>
                                 <Grid item xs={12} md={6}>
                                     <TextField
-                                        select
+                                        type="number"
                                         fullWidth
-                                        label="العميل"
-                                        value={invoiceHead.party_id}
-                                        onChange={(e) => setInvoiceHead({ ...invoiceHead, party_id: e.target.value })}
-                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                                    >
-                                        <MenuItem value="">اختر العميل</MenuItem>
-                                        {customers.filter((p) => p.party_type === "customer").map((c) => (
-                                            <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-                                        ))}
-                                    </TextField>
-                                </Grid>
-                                <Grid item xs={12} md={6}>
-                                    <TextField
-                                        select
-                                        fullWidth
-                                        label="المخزن"
-                                        value={invoiceHead.warehouse_id}
-                                        onChange={(e) => setInvoiceHead({ ...invoiceHead, warehouse_id: e.target.value })}
-                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                                    >
-                                        <MenuItem value="">اختر المخزن</MenuItem>
-                                        {warehouses.map((w) => (
-                                            <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>
-                                        ))}
-                                    </TextField>
-                                </Grid>
-                                <Grid item xs={12} md={6}>
-                                    <TextField
-                                        type="date"
-                                        fullWidth
-                                        label="تاريخ الفاتورة"
-                                        InputLabelProps={{ shrink: true }}
-                                        value={invoiceHead.invoice_date}
-                                        onChange={(e) => setInvoiceHead({ ...invoiceHead, invoice_date: e.target.value })}
-                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+                                        label="المبلغ الإجمالي"
+                                        value={invoiceHead.total_amount}
+                                        onChange={(e) =>
+                                            setInvoiceHead({ ...invoiceHead, total_amount: Number(e.target.value) })
+                                        }
+                                        inputProps={{ min: 0, step: 0.01 }}
+                                        helperText="أدخل مبلغ الرصيد الافتتاحي"
                                     />
-                                </Grid>
-                                <Grid item xs={12} md={6}>
-                                    <TextField
-                                        select
-                                        fullWidth
-                                        label="الموظف المسئول"
-                                        value={invoiceHead.employee_id}
-                                        onChange={(e) => setInvoiceHead({ ...invoiceHead, employee_id: e.target.value })}
-                                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                                    >
-                                        <MenuItem value="">اختر الموظف</MenuItem>
-                                        {employees.map((e) => (
-                                            <MenuItem key={e.id} value={e.id}>{e.name}</MenuItem>
-                                        ))}
-                                    </TextField>
                                 </Grid>
                             </Grid>
-                        </Paper>
+                        </CardContent>
+                    </Card>
+                )}
 
-                        {/* Items Section */}
-                        {invoiceHead.invoice_type === "normal" ? (
-                            <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
-                                <Box sx={{ p: 2.5, display: "flex", justifyContent: "space-between", alignItems: "center", bgcolor: 'rgba(0,0,0,0.01)' }}>
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <InventoryIcon fontSize="small" color="primary" /> أصناف الفاتورة ({items.length})
-                                    </Typography>
-                                    <Button
-                                        variant="contained"
-                                        size="small"
-                                        startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
-                                        onClick={() => setShowItemForm(!showItemForm)}
-                                        sx={{ borderRadius: 2 }}
-                                    >
-                                        {showItemForm ? "إغلاق النموذج" : "إضافة صنف"}
-                                    </Button>
-                                </Box>
-                                <Divider />
+                <Card>
+                    <CardContent>
+                        <Grid container spacing={2} sx={{ mb: 2 }}>
+                            <Grid item xs={12} md={2}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="خصم إضافي %"
+                                    value={invoiceHead.additional_discount_percent}
+                                    onChange={(e) => {
+                                        const percent = Number(e.target.value) || 0;
+                                        const amount = (Number(invoiceHead.subtotal) * percent) / 100;
+                                        setInvoiceHead({
+                                            ...invoiceHead,
+                                            additional_discount_percent: e.target.value,
+                                            additional_discount: amount.toFixed(2)
+                                        });
+                                    }}
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={2}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="خصم إضافي (مبلغ)"
+                                    value={invoiceHead.additional_discount}
+                                    onChange={(e) => {
+                                        const amount = Number(e.target.value) || 0;
+                                        const percent = invoiceHead.subtotal > 0 ? (amount / Number(invoiceHead.subtotal)) * 100 : 0;
+                                        setInvoiceHead({
+                                            ...invoiceHead,
+                                            additional_discount: e.target.value,
+                                            additional_discount_percent: percent.toFixed(2)
+                                        });
+                                    }}
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="نسبة ضريبة القيمة المضافة %"
+                                    value={invoiceHead.vat_rate}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, vat_rate: e.target.value })
+                                    }
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="نسبة ضريبة أخرى %"
+                                    value={invoiceHead.tax_rate}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, tax_rate: e.target.value })
+                                    }
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    type="number"
+                                    fullWidth
+                                    label="تكلفة الشحن"
+                                    value={invoiceHead.shipping_amount}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, shipping_amount: e.target.value })
+                                    }
+                                    size="small"
+                                />
+                            </Grid>
+                        </Grid>
 
-                                <Collapse in={showItemForm}>
-                                    <Box sx={{ p: 3, bgcolor: 'action.hover' }}>
-                                        <Grid container spacing={2}>
-                                            <Grid item xs={12} md={5}>
-                                                <TextField
-                                                    select
-                                                    fullWidth
-                                                    label="المنتج"
-                                                    value={itemForm.product_id}
-                                                    onChange={(e) => handleItemProductChange(e.target.value)}
-                                                    size="small"
-                                                >
-                                                    <MenuItem value="">اختر المنتج</MenuItem>
-                                                    {products.map((p) => (
-                                                        <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
-                                                    ))}
-                                                </TextField>
-                                            </Grid>
-                                            <Grid item xs={6} md={2}>
-                                                <TextField
-                                                    type="number"
-                                                    fullWidth
-                                                    label="الكمية"
-                                                    value={itemForm.quantity}
-                                                    onChange={(e) => setItemForm((f) => ({ ...f, quantity: e.target.value }))}
-                                                    size="small"
-                                                />
-                                            </Grid>
-                                            <Grid item xs={6} md={2.5}>
-                                                <TextField
-                                                    type="number"
-                                                    fullWidth
-                                                    label="السعر"
-                                                    value={itemForm.price}
-                                                    onChange={(e) => setItemForm((f) => ({ ...f, price: e.target.value }))}
-                                                    size="small"
-                                                />
-                                            </Grid>
-                                            <Grid item xs={12} md={2.5}>
-                                                <Button
-                                                    variant="contained"
-                                                    fullWidth
-                                                    onClick={addItemTemp}
-                                                    sx={{ height: 40, borderRadius: 2 }}
-                                                >
-                                                    إضافة للجدول
-                                                </Button>
-                                            </Grid>
-                                        </Grid>
-                                    </Box>
-                                    <Divider />
-                                </Collapse>
-
-                                <Box sx={{ p: 0 }}>
-                                    {loadingMeta ? (
-                                        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}><CircularProgress /></Box>
-                                    ) : (
-                                        <MaterialReactTable
-                                            columns={itemColumns}
-                                            data={items}
-                                            enablePagination={false}
-                                            enableTopToolbar={false}
-                                            muiTablePaperProps={{ elevation: 0 }}
-                                            muiTableHeadCellProps={{ sx: { bgcolor: 'background.default', py: 2 } }}
-                                        />
-                                    )}
-                                </Box>
-                            </Paper>
-                        ) : (
-                            <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, borderStyle: 'dashed', textAlign: 'center' }}>
-                                <MoneyIcon sx={{ fontSize: 40, color: 'primary.main', mb: 1, opacity: 0.5 }} />
-                                <Typography variant="h6">رصيد افتتاحي</Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                    يرجى إدخال المبلغ الإجمالي مباشرة في قسم الأسعار أدناه.
+                        <Stack spacing={1}>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography>المجموع الفرعي:</Typography>
+                                <Typography>${Number(invoiceHead.subtotal || 0).toFixed(2)}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography>قيمة ضريبة القيمة المضافة ({invoiceHead.vat_rate}%):</Typography>
+                                <Typography>${Number(invoiceHead.vat_amount || 0).toFixed(2)}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography>قيمة الضريبة الأخرى ({invoiceHead.tax_rate}%):</Typography>
+                                <Typography>${Number(invoiceHead.tax_amount || 0).toFixed(2)}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Typography variant="h6">
+                                    <MoneyIcon /> إجمالي الفاتورة
                                 </Typography>
-                            </Paper>
-                        )}
-                    </Grid>
-
-                    {/* Summary Section */}
-                    <Grid item xs={12} md={4}>
-                        <Stack spacing={3}>
-                            <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <MoneyIcon fontSize="small" color="primary" /> الأسعار والضرائب
+                                <Typography variant="h4" color="primary">
+                                    ${Number(invoiceHead.total_amount || 0).toFixed(2)}
                                 </Typography>
-                                <Stack spacing={2}>
-                                    <TextField
-                                        label="الخصم الإضافي %"
-                                        type="number"
-                                        fullWidth
-                                        value={invoiceHead.additional_discount_percent}
-                                        onChange={(e) => {
-                                            const percent = Number(e.target.value) || 0;
-                                            const amount = (Number(invoiceHead.subtotal) * percent) / 100;
-                                            setInvoiceHead({
-                                                ...invoiceHead,
-                                                additional_discount_percent: e.target.value,
-                                                additional_discount: amount.toFixed(2)
-                                            });
-                                        }}
-                                        size="small"
-                                    />
-                                    <TextField
-                                        label="ضريبة القيمة المضافة %"
-                                        type="number"
-                                        fullWidth
-                                        value={invoiceHead.vat_rate}
-                                        onChange={(e) => setInvoiceHead({ ...invoiceHead, vat_rate: e.target.value })}
-                                        size="small"
-                                    />
-                                    <TextField
-                                        label="تكلفة الشحن"
-                                        type="number"
-                                        fullWidth
-                                        value={invoiceHead.shipping_amount}
-                                        onChange={(e) => setInvoiceHead({ ...invoiceHead, shipping_amount: e.target.value })}
-                                        size="small"
-                                    />
-                                </Stack>
-
-                                <Box sx={{ mt: 4, pt: 2, borderTop: `1px dashed ${theme.palette.divider}` }}>
-                                    <Stack spacing={1.5}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" color="text.secondary">المجموع قبل الضريبة</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 700 }}>{Number(invoiceHead.subtotal).toLocaleString()} ج.م</Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" color="text.secondary">إجمالي الضريبة</Typography>
-                                            <Typography variant="body2" sx={{ fontWeight: 700 }}>{Number(invoiceHead.vat_amount).toLocaleString()} ج.م</Typography>
-                                        </Box>
-                                        <Box sx={{
-                                            mt: 2,
-                                            p: 2,
-                                            borderRadius: 2,
-                                            bgcolor: 'primary.main',
-                                            color: 'primary.contrastText',
-                                            textAlign: 'center',
-                                            boxShadow: `0 4px 12px ${theme.palette.primary.main}40`
-                                        }}>
-                                            <Typography variant="caption" sx={{ opacity: 0.8, textTransform: 'uppercase', letterSpacing: 1 }}>الإجمالي النهائي</Typography>
-                                            <Typography variant="h4" sx={{ fontWeight: 900 }}>
-                                                {Number(invoiceHead.total_amount).toLocaleString()} <Typography component="span" variant="h6">ج.م</Typography>
-                                            </Typography>
-                                        </Box>
-                                    </Stack>
-                                </Box>
-                            </Paper>
-
-                            <Paper variant="outlined" sx={{ p: 3, borderRadius: 3 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}>إعدادات متقدمة</Typography>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <TextField
-                                            select
-                                            fullWidth
-                                            label="نوع الفاتورة"
-                                            value={invoiceHead.invoice_type}
-                                            onChange={(e) => setInvoiceHead({ ...invoiceHead, invoice_type: e.target.value })}
-                                            size="small"
-                                        >
-                                            <MenuItem value="normal">فاتورة عادية</MenuItem>
-                                            <MenuItem value="opening">رصيد افتتاحي</MenuItem>
-                                        </TextField>
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <TextField
-                                            select
-                                            fullWidth
-                                            label="الحالة"
-                                            value={invoiceHead.status}
-                                            onChange={(e) => setInvoiceHead({ ...invoiceHead, status: e.target.value })}
-                                            size="small"
-                                        >
-                                            {Object.entries(statusConfig).map(([key, cfg]) => (
-                                                <MenuItem key={key} value={key}>{cfg.label}</MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </Grid>
-                                </Grid>
-                            </Paper>
+                            </Stack>
                         </Stack>
-                    </Grid>
-                </Grid>
+                    </CardContent>
+                </Card>
             </DialogContent>
 
-            <DialogActions sx={{ p: 3, borderTop: `1px solid ${theme.palette.divider}`, bgcolor: 'action.hover' }}>
-                <Button onClick={onClose} sx={{ borderRadius: 2, px: 3 }}>إلغاء</Button>
+            <DialogActions>
+                <Button onClick={onClose}>إلغاء</Button>
                 <Button
                     variant="contained"
                     onClick={handleSaveAll}
                     disabled={saving || loadingMeta}
-                    startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-                    sx={{ borderRadius: 2, px: 4, py: 1 }}
+                    startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
                 >
-                    {saving ? "جاري المعالجة..." : invoice ? "حفظ التغييرات" : "اعتماد الفاتورة"}
+                    {saving ? "جاري الحفظ..." : invoice ? "تحديث الفاتورة" : "حفظ الفاتورة"}
                 </Button>
             </DialogActions>
         </Dialog>

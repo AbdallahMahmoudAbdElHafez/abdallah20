@@ -79,7 +79,6 @@ const statusConfig = {
 };
 
 export default function SalesInvoicesPage() {
-    const theme = useTheme();
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -92,6 +91,7 @@ export default function SalesInvoicesPage() {
     const [editingInvoice, setEditingInvoice] = useState(null);
     const [editingItems, setEditingItems] = useState([]);
 
+    // Payments Dialog State
     const [paymentsOpen, setPaymentsOpen] = useState(false);
     const [selectedInvoice, setSelectedInvoice] = useState(null);
 
@@ -100,6 +100,7 @@ export default function SalesInvoicesPage() {
         setPaymentsOpen(true);
     };
 
+    // Preview State
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewInvoice, setPreviewInvoice] = useState(null);
     const [previewItems, setPreviewItems] = useState([]);
@@ -109,6 +110,7 @@ export default function SalesInvoicesPage() {
             fetchSalesInvoiceItems({ sales_invoice_id: invoice.id })
         ).unwrap();
 
+        // Map items to include product names
         const mappedItems = res.map(item => ({
             ...item,
             product_name: products.find(p => p.id === item.product_id)?.name || "Unknown Product"

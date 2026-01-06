@@ -16,8 +16,7 @@ import { ThemeProvider, CssBaseline } from "@mui/material";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ar } from 'date-fns/locale'; // إذا كنت تحتاج اللغة العربية
-import { ThemeContextProvider } from "./contexts/ThemeContext";
-
+import theme from "./theme.js";
 const cacheRtl = createCache({
   key: "muirtl",
   stylisPlugins: [prefixer, rtlPlugin],
@@ -27,14 +26,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
       <CacheProvider value={cacheRtl}>
-        <ThemeContextProvider>
-          <CssBaseline />
+        <ThemeProvider theme={theme}>
+          <CssBaseline /> {/* بيظبط الـ reset للـ CSS */}
           <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ar}>
+
             <App />
           </LocalizationProvider>
-        </ThemeContextProvider>
+        </ThemeProvider>
       </CacheProvider>
     </Provider>
+
   </React.StrictMode>
 );
 

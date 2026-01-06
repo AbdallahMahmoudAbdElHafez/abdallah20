@@ -8,7 +8,6 @@ import {
   Typography,
   Box,
   Divider,
-  useTheme,
 } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
@@ -31,7 +30,7 @@ const navItems = [
   { label: "فئات المصروفات", path: "/expense-categories" },
   { label: "مكونات التصنيع", path: "/bill-of-material" },
   { label: "الأطباء", path: "/doctors" },
-  { label: "إعدادات المظهر", path: "/theme-settings" },
+
 ];
 const productsMenu = [
   { label: "المنتجات", path: "/products" },
@@ -82,7 +81,6 @@ const reportsMenu = [
 
 ];
 function Sidebar() {
-  const theme = useTheme();
   const location = useLocation();
   const [openPurchases, setOpenPurchases] = useState(false);
   const [openWarehouses, setOpenWarehouses] = useState(false);
@@ -109,11 +107,9 @@ function Sidebar() {
         "& .MuiDrawer-paper": {
           width: drawerWidth,
           boxSizing: "border-box",
-          bgcolor: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.primary.dark,
-          backgroundImage: theme.palette.mode === 'dark' ? 'none' : `linear-gradient(180deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+          bgcolor: "#1a237e",
           color: "white",
           direction: "rtl",
-          borderLeft: `1px solid ${theme.palette.divider}`,
         },
       }}
     >
