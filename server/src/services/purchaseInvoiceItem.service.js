@@ -6,7 +6,21 @@ import InventoryTransactionService from './inventoryTransaction.service.js';
 class PurchaseInvoiceItemService {
 
   static async findAll(invoiceId) {
-    return PurchaseInvoiceItem.findAll({ where: { purchase_invoice_id: invoiceId } });
+    return PurchaseInvoiceItem.findAll({
+      where: { purchase_invoice_id: invoiceId },
+      include: [
+        { association: "product" },
+        {
+          association: "inventory_transactions",
+          include: [
+            {
+              association: "transaction_batches",
+              include: ["batch"]
+            }
+          ]
+        }
+      ]
+    });
   }
 
   static async findById(id) {

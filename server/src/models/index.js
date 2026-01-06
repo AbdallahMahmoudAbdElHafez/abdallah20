@@ -225,6 +225,21 @@ PurchaseInvoiceItem.belongsTo(Product, {
   as: "product",
 });
 
+// PurchaseInvoiceItem ↔ InventoryTransaction (for batch info)
+PurchaseInvoiceItem.hasMany(InventoryTransaction, {
+  foreignKey: "source_id",
+  constraints: false,
+  scope: {
+    source_type: "purchase"
+  },
+  as: "inventory_transactions"
+});
+InventoryTransaction.belongsTo(PurchaseInvoiceItem, {
+  foreignKey: "source_id",
+  constraints: false,
+  as: "purchase_invoice_item"
+});
+
 InventoryTransaction.belongsTo(Product, {
   foreignKey: "product_id",
   as: "product",
@@ -630,6 +645,21 @@ Product.hasMany(SalesInvoiceItem, { foreignKey: "product_id", as: "sales_invoice
 // SalesInvoiceItem ↔ Warehouse
 SalesInvoiceItem.belongsTo(Warehouse, { foreignKey: "warehouse_id", as: "warehouse" });
 Warehouse.hasMany(SalesInvoiceItem, { foreignKey: "warehouse_id", as: "sales_invoice_items" });
+
+// SalesInvoiceItem ↔ InventoryTransaction (for batch info)
+SalesInvoiceItem.hasMany(InventoryTransaction, {
+  foreignKey: "source_id",
+  constraints: false,
+  scope: {
+    source_type: "sales_invoice"
+  },
+  as: "inventory_transactions"
+});
+InventoryTransaction.belongsTo(SalesInvoiceItem, {
+  foreignKey: "source_id",
+  constraints: false,
+  as: "sales_invoice_item"
+});
 
 // SalesInvoicePayment Associations
 SalesInvoicePayment.belongsTo(SalesInvoice, { foreignKey: "sales_invoice_id", as: "sales_invoice" });

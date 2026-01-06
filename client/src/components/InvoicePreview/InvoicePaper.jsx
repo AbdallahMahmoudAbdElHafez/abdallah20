@@ -10,7 +10,7 @@ const formatCurrency = (amount) => {
     }).format(amount || 0);
 };
 
-export default function InvoicePaper({ invoice, items, columns, type = 'sales', company }) {
+export default function InvoicePaper({ invoice, items, columns, type = 'sales', company, showPhone }) {
     if (!invoice) return null;
 
     // Helper to check if col is visible
@@ -41,7 +41,7 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                     <div style={{ fontSize: '14px', color: '#7f8c8d', marginTop: '5px' }}>
                         {company?.city?.name && <span>{company.city.name}</span>}
                         {company?.address && <span>، {company.address}</span>}<br />
-                        {company?.phone && <span>هاتف: {company.phone}</span>}<br />
+                        {showPhone && company?.phone && <span>هاتف: {company.phone}</span>}<br />
                         {company?.email && <span>البريد الإلكتروني: {company.email}</span>}<br />
                         {company?.commercial_register && <div>سجل تجاري : {company.commercial_register}</div>}
                         {company?.tax_number && <div>رقم التسجيل الضريبي : {company.tax_number}</div>}
@@ -70,7 +70,7 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                     <div className="inv-addr-title">فاتورة إلى ({partyLabel})</div>
                     <strong>{partyName}</strong><br />
                     {partyAddress}<br />
-                    {partyPhone && <span>هاتف: {partyPhone}</span>}
+                    {showPhone && partyPhone && <span>هاتف: {partyPhone}</span>}
                 </div>
             </div >
 
@@ -80,10 +80,12 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                     <tr>
                         <th>#</th>
                         {showCol('product') && <th>المنتج</th>}
+                        {showCol('batch_number') && <th>رقم التشغيلة</th>}
+                        {showCol('expiry_date') && <th>تاريخ الصلاحية</th>}
                         {showCol('quantity') && <th>الكمية</th>}
+                        {showCol('bonus') && <th>بونص</th>}
                         {showCol('unit_price') && <th>السعر</th>}
                         {showCol('total_before_discount') && <th>الإجمالي قبل الخصم</th>}
-                        {showCol('bonus') && <th>بونص</th>}
                         {showCol('discount_percent') && <th>نسبة الخصم</th>}
                         {showCol('discount') && <th>قيمة الخصم</th>}
                         {showCol('tax') && <th>الضريبة</th>}
@@ -112,10 +114,12 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                             <tr key={index}>
                                 <td>{index + 1}</td>
                                 {showCol('product') && <td>{item.product_name || item.Product?.name || "منتج"}</td>}
+                                {showCol('batch_number') && <td>{item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.batch_number || item.batch_number || "-"}</td>}
+                                {showCol('expiry_date') && <td>{item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.expiry_date || item.expiry_date || "-"}</td>}
                                 {showCol('quantity') && <td>{qty}</td>}
+                                {showCol('bonus') && <td>{bonus}</td>}
                                 {showCol('unit_price') && <td>{formatCurrency(price)}</td>}
                                 {showCol('total_before_discount') && <td>{formatCurrency(totalBeforeDiscount)}</td>}
-                                {showCol('bonus') && <td>{bonus}</td>}
                                 {showCol('discount_percent') && <td>{discountPercent.toFixed(2)}%</td>}
                                 {showCol('discount') && <td>{formatCurrency(discountVal)}</td>}
                                 {showCol('tax') && <td>-</td>}

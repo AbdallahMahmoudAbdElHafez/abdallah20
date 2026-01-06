@@ -38,10 +38,12 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
     // Initial Columns State
     const [columns, setColumns] = useState([
         { key: 'product', label: 'المنتج', visible: true },
+        { key: 'batch_number', label: 'رقم التشغيلة', visible: false },
+        { key: 'expiry_date', label: 'تاريخ الصلاحية', visible: false },
         { key: 'quantity', label: 'الكمية', visible: true },
+        { key: 'bonus', label: 'بونص', visible: true },
         { key: 'unit_price', label: 'سعر الوحدة', visible: true },
         { key: 'total_before_discount', label: 'الإجمالي قبل الخصم', visible: true },
-        { key: 'bonus', label: 'بونص', visible: true },
         { key: 'discount_percent', label: 'نسبة الخصم', visible: true },
         { key: 'discount', label: 'قيمة الخصم', visible: true },
         { key: 'tax', label: 'الضريبة', visible: true },
@@ -50,6 +52,7 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
 
     const [showCompanyAddress, setShowCompanyAddress] = useState(true);
     const [showCompanyIds, setShowCompanyIds] = useState(true);
+    const [showPhone, setShowPhone] = useState(false);
 
     const componentRef = useRef();
 
@@ -70,10 +73,12 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         if (open) {
             setColumns([
                 { key: 'product', label: 'المنتج', visible: true },
+                { key: 'batch_number', label: 'رقم التشغيلة', visible: false },
+                { key: 'expiry_date', label: 'تاريخ الصلاحية', visible: false },
                 { key: 'quantity', label: 'الكمية', visible: true },
+                { key: 'bonus', label: 'بونص', visible: true },
                 { key: 'unit_price', label: 'سعر الوحدة', visible: true },
                 { key: 'total_before_discount', label: 'الإجمالي قبل الخصم', visible: true },
-                { key: 'bonus', label: 'بونص', visible: true },
                 { key: 'discount_percent', label: 'نسبة الخصم', visible: true },
                 { key: 'discount', label: 'قيمة الخصم', visible: true },
                 { key: 'tax', label: 'الضريبة', visible: false }, // Default hidden
@@ -117,10 +122,12 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
             { header: '#', key: 'index', width: 5 },
         ];
         if (visibleCols.find(c => c.key === 'product')) wsColumns.push({ header: 'المنتج', key: 'product', width: 30 });
+        if (visibleCols.find(c => c.key === 'batch_number')) wsColumns.push({ header: 'رقم التشغيلة', key: 'batch_number', width: 15 });
+        if (visibleCols.find(c => c.key === 'expiry_date')) wsColumns.push({ header: 'تاريخ الصلاحية', key: 'expiry_date', width: 15 });
         if (visibleCols.find(c => c.key === 'quantity')) wsColumns.push({ header: 'الكمية', key: 'quantity', width: 10 });
+        if (visibleCols.find(c => c.key === 'bonus')) wsColumns.push({ header: 'بونص', key: 'bonus', width: 10 });
         if (visibleCols.find(c => c.key === 'unit_price')) wsColumns.push({ header: 'سعر الوحدة', key: 'unit_price', width: 15 });
         if (visibleCols.find(c => c.key === 'total_before_discount')) wsColumns.push({ header: 'الإجمالي قبل الخصم', key: 'total_before_discount', width: 15 });
-        if (visibleCols.find(c => c.key === 'bonus')) wsColumns.push({ header: 'بونص', key: 'bonus', width: 10 });
         if (visibleCols.find(c => c.key === 'discount_percent')) wsColumns.push({ header: 'نسبة الخصم', key: 'discount_percent', width: 12 });
         if (visibleCols.find(c => c.key === 'discount')) wsColumns.push({ header: 'قيمة الخصم', key: 'discount', width: 12 });
         if (visibleCols.find(c => c.key === 'tax')) wsColumns.push({ header: 'الضريبة', key: 'tax', width: 10 });
@@ -234,10 +241,18 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
             discountPercent = discountPercent || 0;
 
             if (visibleCols.find(c => c.key === 'product')) rowData.push(item.product_name || item.Product?.name);
+            if (visibleCols.find(c => c.key === 'batch_number')) {
+                const batchNum = item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.batch_number || item.batch_number || "-";
+                rowData.push(batchNum);
+            }
+            if (visibleCols.find(c => c.key === 'expiry_date')) {
+                const expiryDate = item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.expiry_date || item.expiry_date || "-";
+                rowData.push(expiryDate);
+            }
             if (visibleCols.find(c => c.key === 'quantity')) rowData.push(qty);
+            if (visibleCols.find(c => c.key === 'bonus')) rowData.push(bonus);
             if (visibleCols.find(c => c.key === 'unit_price')) rowData.push(price);
             if (visibleCols.find(c => c.key === 'total_before_discount')) rowData.push(totalBeforeDiscount);
-            if (visibleCols.find(c => c.key === 'bonus')) rowData.push(bonus);
             if (visibleCols.find(c => c.key === 'discount_percent')) rowData.push(`${discountPercent.toFixed(2)}%`);
             if (visibleCols.find(c => c.key === 'discount')) rowData.push(discountVal);
             if (visibleCols.find(c => c.key === 'tax')) rowData.push(0); // Placeholder
@@ -374,6 +389,10 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
                             control={<Switch size="small" checked={showCompanyIds} onChange={(e) => setShowCompanyIds(e.target.checked)} />}
                             label="عرض السجل والضريبة"
                         />
+                        <FormControlLabel
+                            control={<Switch size="small" checked={showPhone} onChange={(e) => setShowPhone(e.target.checked)} />}
+                            label="عرض رقم الهاتف"
+                        />
                     </Box>
 
                     <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
@@ -413,6 +432,7 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
                             company={selectedCompany}
                             showCompanyAddress={showCompanyAddress}
                             showCompanyIds={showCompanyIds}
+                            showPhone={showPhone}
                         />
                     </div>
                 </div>
