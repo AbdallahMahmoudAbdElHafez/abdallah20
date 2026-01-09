@@ -89,6 +89,7 @@ export default function SalesInvoiceDialog({
         tax_rate: 0,
         tax_amount: 0,
         total_amount: 0,
+        note: "",
     });
 
     const [items, setItems] = useState([]);
@@ -143,6 +144,7 @@ export default function SalesInvoiceDialog({
                 tax_rate: Number(invoice.tax_rate) || 0,
                 tax_amount: Number(invoice.tax_amount) || 0,
                 total_amount: Number(invoice.total_amount) || 0,
+                note: invoice.note ?? "",
             });
             setItems(
                 (itemsInit || []).map((it) => ({ ...it, tempId: Date.now() + Math.random() }))
@@ -167,6 +169,7 @@ export default function SalesInvoiceDialog({
                 tax_rate: 0,
                 tax_amount: 0,
                 total_amount: 0,
+                note: "",
             });
             setItems([]);
         }
@@ -326,6 +329,7 @@ export default function SalesInvoiceDialog({
         { key: "vat_amount", label: "ضريبة القيمة المضافة" },
         { key: "tax_amount", label: "ضريبة أخرى" },
         { key: "total_amount", label: "الإجمالي النهائي" },
+        { key: "note", label: "ملاحظات" },
     ];
 
     const handleExportExcel = (selectedColumns) => {
@@ -377,6 +381,7 @@ export default function SalesInvoiceDialog({
         if (isSelected("vat_amount")) footerData.push(["ضريبة القيمة المضافة", invoiceHead.vat_amount]);
         if (isSelected("tax_amount")) footerData.push(["ضريبة أخرى", invoiceHead.tax_amount]);
         if (isSelected("total_amount")) footerData.push(["الإجمالي النهائي", invoiceHead.total_amount]);
+        if (isSelected("note")) footerData.push(["ملاحظات", invoiceHead.note]);
 
         const wsData = [
             ...headData,
@@ -856,6 +861,18 @@ export default function SalesInvoiceDialog({
                                     size="small"
                                 />
                             </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    multiline
+                                    rows={2}
+                                    label="ملاحظات"
+                                    value={invoiceHead.note}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, note: e.target.value })
+                                    }
+                                />
+                            </Grid>
                         </Grid>
 
                         <Stack spacing={1}>
@@ -895,6 +912,6 @@ export default function SalesInvoiceDialog({
                     {saving ? "جاري الحفظ..." : invoice ? "تحديث الفاتورة" : "حفظ الفاتورة"}
                 </Button>
             </DialogActions>
-        </Dialog>
+        </Dialog >
     );
 }

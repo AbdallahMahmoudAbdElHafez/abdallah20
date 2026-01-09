@@ -3,7 +3,7 @@ import service from "../services/salesInvoices.service.js";
 export default {
     getAll: async (req, res) => {
         try {
-            const data = await service.getAll();
+            const data = await service.getAll(req.query);
             res.json(data);
         } catch (error) {
             res.status(500).json({ message: error.message });

@@ -123,6 +123,13 @@ class InventoryTransactionService {
       } catch (err) {
         console.error("Failed to sync journal entry for inventory adjustment:", err);
       }
+    } else if (data.source_type === 'opening' && totalQuantity > 0) {
+      // 6. Create Journal Entry for Opening Balance
+      try {
+        await InventoryTransactionService.syncOpeningJournalEntry(trx, options);
+      } catch (err) {
+        console.error("Failed to sync journal entry for inventory opening balance:", err);
+      }
     }
 
     return trx;
@@ -235,12 +242,18 @@ class InventoryTransactionService {
       );
     }
 
-    // Update Journal Entry for Adjustments
+    // Update Journal Entry for Adjustments or Opening
     if ((data.source_type || trx.source_type) === 'adjustment') {
       try {
         await InventoryTransactionService.syncJournalEntry(trx, options);
       } catch (err) {
         console.error("Failed to sync journal entry for inventory adjustment update:", err);
+      }
+    } else if ((data.source_type || trx.source_type) === 'opening') {
+      try {
+        await InventoryTransactionService.syncOpeningJournalEntry(trx, options);
+      } catch (err) {
+        console.error("Failed to sync journal entry for inventory opening update:", err);
       }
     }
 
@@ -302,6 +315,14 @@ class InventoryTransactionService {
         }
       } catch (err) {
         console.error("Failed to delete journal entry for inventory adjustment:", err);
+      }
+    } else if (trx.source_type === 'opening') {
+      try {
+        const { JournalEntry } = await import("../models/index.js");
+        // Using ID 73 as requested for opening inventory
+        await JournalEntry.destroy({ where: { reference_type_id: 73, reference_id: id }, ...options });
+      } catch (err) {
+        console.error("Failed to delete journal entry for inventory opening:", err);
       }
     }
 
@@ -400,6 +421,113 @@ class InventoryTransactionService {
       lines: lines,
       entryTypeId: ENTRY_TYPES.INVENTORY_COUNT // 44
     }, options);
+  }
+
+  static async syncOpeningJournalEntry(trx, options = {}) {
+    const { createJournalEntry } = await import('./journal.service.js');
+    const { JournalEntry, JournalEntryLine, Product: ProductModel } = await import('../models/index.js');
+
+    // 1. Define Constants
+    const REFERENCE_TYPE_ID = 73; // Opening Inventory Reference Type
+    const ENTRY_TYPE_ID = 1;      // Opening Entry Type
+    const CAPITAL_ACCOUNT_ID = 10; // رأس المال
+
+    // 2. Prepare Account Mapping
+    const INVENTORY_ACCOUNTS = {
+      FINISHED_GOODS: 110,
+      RAW_MATERIALS: 111,
+      DEFAULT: 49
+    };
+
+    const product = await ProductModel.findByPk(trx.product_id, options);
+    const inventoryAccountId = product?.type_id === 1 ? INVENTORY_ACCOUNTS.FINISHED_GOODS :
+      (product?.type_id === 2 ? INVENTORY_ACCOUNTS.RAW_MATERIALS : INVENTORY_ACCOUNTS.DEFAULT);
+
+    // 3. Calculate total cost
+    const trxBatches = await InventoryTransactionBatches.findAll({
+      where: { inventory_transaction_id: trx.id },
+      ...options
+    });
+
+    let totalCost = 0;
+    if (trxBatches.length > 0) {
+      totalCost = trxBatches.reduce((sum, b) => sum + (Number(b.quantity) * Number(b.cost_per_unit || product?.cost_price || 0)), 0);
+    } else {
+      totalCost = Number(trx.quantity) * Number(product?.cost_price || 0);
+    }
+
+    if (totalCost <= 0) return;
+
+    // 4. Create Lines Data
+    const lines = [];
+
+    // Dr Inventory (110/111/49)
+    lines.push({
+      account_id: inventoryAccountId,
+      debit: totalCost,
+      credit: 0,
+      description: `مخزون افتتاحي - ${product?.name || ''} - ${trx.note || ''}`
+    });
+
+    // Cr Capital (10)
+    lines.push({
+      account_id: CAPITAL_ACCOUNT_ID,
+      debit: 0,
+      credit: totalCost,
+      description: `رأس المال - مخزون افتتاحي - ${product?.name || ''}`
+    });
+
+    // 5. Find or Create Journal Entry
+    // We check for existing entry (including soft deleted ones if necessary, but usually checking active is enough unless index is strict)
+    // To be safe against "Duplicate entry" on unique index, we should find strictly by uniqueness keys.
+    let entry = await JournalEntry.findOne({
+      where: { reference_type_id: REFERENCE_TYPE_ID, reference_id: trx.id },
+      paranoid: false, // Check even if soft deleted to avoid UniqueConstraintError
+      ...options
+    });
+
+    if (entry) {
+      // Restore if it was soft deleted
+      if (entry.deleted_at) {
+        await entry.restore(options);
+      }
+
+      // Update existing entry
+      await entry.update({
+        entry_type_id: ENTRY_TYPE_ID,
+        date: trx.transaction_date,
+        description: `قيد افتتاحي للمخزون - ${trx.note || ''}`,
+        is_posted: 1
+      }, options);
+
+      // Delete existing lines (hard delete to replace)
+      await JournalEntryLine.destroy({
+        where: { journal_entry_id: entry.id },
+        force: true, // Force delete lines to cleanly replace
+        ...options
+      });
+    } else {
+      // Create new entry
+      entry = await JournalEntry.create({
+        reference_type_id: REFERENCE_TYPE_ID,
+        reference_id: trx.id,
+        entry_type_id: ENTRY_TYPE_ID,
+        date: trx.transaction_date,
+        description: `قيد افتتاحي للمخزون - ${trx.note || ''}`,
+        is_posted: 1
+      }, options);
+    }
+
+    // 6. Create Lines
+    const entryLines = lines.map(line => ({
+      journal_entry_id: entry.id,
+      account_id: line.account_id,
+      debit: line.debit,
+      credit: line.credit,
+      description: line.description
+    }));
+
+    await JournalEntryLine.bulkCreate(entryLines, options);
   }
   /**
    * Get batches using FIFO method

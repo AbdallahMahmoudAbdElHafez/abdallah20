@@ -25,8 +25,9 @@ import {
 import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchBatches } from "../features/batches/batchesSlice";
-import { AddCircle as AddCircleIcon, RemoveCircle as RemoveCircleIcon } from "@mui/icons-material";
+import { AddCircle as AddCircleIcon, RemoveCircle as RemoveCircleIcon, Download as DownloadIcon } from "@mui/icons-material";
 import { IconButton, Grid } from "@mui/material";
+import { exportToExcel } from "../utils/exportUtils";
 
 const InventoryTransactionsPage = () => {
   const dispatch = useDispatch();
@@ -120,9 +121,10 @@ const InventoryTransactionsPage = () => {
     },
     { accessorKey: "transaction_type", header: "النوع" },
     {
-      accessorKey: "quantity",
+      id: "quantity",
+      accessorFn: (row) => row.transaction_batches?.reduce((sum, b) => sum + Number(b.quantity), 0) || 0,
       header: "الكمية",
-      Cell: ({ row }) => row.original.transaction_batches?.reduce((sum, b) => sum + Number(b.quantity), 0) || 0
+      Cell: ({ cell }) => cell.getValue()
     },
     {
       header: "رقم التشغيلة",
@@ -196,6 +198,25 @@ const InventoryTransactionsPage = () => {
           columns={columns} data={transactions}
           enableGlobalFilter
           enableTopToolbar
+          enableExporting
+          renderTopToolbarCustomActions={({ table }) => (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                color="secondary"
+                onClick={() => {
+                  exportToExcel(
+                    table.getFilteredRowModel().rows,
+                    table.getVisibleLeafColumns(),
+                    'Inventory_Transactions'
+                  );
+                }}
+                startIcon={<DownloadIcon />}
+                variant="outlined"
+              >
+                تصدير للاكسل
+              </Button>
+            </Box>
+          )}
           {...defaultTableProps}
         />
       )}
@@ -245,6 +266,7 @@ const InventoryTransactionsPage = () => {
             value={form.source_type}
             onChange={(e) => setForm({ ...form, source_type: e.target.value })}
           >
+            <MenuItem value="opening">رصيد افتتاحي</MenuItem>
             <MenuItem value="purchase">مشتريات</MenuItem>
             <MenuItem value="manufacturing">تصنيع</MenuItem>
             <MenuItem value="transfer">تحويل</MenuItem>

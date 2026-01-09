@@ -3,14 +3,33 @@ import { Op } from "sequelize";
 import InventoryTransactionService from './inventoryTransaction.service.js';
 
 export default {
-    getAll: async () => {
+    getAll: async (params = {}) => {
+        const { month, year } = params;
+        const whereClause = {};
+
+        if (month && year) {
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0);
+            whereClause.invoice_date = {
+                [Op.between]: [startDate, endDate]
+            };
+        } else if (year) {
+            const startDate = new Date(year, 0, 1);
+            const endDate = new Date(year, 11, 31);
+            whereClause.invoice_date = {
+                [Op.between]: [startDate, endDate]
+            };
+        }
+
         return await SalesInvoice.findAll({
+            where: whereClause,
             include: [
                 { association: "party" },
                 { association: "warehouse" },
                 { association: "employee" },
                 { association: "sales_order" }
-            ]
+            ],
+            order: [['invoice_date', 'DESC'], ['id', 'DESC']]
         });
     },
 
