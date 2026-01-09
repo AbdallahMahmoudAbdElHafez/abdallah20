@@ -178,10 +178,11 @@ const SalesReportPage = () => {
                 const price = parseFloat(item.price || 0);
                 const disc = parseFloat(item.discount || 0);
                 const tax = parseFloat(item.tax_amount || 0);
+                const vat = parseFloat(item.vat_amount || 0);
                 const base = qty * price;
                 row[`${p}_qty`] += qty;
                 row[`${p}_bonus`] += parseFloat(item.bonus || 0);
-                row[`${p}_val`] += base - disc + tax;
+                row[`${p}_val`] += base - disc + tax + vat;
                 if (prodAggregation[p]) {
                     prodAggregation[p].baseTotal += base;
                     prodAggregation[p].discTotal += disc;
@@ -242,16 +243,19 @@ const SalesReportPage = () => {
 
             {/* KPI Cards */}
             <Grid container spacing={3} mb={4}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={2.4}>
                     <StatCard title="إجمالي المبيعات" value={formatCurrency(summary.total_amount)} icon={<SaleIcon />} color="#2196f3" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={2.4}>
                     <StatCard title="عدد الفواتير" value={summary.total_invoices || 0} icon={<InvoiceIcon />} color="#4caf50" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <StatCard title="إجمالي الضرائب" value={formatCurrency(summary.total_tax)} icon={<BankIcon />} color="#ff9800" />
+                <Grid item xs={12} sm={6} md={2.4}>
+                    <StatCard title="ض.ق.م (14%)" value={formatCurrency(summary.total_vat)} icon={<BankIcon />} color="#9c27b0" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} sm={6} md={2.4}>
+                    <StatCard title="ضرائب أخرى" value={formatCurrency(summary.total_tax - summary.total_vat)} icon={<BankIcon />} color="#ff9800" />
+                </Grid>
+                <Grid item xs={12} sm={6} md={2.4}>
                     <StatCard title="إجمالي الخصم" value={formatCurrency(summary.total_discount)} icon={<TrendIcon />} color="#f44336" />
                 </Grid>
             </Grid>

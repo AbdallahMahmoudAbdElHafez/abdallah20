@@ -77,6 +77,19 @@ export default {
                 throw new Error('لا يمكن إضافة عناصر لفاتورة افتتاحية');
             }
 
+            // Calculate total items VAT if items exist
+            if (items && items.length > 0) {
+                invoiceData.vat_amount = items.reduce((sum, item) => {
+                    const price = Number(item.price) || 0;
+                    const qty = Number(item.quantity) || 0;
+                    const disc = Number(item.discount) || 0;
+                    const vatRate = Number(item.vat_rate) || 0;
+                    const itemVat = (qty * price - disc) * (vatRate / 100);
+                    item.vat_amount = itemVat; // Ensure item has vat_amount
+                    return sum + itemVat;
+                }, 0);
+            }
+
             // Create the invoice
             const invoice = await SalesInvoice.create(invoiceData, { transaction });
 
@@ -462,33 +475,104 @@ export default {
                 throw new Error('لا يمكن إضافة عناصر لفاتورة افتتاحية');
             }
 
+            const oldItems = await SalesInvoiceItem.findAll({
+                where: { sales_invoice_id: id },
+                transaction
+            });
+            const oldItemIds = oldItems.map(i => i.id);
+
             const oldTransactions = await InventoryTransaction.findAll({
-                where: { source_type: 'sales_invoice', source_id: id },
+                where: {
+                    source_type: 'sales_invoice',
+                    source_id: { [Op.in]: oldItemIds }
+                },
                 transaction
             });
             for (const trx of oldTransactions) {
                 await InventoryTransactionService.remove(trx.id, { transaction });
             }
 
+            if (items !== undefined && items.length > 0) {
+                invoiceData.vat_amount = items.reduce((sum, item) => {
+                    const price = Number(item.price) || 0;
+                    const qty = Number(item.quantity) || 0;
+                    const disc = Number(item.discount) || 0;
+                    const vatRate = Number(item.vat_rate) || 0;
+                    const itemVat = (qty * price - disc) * (vatRate / 100);
+                    item.vat_amount = itemVat;
+                    return sum + itemVat;
+                }, 0);
+            }
+
             await invoice.update(invoiceData, { transaction });
 
+
             if (items !== undefined) {
-                await SalesInvoiceItem.destroy({
+                // 1. Identify Items to Delete, Update, and Create
+                const existingItems = await SalesInvoiceItem.findAll({
                     where: { sales_invoice_id: id },
                     transaction
                 });
 
-                if (items.length > 0) {
-                    const itemsWithInvoiceId = items.map(item => ({
-                        ...item,
-                        sales_invoice_id: id,
-                        warehouse_id: item.warehouse_id || invoice.warehouse_id || null
-                    }));
-                    const createdItems = await SalesInvoiceItem.bulkCreate(itemsWithInvoiceId, { transaction });
+                const payloadItemIds = items.filter(i => i.id).map(i => i.id);
+                const itemsToDelete = existingItems.filter(ei => !payloadItemIds.includes(ei.id));
+                const itemsToUpdate = items.filter(i => i.id);
+                const itemsToCreate = items.filter(i => !i.id);
 
-                    // Calculate FIFO costs for the new items
+                // 2. Handle Deletions
+                for (const item of itemsToDelete) {
+                    // Remove inventory transactions
+                    const itemTrxs = await InventoryTransaction.findAll({
+                        where: { source_type: 'sales_invoice', source_id: item.id },
+                        transaction
+                    });
+                    for (const trx of itemTrxs) {
+                        await InventoryTransactionService.remove(trx.id, { transaction });
+                    }
+                    // Delete item
+                    await item.destroy({ transaction });
+                }
+
+                // 3. Handle Updates & Creations (Upsert Logic)
+                const processedItems = [];
+
+                // 3a. Update Existing Items
+                for (const itemData of itemsToUpdate) {
+                    const item = existingItems.find(ei => ei.id === itemData.id);
+                    if (item) {
+                        // Remove old inventory transactions for this item before updating
+                        const itemTrxs = await InventoryTransaction.findAll({
+                            where: { source_type: 'sales_invoice', source_id: item.id },
+                            transaction
+                        });
+                        for (const trx of itemTrxs) {
+                            await InventoryTransactionService.remove(trx.id, { transaction });
+                        }
+
+                        // Update item
+                        await item.update({
+                            ...itemData,
+                            sales_invoice_id: id,
+                            warehouse_id: itemData.warehouse_id || invoice.warehouse_id || null
+                        }, { transaction });
+                        processedItems.push(item);
+                    }
+                }
+
+                // 3b. Create New Items
+                for (const itemData of itemsToCreate) {
+                    const newItem = await SalesInvoiceItem.create({
+                        ...itemData,
+                        sales_invoice_id: id,
+                        warehouse_id: itemData.warehouse_id || invoice.warehouse_id || null
+                    }, { transaction });
+                    processedItems.push(newItem);
+                }
+
+                // 4. Handle Inventory Transactions for all final items (processedItems)
+                if (processedItems.length > 0) {
                     const FIFOCostService = (await import('./fifoCost.service.js')).default;
-                    const itemsForCost = createdItems.map(item => ({
+                    const itemsForCost = processedItems.map(item => ({
                         product_id: item.product_id,
                         warehouse_id: item.warehouse_id || invoice.warehouse_id,
                         quantity: Number(item.quantity) + Number(item.bonus || 0)
@@ -498,21 +582,20 @@ export default {
                     try {
                         const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(itemsForCost, transaction);
                         for (const itemCost of itemCosts) {
-                            const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
-                            if (createdItem) {
-                                fifoBatchesMap.set(createdItem.id, itemCost.batches);
+                            // Link cost batches back to processed items
+                            const linkedItem = processedItems.find(pi => pi.product_id === itemCost.product_id);
+                            if (linkedItem) {
+                                fifoBatchesMap.set(linkedItem.id, itemCost.batches);
                             }
                         }
                     } catch (error) {
-                        console.error('FIFO batch calculation failed in update:', error.message);
+                        console.error('FIFO batch calculation failed in refactored update:', error.message);
                     }
 
-                    // Create inventory transactions using FIFO batches
-                    for (const item of createdItems) {
+                    for (const item of processedItems) {
                         const totalQty = Number(item.quantity) + Number(item.bonus || 0);
                         if (totalQty > 0) {
                             const fifoBatches = fifoBatchesMap.get(item.id);
-
                             if (fifoBatches && fifoBatches.length > 0) {
                                 for (const fifoBatch of fifoBatches) {
                                     await InventoryTransactionService.create({
@@ -563,8 +646,16 @@ export default {
         const row = await SalesInvoice.findByPk(id);
         if (!row) return null;
 
+        const items = await SalesInvoiceItem.findAll({
+            where: { sales_invoice_id: id }
+        });
+        const itemIds = items.map(i => i.id);
+
         const oldTransactions = await InventoryTransaction.findAll({
-            where: { source_type: 'sales_invoice', source_id: id }
+            where: {
+                source_type: 'sales_invoice',
+                source_id: { [Op.in]: itemIds }
+            }
         });
         for (const trx of oldTransactions) {
             await InventoryTransactionService.remove(trx.id);

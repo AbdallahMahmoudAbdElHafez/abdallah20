@@ -35,6 +35,7 @@ class BatchInventoryService {
      */
     static async createOrUpdate(batchId, warehouseId, quantityChange, options = {}) {
         // Skip if batch_id is null (unbatched items)
+        console.log('Service: Creating or updating batch inventory for batchId:', batchId, 'warehouseId:', warehouseId, 'quantityChange:', quantityChange);
         if (!batchId) {
             return null;
         }

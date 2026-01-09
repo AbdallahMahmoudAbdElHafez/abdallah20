@@ -68,7 +68,7 @@ const getTopSellingProducts = async (startDate, endDate, limit = 5) => {
         attributes: [
             'product_id',
             [sequelize.fn('SUM', sequelize.col('sales_invoice_items.quantity')), 'total_quantity'],
-            [sequelize.literal('SUM(sales_invoice_items.quantity * sales_invoice_items.price)'), 'total_revenue']
+            [sequelize.literal('SUM((sales_invoice_items.quantity * sales_invoice_items.price) - sales_invoice_items.discount + sales_invoice_items.tax_amount + sales_invoice_items.vat_amount)'), 'total_revenue']
         ],
         include: [
             {
@@ -191,7 +191,8 @@ const getSalesReport = async (startDate, endDate) => {
     const summary = {
         total_invoices: sales.length,
         total_amount: sales.reduce((sum, inv) => sum + parseFloat(inv.total_amount || 0), 0),
-        total_tax: sales.reduce((sum, inv) => sum + parseFloat(inv.tax_amount || 0), 0),
+        total_tax: sales.reduce((sum, inv) => sum + parseFloat(inv.tax_amount || 0) + parseFloat(inv.vat_amount || 0), 0),
+        total_vat: sales.reduce((sum, inv) => sum + parseFloat(inv.vat_amount || 0), 0),
         total_discount: sales.reduce((sum, inv) => sum + parseFloat(inv.discount_amount || 0), 0)
     };
 
@@ -242,7 +243,8 @@ const getSalesReport = async (startDate, endDate) => {
                 const price = parseFloat(item.price || 0);
                 const discount = parseFloat(item.discount || 0);
                 const tax = parseFloat(item.tax_amount || 0);
-                const revenue = (qty * price) - discount + tax;
+                const vat = parseFloat(item.vat_amount || 0);
+                const revenue = (qty * price) - discount + tax + vat;
 
                 if (!productStats[productId]) {
                     productStats[productId] = {

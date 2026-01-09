@@ -29,6 +29,7 @@ import {
     Money as MoneyIcon,
     ExpandLess as ExpandLessIcon,
     FileDownload as FileDownloadIcon,
+    Edit as EditIcon,
 } from "@mui/icons-material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -69,6 +70,7 @@ export default function SalesInvoiceDialog({
     const [error, setError] = useState("");
     const [showItemForm, setShowItemForm] = useState(false);
     const [exportDialogOpen, setExportDialogOpen] = useState(false);
+    const [editingItemTempId, setEditingItemTempId] = useState(null);
 
     const [invoiceHead, setInvoiceHead] = useState({
         invoice_number: "",
@@ -102,6 +104,7 @@ export default function SalesInvoiceDialog({
         discount_percent: "",
         tax_percent: 0,
         bonus: 0,
+        vat_rate: 0,
     });
 
     useEffect(() => {
@@ -187,7 +190,13 @@ export default function SalesInvoiceDialog({
         const shipping = Number(invoiceHead.shipping_amount) || 0;
         const taxableAmount = subtotal - (Number(invoiceHead.additional_discount) || 0) + shipping;
 
-        const vatAmount = taxableAmount * ((Number(invoiceHead.vat_rate) || 0) / 100);
+        // Sum VAT and Tax from items
+        const vatAmount = items.reduce((sum, it) => sum + (Number(it.vat_amount) || 0), 0);
+        // taxableAmount above is actually subtotal + shipping - discount. 
+        // For tax_amount (other taxes), if it's still header-based, we keep it. 
+        // However, if it's also item-based, we should sum it.
+        // The user specifically asked for VAT on item level.
+
         const taxAmount = taxableAmount * ((Number(invoiceHead.tax_rate) || 0) / 100);
         const total = taxableAmount + vatAmount + taxAmount;
 
@@ -198,7 +207,7 @@ export default function SalesInvoiceDialog({
             tax_amount: taxAmount,
             total_amount: total,
         }));
-    }, [items, invoiceHead.vat_rate, invoiceHead.tax_rate, invoiceHead.additional_discount, invoiceHead.shipping_amount]);
+    }, [items, invoiceHead.tax_rate, invoiceHead.additional_discount, invoiceHead.shipping_amount]);
 
     const handleItemProductChange = (productId) => {
         const prod = products.find((p) => p.id === productId);
@@ -230,31 +239,81 @@ export default function SalesInvoiceDialog({
         const discountPercent = Number(itemForm.discount_percent) || 0;
         const discountValue = (qty * price * discountPercent) / 100;
 
-        const newItem = {
-            ...itemForm,
-            tempId: Date.now() + Math.random(),
-            quantity: qty,
-            price: price,
-            discount: discountValue,
-            discount_percent: discountPercent,
-            tax_percent: Number(itemForm.tax_percent) || 0,
-            bonus: Number(itemForm.bonus) || 0,
-        };
-        setItems((prev) => [...prev, newItem]);
+        if (editingItemTempId) {
+            // Update existing item
+            setItems((prev) =>
+                prev.map((it) =>
+                    it.tempId === editingItemTempId
+                        ? { ...it, ...itemForm, quantity: qty, price: price, discount: discountValue, discount_percent: discountPercent, tax_percent: Number(itemForm.tax_percent) || 0, vat_rate: Number(itemForm.vat_rate) || 0, vat_amount: ((qty * price - discountValue) * (Number(itemForm.vat_rate) || 0)) / 100, bonus: Number(itemForm.bonus) || 0 }
+                        : it
+                )
+            );
+            setEditingItemTempId(null);
+        } else {
+            // Add new item
+            const newItem = {
+                ...itemForm,
+                tempId: Date.now() + Math.random(),
+                quantity: qty,
+                price: price,
+                discount: discountValue,
+                discount_percent: discountPercent,
+                tax_percent: Number(itemForm.tax_percent) || 0,
+                vat_rate: Number(itemForm.vat_rate) || 0,
+                vat_amount: ((qty * price - discountValue) * (Number(itemForm.vat_rate) || 0)) / 100,
+                bonus: Number(itemForm.bonus) || 0,
+            };
+            setItems((prev) => [...prev, newItem]);
+        }
+
         setItemForm({
             product_id: "",
             warehouse_id: "",
-            quantity: newItem.quantity, // Retain quantity
+            quantity: qty, // Retain quantity
             price: "",
             discount: "",
-            discount_percent: newItem.discount_percent, // Retain discount percent
+            discount_percent: discountPercent, // Retain discount percent
             tax_percent: 0,
             bonus: 0,
+            vat_rate: Number(itemForm.vat_rate) || 0, // Retain vat rate
+        });
+        setShowItemForm(false);
+    };
+
+    const handleEditItem = (item) => {
+        setItemForm({
+            product_id: item.product_id,
+            warehouse_id: item.warehouse_id || "",
+            quantity: item.quantity,
+            price: item.price,
+            discount: item.discount,
+            discount_percent: item.discount_percent,
+            tax_percent: item.tax_percent,
+            bonus: item.bonus,
+            vat_rate: item.vat_rate,
+        });
+        setEditingItemTempId(item.tempId);
+        setShowItemForm(true);
+    };
+
+    const cancelEdit = () => {
+        setEditingItemTempId(null);
+        setItemForm({
+            product_id: "",
+            warehouse_id: "",
+            quantity: "",
+            price: "",
+            discount: "",
+            discount_percent: "",
+            tax_percent: 0,
+            bonus: 0,
+            vat_rate: 0,
         });
         setShowItemForm(false);
     };
 
     const removeItemTemp = (tempId) => {
+        if (editingItemTempId === tempId) cancelEdit();
         setItems((prev) => prev.filter((it) => it.tempId !== tempId));
     };
 
@@ -291,7 +350,7 @@ export default function SalesInvoiceDialog({
             sales_order_id: invoiceHead.sales_order_id || null,
             warehouse_id: invoiceHead.warehouse_id || null,
             employee_id: invoiceHead.employee_id || null,
-            items: items.map(({ tempId, id, ...rest }) => rest),
+            items: items.map(({ tempId, ...rest }) => rest),
         };
 
         try {
@@ -357,17 +416,21 @@ export default function SalesInvoiceDialog({
 
         if (isSelected("items")) {
             headData.push(["الأصناف"]);
-            itemsHeader = ["المنتج", "الكمية", "السعر", "الخصم", "الضريبة %", "بونص", "الإجمالي"];
+            itemsHeader = ["المنتج", "الكمية", "السعر", "الخصم", "ض.ق.م %", "ضريبة أخرى %", "بونص", "الإجمالي"];
             itemsData = items.map(item => {
                 const product = products.find((p) => p.id === item.product_id);
+                const subtotal = (item.quantity * item.price) - item.discount;
+                const vatAmount = subtotal * (item.vat_rate || 0) / 100;
+                const taxAmount = subtotal * (item.tax_percent || 0) / 100;
                 return [
                     product?.name || "",
                     item.quantity,
                     item.price,
                     `${item.discount_percent || 0}% (${item.discount})`,
-                    item.tax_percent,
+                    item.vat_rate || 0,
+                    item.tax_percent || 0,
                     item.bonus,
-                    ((item.quantity * item.price) - item.discount + ((item.quantity * item.price - item.discount) * item.tax_percent / 100)).toFixed(2)
+                    (subtotal + vatAmount + taxAmount).toFixed(2)
                 ];
             });
         }
@@ -418,6 +481,7 @@ export default function SalesInvoiceDialog({
             }
         },
         { accessorKey: "tax_percent", header: "الضريبة %" },
+        { accessorKey: "vat_rate", header: "ض.ق.م %" },
         { accessorKey: "bonus", header: "بونص" },
         {
             id: "total",
@@ -427,17 +491,24 @@ export default function SalesInvoiceDialog({
                 const p = Number(row.original.price) || 0;
                 const d = Number(row.original.discount) || 0;
                 const tax = Number(row.original.tax_percent) || 0;
+                const vat = Number(row.original.vat_rate) || 0;
                 const subtotal = (q * p) - d;
                 const taxAmount = (subtotal * tax) / 100;
-                return <Typography>${(subtotal + taxAmount).toFixed(2)}</Typography>;
+                const vatAmount = (subtotal * vat) / 100;
+                return <Typography>${(subtotal + taxAmount + vatAmount).toFixed(2)}</Typography>;
             },
         },
         {
             header: "إجراءات",
             Cell: ({ row }) => (
-                <IconButton color="error" onClick={() => removeItemTemp(row.original.tempId)}>
-                    <DeleteIcon fontSize="small" />
-                </IconButton>
+                <Box>
+                    <IconButton color="primary" onClick={() => handleEditItem(row.original)} title="تعديل">
+                        <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => removeItemTemp(row.original.tempId)} title="حذف">
+                        <DeleteIcon fontSize="small" />
+                    </IconButton>
+                </Box>
             ),
         },
     ];
@@ -510,7 +581,7 @@ export default function SalesInvoiceDialog({
                                         .filter((p) => p.party_type === "customer")
                                         .map((c) => (
                                             <MenuItem key={c.id} value={c.id}>
-                                                {c.name} {c.City?.name ? `(${c.City.name})` : ""}
+                                                {c.name} {c.city?.name ? `(${c.city.name})` : ""}
                                             </MenuItem>
                                         ))}
                                 </TextField>
@@ -728,14 +799,39 @@ export default function SalesInvoiceDialog({
                                         </Grid>
 
                                         <Grid item xs={6} sm={3} md={1.5}>
-                                            <Button
-                                                variant="contained"
+                                            <TextField
+                                                type="number"
                                                 fullWidth
-                                                onClick={addItemTemp}
-                                                startIcon={<AddIcon />}
-                                            >
-                                                إضافة
-                                            </Button>
+                                                label="ض.ق.م %"
+                                                value={itemForm.vat_rate}
+                                                onChange={(e) =>
+                                                    setItemForm((f) => ({ ...f, vat_rate: e.target.value }))
+                                                }
+                                                size="small"
+                                            />
+                                        </Grid>
+
+                                        <Grid item xs={6} sm={3} md={1.5}>
+                                            <Stack direction="row" spacing={1}>
+                                                <Button
+                                                    variant="contained"
+                                                    fullWidth
+                                                    onClick={addItemTemp}
+                                                    startIcon={editingItemTempId ? <SaveIcon /> : <AddIcon />}
+                                                    color={editingItemTempId ? "warning" : "primary"}
+                                                >
+                                                    {editingItemTempId ? "تحديث" : "إضافة"}
+                                                </Button>
+                                                {editingItemTempId && (
+                                                    <Button
+                                                        variant="outlined"
+                                                        color="secondary"
+                                                        onClick={cancelEdit}
+                                                    >
+                                                        إلغاء
+                                                    </Button>
+                                                )}
+                                            </Stack>
                                         </Grid>
                                     </Grid>
                                 </Paper>
@@ -829,12 +925,11 @@ export default function SalesInvoiceDialog({
                                 <TextField
                                     type="number"
                                     fullWidth
-                                    label="نسبة ضريبة القيمة المضافة %"
-                                    value={invoiceHead.vat_rate}
-                                    onChange={(e) =>
-                                        setInvoiceHead({ ...invoiceHead, vat_rate: e.target.value })
-                                    }
+                                    label="ضريبة القيمة المضافة (إجمالي)"
+                                    value={Number(invoiceHead.vat_amount || 0).toFixed(2)}
+                                    InputProps={{ readOnly: true }}
                                     size="small"
+                                    helperText="مجموع ضريبة الأصناف"
                                 />
                             </Grid>
                             <Grid item xs={12} md={3}>
@@ -881,7 +976,7 @@ export default function SalesInvoiceDialog({
                                 <Typography>${Number(invoiceHead.subtotal || 0).toFixed(2)}</Typography>
                             </Stack>
                             <Stack direction="row" justifyContent="space-between">
-                                <Typography>قيمة ضريبة القيمة المضافة ({invoiceHead.vat_rate}%):</Typography>
+                                <Typography>إجمالي ضريبة القيمة المضافة:</Typography>
                                 <Typography>${Number(invoiceHead.vat_amount || 0).toFixed(2)}</Typography>
                             </Stack>
                             <Stack direction="row" justifyContent="space-between">
