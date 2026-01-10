@@ -636,6 +636,9 @@ Employee.hasMany(SalesInvoice, { foreignKey: "employee_id", as: "sales_invoices"
 SalesInvoice.belongsTo(SalesOrder, { foreignKey: "sales_order_id", as: "sales_order" });
 SalesOrder.hasMany(SalesInvoice, { foreignKey: "sales_order_id", as: "invoices" });
 
+SalesInvoice.belongsTo(Account, { foreignKey: "account_id", as: "account" });
+Account.hasMany(SalesInvoice, { foreignKey: "account_id", as: "sales_invoices" });
+
 SalesInvoice.hasMany(SalesInvoiceItem, { foreignKey: "sales_invoice_id", as: "items", onDelete: "CASCADE" });
 SalesInvoiceItem.belongsTo(SalesInvoice, { foreignKey: "sales_invoice_id", as: "sales_invoice" });
 

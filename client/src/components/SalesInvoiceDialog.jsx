@@ -43,12 +43,18 @@ import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
+import { fetchAccounts } from "../features/accounts/accountsSlice";
 import ExcelExportDialog from "./ExcelExportDialog";
 
 const statusConfig = {
     unpaid: { color: "default", label: "غير مدفوع" },
     paid: { color: "success", label: "مدفوع" },
     partial: { color: "warning", label: "جزئي" },
+};
+
+const invoiceStatusConfig = {
+    draft: { color: "default", label: "مسودة" },
+    approved: { color: "success", label: "معتمد" },
     cancelled: { color: "error", label: "ملغي" },
 };
 
@@ -64,6 +70,7 @@ export default function SalesInvoiceDialog({
     const products = useSelector((s) => s.products?.items ?? []);
     const warehouses = useSelector((s) => s.warehouses?.items ?? []);
     const employees = useSelector((s) => s.employees?.list ?? []);
+    const accounts = useSelector((s) => s.accounts?.items ?? []);
 
     const [loadingMeta, setLoadingMeta] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -81,7 +88,9 @@ export default function SalesInvoiceDialog({
         invoice_date: "",
         due_date: "",
         invoice_type: "normal",
+        invoice_status: "draft",
         status: "unpaid",
+        account_id: "",
         shipping_amount: 0,
         subtotal: 0,
         additional_discount: 0,
@@ -114,6 +123,7 @@ export default function SalesInvoiceDialog({
             // dispatch(fetchProducts()), // Don't fetch all initially, wait for warehouse selection or fetch generic
             dispatch(fetchWarehouses()),
             dispatch(fetchEmployees()),
+            dispatch(fetchAccounts()),
         ]).finally(() => setLoadingMeta(false));
     }, [dispatch]);
 
@@ -137,7 +147,9 @@ export default function SalesInvoiceDialog({
                 invoice_date: invoice.invoice_date ?? new Date().toISOString().split("T")[0],
                 due_date: invoice.due_date ?? "",
                 invoice_type: invoice.invoice_type ?? "normal",
+                invoice_status: invoice.invoice_status ?? "draft",
                 status: invoice.status ?? "unpaid",
+                account_id: invoice.account_id ?? "",
                 shipping_amount: Number(invoice.shipping_amount) || 0,
                 subtotal: Number(invoice.subtotal) || 0,
                 additional_discount: Number(invoice.additional_discount) || 0,
@@ -162,7 +174,9 @@ export default function SalesInvoiceDialog({
                 invoice_date: new Date().toISOString().split("T")[0],
                 due_date: "",
                 invoice_type: "normal",
+                invoice_status: "draft",
                 status: "unpaid",
+                account_id: "",
                 shipping_amount: 0,
                 subtotal: 0,
                 additional_discount: 0,
@@ -553,7 +567,7 @@ export default function SalesInvoiceDialog({
                 <Card sx={{ mb: 3 }}>
                     <CardContent>
                         <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
+                            <Grid item xs={12} md={3}>
                                 <TextField
                                     fullWidth
                                     label="رقم الفاتورة"
@@ -566,7 +580,7 @@ export default function SalesInvoiceDialog({
                                 />
                             </Grid>
 
-                            <Grid item xs={12} md={4}>
+                            <Grid item xs={12} md={3}>
                                 <TextField
                                     select
                                     fullWidth
@@ -592,7 +606,7 @@ export default function SalesInvoiceDialog({
                                 )}
                             </Grid>
 
-                            <Grid item xs={12} md={4}>
+                            <Grid item xs={12} md={3}>
                                 <TextField
                                     select
                                     fullWidth
@@ -611,20 +625,20 @@ export default function SalesInvoiceDialog({
                                 </TextField>
                             </Grid>
 
-                            <Grid item xs={12} md={4}>
+                            <Grid item xs={12} md={3}>
                                 <TextField
                                     select
                                     fullWidth
-                                    label="الموظف"
-                                    value={invoiceHead.employee_id}
+                                    label="الحساب"
+                                    value={invoiceHead.account_id}
                                     onChange={(e) =>
-                                        setInvoiceHead({ ...invoiceHead, employee_id: e.target.value })
+                                        setInvoiceHead({ ...invoiceHead, account_id: e.target.value })
                                     }
                                 >
-                                    <MenuItem value="">اختر الموظف</MenuItem>
-                                    {employees.map((e) => (
-                                        <MenuItem key={e.id} value={e.id}>
-                                            {e.name}
+                                    <MenuItem value="">اختر الحساب</MenuItem>
+                                    {accounts.map((acc) => (
+                                        <MenuItem key={acc.id} value={acc.id}>
+                                            {acc.name} ({acc.code})
                                         </MenuItem>
                                     ))}
                                 </TextField>
@@ -675,7 +689,7 @@ export default function SalesInvoiceDialog({
                                 <TextField
                                     select
                                     fullWidth
-                                    label="الحالة"
+                                    label="حالة الدفع"
                                     value={invoiceHead.status}
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, status: e.target.value })
@@ -688,11 +702,47 @@ export default function SalesInvoiceDialog({
                                     ))}
                                 </TextField>
                             </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="حالة الفاتورة"
+                                    value={invoiceHead.invoice_status}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, invoice_status: e.target.value })
+                                    }
+                                >
+                                    {Object.entries(invoiceStatusConfig).map(([key, cfg]) => (
+                                        <MenuItem key={key} value={key}>
+                                            {cfg.label}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="الموظف"
+                                    value={invoiceHead.employee_id}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, employee_id: e.target.value })
+                                    }
+                                >
+                                    <MenuItem value="">اختر الموظف</MenuItem>
+                                    {employees.map((e) => (
+                                        <MenuItem key={e.id} value={e.id}>
+                                            {e.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
                         </Grid>
                     </CardContent>
                 </Card>
 
-                {/* === Items Section (Only for Normal Invoices) === */}
                 {invoiceHead.invoice_type === "normal" ? (
                     <Card sx={{ mb: 2 }}>
                         <CardContent>
@@ -852,7 +902,6 @@ export default function SalesInvoiceDialog({
                         </CardContent>
                     </Card>
                 ) : (
-                    // === Opening Balance Input (Only for Opening Invoices) ===
                     <Card sx={{ mb: 2 }}>
                         <CardContent>
                             <Box sx={{ mb: 2 }}>
@@ -1007,6 +1056,6 @@ export default function SalesInvoiceDialog({
                     {saving ? "جاري الحفظ..." : invoice ? "تحديث الفاتورة" : "حفظ الفاتورة"}
                 </Button>
             </DialogActions>
-        </Dialog >
+        </Dialog>
     );
 }
