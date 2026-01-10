@@ -13,7 +13,9 @@ export default (sequelize) => {
             tax_percent: { type: DataTypes.DECIMAL(5, 2), allowNull: false, defaultValue: 0.00 },
             tax_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.00 },
             warehouse_id: { type: DataTypes.INTEGER, allowNull: true },
-            bonus: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 }
+            bonus: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+            vat_rate: { type: DataTypes.DECIMAL(5, 2), allowNull: false, defaultValue: 0.00 },
+            vat_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.00 }
         },
         {
             timestamps: false,

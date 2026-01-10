@@ -5,7 +5,8 @@ import {
     ShoppingCart as SalesIcon,
     ShoppingBag as PurchasesIcon,
     AccountBalance as ExpensesIcon,
-    Build as JobOrdersIcon
+    Build as JobOrdersIcon,
+    Store as WarehouseIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -40,6 +41,13 @@ const ReportsDashboard = () => {
             icon: <JobOrdersIcon sx={{ fontSize: 60, color: '#4caf50' }} />,
             path: '/reports/job-orders',
             color: '#e8f5e9'
+        },
+        {
+            title: 'تقرير المخازن',
+            description: 'تقييم المخزون وتوزيع القيمة على المخازن',
+            icon: <WarehouseIcon sx={{ fontSize: 60, color: '#9c27b0' }} />,
+            path: '/reports/warehouse',
+            color: '#f3e5f5'
         }
     ];
 

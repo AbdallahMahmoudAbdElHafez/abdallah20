@@ -13,6 +13,7 @@ router.get('/sales', reportsController.getSalesReport);
 router.get('/purchases', reportsController.getPurchasesReport);
 router.get('/expenses', reportsController.getExpensesReport);
 router.get('/job-orders', reportsController.getJobOrdersReport);
+router.get('/warehouse', reportsController.getWarehouseReport);
 
 // Export
 router.get('/export/:type', reportsController.exportReport);

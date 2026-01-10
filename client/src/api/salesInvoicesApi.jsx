@@ -1,7 +1,7 @@
 import axiosClient from "./axiosClient";
 
 const salesInvoicesApi = {
-    getAll: () => axiosClient.get("/sales-invoices"),
+    getAll: (params) => axiosClient.get("/sales-invoices", { params }),
     getById: (id) => axiosClient.get(`/sales-invoices/${id}`),
     create: (data) => axiosClient.post("/sales-invoices", data),
     update: (id, data) => axiosClient.put(`/sales-invoices/${id}`, data),

@@ -8,7 +8,7 @@ class PartyService {
       where: {
         party_type: ["supplier", "both"],
       },
-      include: [City],
+      include: [{ model: City, as: "city" }],
     });
   }
 
@@ -17,15 +17,15 @@ class PartyService {
       where: {
         party_type: ["customer", "both"],
       },
-      include: [City],
+      include: [{ model: City, as: "city" }],
     });
   }
   static async getAll() {
-    return await Party.findAll({ include: [PartyCategory, Account, City] });
+    return await Party.findAll({ include: [PartyCategory, Account, { model: City, as: "city" }] });
   }
 
   static async getById(id) {
-    return await Party.findByPk(id, { include: [PartyCategory, Account, City] });
+    return await Party.findByPk(id, { include: [PartyCategory, Account, { model: City, as: "city" }] });
   }
 
   static async create(data) {

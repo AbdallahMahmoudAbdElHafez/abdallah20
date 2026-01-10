@@ -11,6 +11,7 @@ const reportsApi = {
     getPurchasesReport: (params) => axiosClient.get('/reports/purchases', { params }),
     getExpensesReport: (params) => axiosClient.get('/reports/expenses', { params }),
     getJobOrdersReport: (params) => axiosClient.get('/reports/job-orders', { params }),
+    getWarehouseReport: (params) => axiosClient.get('/reports/warehouse', { params }),
 
     // Export
     exportReport: (type, params) => {

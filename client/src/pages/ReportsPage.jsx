@@ -15,6 +15,10 @@ import {
     TableRow,
     Paper,
     CircularProgress,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem
 } from "@mui/material";
 import reportsApi from "../api/reportsApi";
 
@@ -62,6 +66,17 @@ const ReportsPage = () => {
         fetchData();
     };
 
+    const handleMonthChange = (e) => {
+        const month = e.target.value;
+        const year = new Date().getFullYear();
+        if (month) {
+            const start = new Date(year, month - 1, 1).toISOString().split('T')[0];
+            const end = new Date(year, month, 0).toISOString().split('T')[0];
+            setStartDate(start);
+            setEndDate(end);
+        }
+    };
+
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat("ar-EG", {
             style: "currency",
@@ -76,7 +91,21 @@ const ReportsPage = () => {
             </Typography>
 
             {/* Filters */}
-            <Box mb={4} display="flex" gap={2} alignItems="center">
+            <Box mb={4} display="flex" gap={2} alignItems="center" flexWrap="wrap">
+                <FormControl size="small" sx={{ minWidth: 150 }}>
+                    <InputLabel>اختيار شهر سريع</InputLabel>
+                    <Select
+                        label="اختيار شهر سريع"
+                        onChange={handleMonthChange}
+                        defaultValue=""
+                    >
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                            <MenuItem key={m} value={m}>
+                                {new Date(0, m - 1).toLocaleString('ar-EG', { month: 'long' })}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
                 <TextField
                     label="من تاريخ"
                     type="date"

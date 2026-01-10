@@ -188,8 +188,8 @@ Party.belongsTo(PartyCategory, { foreignKey: "category_id" });
 Account.hasMany(Party, { foreignKey: "account_id" })
 Party.belongsTo(Account, { foreignKey: "account_id" })
 //party - city  relationship
-City.hasMany(Party, { foreignKey: "city_id" })
-Party.belongsTo(City, { foreignKey: "city_id" })
+City.hasMany(Party, { foreignKey: "city_id", as: "parties" })
+Party.belongsTo(City, { foreignKey: "city_id", as: "city" })
 
 // PurchaseInvoice ↔ Party (supplier)
 Party.hasMany(PurchaseInvoice, {
