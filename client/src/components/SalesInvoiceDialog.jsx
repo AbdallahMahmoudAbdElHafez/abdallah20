@@ -364,6 +364,7 @@ export default function SalesInvoiceDialog({
             sales_order_id: invoiceHead.sales_order_id || null,
             warehouse_id: invoiceHead.warehouse_id || null,
             employee_id: invoiceHead.employee_id || null,
+            account_id: invoiceHead.account_id || null,
             items: items.map(({ tempId, ...rest }) => rest),
         };
 
