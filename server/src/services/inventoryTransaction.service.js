@@ -430,7 +430,7 @@ class InventoryTransactionService {
     // 1. Define Constants
     const REFERENCE_TYPE_ID = 73; // Opening Inventory Reference Type
     const ENTRY_TYPE_ID = 1;      // Opening Entry Type
-    const CAPITAL_ACCOUNT_ID = 10; // رأس المال
+    const CAPITAL_ACCOUNT_ID = 14; // رأس المال
 
     // 2. Prepare Account Mapping
     const INVENTORY_ACCOUNTS = {
