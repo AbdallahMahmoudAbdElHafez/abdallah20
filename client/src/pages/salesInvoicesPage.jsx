@@ -98,7 +98,7 @@ export default function SalesInvoicesPage() {
         // Map items to include product names
         const mappedItems = res.map(item => ({
             ...item,
-            product_name: products.find(p => p.id === item.product_id)?.name || "Unknown Product"
+            product_name: item.product?.name || products.find(p => p.id === item.product_id)?.name || "Unknown Product"
         }));
 
         setPreviewInvoice(invoice);

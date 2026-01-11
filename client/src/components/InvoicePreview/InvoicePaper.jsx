@@ -113,7 +113,7 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                         return (
                             <tr key={index}>
                                 <td>{index + 1}</td>
-                                {showCol('product') && <td>{item.product_name || item.Product?.name || "منتج"}</td>}
+                                {showCol('product') && <td>{item.product_name || item.product?.name || item.Product?.name || "منتج غير معروف"}</td>}
                                 {showCol('batch_number') && <td>{item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.batch_number || item.batch_number || "-"}</td>}
                                 {showCol('expiry_date') && <td>{item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.expiry_date || item.expiry_date || "-"}</td>}
                                 {showCol('quantity') && <td>{qty}</td>}
