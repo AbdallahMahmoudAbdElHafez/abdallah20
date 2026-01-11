@@ -32,8 +32,9 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 const SalesReportPage = () => {
     const navigate = useNavigate();
     const [salesByProduct, setSalesByProduct] = useState([]);
+    const [salesByEmployeeProduct, setSalesByEmployeeProduct] = useState([]); // [NEW]
     const [salesByRegion, setSalesByRegion] = useState([]);
-    const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot'
+    const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot' | 'employee_product'
 
     const [data, setData] = useState([]);
     const [summary, setSummary] = useState({});
@@ -56,6 +57,7 @@ const SalesReportPage = () => {
             setSummary(res.data.summary);
             setChartData(res.data.chartData);
             setSalesByProduct(res.data.salesByProduct || []);
+            setSalesByEmployeeProduct(res.data.salesByEmployeeProduct || []); // [NEW]
             setSalesByRegion(res.data.salesByRegion || []);
         } catch (error) {
             console.error('Error fetching sales report:', error);
@@ -116,6 +118,14 @@ const SalesReportPage = () => {
         { accessorKey: 'revenue', id: 'revenue', header: 'إجمالي المبيعات', Cell: ({ cell }) => formatCurrency(cell.getValue()), size: 150 },
         { accessorKey: 'profit', id: 'profit', header: 'الربح المتوقع', Cell: ({ cell }) => <Box color={cell.getValue() >= 0 ? 'success.main' : 'error.main'} fontWeight="bold">{formatCurrency(cell.getValue())}</Box>, size: 150 },
         { accessorKey: 'margin', id: 'margin', header: 'هامش الربح', Cell: ({ cell }) => `${parseFloat(cell.getValue()).toFixed(2)}%`, size: 100 },
+    ], []);
+
+    // --- 2.1 Salesman Analysis Columns ---
+    const employeeProductColumns = useMemo(() => [
+        { accessorKey: 'employee', id: 'employee', header: 'اسم الموظف', size: 200 },
+        { accessorKey: 'product', id: 'product', header: 'المنتج', size: 200 },
+        { accessorKey: 'quantity', id: 'quantity', header: 'الكمية المباعة', size: 130 },
+        { accessorKey: 'revenue', id: 'revenue', header: 'قيمة المبيعات', Cell: ({ cell }) => formatCurrency(cell.getValue()), size: 150 },
     ], []);
 
     // --- 3. Matrix Pivot Logic ---
@@ -266,6 +276,7 @@ const SalesReportPage = () => {
                     <ToggleButtonGroup value={viewMode} exclusive onChange={(e, m) => m && setViewMode(m)}>
                         <ToggleButton value="list" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <ListIcon sx={{ mr: 1 }} /> القائمة </ToggleButton>
                         <ToggleButton value="product_pivot" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <PivotIcon sx={{ mr: 1 }} /> تحليل المنتجات </ToggleButton>
+                        <ToggleButton value="employee_product" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TrendIcon sx={{ mr: 1 }} /> تحليل المناديب </ToggleButton>
                         <ToggleButton value="invoice_pivot" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TableIcon sx={{ mr: 1 }} /> مصفوفة الفواتير </ToggleButton>
                     </ToggleButtonGroup>
                 </Paper>
@@ -334,6 +345,23 @@ const SalesReportPage = () => {
                                     <Button variant="contained" color="success" startIcon={<DownloadIcon />}
                                         onClick={() => handleExport(table, 'Product_Performance', { heatmap: true })}>
                                         تصدير مع التحليل
+                                    </Button>
+                                )}
+                            />
+                        </Paper>
+                    )}
+
+                    {viewMode === 'employee_product' && (
+                        <Paper sx={{ borderRadius: 3, boxShadow: 2, overflow: 'hidden' }}>
+                            <MaterialReactTable
+                                columns={employeeProductColumns}
+                                {...defaultTableProps}
+                                data={salesByEmployeeProduct}
+                                enableExporting
+                                renderTopToolbarCustomActions={({ table }) => (
+                                    <Button variant="contained" color="success" startIcon={<DownloadIcon />}
+                                        onClick={() => handleExport(table, 'Salesman_Product_Performance')}>
+                                        تصدير التقرير
                                     </Button>
                                 )}
                             />

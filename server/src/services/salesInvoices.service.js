@@ -541,6 +541,9 @@ export default {
             }
 
             await invoice.update(invoiceData, { transaction });
+            await invoice.reload({ transaction }); // Ensure we have the latest status
+
+            console.log(`Service: Invoice updated. ID: ${id}, Status: ${invoice.invoice_status}`);
 
             // 3. Handle Items (Update/Create/Delete)
             let processedItems = [];
@@ -588,6 +591,7 @@ export default {
 
             // 4. Recreate Side Effects ONLY if status is 'approved'
             if (invoice.invoice_status === 'approved') {
+                console.log('Service: Status is approved, recreating side effects');
                 // --- Inventory Transactions ---
                 if (processedItems.length > 0) {
                     const FIFOCostService = (await import('./fifoCost.service.js')).default;
@@ -750,6 +754,7 @@ export default {
                         lines: je1Lines,
                         entryTypeId: 2
                     }, { transaction });
+                    console.log('Service: Invoice Journal Entry Created');
 
                     // COGS Entry
                     if (processedItems.length > 0) {
