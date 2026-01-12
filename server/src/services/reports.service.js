@@ -199,6 +199,7 @@ const getSalesReport = async (startDate, endDate) => {
     // Group by month for chart
     const chartData = {};
     const employeeData = {};
+    const employeeProductStats = {}; // [NEW] Track stats per employee + product
     const regionData = {};
 
     // Product Aggregation (Pivot Data)
@@ -285,6 +286,20 @@ const getSalesReport = async (startDate, endDate) => {
                 }
 
                 productStats[productId].cost += itemCost;
+
+                // --- [NEW] Employee + Product Performance Aggregation ---
+                const empName = sale.employee?.name || 'غير محدد';
+                const epKey = `${empName}_${productId}`;
+                if (!employeeProductStats[epKey]) {
+                    employeeProductStats[epKey] = {
+                        employee: empName,
+                        product: productName,
+                        quantity: 0,
+                        revenue: 0
+                    };
+                }
+                employeeProductStats[epKey].quantity += qty;
+                employeeProductStats[epKey].revenue += revenue;
             });
         }
     });
@@ -311,13 +326,17 @@ const getSalesReport = async (startDate, endDate) => {
         margin: stat.revenue > 0 ? ((stat.revenue - stat.cost) / stat.revenue) * 100 : 0
     })).sort((a, b) => b.revenue - a.revenue);
 
+    const salesByEmployeeProduct = Object.values(employeeProductStats)
+        .sort((a, b) => a.employee.localeCompare(b.employee) || b.revenue - a.revenue);
+
     return {
         data: sales,
         summary,
         chartData: chartArray,
         salesByEmployee,
         salesByRegion,
-        salesByProduct // New Pivot Data attached
+        salesByProduct, // New Pivot Data attached
+        salesByEmployeeProduct // [NEW] Data for employee-product analysis
     };
 };
 
