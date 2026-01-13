@@ -34,6 +34,7 @@ import { fetchSalesInvoices } from "../features/salesInvoices/salesInvoicesSlice
 import { fetchSalesInvoiceItems } from "../features/salesInvoiceItems/salesInvoiceItemsSlice";
 import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
+import { fetchProducts } from "../features/products/productsSlice";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 
 // دالة لتنسيق العملة
@@ -70,6 +71,10 @@ export default function SalesReturnsPage() {
         items: warehouses = []
     } = useSelector((state) => state.warehouses);
 
+    const {
+        items: products = []
+    } = useSelector((state) => state.products);
+
     // Filter only customers
     const customers = useMemo(() => parties.filter(p => p.party_type === 'customer' || p.party_type === 'both'), [parties]);
 
@@ -96,6 +101,7 @@ export default function SalesReturnsPage() {
         dispatch(fetchSalesInvoices());
         dispatch(fetchParties());
         dispatch(fetchWarehouses());
+        dispatch(fetchProducts());
     }, [dispatch]);
 
     const handleOpen = (returnItem = null) => {
@@ -165,6 +171,25 @@ export default function SalesReturnsPage() {
         setSelectedItems({});
     };
 
+    const handleAddManualProduct = (productId) => {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        const manualId = `manual-${productId}-${Date.now()}`;
+        setSelectedItems(prev => ({
+            ...prev,
+            [manualId]: {
+                isSelected: true,
+                quantity: 1,
+                return_condition: 'good',
+                product_id: product.id,
+                product: product,
+                price: product.sale_price || 0,
+                isManual: true
+            }
+        }));
+    };
+
     const handleItemSelectionChange = (itemId, isSelected) => {
         setSelectedItems(prev => ({
             ...prev,
@@ -201,21 +226,31 @@ export default function SalesReturnsPage() {
     const handleSave = async () => {
         // Prepare items array from selected items
         const itemsArray = Object.entries(selectedItems)
-            .filter(([_, data]) => data.isSelected && data.quantity > 0)
+            .filter(([_, data]) => !data.isManual && data.isSelected && data.quantity > 0)
             .map(([itemId, data]) => {
                 const item = invoiceItems.find(i => i.id === Number(itemId));
                 return {
                     product_id: item.product_id,
-                    quantity: data.quantity,
                     quantity: data.quantity,
                     price: item.price,
                     return_condition: data.return_condition || 'good'
                 };
             });
 
+        // Add manual items
+        const manualItemsArray = Object.entries(selectedItems)
+            .filter(([_, data]) => data.isManual && data.isSelected && data.quantity > 0)
+            .map(([_, data]) => ({
+                product_id: data.product_id,
+                quantity: data.quantity,
+                price: data.price,
+                return_condition: data.return_condition || 'good',
+                is_manual: true
+            }));
+
         const dataToSend = {
             ...formData,
-            items: itemsArray // Include items in the same request
+            items: [...itemsArray, ...manualItemsArray] // Include items in the same request
         };
 
         if (editingReturn) {
@@ -393,7 +428,7 @@ export default function SalesReturnsPage() {
                             <TextField
                                 select
                                 label="العميل"
-                                value={selectedCustomerId}
+                                value={selectedCustomerId || ""}
                                 onChange={(e) => handleCustomerChange(e.target.value)}
                                 fullWidth
                                 required
@@ -407,7 +442,7 @@ export default function SalesReturnsPage() {
                             <TextField
                                 select
                                 label="رقم فاتورة المبيعات"
-                                value={formData.sales_invoice_id}
+                                value={formData.sales_invoice_id || ""}
                                 onChange={(e) => handleInvoiceChange(e.target.value)}
                                 fullWidth
                                 required
@@ -426,7 +461,7 @@ export default function SalesReturnsPage() {
                             <TextField
                                 select
                                 label="المخزن"
-                                value={formData.warehouse_id}
+                                value={formData.warehouse_id || ""}
                                 onChange={(e) => setFormData({ ...formData, warehouse_id: e.target.value })}
                                 fullWidth
                                 required
@@ -462,68 +497,159 @@ export default function SalesReturnsPage() {
 
                         {/* Invoice Items Table */}
                         {formData.sales_invoice_id && (
-                            <TableContainer component={Paper} variant="outlined">
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell padding="checkbox">
-                                                <Checkbox disabled />
-                                            </TableCell>
-                                            <TableCell>المنتج</TableCell>
-                                            <TableCell>الكمية المتاحة</TableCell>
-                                            <TableCell>السعر</TableCell>
-                                            <TableCell>الكمية المرتجعة</TableCell>
-                                            <TableCell>حالة المرتجع</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {(invoiceItems || []).map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell padding="checkbox">
-                                                    <Checkbox
-                                                        checked={!!selectedItems[item.id]?.isSelected}
-                                                        onChange={(e) => handleItemSelectionChange(item.id, e.target.checked)}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>{item.product?.name || item.product_id}</TableCell>
-                                                <TableCell>{item.quantity}</TableCell>
-                                                <TableCell>{formatCurrency(item.price)}</TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        type="number"
-                                                        size="small"
-                                                        value={selectedItems[item.id]?.quantity || ""}
-                                                        onChange={(e) => handleItemQuantityChange(item.id, e.target.value)}
-                                                        disabled={!selectedItems[item.id]?.isSelected}
-                                                        inputProps={{ max: item.quantity, min: 1 }}
-                                                    />
-                                                </TableCell>
-                                                <TableCell>
-                                                    <TextField
-                                                        select
-                                                        size="small"
-                                                        value={selectedItems[item.id]?.return_condition || "good"}
-                                                        onChange={(e) => handleItemConditionChange(item.id, e.target.value)}
-                                                        disabled={!selectedItems[item.id]?.isSelected}
-                                                        fullWidth
-                                                    >
-                                                        <MenuItem value="good">سليم</MenuItem>
-                                                        <MenuItem value="damaged">تالف</MenuItem>
-                                                        <MenuItem value="expired">منتهي الصلاحية</MenuItem>
-                                                    </TextField>
-                                                </TableCell>
-                                            </TableRow>
+                            <Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                    <Typography variant="h6">عناصر المرتجع</Typography>
+                                    <TextField
+                                        select
+                                        label="إضافة منتج يدوي"
+                                        size="small"
+                                        sx={{ width: 250 }}
+                                        value=""
+                                        onChange={(e) => handleAddManualProduct(e.target.value)}
+                                    >
+                                        {products.map((product) => (
+                                            <MenuItem key={product.id} value={product.id}>
+                                                {product.name}
+                                            </MenuItem>
                                         ))}
-                                        {(invoiceItems || []).length === 0 && (
+                                    </TextField>
+                                </Box>
+                                <TableContainer component={Paper} variant="outlined">
+                                    <Table size="small">
+                                        <TableHead>
                                             <TableRow>
-                                                <TableCell colSpan={5} align="center">
-                                                    لا توجد عناصر لهذه الفاتورة
+                                                <TableCell padding="checkbox">
+                                                    <Checkbox disabled />
                                                 </TableCell>
+                                                <TableCell>المنتج</TableCell>
+                                                <TableCell>الكمية المتاحة</TableCell>
+                                                <TableCell>السعر</TableCell>
+                                                <TableCell>الكمية المرتجعة</TableCell>
+                                                <TableCell>حالة المرتجع</TableCell>
+                                                <TableCell>إجراء</TableCell>
                                             </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
+                                        </TableHead>
+                                        <TableBody>
+                                            {/* Invoice Items */}
+                                            {(invoiceItems || []).map((item) => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell padding="checkbox">
+                                                        <Checkbox
+                                                            checked={!!selectedItems[item.id]?.isSelected}
+                                                            onChange={(e) => handleItemSelectionChange(item.id, e.target.checked)}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>{item.product?.name || item.product_id}</TableCell>
+                                                    <TableCell>{item.quantity}</TableCell>
+                                                    <TableCell>{formatCurrency(item.price)}</TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="number"
+                                                            size="small"
+                                                            value={selectedItems[item.id]?.quantity || ""}
+                                                            onChange={(e) => handleItemQuantityChange(item.id, e.target.value)}
+                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            inputProps={{ max: item.quantity, min: 1 }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            select
+                                                            size="small"
+                                                            value={selectedItems[item.id]?.return_condition || "good"}
+                                                            onChange={(e) => handleItemConditionChange(item.id, e.target.value)}
+                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            fullWidth
+                                                        >
+                                                            <MenuItem value="good">سليم</MenuItem>
+                                                            <MenuItem value="damaged">تالف</MenuItem>
+                                                            <MenuItem value="expired">منتهي الصلاحية</MenuItem>
+                                                        </TextField>
+                                                    </TableCell>
+                                                    <TableCell></TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {/* Manual Items */}
+                                            {Object.entries(selectedItems)
+                                                .filter(([_, data]) => data.isManual)
+                                                .map(([id, data]) => (
+                                                    <TableRow key={id}>
+                                                        <TableCell padding="checkbox">
+                                                            <Checkbox
+                                                                checked={!!data.isSelected}
+                                                                onChange={(e) => handleItemSelectionChange(id, e.target.checked)}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>{data.product?.name || data.product_id}</TableCell>
+                                                        <TableCell>-</TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                type="number"
+                                                                size="small"
+                                                                value={data.price}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    setSelectedItems(prev => ({
+                                                                        ...prev,
+                                                                        [id]: { ...prev[id], price: Number(val) }
+                                                                    }));
+                                                                }}
+                                                                disabled={!data.isSelected}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                type="number"
+                                                                size="small"
+                                                                value={data.quantity}
+                                                                onChange={(e) => handleItemQuantityChange(id, e.target.value)}
+                                                                disabled={!data.isSelected}
+                                                                inputProps={{ min: 1 }}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                select
+                                                                size="small"
+                                                                value={data.return_condition || "good"}
+                                                                onChange={(e) => handleItemConditionChange(id, e.target.value)}
+                                                                disabled={!data.isSelected}
+                                                                fullWidth
+                                                            >
+                                                                <MenuItem value="good">سليم</MenuItem>
+                                                                <MenuItem value="damaged">تالف</MenuItem>
+                                                                <MenuItem value="expired">منتهي الصلاحية</MenuItem>
+                                                            </TextField>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <IconButton
+                                                                color="error"
+                                                                size="small"
+                                                                onClick={() => {
+                                                                    setSelectedItems(prev => {
+                                                                        const next = { ...prev };
+                                                                        delete next[id];
+                                                                        return next;
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <DeleteIcon />
+                                                            </IconButton>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            {(invoiceItems || []).length === 0 && Object.keys(selectedItems).filter(k => selectedItems[k].isManual).length === 0 && (
+                                                <TableRow>
+                                                    <TableCell colSpan={7} align="center">
+                                                        لا توجد عناصر لهذه الفاتورة. يمكنك إضافة منتجات يدوياً.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
                         )}
 
                         <TextField

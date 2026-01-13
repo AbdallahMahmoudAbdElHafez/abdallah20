@@ -56,37 +56,46 @@ export default {
             const costReversalItems = [];
 
             for (const item of items) {
-                // Find original invoice item
-                const originalItem = invoice.items.find(i => i.product_id == item.product_id);
-                if (!originalItem) {
-                    throw new Error(`Product ${item.product_id} not found in original Invoice.`);
+                let unitPrice = 0;
+                let originalItem = null;
+
+                if (item.is_manual) {
+                    // For manual items, use the price provided by frontend or product master
+                    const product = await Product.findByPk(item.product_id, { transaction });
+                    if (!product) throw new Error(`Product ${item.product_id} not found.`);
+                    unitPrice = Number(item.price) || Number(product.sale_price) || 0;
+                } else {
+                    // Find original invoice item
+                    originalItem = invoice.items.find(i => i.product_id == item.product_id);
+                    if (!originalItem) {
+                        throw new Error(`Product ${item.product_id} not found in original Invoice.`);
+                    }
+                    unitPrice = Number(originalItem.price);
+
+                    // 2a. Cumulative Validation - Don't return more than sold across all returns
+                    const previousReturns = await SalesReturnItem.findAll({
+                        include: [{
+                            association: "sales_return",
+                            where: { sales_invoice_id: invoice.id }
+                        }],
+                        where: {
+                            product_id: item.product_id
+                        },
+                        transaction
+                    });
+                    const alreadyReturned = previousReturns.reduce((sum, r) => sum + Number(r.quantity), 0);
+                    const totalAttempted = alreadyReturned + Number(item.quantity);
+
+                    if (totalAttempted > Number(originalItem.quantity)) {
+                        throw new Error(`Total returned/attempted quantity (${totalAttempted}) for product ${item.product_id} exceeds invoiced quantity (${originalItem.quantity}). Previously returned: ${alreadyReturned}.`);
+                    }
                 }
 
                 if (!item.return_condition) {
                     throw new Error(`Return condition is required for product ${item.product_id}.`);
                 }
 
-                // 2a. Cumulative Validation - Don't return more than sold across all returns
-                const previousReturns = await SalesReturnItem.findAll({
-                    include: [{
-                        association: "sales_return",
-                        where: { sales_invoice_id: invoice.id }
-                    }],
-                    where: {
-                        product_id: item.product_id
-                    },
-                    transaction
-                });
-                const alreadyReturned = previousReturns.reduce((sum, r) => sum + Number(r.quantity), 0);
-                const totalAttempted = alreadyReturned + Number(item.quantity);
-
-                if (totalAttempted > Number(originalItem.quantity)) {
-                    throw new Error(`Total returned/attempted quantity (${totalAttempted}) for product ${item.product_id} exceeds invoiced quantity (${originalItem.quantity}). Previously returned: ${alreadyReturned}.`);
-                }
-
                 // 3. Financial Calculation (Pro-rated)
-                // Use Original Price from Invoice
-                const unitPrice = Number(originalItem.price);
                 const returnQty = Number(item.quantity);
                 const lineGross = unitPrice * returnQty;
 
@@ -94,7 +103,7 @@ export default {
                 const invoiceDiscount = Number(invoice.additional_discount);
                 const globalDiscountRate = invoiceSubtotal > 0 ? (invoiceDiscount / invoiceSubtotal) : 0;
 
-                const lineDiscountInfo = lineGross * globalDiscountRate; // Pro-rated discount for this return line
+                const lineDiscountInfo = item.is_manual ? 0 : (lineGross * globalDiscountRate); // Pro-rated discount for this return line (manual items usually don't get pro-rated discount from invoice)
                 const lineNet = lineGross - lineDiscountInfo;
 
                 // Validate Tax
@@ -115,65 +124,60 @@ export default {
                     return_condition: item.return_condition
                 });
 
-                // 4. Cost Logic Retrieval - STRICT
-                // Find original Inventory Transaction (OUT) for this Invoice Item
-                const invTrx = await InventoryTransaction.findOne({
-                    where: {
-                        source_type: 'sales_invoice',
-                        source_id: originalItem.id
-                    },
-                    include: [{
-                        association: 'transaction_batches',
-                        attributes: ['quantity', 'cost_per_unit']
-                    }],
-                    transaction
-                });
-
+                // 4. Cost Logic Retrieval
                 let originalCostPerUnit = 0;
 
-                if (invTrx && invTrx.transaction_batches && invTrx.transaction_batches.length > 0) {
-                    // Calculate Weighted Average Cost from the batches used in the sale
-                    let totalBatchCost = 0;
-                    let totalBatchQty = 0;
+                if (!item.is_manual && originalItem) {
+                    // Find original Inventory Transaction (OUT) for this Invoice Item
+                    const invTrx = await InventoryTransaction.findOne({
+                        where: {
+                            source_type: 'sales_invoice',
+                            source_id: originalItem.id
+                        },
+                        include: [{
+                            association: 'transaction_batches',
+                            attributes: ['quantity', 'cost_per_unit']
+                        }],
+                        transaction
+                    });
 
-                    for (const b of invTrx.transaction_batches) {
-                        const qty = Number(b.quantity);
-                        const cost = Number(b.cost_per_unit);
-                        totalBatchCost += (qty * cost);
-                        totalBatchQty += qty;
-                    }
+                    if (invTrx && invTrx.transaction_batches && invTrx.transaction_batches.length > 0) {
+                        // Calculate Weighted Average Cost from the batches used in the sale
+                        let totalBatchCost = 0;
+                        let totalBatchQty = 0;
 
-                    if (totalBatchQty > 0) {
-                        originalCostPerUnit = totalBatchCost / totalBatchQty;
+                        for (const b of invTrx.transaction_batches) {
+                            const qty = Number(b.quantity);
+                            const cost = Number(b.cost_per_unit);
+                            totalBatchCost += (qty * cost);
+                            totalBatchQty += qty;
+                        }
+
+                        if (totalBatchQty > 0) {
+                            originalCostPerUnit = totalBatchCost / totalBatchQty;
+                        } else {
+                            const product = await Product.findByPk(item.product_id, { transaction });
+                            originalCostPerUnit = Number(product.cost_price);
+                        }
                     } else {
-                        // Should not happen if data integrity is good
                         const product = await Product.findByPk(item.product_id, { transaction });
                         originalCostPerUnit = Number(product.cost_price);
                     }
                 } else {
-                    // Fallback to Product Master Cost ONLY if no transaction batches found (e.g. non-stock item or legacy data)
+                    // Manual item or no original item: use Product Master Cost
                     const product = await Product.findByPk(item.product_id, { transaction });
                     originalCostPerUnit = Number(product.cost_price);
                 }
 
-                // Final Safety Check
-                if (originalCostPerUnit <= 0) {
-                    // Could throw error if strict cost is required
-                    // throw new Error(`Could not determine original cost for Product ${item.product_id}`);
-                }
+                const productForType = await Product.findByPk(item.product_id, { attributes: ['type_id'], transaction });
 
                 costReversalItems.push({
                     product_id: item.product_id,
                     condition: item.return_condition || 'good',
                     quantity: returnQty,
                     totalCost: originalCostPerUnit * returnQty,
-                    type_id: 1 // Default to 1 (Finished Goods) if product lookup skipped, but we need type_id for account mapping.
-                    // We must ensure type_id is fetched.
+                    type_id: productForType.type_id
                 });
-
-                // If we didn't fetch product above, we need to fetch it now for type_id or use originalItem info if available
-                const productForType = await Product.findByPk(item.product_id, { attributes: ['type_id'], transaction });
-                costReversalItems[costReversalItems.length - 1].type_id = productForType.type_id;
             }
 
             // Create Header
