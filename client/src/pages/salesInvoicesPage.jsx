@@ -62,6 +62,12 @@ const statusConfig = {
     "ملغي": { color: "error", label: "ملغي" },
 };
 
+const invoiceStatusConfig = {
+    draft: { color: "warning", label: "مسودة" },
+    approved: { color: "success", label: "معتمد" },
+    cancelled: { color: "error", label: "ملغي" },
+};
+
 export default function SalesInvoicesPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -123,8 +129,9 @@ export default function SalesInvoicesPage() {
         setOpenDialog(true);
     };
 
-    const handleUpdate = (payload) => {
-        dispatch(updateSalesInvoice({ id: editingInvoice.id, data: payload }));
+    const handleUpdate = async (payload) => {
+        await dispatch(updateSalesInvoice({ id: editingInvoice.id, data: payload })).unwrap();
+        dispatch(fetchSalesInvoices({ month: selectedMonth, year: selectedYear }));
         setOpenDialog(false);
     };
 
@@ -134,8 +141,9 @@ export default function SalesInvoicesPage() {
         setOpenDialog(true);
     };
 
-    const handleAdd = (payload) => {
-        dispatch(addSalesInvoice(payload));
+    const handleAdd = async (payload) => {
+        await dispatch(addSalesInvoice(payload)).unwrap();
+        dispatch(fetchSalesInvoices({ month: selectedMonth, year: selectedYear }));
         setOpenDialog(false);
     };
 
@@ -193,8 +201,25 @@ export default function SalesInvoicesPage() {
             Cell: ({ cell }) => new Date(cell.getValue()).toLocaleDateString('ar-EG')
         },
         {
+            accessorKey: "invoice_status",
+            header: "حالة الفاتورة",
+            Cell: ({ cell }) => {
+                const status = cell.getValue();
+                const cfg = invoiceStatusConfig[status] || { color: "default", label: status };
+                return (
+                    <Chip
+                        label={cfg.label}
+                        color={cfg.color}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontWeight: 600 }}
+                    />
+                );
+            }
+        },
+        {
             accessorKey: "status",
-            header: "الحالة",
+            header: "حالة الدفع",
             Cell: ({ cell }) => {
                 const status = cell.getValue();
                 const cfg = statusConfig[status] || { color: "default", label: status };
