@@ -207,7 +207,7 @@ export default {
                 if (invoice.invoice_type === 'opening') {
                     // --- JE 1 (Opening): Balance Forward ---
                     await createJournalEntry({
-                        refCode: 'opening_balance',
+                        refCode: 'sales_invoice_opening',
                         refId: invoice.id,
                         entryDate: invoice.invoice_date,
                         description: `رصيد أول المدة - فاتورة #${invoice.invoice_number}`,
@@ -513,7 +513,7 @@ export default {
             // Remove Journal Entries
             const { JournalEntry, ReferenceType } = await import('../models/index.js');
             const refTypes = await ReferenceType.findAll({
-                where: { code: ['sales_invoice', 'sales_invoice_cost', 'opening_balance'] },
+                where: { code: ['sales_invoice', 'sales_invoice_cost', 'sales_invoice_opening'] },
                 transaction
             });
             const refTypeIds = refTypes.map(rt => rt.id);
@@ -674,7 +674,7 @@ export default {
 
                 if (invoice.invoice_type === 'opening') {
                     await createJournalEntry({
-                        refCode: 'opening_balance',
+                        refCode: 'sales_invoice_opening',
                         refId: invoice.id,
                         entryDate: invoice.invoice_date,
                         description: `رصيد أول المدة - فاتورة #${invoice.invoice_number}`,
