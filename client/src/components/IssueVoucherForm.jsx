@@ -40,6 +40,7 @@ import { fetchEmployees } from '../features/employees/employeesSlice';
 import { fetchParties } from '../features/parties/partiesSlice';
 import { fetchAccounts } from '../features/accounts/accountsSlice';
 import { fetchDoctors } from '../features/doctors/doctorsSlice';
+import { fetchSalesReturns } from '../features/salesReturns/salesReturnsSlice';
 import batchInventoryApi from '../api/batchInventoryApi';
 
 const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
@@ -53,14 +54,17 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   const { items: parties, loading: partiesLoading } = useSelector(state => state.parties);
   const { items: accounts, loading: accountsLoading } = useSelector(state => state.accounts);
   const { list: doctors, loading: doctorsLoading } = useSelector(state => state.doctors);
+  const { items: salesReturns = [], loading: salesReturnsLoading } = useSelector(state => state.salesReturns);
 
   const [formData, setFormData] = useState({
     voucher_no: '',
     party_id: '',
+    sales_return_id: '',
     employee_id: '',
     doctor_id: '',
     warehouse_id: '',
     account_id: '',
+    issue_type: 'internal',
     issue_date: new Date(),
     note: ''
   });
@@ -89,6 +93,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       dispatch(fetchParties());
       dispatch(fetchAccounts());
       dispatch(fetchDoctors());
+      dispatch(fetchSalesReturns());
     }
   }, [open, dispatch]);
 
@@ -97,10 +102,12 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
       setFormData({
         voucher_no: voucher.voucher_no || '',
         party_id: voucher.party_id || '',
+        sales_return_id: voucher.sales_return_id || '',
         employee_id: voucher.employee_id || '',
         doctor_id: voucher.doctor_id || '',
         warehouse_id: voucher.warehouse_id || '',
         account_id: voucher.account_id || '',
+        issue_type: voucher.issue_type || 'internal',
         issue_date: voucher.issue_date ? new Date(voucher.issue_date) : new Date(),
         note: voucher.note || ''
       });
@@ -245,6 +252,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
     const submitData = {
       ...formData,
       party_id: formData.party_id || null,
+      sales_return_id: formData.sales_return_id || null,
       employee_id: formData.employee_id || null,
       doctor_id: formData.doctor_id || null,
       issue_date: formData.issue_date.toISOString().split('T')[0],
@@ -286,7 +294,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   };
 
   // دالة للتحقق من التحميل
-  const isLoading = productsLoading || warehousesLoading || employeesLoading || partiesLoading || accountsLoading || doctorsLoading;
+  const isLoading = productsLoading || warehousesLoading || employeesLoading || partiesLoading || accountsLoading || doctorsLoading || salesReturnsLoading;
 
   if (isLoading) {
     return (
@@ -371,6 +379,24 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
 
           <Grid item xs={12} md={6}>
             <FormControl fullWidth>
+              <InputLabel>Sales Return</InputLabel>
+              <Select
+                value={formData.sales_return_id}
+                label="Sales Return"
+                onChange={(e) => handleFormChange('sales_return_id', e.target.value)}
+              >
+                <MenuItem value="">None</MenuItem>
+                {salesReturns.map(ret => (
+                  <MenuItem key={ret.id} value={ret.id}>
+                    Return #{ret.id} - {ret.return_date} ({ret.party?.name || 'N/A'})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
               <InputLabel>Employee</InputLabel>
               <Select
                 value={formData.employee_id}
@@ -420,6 +446,22 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 ))}
               </Select>
               {errors.account_id && <Typography color="error" variant="caption">{errors.account_id}</Typography>}
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel>Issue Type</InputLabel>
+              <Select
+                value={formData.issue_type}
+                label="Issue Type"
+                onChange={(e) => handleFormChange('issue_type', e.target.value)}
+              >
+                <MenuItem value="internal">Internal</MenuItem>
+                <MenuItem value="replacement">Replacement</MenuItem>
+                <MenuItem value="damage">Damage</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
             </FormControl>
           </Grid>
 

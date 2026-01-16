@@ -4,19 +4,20 @@ const issueVouchersApi = {
   // الحصول على جميع سندات الإصدار
   getAll: (filters = {}) => {
     const params = new URLSearchParams();
-    
+
     Object.keys(filters).forEach(key => {
       if (filters[key]) {
         params.append(key, filters[key]);
       }
     });
-    
+
     return axiosClient.get(`/issue-vouchers?${params.toString()}`);
   },
 
   // الحصول على سند إصدار بواسطة ID
-  getById: (id) => {
-    return axiosClient.get(`/issue-vouchers/${id}`);
+  getById: (id, params) => {
+    const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+    return axiosClient.get(`/issue-vouchers/${id}${queryString}`);
   },
 
   // الحصول على سند إصدار بواسطة رقم السند

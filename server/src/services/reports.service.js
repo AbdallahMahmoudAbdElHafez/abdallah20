@@ -494,6 +494,144 @@ const getJobOrdersReport = async (startDate, endDate) => {
     };
 };
 
+/**
+ * Issue Vouchers Report - Detailed
+ */
+const getIssueVouchersReport = async (startDate, endDate) => {
+    const dateFilter = {};
+    if (startDate && endDate) {
+        dateFilter.issue_date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        dateFilter.issue_date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        dateFilter.issue_date = { [Op.lte]: endDate };
+    }
+
+    const vouchers = await IssueVoucher.findAll({
+        where: dateFilter,
+        include: [
+            {
+                model: Party,
+                as: 'party',
+                attributes: ['id', 'name']
+            },
+            {
+                model: Warehouse,
+                as: 'warehouse',
+                attributes: ['id', 'name']
+            },
+            {
+                model: Employee,
+                as: 'responsible_employee',
+                attributes: ['id', 'name']
+            },
+            {
+                model: IssueVoucherItem,
+                as: 'items',
+                include: [
+                    {
+                        model: Product,
+                        as: 'product',
+                        attributes: ['id', 'name', 'cost_price']
+                    },
+                    {
+                        model: InventoryTransaction,
+                        as: 'inventory_transactions',
+                        required: false,
+                        include: [{
+                            model: InventoryTransactionBatches,
+                            as: 'transaction_batches',
+                            required: false
+                        }]
+                    }
+                ]
+            }
+        ],
+        order: [['issue_date', 'DESC']]
+    });
+
+    let totalVouchers = 0;
+    let totalItems = 0;
+    let totalCost = 0;
+
+    const chartData = {}; // By Warehouse
+
+    // Enhance vouchers with calculated cost
+    const enhancedVouchers = vouchers.map(voucher => {
+        let voucherCost = 0;
+        let voucherItemsQty = 0;
+
+        const enhancedItems = voucher.items.map(item => {
+            let itemCost = 0;
+            const itemQty = parseFloat(item.quantity || 0);
+
+            if (item.inventory_transactions && item.inventory_transactions.length > 0) {
+                item.inventory_transactions.forEach(trx => {
+                    if (trx.transaction_batches && trx.transaction_batches.length > 0) {
+                        trx.transaction_batches.forEach(batch => {
+                            itemCost += parseFloat(batch.quantity || 0) * parseFloat(batch.cost_per_unit || 0);
+                        });
+                    } else {
+                        // Fallback if transaction exists but no batches
+                        // Assuming trx.quantity matches contribution to this item
+                        // This is tricky if multiple transactions per item (unlikely for issue voucher item source)
+                        const qty = parseFloat(trx.quantity || 0);
+                        const costRef = item.product?.cost_price || 0;
+                        itemCost += qty * parseFloat(costRef);
+                    }
+                });
+            } else {
+                // Fallback if no transaction found
+                const costRef = item.product?.cost_price || 0;
+                itemCost += itemQty * parseFloat(costRef);
+            }
+
+            voucherCost += itemCost;
+            voucherItemsQty += itemQty;
+
+            return {
+                ...item.toJSON(),
+                total_cost: itemCost
+            };
+        });
+
+        totalVouchers++;
+        totalItems += voucherItemsQty;
+        totalCost += voucherCost;
+
+        // Chart Data (Warehouse)
+        const warehouseName = voucher.warehouse?.name || 'Unknown';
+        if (!chartData[warehouseName]) {
+            chartData[warehouseName] = 0;
+        }
+        chartData[warehouseName] += voucherCost;
+
+        return {
+            ...voucher.toJSON(),
+            items: enhancedItems,
+            total_cost: voucherCost,
+            total_items: voucherItemsQty
+        };
+    });
+
+    const summary = {
+        total_vouchers: totalVouchers,
+        total_items: totalItems,
+        total_cost: totalCost
+    };
+
+    const chartArray = Object.keys(chartData).map(name => ({
+        name,
+        value: chartData[name]
+    })).sort((a, b) => b.value - a.value);
+
+    return {
+        data: enhancedVouchers,
+        summary,
+        chartData: chartArray
+    };
+};
+
 // ... (existing code)
 
 /**
@@ -666,5 +804,6 @@ export default {
     getPurchasesReport,
     getExpensesReport,
     getJobOrdersReport,
-    getWarehouseReport
+    getWarehouseReport,
+    getIssueVouchersReport
 };

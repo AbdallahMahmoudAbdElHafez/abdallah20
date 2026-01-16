@@ -24,6 +24,7 @@ import { defaultTableProps } from "../config/tableConfig";
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchIssueVouchers,
+  fetchIssueVoucherById,
   deleteIssueVoucher,
   updateVoucherStatus,
   clearError,
@@ -57,10 +58,15 @@ const IssueVouchersPage = () => {
     setShowForm(true);
   };
 
-  const handleEditVoucher = (voucher) => {
-    setSelectedVoucher(voucher);
-    setEditMode(true);
-    setShowForm(true);
+  const handleEditVoucher = async (voucher) => {
+    try {
+      const result = await dispatch(fetchIssueVoucherById({ id: voucher.id, include_items: true })).unwrap();
+      setSelectedVoucher(result.data);
+      setEditMode(true);
+      setShowForm(true);
+    } catch (error) {
+      console.error('Failed to fetch voucher details:', error);
+    }
   };
 
   const handleViewVoucher = (voucher) => {

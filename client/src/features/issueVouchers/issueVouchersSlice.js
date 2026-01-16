@@ -16,9 +16,9 @@ export const fetchIssueVouchers = createAsyncThunk(
 
 export const fetchIssueVoucherById = createAsyncThunk(
   'issueVouchers/fetchById',
-  async (id, { rejectWithValue }) => {
+  async ({ id, ...params }, { rejectWithValue }) => {
     try {
-      const response = await issueVouchersApi.getById(id);
+      const response = await issueVouchersApi.getById(id, params);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch issue voucher');

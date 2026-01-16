@@ -12,6 +12,7 @@ const reportsApi = {
     getExpensesReport: (params) => axiosClient.get('/reports/expenses', { params }),
     getJobOrdersReport: (params) => axiosClient.get('/reports/job-orders', { params }),
     getWarehouseReport: (params) => axiosClient.get('/reports/warehouse', { params }),
+    getIssueVouchersReport: (params) => axiosClient.get('/reports/issue-vouchers', { params }),
 
     // Export
     exportReport: (type, params) => {

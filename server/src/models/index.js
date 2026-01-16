@@ -502,6 +502,21 @@ IssueVoucherItem.belongsTo(Product, {
   as: "product"
 });
 
+// IssueVoucherItem ↔ InventoryTransaction (for batch info)
+IssueVoucherItem.hasMany(InventoryTransaction, {
+  foreignKey: "source_id",
+  constraints: false,
+  scope: {
+    source_type: "issue_voucher"
+  },
+  as: "inventory_transactions"
+});
+InventoryTransaction.belongsTo(IssueVoucherItem, {
+  foreignKey: "source_id",
+  constraints: false,
+  as: "issue_voucher_item"
+});
+
 
 
 // === PurchaseInvoice ↔ PurchaseReturn ===

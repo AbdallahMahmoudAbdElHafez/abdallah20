@@ -233,7 +233,10 @@ export default function SalesReturnsPage() {
                     product_id: item.product_id,
                     quantity: data.quantity,
                     price: item.price,
-                    return_condition: data.return_condition || 'good'
+                    return_condition: data.return_condition || 'good',
+                    batch_number: data.batch_number,
+                    expiry_date: data.expiry_date,
+                    batch_status: data.batch_status
                 };
             });
 
@@ -245,11 +248,15 @@ export default function SalesReturnsPage() {
                 quantity: data.quantity,
                 price: data.price,
                 return_condition: data.return_condition || 'good',
+                batch_number: data.batch_number,
+                expiry_date: data.expiry_date,
+                batch_status: data.batch_status,
                 is_manual: true
             }));
 
         const dataToSend = {
             ...formData,
+            party_id: selectedCustomerId,
             items: [...itemsArray, ...manualItemsArray] // Include items in the same request
         };
 
@@ -282,16 +289,19 @@ export default function SalesReturnsPage() {
             size: 80,
         },
         {
-            accessorKey: "invoice.party.name", // Try accessing nested party name
+            accessorKey: "party_id",
             header: "العميل",
             size: 150,
             Cell: ({ row }) => {
-                // Fallback if nested access fails or strict structure is different
-                // We can try to find invoice in loaded invoices list
-                const invoice = invoices.find(inv => inv.id === row.original.sales_invoice_id);
-                // Then find party
-                const party = parties.find(p => p.id === invoice?.party_id);
-                return party?.name || row.original.invoice?.party?.name || "غير معروف";
+                // Try finding party by party_id directly (new schema)
+                const party = parties.find(p => p.id === row.original.party_id);
+                // Fallback to invoice party if old data
+                if (!party && row.original.sales_invoice_id) {
+                    const invoice = invoices.find(inv => inv.id === row.original.sales_invoice_id);
+                    const invParty = parties.find(p => p.id === invoice?.party_id);
+                    return invParty?.name || "غير معروف";
+                }
+                return party?.name || "غير معروف";
             }
         },
         {
@@ -418,12 +428,12 @@ export default function SalesReturnsPage() {
             />
 
             {/* Dialog for Add/Edit */}
-            <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+            <Dialog open={open} onClose={handleClose} maxWidth="xl" fullWidth>
                 <DialogTitle>
                     {editingReturn ? "تعديل مرتجع" : "إضافة مرتجع جديد"}
                 </DialogTitle>
                 <DialogContent>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, pb: 2 }}>
                         <Box sx={{ display: 'flex', gap: 2 }}>
                             <TextField
                                 select
@@ -515,25 +525,28 @@ export default function SalesReturnsPage() {
                                         ))}
                                     </TextField>
                                 </Box>
-                                <TableContainer component={Paper} variant="outlined">
-                                    <Table size="small">
-                                        <TableHead>
+                                <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, overflowX: 'auto', border: '1px solid #e0e0e0', maxHeight: 500 }}>
+                                    <Table size="small" stickyHeader sx={{ minWidth: 1000 }}>
+                                        <TableHead sx={{ bgcolor: '#f5f5f5' }}>
                                             <TableRow>
-                                                <TableCell padding="checkbox">
+                                                <TableCell padding="checkbox" sx={{ fontWeight: 'bold', bgcolor: '#f5f5f5' }}>
                                                     <Checkbox disabled />
                                                 </TableCell>
-                                                <TableCell>المنتج</TableCell>
-                                                <TableCell>الكمية المتاحة</TableCell>
-                                                <TableCell>السعر</TableCell>
-                                                <TableCell>الكمية المرتجعة</TableCell>
-                                                <TableCell>حالة المرتجع</TableCell>
-                                                <TableCell>إجراء</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 200, bgcolor: '#f5f5f5' }}>المنتج</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 100, bgcolor: '#f5f5f5' }}>الكمية المتاحة</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>السعر</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>الكمية المرتجعة</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 150, bgcolor: '#f5f5f5' }}>حالة المرتجع</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 150, bgcolor: '#f5f5f5' }}>رقم الباتش</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 150, bgcolor: '#f5f5f5' }}>تاريخ الصلاحية</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>حالة الباتش</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 50, bgcolor: '#f5f5f5' }}>إجراء</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
                                             {/* Invoice Items */}
                                             {(invoiceItems || []).map((item) => (
-                                                <TableRow key={item.id}>
+                                                <TableRow key={item.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                                     <TableCell padding="checkbox">
                                                         <Checkbox
                                                             checked={!!selectedItems[item.id]?.isSelected}
@@ -551,6 +564,7 @@ export default function SalesReturnsPage() {
                                                             onChange={(e) => handleItemQuantityChange(item.id, e.target.value)}
                                                             disabled={!selectedItems[item.id]?.isSelected}
                                                             inputProps={{ max: item.quantity, min: 1 }}
+                                                            fullWidth
                                                         />
                                                     </TableCell>
                                                     <TableCell>
@@ -567,6 +581,41 @@ export default function SalesReturnsPage() {
                                                             <MenuItem value="expired">منتهي الصلاحية</MenuItem>
                                                         </TextField>
                                                     </TableCell>
+                                                    {/* Batch Fields */}
+                                                    <TableCell>
+                                                        <TextField
+                                                            size="small"
+                                                            placeholder="اختياري"
+                                                            value={selectedItems[item.id]?.batch_number || ""}
+                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [item.id]: { ...prev[item.id], batch_number: e.target.value } }))}
+                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            fullWidth
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="date"
+                                                            size="small"
+                                                            value={selectedItems[item.id]?.expiry_date || ""}
+                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [item.id]: { ...prev[item.id], expiry_date: e.target.value } }))}
+                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            fullWidth
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            select
+                                                            size="small"
+                                                            value={selectedItems[item.id]?.batch_status || "unknown"}
+                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [item.id]: { ...prev[item.id], batch_status: e.target.value } }))}
+                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            fullWidth
+                                                        >
+                                                            <MenuItem value="known">معروف</MenuItem>
+                                                            <MenuItem value="unknown">غير معروف</MenuItem>
+                                                            <MenuItem value="unreadable">غير مقروء</MenuItem>
+                                                        </TextField>
+                                                    </TableCell>
                                                     <TableCell></TableCell>
                                                 </TableRow>
                                             ))}
@@ -574,14 +623,17 @@ export default function SalesReturnsPage() {
                                             {Object.entries(selectedItems)
                                                 .filter(([_, data]) => data.isManual)
                                                 .map(([id, data]) => (
-                                                    <TableRow key={id}>
+                                                    <TableRow key={id} hover sx={{ bgcolor: '#fffde7' }}>
                                                         <TableCell padding="checkbox">
                                                             <Checkbox
                                                                 checked={!!data.isSelected}
                                                                 onChange={(e) => handleItemSelectionChange(id, e.target.checked)}
                                                             />
                                                         </TableCell>
-                                                        <TableCell>{data.product?.name || data.product_id}</TableCell>
+                                                        <TableCell sx={{ fontWeight: 500 }}>
+                                                            {data.product?.name || data.product_id}
+                                                            <Typography variant="caption" display="block" color="text.secondary">(يدوي)</Typography>
+                                                        </TableCell>
                                                         <TableCell>-</TableCell>
                                                         <TableCell>
                                                             <TextField
@@ -606,6 +658,7 @@ export default function SalesReturnsPage() {
                                                                 onChange={(e) => handleItemQuantityChange(id, e.target.value)}
                                                                 disabled={!data.isSelected}
                                                                 inputProps={{ min: 1 }}
+                                                                fullWidth
                                                             />
                                                         </TableCell>
                                                         <TableCell>
@@ -620,6 +673,41 @@ export default function SalesReturnsPage() {
                                                                 <MenuItem value="good">سليم</MenuItem>
                                                                 <MenuItem value="damaged">تالف</MenuItem>
                                                                 <MenuItem value="expired">منتهي الصلاحية</MenuItem>
+                                                            </TextField>
+                                                        </TableCell>
+                                                        {/* Batch Fields */}
+                                                        <TableCell>
+                                                            <TextField
+                                                                size="small"
+                                                                placeholder="اختياري"
+                                                                value={data.batch_number || ""}
+                                                                onChange={(e) => setSelectedItems(prev => ({ ...prev, [id]: { ...prev[id], batch_number: e.target.value } }))}
+                                                                disabled={!data.isSelected}
+                                                                fullWidth
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                type="date"
+                                                                size="small"
+                                                                value={data.expiry_date || ""}
+                                                                onChange={(e) => setSelectedItems(prev => ({ ...prev, [id]: { ...prev[id], expiry_date: e.target.value } }))}
+                                                                disabled={!data.isSelected}
+                                                                fullWidth
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                select
+                                                                size="small"
+                                                                value={data.batch_status || "unknown"}
+                                                                onChange={(e) => setSelectedItems(prev => ({ ...prev, [id]: { ...prev[id], batch_status: e.target.value } }))}
+                                                                disabled={!data.isSelected}
+                                                                fullWidth
+                                                            >
+                                                                <MenuItem value="known">معروف</MenuItem>
+                                                                <MenuItem value="unknown">غير معروف</MenuItem>
+                                                                <MenuItem value="unreadable">غير مقروء</MenuItem>
                                                             </TextField>
                                                         </TableCell>
                                                         <TableCell>
@@ -641,7 +729,7 @@ export default function SalesReturnsPage() {
                                                 ))}
                                             {(invoiceItems || []).length === 0 && Object.keys(selectedItems).filter(k => selectedItems[k].isManual).length === 0 && (
                                                 <TableRow>
-                                                    <TableCell colSpan={7} align="center">
+                                                    <TableCell colSpan={10} align="center">
                                                         لا توجد عناصر لهذه الفاتورة. يمكنك إضافة منتجات يدوياً.
                                                     </TableCell>
                                                 </TableRow>

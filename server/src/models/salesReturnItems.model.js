@@ -13,6 +13,13 @@ export default (sequelize) => {
                 type: DataTypes.ENUM('good', 'damaged', 'expired'),
                 allowNull: false,
                 defaultValue: 'good'
+            },
+            batch_number: { type: DataTypes.STRING, allowNull: true },
+            expiry_date: { type: DataTypes.DATEONLY, allowNull: true },
+            batch_status: {
+                type: DataTypes.ENUM('known', 'unknown', 'unreadable'),
+                allowNull: false,
+                defaultValue: 'unknown'
             }
         },
         {

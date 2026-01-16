@@ -40,33 +40,22 @@ class BatchInventoryService {
             return null;
         }
 
-        const existing = await BatchInventory.findOne({
+        // Use findOrCreate to handle potential race conditions or duplicates within the same transaction context
+        const [record, created] = await BatchInventory.findOrCreate({
             where: { batch_id: batchId, warehouse_id: warehouseId },
+            defaults: { quantity: 0 },
             ...options
         });
 
-        if (existing) {
-            const newQuantity = Number(existing.quantity) + Number(quantityChange);
+        const newQuantity = Number(record.quantity) + Number(quantityChange);
 
-            // Prevent negative quantities
-            if (newQuantity < 0) {
-                throw new Error(`Insufficient batch inventory. Available: ${existing.quantity}, Requested: ${Math.abs(quantityChange)}`);
-            }
-
-            await existing.update({ quantity: newQuantity }, options);
-            return existing;
-        } else {
-            // Creating new record
-            if (quantityChange < 0) {
-                throw new Error(`Cannot deduct from non-existent batch inventory`);
-            }
-
-            return await BatchInventory.create({
-                batch_id: batchId,
-                warehouse_id: warehouseId,
-                quantity: quantityChange
-            }, options);
+        // Prevent negative quantities
+        if (newQuantity < 0) {
+            throw new Error(`Insufficient batch inventory. Available: ${record.quantity}, Requested: ${Math.abs(quantityChange)}`);
         }
+
+        await record.update({ quantity: newQuantity }, options);
+        return record;
     }
 
     /**

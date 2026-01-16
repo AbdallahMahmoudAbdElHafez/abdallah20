@@ -45,6 +45,7 @@ import PurchasesReportPage from "./pages/PurchasesReportPage";
 import ExpensesReportPage from "./pages/ExpensesReportPage";
 import JobOrdersReportPage from "./pages/JobOrdersReportPage";
 import WarehouseReportPage from "./pages/WarehouseReportPage";
+import IssueVouchersReportPage from "./pages/IssueVouchersReportPage";
 import ServicePaymentsPage from "./pages/servicePaymentsPage";
 import DoctorsPage from "./pages/DoctorsPage";
 import InventoryAdjustmentPage from "./pages/InventoryAdjustmentPage";
@@ -103,6 +104,7 @@ export default function App() {
           <Route path="/reports/expenses" element={<ExpensesReportPage />} />
           <Route path="/reports/job-orders" element={<JobOrdersReportPage />} />
           <Route path="/reports/warehouse" element={<WarehouseReportPage />} />
+          <Route path="/reports/issue-vouchers" element={<IssueVouchersReportPage />} />
           <Route path="/service-payments" element={<ServicePaymentsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/inventory-adjustment" element={<InventoryAdjustmentPage />} />

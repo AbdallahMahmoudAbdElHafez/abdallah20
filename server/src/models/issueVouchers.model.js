@@ -16,6 +16,14 @@ const IssueVoucherModel = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
+    sales_return_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'sales_returns',
+        key: 'id'
+      }
+    },
     employee_id: {
       type: DataTypes.INTEGER,
       allowNull: true
@@ -60,6 +68,11 @@ const IssueVoucherModel = (sequelize) => {
     account_id: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    issue_type: {
+      type: DataTypes.ENUM('internal', 'replacement', 'damage', 'other'),
+      allowNull: false,
+      defaultValue: 'internal'
     }
   }, {
     tableName: 'issue_vouchers',

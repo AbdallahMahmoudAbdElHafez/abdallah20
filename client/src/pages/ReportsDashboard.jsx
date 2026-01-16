@@ -6,7 +6,8 @@ import {
     ShoppingBag as PurchasesIcon,
     AccountBalance as ExpensesIcon,
     Build as JobOrdersIcon,
-    Store as WarehouseIcon
+    Store as WarehouseIcon,
+    Receipt as VoucherIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -48,6 +49,13 @@ const ReportsDashboard = () => {
             icon: <WarehouseIcon sx={{ fontSize: 60, color: '#9c27b0' }} />,
             path: '/reports/warehouse',
             color: '#f3e5f5'
+        },
+        {
+            title: 'تقرير أذونات الصرف',
+            description: 'تقرير تفصيلي عن أذونات الصرف وتكلفة المصروفات',
+            icon: <VoucherIcon sx={{ fontSize: 60, color: '#fbc02d' }} />,
+            path: '/reports/issue-vouchers',
+            color: '#fffde7'
         }
     ];
 

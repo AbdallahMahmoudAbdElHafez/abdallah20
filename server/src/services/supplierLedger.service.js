@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { PurchaseInvoice, PurchaseInvoicePayment, Party, ExternalJobOrder, ServicePayment } from "../models/index.js";
+import { PurchaseInvoice, PurchaseInvoicePayment, Party, ExternalJobOrder, ServicePayment, PurchaseReturn } from "../models/index.js";
 
 export async function getSupplierStatement(supplierId, { from, to }) {
   const supplier = await Party.findByPk(supplierId, {
@@ -14,8 +14,6 @@ export async function getSupplierStatement(supplierId, { from, to }) {
   else if (to) dateFilter[Op.lte] = to;
 
   // Filter for Job Orders
-  // ExternalJobOrder has timestamps: false. We must use start_date or end_date.
-  // Using start_date for filtering.
   const jobOrderDateFilter = {};
   if (from && to) jobOrderDateFilter[Op.between] = [from, to];
   else if (from) jobOrderDateFilter[Op.gte] = from;
@@ -31,12 +29,20 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     raw: true,
   });
 
+  // 1b️⃣ Purchase Returns (Debit Supplier)
+  const returns = await PurchaseReturn.findAll({
+    where: {
+      supplier_id: supplierId,
+      ...(Object.keys(dateFilter).length ? { return_date: dateFilter } : {}),
+    },
+    raw: true
+  });
+
   // 2️⃣ Job Orders (Liabilities - Service & Transport Cost)
   const jobOrders = await ExternalJobOrder.findAll({
     where: {
       party_id: supplierId,
       status: 'completed',
-      // Using start_date as the transaction date approximation
       ...(Object.keys(jobOrderDateFilter).length ? { start_date: jobOrderDateFilter } : {}),
     },
     raw: true
@@ -81,14 +87,9 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     })),
     // Job Orders (Liability)
     ...jobOrders.map(jo => {
-      // Calculate amount owed to supplier (Service + Transport only)
-      // Liability = (Service Unit Cost * Produced Qty) + Transport Cost
       const serviceCost = Number(jo.actual_processing_cost_per_unit || 0) * Number(jo.produced_quantity || 0);
       const transportCost = Number(jo.transport_cost || 0);
-
       const amountOwed = serviceCost + transportCost;
-
-      // Use start_date or end_date, fallback to now if missing (shouldn't happen with filter)
       const dateVal = jo.end_date || jo.start_date || new Date().toISOString().split('T')[0];
 
       return {
@@ -98,9 +99,9 @@ export async function getSupplierStatement(supplierId, { from, to }) {
         debit: 0,
         credit: amountOwed,
       };
-    }).filter(m => m.credit > 0), // Only include if there's a cost
+    }).filter(m => m.credit > 0),
 
-    // Invoice Payments
+    // Invoice Payments (Debit)
     ...payments.map(pay => ({
       type: "payment",
       date: pay.payment_date,
@@ -109,7 +110,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       credit: 0,
     })),
 
-    // Service Payments
+    // Service Payments (Debit)
     ...servicePayments.map(sp => ({
       type: "service_payment",
       date: sp.payment_date,
@@ -118,7 +119,37 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       credit: 0,
     }))
 
-  ].sort((a, b) => new Date(a.date) - new Date(b.date));
+  ];
+
+  // Add Purchase Returns
+  returns.forEach(ret => {
+    // Return: Debit Supplier (We owe less)
+    movements.push({
+      type: "return",
+      date: ret.return_date,
+      description: `مردودات مشتريات #${ret.id} (${ret.return_type === 'cash' ? 'نقدي' : 'آجل'})`,
+      debit: Number(ret.total_amount),
+      credit: 0
+    });
+
+    // If Cash Return: We got money back. 
+    // This increases our "Liability/Balance" to the supplier effectively? No.
+    // Cash Return: 
+    // 1. Return items -> Debit Supplier, Credit Inventory. (Supplier owes us money now / We owe less).
+    // 2. We get Cash -> Debit Cash, Credit Supplier. (Supplier pays us, balance settles).
+    // So if Cash, we add a paired "Refund" transaction (Credit Supplier).
+    if (ret.return_type === 'cash') {
+      movements.push({
+        type: "refund",
+        date: ret.return_date,
+        description: `استلام نقدية (رد مشتريات) #${ret.id}`,
+        debit: 0,
+        credit: Number(ret.total_amount)
+      });
+    }
+  });
+
+  movements.sort((a, b) => new Date(a.date) - new Date(b.date));
 
   // 6️⃣ Calculate Running Balance
   let runningBalance = 0;
@@ -126,12 +157,10 @@ export async function getSupplierStatement(supplierId, { from, to }) {
   // 7️⃣ Opening Balance (Pre-filter)
   let openingBalance = 0;
   if (from) {
-    // Previous Invoices
     const prevInvoices = await PurchaseInvoice.sum("total_amount", {
       where: { supplier_id: supplierId, invoice_date: { [Op.lt]: from } },
     });
 
-    // Previous Payments (Invoices)
     const prevPayments = await PurchaseInvoicePayment.sum("amount", {
       where: { payment_date: { [Op.lt]: from } },
       include: [{
@@ -143,8 +172,6 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       }],
     });
 
-    // Previous Job Orders
-    // Need to fetch and sum manually or use sum query carefully
     const prevJobOrders = await ExternalJobOrder.findAll({
       where: {
         party_id: supplierId,
@@ -158,7 +185,6 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       return sum + serviceCost + Number(jo.transport_cost || 0);
     }, 0);
 
-    // Previous Service Payments
     const prevServicePayments = await ServicePayment.sum("amount", {
       where: {
         party_id: supplierId,
@@ -166,33 +192,16 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       }
     });
 
-    // Net Opening
-    // (Invoices + Job Liabilities) - (Inv Payments + Service Payments)
-    openingBalance = (prevInvoices || 0) + prevJobOrdersLiability - ((prevPayments || 0) + (prevServicePayments || 0));
+    const prevReturns = await PurchaseReturn.sum("total_amount", {
+      where: {
+        supplier_id: supplierId,
+        return_date: { [Op.lt]: from },
+        return_type: 'credit' // Only credit returns affect opening balance
+      }
+    });
+
+    openingBalance = (prevInvoices || 0) + prevJobOrdersLiability - ((prevPayments || 0) + (prevServicePayments || 0) + (prevReturns || 0));
   }
-
-  // Apply Opening to first item? No, Statement usually shows Opening then runs.
-  // We will pass opening_balance and let UI handle, or inject it?
-  // Current logic: returns opening_balance and then maps running balance.
-  // We need to initialize runningBalance with openingBalance? usually yes.
-  // Code line 60: let runningBalance = 0; 
-  // It seems the UI expects 'running_balance' to start from 0 + movement, and then adds opening separately?
-  // Or runningBalance SHOULD include Opening?
-  // Line 89: const closingBalance = openingBalance + runningBalance; 
-  // This implies 'statement' running_balance is just for the period. 
-  // But usually running balance in a table includes the previous balance.
-  // Let's stick to the existing pattern: Calculate period movements, providing discrete Opening Balance.
-
-  // Wait, if I want the table to show the *True* running balance, I should start `runningBalance` with `openingBalance`.
-  // However, I will preserve existing logic:
-  // "statement" array has `running_balance` calculated from 0.
-  // The frontend likely adds `opening_balance` to it, OR displays it separately.
-  // Actually, standard is: row.running = (prev.running || opening) + credit - debit.
-  // Let's modify line 60 to start with `openingBalance`? 
-  // NO, looking at line 89, it seems `statement` is delta-based, and `closing` sums them.
-  // Effectively, the `statement` running balance is "Period Cumulative". 
-  // I will KEEP the existing logic to avoid breaking frontend assumptions, 
-  // UNLESS the user explicitly said "Statement is wrong". They just said "Add Data".
 
   const statement = movements.map(row => {
     runningBalance += row.credit - row.debit;
