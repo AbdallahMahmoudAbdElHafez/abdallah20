@@ -156,7 +156,15 @@ export const exportToExcel = async (data, columns, fileName = 'Report', options 
         worksheet.eachRow((row, rowNumber) => {
             if (rowNumber > 2) {
                 row.alignment = { vertical: 'middle', horizontal: 'right' };
-                if (rowNumber % 2 !== 0) {
+
+                // Special styling for Totals row
+                const firstCellVal = row.getCell(1).value;
+                const isTotalsRow = firstCellVal === 'الإجمالي' || firstCellVal === 'Total';
+
+                if (isTotalsRow) {
+                    row.font = { bold: true };
+                    row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8EAF6' } }; // Light Indigo
+                } else if (rowNumber % 2 !== 0) {
                     row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } };
                 }
 
@@ -180,12 +188,19 @@ export const exportToExcel = async (data, columns, fileName = 'Report', options 
 
         // --- 6. Heatmap ---
         if (options.heatmap && data.length > 0) {
+            // Check if last row is a totals row to exclude it from heatmap scaling
+            const lastRowObj = data[data.length - 1];
+            const firstColId = columns[0].id;
+            const lastRowFirstVal = typeof lastRowObj?.getValue === 'function' ? lastRowObj.getValue(firstColId) : lastRowObj?.[firstColId];
+            const hasTotalsRow = lastRowFirstVal === 'الإجمالي' || lastRowFirstVal === 'Total';
+            const heatmapEndRow = hasTotalsRow ? lastDataRow - 1 : lastDataRow;
+
             columns.forEach((col, idx) => {
                 const colLetter = worksheet.getColumn(idx + 1).letter;
                 const headerLower = (col.columnDef.header || '').toLowerCase();
                 if (['qty', 'كمية', 'قيمة', 'val', 'ربح', 'profit'].some(k => headerLower.includes(k))) {
                     worksheet.addConditionalFormatting({
-                        ref: `${colLetter}3:${colLetter}${lastDataRow}`,
+                        ref: `${colLetter}3:${colLetter}${heatmapEndRow}`,
                         rules: [{
                             type: 'colorScale',
                             cfvo: [

@@ -158,18 +158,28 @@ const SalesReportPage = () => {
         });
 
         cols.push({
+            accessorKey: 'additional_discount_pct', id: 'additional_discount_pct', header: 'خصم إضافي %', size: 120,
+            Cell: ({ cell }) => <Box color="error.main">{cell.getValue()?.toFixed(2) || 0}%</Box>
+        });
+
+        cols.push({
             accessorKey: 'total_invoice', id: 'total_invoice', header: 'الإجمالي', size: 130,
             Cell: ({ cell }) => <Box fontWeight="bold">{formatCurrency(cell.getValue())}</Box>,
             enablePinning: true
         });
 
         const rows = data.map(invoice => {
+            const subtotal = parseFloat(invoice.subtotal || 0);
+            const addDisc = parseFloat(invoice.additional_discount || 0);
+            const addDiscPct = subtotal > 0 ? (addDisc / subtotal) * 100 : 0;
+
             const row = {
                 invoice_number: invoice.invoice_number,
                 date: invoice.invoice_date?.slice(0, 10), // Corrected to invoice_date
                 customer_name: invoice.party?.name || '-',
                 governate: invoice.party?.city?.governate?.name || '-',
                 city: invoice.party?.city?.name || '-',
+                additional_discount_pct: addDiscPct,
                 total_invoice: parseFloat(invoice.total_amount || 0)
             };
 
@@ -207,6 +217,46 @@ const SalesReportPage = () => {
             });
             return row;
         });
+
+        // --- Add Totals Row ---
+        if (rows.length > 0) {
+            const totalsRow = {
+                invoice_number: 'الإجمالي',
+                date: '',
+                customer_name: '',
+                governate: '',
+                city: '',
+                additional_discount_pct: 0,
+                total_invoice: 0
+            };
+
+            let totalSubtotal = 0;
+            let totalAddDisc = 0;
+
+            sortedProducts.forEach(p => {
+                totalsRow[`${p}_qty`] = 0;
+                totalsRow[`${p}_bonus`] = 0;
+                totalsRow[`${p}_val`] = 0;
+                totalsRow[`${p}_disc_pct`] = 0; // Average or N/A
+            });
+
+            data.forEach((invoice, idx) => {
+                const r = rows[idx];
+                totalSubtotal += parseFloat(invoice.subtotal || 0);
+                totalAddDisc += parseFloat(invoice.additional_discount || 0);
+                totalsRow.total_invoice += r.total_invoice;
+
+                sortedProducts.forEach(p => {
+                    totalsRow[`${p}_qty`] += r[`${p}_qty`];
+                    totalsRow[`${p}_bonus`] += r[`${p}_bonus`];
+                    totalsRow[`${p}_val`] += r[`${p}_val`];
+                });
+            });
+
+            totalsRow.additional_discount_pct = totalSubtotal > 0 ? (totalAddDisc / totalSubtotal) * 100 : 0;
+
+            rows.push(totalsRow);
+        }
 
         return { detailedPivotColumns: cols, detailedPivotData: rows };
     }, [data]);

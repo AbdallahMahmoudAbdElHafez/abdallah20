@@ -217,9 +217,125 @@ const exportJobOrdersReport = async (jobOrdersData, summary) => {
     return await workbook.xlsx.writeBuffer();
 };
 
+/**
+ * Export Customer Statement to Excel
+ */
+const exportCustomerStatement = async (statementData) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('كشف حساب');
+
+    // Set RTL
+    worksheet.views = [{ rightToLeft: true }];
+
+    // Title
+    worksheet.mergeCells('A1:E1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = `كشف حساب: ${statementData.customer?.name || ''}`;
+    titleCell.font = { size: 18, bold: true, color: { argb: 'FF1A237E' } };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Info Section
+    worksheet.addRow([]);
+    worksheet.addRow(['العميل:', statementData.customer?.name || '']);
+    worksheet.addRow(['التاريخ:', new Date().toLocaleDateString('ar-EG')]);
+    worksheet.addRow([]);
+
+    // Summary Section
+    const summaryHeader = worksheet.addRow(['الملخص المالي']);
+    summaryHeader.font = { bold: true, size: 12 };
+
+    worksheet.addRow(['الرصيد الختامي:', parseFloat(statementData.closing_balance || 0)]);
+    worksheet.addRow([]);
+
+    // Table Headers
+    const headers = ['التاريخ', 'الوصف', 'مدين', 'دائن', 'الرصيد'];
+    const headerRow = worksheet.addRow(headers);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.eachCell((cell) => {
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF3F51B5' }
+        };
+        cell.alignment = { horizontal: 'center' };
+        cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+        };
+    });
+
+    // Data Rows
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    statementData.statement.forEach(row => {
+        const debit = parseFloat(row.debit || 0);
+        const credit = parseFloat(row.credit || 0);
+        totalDebit += debit;
+        totalCredit += credit;
+
+        const dataRow = worksheet.addRow([
+            row.date || '',
+            row.description || '',
+            debit,
+            credit,
+            parseFloat(row.running_balance || 0)
+        ]);
+        dataRow.eachCell((cell) => {
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+            cell.alignment = { horizontal: 'center' };
+        });
+    });
+
+    // Footer Row (Totals)
+    const footerRow = worksheet.addRow([
+        '',
+        'الإجمالي',
+        totalDebit,
+        totalCredit,
+        parseFloat(statementData.closing_balance || 0)
+    ]);
+    footerRow.font = { bold: true };
+    footerRow.eachCell((cell, colNumber) => {
+        if (colNumber >= 2) { // Skip date column
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFE8EAF6' }
+            };
+            cell.border = {
+                top: { style: 'medium' },
+                left: { style: 'thin' },
+                bottom: { style: 'medium' },
+                right: { style: 'thin' }
+            };
+            cell.alignment = { horizontal: 'center' };
+        }
+    });
+
+    // Formatting
+    worksheet.columns = [
+        { width: 15 }, // Date
+        { width: 40 }, // Description
+        { width: 15 }, // Debit
+        { width: 15 }, // Credit
+        { width: 15 }  // Balance
+    ];
+
+    return await workbook.xlsx.writeBuffer();
+};
+
 export default {
     exportSalesReport,
     exportPurchasesReport,
     exportExpensesReport,
-    exportJobOrdersReport
+    exportJobOrdersReport,
+    exportCustomerStatement
 };
