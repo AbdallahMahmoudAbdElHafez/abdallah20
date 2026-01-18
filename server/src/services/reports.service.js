@@ -14,6 +14,8 @@ import {
     Warehouse,
     City,
     Governate,
+    IssueVoucher,
+    IssueVoucherItem,
     sequelize
 } from '../models/index.js';
 import { Op } from 'sequelize';

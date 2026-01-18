@@ -51,6 +51,10 @@ export default {
 
             const { items, ...returnData } = data;
 
+            // Sanitize integer fields: convert empty string to null
+            if (returnData.account_id === "") returnData.account_id = null;
+            if (returnData.sales_invoice_id === "") returnData.sales_invoice_id = null;
+
             // 1. Validate & Link Invoice
             if (!returnData.sales_invoice_id) {
                 // throw new Error("Sales Return must be linked to a Sales Invoice."); // Allowed to be null in schema? Schema says DEFAULT NULL for sales_invoice_id, but prompt validation might require it logic-wise. 
@@ -91,7 +95,7 @@ export default {
                     // For manual items, use the price provided by frontend or product master
                     const product = await Product.findByPk(item.product_id, { transaction });
                     if (!product) throw new Error(`Product ${item.product_id} not found.`);
-                    unitPrice = Number(item.price) || Number(product.sale_price) || 0;
+                    unitPrice = Number(item.price) || Number(product.price) || 0;
                 } else {
                     // Find original invoice item
                     if (invoice) {
@@ -106,7 +110,7 @@ export default {
                         // No invoice linked, must rely on manual price or product price
                         // If not manual, we need a price source.
                         const product = await Product.findByPk(item.product_id, { transaction });
-                        unitPrice = Number(item.price) || Number(product.sale_price) || 0;
+                        unitPrice = Number(item.price) || Number(product.price) || 0;
                     }
 
                     // 2a. Cumulative Validation - Don't return more than sold across all returns (Only if invoice linked)
@@ -342,7 +346,9 @@ export default {
             let creditAccount = 0;
             if (returnData.return_type === 'cash') {
                 // Precedence: Explicitly defined in data > Inherited from Invoice > Default 41
-                if (returnData.treasury_account_id) {
+                if (returnData.account_id) {
+                    creditAccount = returnData.account_id;
+                } else if (returnData.treasury_account_id) {
                     creditAccount = returnData.treasury_account_id;
                 } else {
                     const invoiceWithPayments = await SalesInvoice.findByPk(invoice.id, {
@@ -360,6 +366,7 @@ export default {
                     creditAccount = 41;
                 }
             } else {
+                // For 'credit' and 'exchange', credit the Customer account
                 creditAccount = 47; // Customer
             }
 
@@ -504,6 +511,8 @@ export default {
     },
 
     update: async (id, data) => {
+        if (data.account_id === "") data.account_id = null;
+        if (data.sales_invoice_id === "") data.sales_invoice_id = null;
         return await SalesReturn.update(data, { where: { id } });
     },
 

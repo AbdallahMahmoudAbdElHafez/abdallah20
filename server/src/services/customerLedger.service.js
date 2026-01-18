@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { SalesInvoice, SalesInvoicePayment, Party, SalesReturn } from "../models/index.js";
+import { SalesInvoice, SalesInvoicePayment, Party, SalesReturn, IssueVoucher, IssueVoucherItem, Product } from "../models/index.js";
 
 export async function getCustomerStatement(customerId, { from, to }) {
     const customer = await Party.findByPk(customerId, {
@@ -45,6 +45,25 @@ export async function getCustomerStatement(customerId, { from, to }) {
         raw: true
     });
 
+    // 🆕 أذون صرف الاستبدال (Replacement Issue Vouchers)
+    const replacements = await IssueVoucher.findAll({
+        where: {
+            party_id: customerId,
+            issue_type: 'replacement',
+            status: 'approved',
+            ...(Object.keys(dateFilter).length ? { issue_date: dateFilter } : {}),
+        },
+        include: [{
+            model: IssueVoucherItem,
+            as: 'items',
+            include: [{
+                model: Product,
+                as: 'product',
+                attributes: ['price']
+            }]
+        }]
+    });
+
     // 3️⃣ دمج الحركات
     const movements = [
         ...invoices.map(inv => ({
@@ -62,22 +81,37 @@ export async function getCustomerStatement(customerId, { from, to }) {
             description: `سداد دفعة لفاتورة #${pay["sales_invoice.invoice_number"]}`,
             debit: 0,
             credit: Number(pay.amount),
-        }))
+        })),
+        ...replacements.map(iv => {
+            const totalSaleValue = iv.items.reduce((sum, item) => {
+                const price = Number(item.product?.price) || 0;
+                return sum + (Number(item.quantity) * price);
+            }, 0);
+            return {
+                type: "replacement",
+                date: iv.issue_date,
+                description: `صرف بضاعة بديلة (استبدال) سند #${iv.voucher_no}`,
+                debit: totalSaleValue,
+                credit: 0
+            };
+        })
     ];
 
     // Add Returns to movements
     returns.forEach(ret => {
+        const returnTypeName = {
+            cash: 'نقدي',
+            credit: 'آجل',
+            exchange: 'استبدال'
+        }[ret.return_type] || ret.return_type;
+
         // Return Transaction (Credit the customer)
         movements.push({
             type: "return",
             date: ret.return_date,
-            description: `مرتجع مبيعات #${ret.id} (${ret.return_type === 'cash' ? 'نقدي' : 'آجل'})`,
+            description: `مرتجع مبيعات #${ret.id} (${returnTypeName})`,
             debit: 0,
-            credit: Number(ret.total_amount || 0) + Number(ret.tax_amount || 0) // Should match total value (Net + Tax)
-            // Check model: salesReturns only has 'notes', 'return_date'.
-            // Wait, I need to know the AMOUNT. 
-            // In service create, we calculated totalReturnGross, etc. but SalesReturn model doesn't have 'total_amount' column!
-            // I need to ADD 'total_amount' to SalesReturn model and save it!
+            credit: Number(ret.total_amount || 0)
         });
 
         // If Cash Return, add Refund Transaction (Debit the customer back to zero effect)
@@ -86,7 +120,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
                 type: "refund",
                 date: ret.return_date,
                 description: `صرف نقدية (رد مرتجع) #${ret.id}`,
-                debit: Number(ret.total_amount || 0) + Number(ret.tax_amount || 0),
+                debit: Number(ret.total_amount || 0),
                 credit: 0
             });
         }
@@ -121,23 +155,41 @@ export async function getCustomerStatement(customerId, { from, to }) {
             }],
         });
 
-        // Subtract Credit Returns from Opening Balance
-        // We only care about CREDIT returns for opening balance calculation (Cash returns cancel out)
-        // Wait, I need to fetch them.
-        // Issue: SalesReturn model doesn't store total_amount? I need to verify model again.
-        // If it doesn't, I must sum items? Too slow.
-        // I should ADD total_amount to SalesReturn model.
-
-        // Assuming I'll add total_amount to SalesReturn
         const prevReturns = await SalesReturn.sum("total_amount", {
             where: {
                 party_id: customerId,
                 return_date: { [Op.lt]: from },
-                return_type: 'credit' // Only credit returns affect the running balance carried forward
+                return_type: { [Op.in]: ['credit', 'exchange'] } // Both affect balance
             }
         });
 
-        openingBalance = (prevInvoices || 0) - (prevPayments || 0) - (prevReturns || 0);
+        const prevReplacements = await IssueVoucher.findAll({
+            where: {
+                party_id: customerId,
+                issue_type: 'replacement',
+                status: 'approved',
+                issue_date: { [Op.lt]: from }
+            },
+            include: [{
+                model: IssueVoucherItem,
+                as: 'items',
+                include: [{
+                    model: Product,
+                    as: 'product',
+                    attributes: ['price']
+                }]
+            }]
+        });
+
+        const prevReplacementsValue = prevReplacements.reduce((total, iv) => {
+            const voucherValue = iv.items.reduce((sum, item) => {
+                const price = Number(item.product?.price) || 0;
+                return sum + (Number(item.quantity) * price);
+            }, 0);
+            return total + voucherValue;
+        }, 0);
+
+        openingBalance = (prevInvoices || 0) + prevReplacementsValue - ((prevPayments || 0) + (prevReturns || 0));
     }
 
     const closingBalance = openingBalance + runningBalance;

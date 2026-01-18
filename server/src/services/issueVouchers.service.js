@@ -211,7 +211,7 @@ export class IssueVouchersService {
             {
               model: Product,
               as: 'product',
-              attributes: ['id', 'name', 'cost_price']
+              attributes: ['id', 'name', 'cost_price', 'price']
             }
           ]
         });
@@ -262,7 +262,7 @@ export class IssueVouchersService {
             {
               model: Product,
               as: 'product',
-              attributes: ['id', 'name', 'cost_price']
+              attributes: ['id', 'name', 'cost_price', 'price']
             }
           ]
         });
@@ -472,7 +472,7 @@ export class IssueVouchersService {
       };
 
       const debitAccount = await Account.findByPk(voucher.account_id, { transaction });
-      if (!debitAccount) {
+      if (!debitAccount && voucher.issue_type !== 'replacement') {
         console.warn(`Issue Voucher: Debit account not found for ID ${voucher.account_id}`);
         return;
       }
@@ -482,6 +482,7 @@ export class IssueVouchersService {
       const productIds = itemsData.map(i => i.product_id);
       const products = await Product.findAll({
         where: { id: { [Op.in]: productIds } },
+        attributes: ['id', 'name', 'cost_price', 'price', 'type_id'],
         transaction
       });
       const productMap = new Map(products.map(p => [p.id, p]));
@@ -508,7 +509,7 @@ export class IssueVouchersService {
           const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
 
           if (!costsByType[accountId]) costsByType[accountId] = 0;
-          costsByType[accountId] += itemCost.cost; // Corrected from totalCost to cost
+          costsByType[accountId] += itemCost.cost;
         }
       } catch (error) {
         console.warn('Issue Voucher: FIFO Cost Failed, falling back to cost_price');
@@ -525,7 +526,7 @@ export class IssueVouchersService {
         }
       }
 
-      if (totalCost <= 0) return;
+      if (totalCost <= 0 && voucher.issue_type !== 'replacement') return;
 
       // 4. Ensure EntryType exists
       let entryType = await EntryType.findByPk(ENTRY_TYPES.ISSUE_VOUCHER, { transaction });
@@ -538,37 +539,74 @@ export class IssueVouchersService {
       }
 
       // 5. Create Lines
-      const lines = [
-        {
+      const lines = [];
+
+      if (voucher.issue_type === 'replacement') {
+        // --- REPLACEMENT LOGIC ---
+        // 1. Financial Entry: Debit Customer (47), Credit Exchange Clearing (116)
+        let totalSaleValue = 0;
+        const ACC_CUSTOMER = 47;
+        const ACC_EXCHANGE_CLEARING = 116;
+
+        for (const item of itemsData) {
+          const product = productMap.get(Number(item.product_id));
+          const price = Number(product?.price) || 0;
+          totalSaleValue += Number(item.quantity) * price;
+        }
+
+        if (totalSaleValue > 0) {
+          lines.push({
+            account_id: ACC_CUSTOMER,
+            debit: totalSaleValue,
+            credit: 0,
+            description: `تسوية استبدال بضاعة - سند رقم #${voucher.voucher_no}`
+          });
+          lines.push({
+            account_id: ACC_EXCHANGE_CLEARING,
+            debit: 0,
+            credit: totalSaleValue,
+            description: `تسوية استبدال بضاعة - سند رقم #${voucher.voucher_no}`
+          });
+        }
+
+        // 2. Cost Entry: Debit COGS (15), Credit Inventory
+        const ACC_COGS = 15;
+        lines.push({
+          account_id: ACC_COGS,
+          debit: totalCost,
+          credit: 0,
+          description: `تكلفة بضاعة بديلة - سند رقم #${voucher.voucher_no}`
+        });
+
+        for (const [accountId, cost] of Object.entries(costsByType)) {
+          if (cost > 0) {
+            const account = await Account.findByPk(accountId, { transaction });
+            lines.push({
+              account_id: parseInt(accountId),
+              debit: 0,
+              credit: Math.round(cost * 100) / 100,
+              description: `${account?.name || 'مخزون'} - تكلفة بضاعة بديلة - سند رقم #${voucher.voucher_no}`
+            });
+          }
+        }
+      } else {
+        // --- STANDARD ISSUE LOGIC ---
+        lines.push({
           account_id: debitAccount.id,
           debit: totalCost,
           credit: 0,
           description: `سند صرف مخزني رقم #${voucher.voucher_no}`
-        }
-      ];
+        });
 
-      let checkTotalCredit = 0;
-      for (const [accountId, cost] of Object.entries(costsByType)) {
-        if (cost > 0) {
-          const account = await Account.findByPk(accountId, { transaction });
-          lines.push({
-            account_id: parseInt(accountId),
-            debit: 0,
-            credit: Math.round(cost * 100) / 100,
-            description: `${account?.name || 'مخزون'} - سند صرف مخزني رقم #${voucher.voucher_no}`
-          });
-          checkTotalCredit += cost;
-        }
-      }
-
-      // Final balance safety check - ensure total credit matches total debit (allowing for small rounding diffs)
-      if (Math.abs(totalCost - checkTotalCredit) > 0.01) {
-        console.warn(`Issue Voucher JE Balance Mismatch: Debit ${totalCost}, Credit ${checkTotalCredit}. Adjusting last line.`);
-        // Adjust the last credit line or the debit line to force balance if necessary
-        if (lines.length > 1) {
-          const lastLine = lines[lines.length - 1];
-          if (lastLine.credit > 0) {
-            lastLine.credit = Math.round((lastLine.credit + (totalCost - checkTotalCredit)) * 100) / 100;
+        for (const [accountId, cost] of Object.entries(costsByType)) {
+          if (cost > 0) {
+            const account = await Account.findByPk(accountId, { transaction });
+            lines.push({
+              account_id: parseInt(accountId),
+              debit: 0,
+              credit: Math.round(cost * 100) / 100,
+              description: `${account?.name || 'مخزون'} - سند صرف مخزني رقم #${voucher.voucher_no}`
+            });
           }
         }
       }
@@ -578,7 +616,7 @@ export class IssueVouchersService {
         refCode: 'issue_voucher',
         refId: voucher.id,
         entryDate: voucher.issue_date,
-        description: `قيد سند صرف مخزني رقم #${voucher.voucher_no} - ${voucher.note || ''}`,
+        description: `قيد سند صرف مخزني رقم #${voucher.voucher_no} - ${voucher.note || ''}${voucher.issue_type === 'replacement' ? ' (استبدال)' : ''}`,
         lines,
         entryTypeId: ENTRY_TYPES.ISSUE_VOUCHER
       }, { transaction });

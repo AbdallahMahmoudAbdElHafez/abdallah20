@@ -587,9 +587,13 @@ SalesReturn.belongsTo(SalesInvoice, {
 });
 
 SalesReturn.belongsTo(Party, {
-  foreignKey: "sales_invoice_id",
+  foreignKey: "party_id",
   as: "customer",
-  through: SalesInvoice
+});
+
+SalesReturn.belongsTo(Account, {
+  foreignKey: "account_id",
+  as: "account"
 });
 
 SalesReturn.belongsTo(Warehouse, {

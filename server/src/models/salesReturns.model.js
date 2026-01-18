@@ -10,7 +10,8 @@ export default (sequelize) => {
             warehouse_id: { type: DataTypes.INTEGER, allowNull: false },
             return_date: { type: DataTypes.DATEONLY, allowNull: false, defaultValue: sequelize.literal("CURDATE()") },
             notes: { type: DataTypes.TEXT },
-            return_type: { type: DataTypes.ENUM('cash', 'credit'), allowNull: false, defaultValue: 'cash' },
+            return_type: { type: DataTypes.ENUM('cash', 'credit', 'exchange'), allowNull: false, defaultValue: 'cash' },
+            account_id: { type: DataTypes.INTEGER, allowNull: true },
             total_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.0 }, // Net + Tax
             tax_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.0 },
             created_at: { type: DataTypes.DATE, defaultValue: sequelize.literal("CURRENT_TIMESTAMP") }

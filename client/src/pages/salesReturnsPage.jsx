@@ -35,6 +35,7 @@ import { fetchSalesInvoiceItems } from "../features/salesInvoiceItems/salesInvoi
 import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchProducts } from "../features/products/productsSlice";
+import { fetchAccounts } from "../features/accounts/accountsSlice";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 
 // دالة لتنسيق العملة
@@ -75,6 +76,10 @@ export default function SalesReturnsPage() {
         items: products = []
     } = useSelector((state) => state.products);
 
+    const {
+        items: accounts = []
+    } = useSelector((state) => state.accounts);
+
     // Filter only customers
     const customers = useMemo(() => parties.filter(p => p.party_type === 'customer' || p.party_type === 'both'), [parties]);
 
@@ -87,7 +92,8 @@ export default function SalesReturnsPage() {
         warehouse_id: "",
         return_date: new Date().toISOString().split('T')[0],
         notes: "",
-        return_type: "cash"
+        return_type: "cash",
+        account_id: ""
     });
 
     // State for selected items to return
@@ -102,6 +108,7 @@ export default function SalesReturnsPage() {
         dispatch(fetchParties());
         dispatch(fetchWarehouses());
         dispatch(fetchProducts());
+        dispatch(fetchAccounts());
     }, [dispatch]);
 
     const handleOpen = (returnItem = null) => {
@@ -120,7 +127,8 @@ export default function SalesReturnsPage() {
                 warehouse_id: returnItem.warehouse_id,
                 return_date: returnItem.return_date ? new Date(returnItem.return_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                 notes: returnItem.notes || "",
-                return_type: returnItem.return_type || "cash"
+                return_type: returnItem.return_type || "cash",
+                account_id: returnItem.account_id || ""
             });
             // Fetch items for this invoice to show in edit mode? 
             // Editing returns is complex because we need to know what was returned vs what is available.
@@ -135,7 +143,8 @@ export default function SalesReturnsPage() {
                 warehouse_id: "",
                 return_date: new Date().toISOString().split('T')[0],
                 notes: "",
-                return_type: "cash"
+                return_type: "cash",
+                account_id: ""
             });
             setSelectedItems({});
         }
@@ -184,7 +193,7 @@ export default function SalesReturnsPage() {
                 return_condition: 'good',
                 product_id: product.id,
                 product: product,
-                price: product.sale_price || 0,
+                price: product.price || 0,
                 isManual: true
             }
         }));
@@ -256,6 +265,8 @@ export default function SalesReturnsPage() {
 
         const dataToSend = {
             ...formData,
+            account_id: formData.account_id || null,
+            sales_invoice_id: formData.sales_invoice_id || null,
             party_id: selectedCustomerId,
             items: [...itemsArray, ...manualItemsArray] // Include items in the same request
         };
@@ -327,14 +338,42 @@ export default function SalesReturnsPage() {
             accessorKey: "return_type",
             header: "نوع الإرجاع",
             size: 100,
-            Cell: ({ cell }) => (cell.getValue() === 'cash' ? 'نقدي' : 'آجل')
+            Cell: ({ cell }) => {
+                const types = {
+                    cash: 'نقدي',
+                    credit: 'آجل',
+                    exchange: 'استبدال'
+                };
+                return types[cell.getValue()] || cell.getValue();
+            }
+        },
+        {
+            accessorKey: "account_id",
+            header: "الخزينة/البنك",
+            size: 150,
+            Cell: ({ row }) => {
+                const account = accounts.find(acc => acc.id === row.original.account_id);
+                return account?.name || "—";
+            }
+        },
+        {
+            accessorKey: "tax_amount",
+            header: "الضريبة",
+            size: 100,
+            Cell: ({ cell }) => formatCurrency(cell.getValue())
+        },
+        {
+            accessorKey: "total_amount",
+            header: "الإجمالي",
+            size: 120,
+            Cell: ({ cell }) => formatCurrency(cell.getValue())
         },
         {
             accessorKey: "notes",
             header: "ملاحظات",
             size: 200,
         },
-    ], [invoices, parties]);
+    ], [invoices, parties, accounts]);
 
     if (loading === "loading" && returns.length === 0) {
         return (
@@ -493,8 +532,26 @@ export default function SalesReturnsPage() {
                             >
                                 <MenuItem value="cash">نقدي</MenuItem>
                                 <MenuItem value="credit">آجل</MenuItem>
+                                <MenuItem value="exchange">استبدال</MenuItem>
                             </TextField>
                         </Box>
+
+                        {formData.return_type === 'cash' && (
+                            <TextField
+                                select
+                                label="الخزينة/البنك"
+                                value={formData.account_id || ""}
+                                onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
+                                fullWidth
+                                required
+                            >
+                                {accounts.map((account) => (
+                                    <MenuItem key={account.id} value={account.id}>
+                                        {account.name}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        )}
 
                         <TextField
                             label="تاريخ المرتجع"
