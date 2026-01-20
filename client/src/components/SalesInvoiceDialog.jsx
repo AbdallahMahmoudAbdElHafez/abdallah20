@@ -776,7 +776,7 @@ export default function SalesInvoiceDialog({
                                                 {products.map((p) => {
                                                     const stock = p.current_inventory?.[0]?.quantity || 0;
                                                     return (
-                                                        <MenuItem key={p.id} value={p.id} disabled={stock <= 0}>
+                                                        <MenuItem key={p.id} value={p.id}>
                                                             {p.name} (الرصيد: {stock})
                                                         </MenuItem>
                                                     );

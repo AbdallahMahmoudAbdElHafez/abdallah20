@@ -3,41 +3,22 @@ import { Op } from "sequelize";
 
 class WarehouseInventoryService {
     static async getProductsByWarehouse(warehouseId) {
-        const inventory = await BatchInventory.findAll({
-            where: {
-                warehouse_id: warehouseId,
-                quantity: { [Op.gt]: 0 }
-            },
+        const products = await Product.findAll({
             include: [
                 {
-                    model: Batches,
-                    as: 'batch',
-                    include: [
-                        {
-                            model: Product,
-                            as: 'product',
-                            attributes: ['id', 'name']
-                        }
-                    ]
+                    model: CurrentInventory,
+                    as: 'current_inventory',
+                    where: { warehouse_id: warehouseId },
+                    required: false
                 }
             ]
         });
 
-        // Group by product to get unique products available in the warehouse
-        const productsMap = new Map();
-        inventory.forEach(item => {
-            if (item.batch && item.batch.product) {
-                const p = item.batch.product;
-                if (!productsMap.has(p.id)) {
-                    productsMap.set(p.id, {
-                        id: p.id,
-                        name: p.name
-                    });
-                }
-            }
-        });
-
-        return Array.from(productsMap.values());
+        return products.map(p => ({
+            id: p.id,
+            name: p.name,
+            current_inventory: p.current_inventory
+        }));
     }
 
     static async getBatchesByProductAndWarehouse(warehouseId, productId) {

@@ -9,6 +9,7 @@ import {
     TextField,
     MenuItem,
     CircularProgress,
+    Autocomplete,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { defaultTableProps } from "../config/tableConfig";
@@ -193,100 +194,75 @@ export default function ExpensesPage() {
                         value={formData.amount}
                         onChange={handleChange}
                     />
-                    <TextField
-                        select
-                        margin="dense"
-                        label="مدفوع لحساب"
-                        name="debit_account_id"
-                        fullWidth
-                        value={formData.debit_account_id}
-                        onChange={handleChange}
-                    >
-                        {accounts.map((acc) => (
-                            <MenuItem key={acc.id} value={acc.id}>
-                                {acc.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    <TextField
-                        select
-                        margin="dense"
-                        label="مدفوع من حساب"
-                        name="credit_account_id"
-                        fullWidth
-                        value={formData.credit_account_id}
-                        onChange={handleChange}
-                    >
-                        {accounts.map((acc) => (
-                            <MenuItem key={acc.id} value={acc.id}>
-                                {acc.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    <TextField
-                        select
-                        margin="dense"
-                        label="المدينة"
-                        name="city_id"
-                        fullWidth
-                        value={formData.city_id}
-                        onChange={handleChange}
-                    >
-                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
-                        {cities.map((city) => (
-                            <MenuItem key={city.id} value={city.id}>
-                                {city.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    <TextField
-                        select
-                        margin="dense"
-                        label="الموظف"
-                        name="employee_id"
-                        fullWidth
-                        value={formData.employee_id}
-                        onChange={handleChange}
-                    >
-                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
-                        {employees.map((emp) => (
-                            <MenuItem key={emp.id} value={emp.id}>
-                                {emp.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    <TextField
-                        select
-                        margin="dense"
-                        label="الدكتور"
-                        name="doctor_id"
-                        fullWidth
-                        value={formData.doctor_id}
-                        onChange={handleChange}
-                    >
-                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
-                        {doctors.map((doctor) => (
-                            <MenuItem key={doctor.id} value={doctor.id}>
-                                {doctor.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                    <TextField
-                        select
-                        margin="dense"
-                        label="الطرف"
-                        name="party_id"
-                        fullWidth
-                        value={formData.party_id}
-                        onChange={handleChange}
-                    >
-                        <MenuItem value=""><em>لا يوجد</em></MenuItem>
-                        {parties.map((party) => (
-                            <MenuItem key={party.id} value={party.id}>
-                                {party.name} {party.City?.name ? `(${party.City.name})` : ""}
-                            </MenuItem>
-                        ))}
-                    </TextField>
+                    <Autocomplete
+                        options={accounts}
+                        getOptionLabel={(option) => option.name || ""}
+                        value={accounts.find((acc) => acc.id === formData.debit_account_id) || null}
+                        onChange={(_, newValue) => {
+                            setFormData({ ...formData, debit_account_id: newValue ? newValue.id : "" });
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} margin="dense" label="مدفوع لحساب" fullWidth />
+                        )}
+                    />
+                    <Autocomplete
+                        options={accounts}
+                        getOptionLabel={(option) => option.name || ""}
+                        value={accounts.find((acc) => acc.id === formData.credit_account_id) || null}
+                        onChange={(_, newValue) => {
+                            setFormData({ ...formData, credit_account_id: newValue ? newValue.id : "" });
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} margin="dense" label="مدفوع من حساب" fullWidth />
+                        )}
+                    />
+                    <Autocomplete
+                        options={cities}
+                        getOptionLabel={(option) => option.name || ""}
+                        value={cities.find((city) => city.id === formData.city_id) || null}
+                        onChange={(_, newValue) => {
+                            setFormData({ ...formData, city_id: newValue ? newValue.id : "" });
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} margin="dense" label="المدينة" fullWidth />
+                        )}
+                    />
+                    <Autocomplete
+                        options={employees}
+                        getOptionLabel={(option) => option.name || ""}
+                        value={employees.find((emp) => emp.id === formData.employee_id) || null}
+                        onChange={(_, newValue) => {
+                            setFormData({ ...formData, employee_id: newValue ? newValue.id : "" });
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} margin="dense" label="الموظف" fullWidth />
+                        )}
+                    />
+                    <Autocomplete
+                        options={doctors}
+                        getOptionLabel={(option) => option.name || ""}
+                        value={doctors.find((doctor) => doctor.id === formData.doctor_id) || null}
+                        onChange={(_, newValue) => {
+                            setFormData({ ...formData, doctor_id: newValue ? newValue.id : "" });
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} margin="dense" label="الدكتور" fullWidth />
+                        )}
+                    />
+                    <Autocomplete
+                        options={parties}
+                        getOptionLabel={(option) => {
+                            if (!option) return "";
+                            return `${option.name || ""} ${option.City?.name ? `(${option.City.name})` : ""}`.trim();
+                        }}
+                        value={parties.find((party) => party.id === formData.party_id) || null}
+                        onChange={(_, newValue) => {
+                            setFormData({ ...formData, party_id: newValue ? newValue.id : "" });
+                        }}
+                        renderInput={(params) => (
+                            <TextField {...params} margin="dense" label="الطرف" fullWidth />
+                        )}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>إلغاء</Button>

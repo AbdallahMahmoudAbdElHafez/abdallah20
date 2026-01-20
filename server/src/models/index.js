@@ -728,12 +728,14 @@ Expense.belongsTo(Account, { as: 'creditAccount', foreignKey: 'credit_account_id
 Expense.belongsTo(City, { foreignKey: 'city_id', as: 'city' });
 Expense.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' });
 Expense.belongsTo(Party, { foreignKey: 'party_id', as: 'party' });
+Expense.belongsTo(Doctor, { foreignKey: 'doctor_id', as: 'doctor' });
 
 Account.hasMany(Expense, { foreignKey: 'debit_account_id', as: 'debitExpenses' });
 Account.hasMany(Expense, { foreignKey: 'credit_account_id', as: 'creditExpenses' });
 City.hasMany(Expense, { foreignKey: 'city_id', as: 'expenses' });
 Employee.hasMany(Expense, { foreignKey: 'employee_id', as: 'expenses' });
 Party.hasMany(Expense, { foreignKey: 'party_id', as: 'partyExpenses' });
+Doctor.hasMany(Expense, { foreignKey: 'doctor_id', as: 'expenses' });
 
 // Company Associations
 City.hasMany(Company, { foreignKey: "city_id", as: "companies" });

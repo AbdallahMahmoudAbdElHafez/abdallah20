@@ -8,7 +8,8 @@ export default {
                 { association: "creditAccount" },
                 { association: "city" },
                 { association: "employee" },
-                { association: "party" }
+                { association: "party" },
+                { association: "doctor" }
             ]
         });
     },
@@ -20,7 +21,8 @@ export default {
                 { association: "creditAccount" },
                 { association: "city" },
                 { association: "employee" },
-                { association: "party" }
+                { association: "party" },
+                { association: "doctor" }
             ]
         });
     },
