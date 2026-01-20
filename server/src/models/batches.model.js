@@ -17,7 +17,7 @@ export default (sequelize) => {
         },
         batch_number: {
             type: DataTypes.STRING(100),
-            allowNull: false
+            allowNull: true
         },
         expiry_date: {
             type: DataTypes.DATEONLY,

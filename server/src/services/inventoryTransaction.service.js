@@ -34,6 +34,18 @@ class InventoryTransactionService {
   }
 
   static async create(data, options = {}) {
+    const { ProductType } = await import("../models/index.js");
+    const product = await Product.findByPk(data.product_id, {
+      include: [{ model: ProductType, as: "type" }],
+      ...options
+    });
+
+    if (!product) {
+      console.error(`Debug: Product not found for ID ${data.product_id}`);
+      throw new Error("Product not found");
+    }
+    console.log(`Debug: Product fetched: ${product.name}, Type: ${product.type ? product.type.name : 'None'}`);
+
     if (data.source_id === "") data.source_id = null;
 
     // Support flat batch fields if batches array is missing
@@ -63,6 +75,12 @@ class InventoryTransactionService {
     // 3. Process batches if they exist
     if (data.batches && data.batches.length > 0) {
       for (const batchData of data.batches) {
+        if (!batchData.batch_number && !batchData.batch_id) {
+          const isProductionRequirement = product.type && product.type.name.includes("مستلزم");
+          if (!isProductionRequirement) {
+            throw new Error("Batch number is required for this product type");
+          }
+        }
         let batchId = null;
 
         if (batchData.batch_number) {
@@ -79,6 +97,34 @@ class InventoryTransactionService {
           batchId = batch.id;
         } else if (batchData.batch_id) {
           batchId = batchData.batch_id;
+        } else {
+          // Production Requirement products: handle based on transaction type
+          const isProductionRequirement = product.type && product.type.name.includes("مستلزم");
+          if (isProductionRequirement) {
+            if (data.transaction_type === "in") {
+              // Create a new batch for incoming inventory
+              const batch = await Batches.create({
+                product_id: data.product_id,
+                batch_number: null,
+                expiry_date: null
+              }, options);
+              batchId = batch.id;
+              console.log(`Debug: Created Batch (id: ${batchId}) with null batch_number for Production Requirement product (IN)`);
+            } else {
+              // For outgoing, use FIFO to find existing batches
+              const fifoResult = await InventoryTransactionService.getBatchesFIFO(
+                data.product_id,
+                data.warehouse_id,
+                Number(batchData.quantity),
+                options.transaction
+              );
+              if (fifoResult.batches.length > 0) {
+                batchId = fifoResult.batches[0].batch_id;
+                console.log(`Debug: Using existing Batch (id: ${batchId}) for Production Requirement product (OUT)`);
+              }
+              // If no batch found, batchId remains null - transaction will proceed without batch_inventory update
+            }
+          }
         }
 
         await InventoryTransactionBatches.create({
@@ -98,7 +144,41 @@ class InventoryTransactionService {
             batchQtyChange,
             options
           );
+          console.log(`Debug: Updated batch_inventory for batch ${batchId}`);
         }
+      }
+    } else {
+      // No batch data provided; allow for Production Requirement products
+      const isProductionRequirement = product.type && product.type.name.includes("مستلزم");
+      if (isProductionRequirement) {
+        // Create a batch with null batch_number for Production Requirement products
+        const batch = await Batches.create({
+          product_id: data.product_id,
+          batch_number: null,
+          expiry_date: null
+        }, options);
+
+        await InventoryTransactionBatches.create({
+          inventory_transaction_id: trx.id,
+          batch_id: batch.id,
+          quantity: data.quantity,
+          cost_per_unit: data.cost_per_unit || 0
+        }, options);
+
+        // Update batch_inventory
+        const batchQtyChange = data.transaction_type === "in"
+          ? Number(data.quantity)
+          : -Number(data.quantity);
+        await BatchInventoryService.createOrUpdate(
+          batch.id,
+          data.warehouse_id,
+          batchQtyChange,
+          options
+        );
+
+        console.log(`Debug: Created Batch (id: ${batch.id}) with null batch_number and updated batch_inventory for Production Requirement product`);
+      } else {
+        throw new Error("Batch information is required for this product type");
       }
     }
 
@@ -147,6 +227,25 @@ class InventoryTransactionService {
         cost_per_unit: data.cost_per_unit
       }];
     }
+
+    const { ProductType } = await import("../models/index.js");
+    const trxToCheck = await InventoryTransaction.findByPk(id, { ...options });
+    const product = await Product.findByPk(data.product_id || trxToCheck.product_id, {
+      include: [{ model: ProductType, as: "type" }],
+      ...options
+    });
+
+    if (data.batches && data.batches.length > 0) {
+      for (const batchData of data.batches) {
+        if (!batchData.batch_number && !batchData.batch_id) {
+          const isProductionRequirement = product.type && product.type.name.includes("مستلزم");
+          if (!isProductionRequirement) {
+            throw new Error("Batch number is required for this product type");
+          }
+        }
+      }
+    }
+
     const trx = await InventoryTransaction.findByPk(id, {
       include: [{ model: InventoryTransactionBatches, as: "transaction_batches" }],
       ...options

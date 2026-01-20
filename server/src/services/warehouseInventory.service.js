@@ -1,4 +1,4 @@
-import { BatchInventory, Batches, Product, InventoryTransactionBatches, InventoryTransaction } from "../models/index.js";
+import { BatchInventory, Batches, Product, InventoryTransactionBatches, InventoryTransaction, CurrentInventory } from "../models/index.js";
 import { Op } from "sequelize";
 
 class WarehouseInventoryService {
