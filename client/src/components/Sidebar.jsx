@@ -78,6 +78,7 @@ const reportsMenu = [
   { label: "كشف حساب العميل", path: "/customers/statement" },
   { label: "القيود", path: "/journal-entry-lines" },
   { label: "ملخص التقارير", path: "/reports" },
+  { label: "تقرير مستحقات العملاء", path: "/reports/customer-receivables" },
 
 ];
 function Sidebar() {

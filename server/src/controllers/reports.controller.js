@@ -125,6 +125,17 @@ const reportsController = {
         }
     },
 
+    getCustomerReceivables: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.query;
+            const data = await reportsService.getCustomerReceivablesReport(startDate, endDate);
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching customer receivables report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     // ============ EXPORT CONTROLLERS ============
 
     exportReport: async (req, res) => {
@@ -158,6 +169,12 @@ const reportsController = {
                     const jobOrdersData = await reportsService.getJobOrdersReport(startDate, endDate);
                     buffer = await exportService.exportJobOrdersReport(jobOrdersData.data, jobOrdersData.summary);
                     filename = `JobOrders_Report_${startDate}_${endDate}.xlsx`;
+                    break;
+
+                case 'customer-receivables':
+                    const receivablesData = await reportsService.getCustomerReceivablesReport(startDate, endDate);
+                    buffer = await exportService.exportCustomerReceivablesReport(receivablesData.data, receivablesData.summary);
+                    filename = `Customer_Receivables_${startDate}_${endDate}.xlsx`;
                     break;
 
                 default:

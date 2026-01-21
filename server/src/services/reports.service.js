@@ -1,6 +1,8 @@
 import {
     SalesInvoice,
     SalesInvoiceItem,
+    SalesInvoicePayment,
+    SalesReturn,
     PurchaseInvoice,
     PurchaseInvoiceItem,
     Expense,
@@ -634,6 +636,156 @@ const getIssueVouchersReport = async (startDate, endDate) => {
     };
 };
 
+/**
+ * Customer Receivables Report
+ */
+const getCustomerReceivablesReport = async (startDate, endDate) => {
+    const dateFilter = {};
+    if (startDate && endDate) {
+        dateFilter.date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        dateFilter.date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        dateFilter.date = { [Op.lte]: endDate };
+    }
+
+    // 1. Get all customers
+    const customers = await Party.findAll({
+        where: { party_type: ['customer', 'both'] },
+        attributes: ['id', 'name', 'phone', 'address', 'opening_balance'],
+        raw: true
+    });
+
+    // 2. Aggregate Data
+    // We will fetch totals for each customer. 
+    // Optimization: Instead of N+1 queries, we can use group by queries for each table.
+
+    // Sales Totals
+    const sales = await SalesInvoice.findAll({
+        attributes: [
+            'party_id',
+            [sequelize.fn('SUM', sequelize.col('total_amount')), 'total_sales']
+        ],
+        where: {
+            invoice_status: 'approved',
+            ...(startDate || endDate ? { invoice_date: dateFilter.date } : {})
+        },
+        group: ['party_id'],
+        raw: true
+    });
+
+    // Payments Totals
+    const payments = await SalesInvoicePayment.findAll({
+        attributes: [
+            [sequelize.col('sales_invoice.party_id'), 'party_id'],
+            [sequelize.fn('SUM', sequelize.col('amount')), 'total_payments']
+        ],
+        include: [{
+            model: SalesInvoice,
+            as: 'sales_invoice',
+            attributes: [],
+            required: true
+        }],
+        where: startDate || endDate ? { payment_date: dateFilter.date } : {},
+        group: [sequelize.col('sales_invoice.party_id')],
+        raw: true
+    });
+
+    // Returns Totals
+    const returns = await SalesReturn.findAll({
+        attributes: [
+            'party_id',
+            [sequelize.fn('SUM', sequelize.col('total_amount')), 'total_returns']
+        ],
+        where: startDate || endDate ? { return_date: dateFilter.date } : {},
+        group: ['party_id'],
+        raw: true
+    });
+
+    // Replacements (Issue Vouchers with type 'replacement')
+    // Note: Replacements add to the customer's debt (Debit) just like a sale.
+    // We need to calculate the value of replacements.
+    // This is more complex because value is sum(qty * price).
+    // For report speed, we might need to fetch them and sum in JS or complex query.
+    // Let's do a fetch all for replacements in the date range.
+    const replacements = await IssueVoucher.findAll({
+        where: {
+            issue_type: 'replacement',
+            status: 'approved',
+            ...(startDate || endDate ? { issue_date: dateFilter.date } : {})
+        },
+        include: [{
+            model: IssueVoucherItem,
+            as: 'items',
+            include: [{
+                model: Product,
+                as: 'product',
+                attributes: ['price']
+            }]
+        }]
+    });
+
+    const replacementMap = {};
+    replacements.forEach(iv => {
+        const partyId = iv.party_id;
+        const voucherValue = iv.items.reduce((sum, item) => {
+            const price = Number(item.product?.price) || 0;
+            return sum + (Number(item.quantity) * price);
+        }, 0);
+
+        if (!replacementMap[partyId]) replacementMap[partyId] = 0;
+        replacementMap[partyId] += voucherValue;
+    });
+
+    // 3. Merge Data
+    const salesMap = {};
+    sales.forEach(s => salesMap[s.party_id] = parseFloat(s.total_sales || 0));
+
+    const paymentsMap = {};
+    payments.forEach(p => paymentsMap[p.party_id] = parseFloat(p.total_payments || 0));
+
+    const returnsMap = {};
+    returns.forEach(r => returnsMap[r.party_id] = parseFloat(r.total_returns || 0));
+
+    let totalReceivables = 0;
+
+    const reportData = customers.map(customer => {
+        const totalSales = salesMap[customer.id] || 0;
+        const totalReplacements = replacementMap[customer.id] || 0;
+        const totalPayments = paymentsMap[customer.id] || 0;
+        const totalReturns = returnsMap[customer.id] || 0;
+        const openingBalance = parseFloat(customer.opening_balance || 0);
+
+        // Balance = (Opening + Sales + Replacements) - (Payments + Returns)
+        const netBalance = (openingBalance + totalSales + totalReplacements) - (totalPayments + totalReturns);
+
+        if (netBalance !== 0 || totalSales !== 0 || totalPayments !== 0 || openingBalance !== 0) {
+            totalReceivables += netBalance;
+            return {
+                ...customer,
+                opening_balance: openingBalance,
+                total_sales: totalSales,
+                total_replacements: totalReplacements,
+                total_payments: totalPayments,
+                total_returns: totalReturns,
+                net_balance: netBalance
+            };
+        }
+        return null;
+    }).filter(item => item !== null);
+
+    // Sort by balance descending (highest debt first)
+    reportData.sort((a, b) => b.net_balance - a.net_balance);
+
+    return {
+        data: reportData,
+        summary: {
+            total_customers: reportData.length,
+            total_receivables: totalReceivables
+        }
+    };
+};
+
 // ... (existing code)
 
 /**
@@ -959,5 +1111,6 @@ export default {
     getWarehouseReport,
     getIssueVouchersReport,
     getOpeningSalesInvoicesReport,
-    getZakatReport
+    getZakatReport,
+    getCustomerReceivablesReport
 };

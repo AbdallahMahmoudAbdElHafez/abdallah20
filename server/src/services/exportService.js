@@ -332,10 +332,63 @@ const exportCustomerStatement = async (statementData) => {
     return await workbook.xlsx.writeBuffer();
 };
 
+/**
+ * Export Customer Receivables Report to Excel
+ */
+const exportCustomerReceivablesReport = async (data, summary) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('مستحقات العملاء');
+
+    worksheet.views = [{ rightToLeft: true }];
+
+    // Title
+    worksheet.mergeCells('A1:F1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = 'تقرير مستحقات العملاء';
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Summary
+    worksheet.addRow([]);
+    worksheet.addRow(['عدد العملاء:', summary.total_customers]);
+    worksheet.addRow(['إجمالي المستحقات:', summary.total_receivables]);
+    worksheet.addRow([]);
+
+    // Headers
+    const headers = ['العميل', 'رقم الهاتف', 'إجمالي المبيعات', 'إجمالي السداد', 'المرتجعات', 'الرصيد الحالي'];
+    const headerRow = worksheet.addRow(headers);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE0F7FA' }
+    };
+
+    // Data
+    data.forEach(row => {
+        worksheet.addRow([
+            row.name || '',
+            row.phone || '',
+            parseFloat(row.total_sales || 0),
+            parseFloat(row.total_payments || 0),
+            parseFloat(row.total_returns || 0),
+            parseFloat(row.net_balance || 0)
+        ]);
+    });
+
+    // Formatting
+    worksheet.columns.forEach(column => {
+        column.width = 18;
+    });
+
+    return await workbook.xlsx.writeBuffer();
+};
+
 export default {
     exportSalesReport,
     exportPurchasesReport,
     exportExpensesReport,
     exportJobOrdersReport,
-    exportCustomerStatement
+    exportCustomerStatement,
+    exportCustomerReceivablesReport
 };
