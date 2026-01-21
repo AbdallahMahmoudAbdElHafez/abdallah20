@@ -8,7 +8,8 @@ import {
     Build as JobOrdersIcon,
     Store as WarehouseIcon,
     Receipt as VoucherIcon,
-    AccountBalanceWallet as OpenBalanceIcon
+    AccountBalanceWallet as OpenBalanceIcon,
+    Calculate as ZakatIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -64,6 +65,13 @@ const ReportsDashboard = () => {
             icon: <OpenBalanceIcon sx={{ fontSize: 60, color: '#00bcd4' }} />,
             path: '/reports/opening-sales',
             color: '#e0f7fa'
+        },
+        {
+            title: 'حساب الزكاة',
+            description: 'حساب زكاة المال على الأصول المتداولة',
+            icon: <ZakatIcon sx={{ fontSize: 60, color: '#009688' }} />,
+            path: '/reports/zakat',
+            color: '#e0f2f1'
         }
     ];
 

@@ -834,6 +834,120 @@ const getOpeningSalesInvoicesReport = async (startDate, endDate) => {
     };
 };
 
+/**
+ * Zakat Calculation Report
+ * Zakat Base = Current Assets (Account 9) - Current Liabilities (Account 12)
+ * Zakat Due = Base × 2.5%
+ */
+const getZakatReport = async (date = null) => {
+    const { Account, JournalEntryLine, JournalEntry } = await import('../models/index.js');
+
+    const targetDate = date ? new Date(date) : new Date();
+
+    // Helper function to get account balance with children
+    const getAccountBalance = async (accountId) => {
+        // Get all child accounts recursively
+        const getAllChildIds = async (parentId) => {
+            const children = await Account.findAll({
+                where: { parent_account_id: parentId },
+                attributes: ['id']
+            });
+            let ids = [parentId];
+            for (const child of children) {
+                const childIds = await getAllChildIds(child.id);
+                ids = ids.concat(childIds);
+            }
+            return ids;
+        };
+
+        const accountIds = await getAllChildIds(accountId);
+
+        // Sum all journal entry lines for these accounts up to the target date
+        const result = await JournalEntryLine.findOne({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+                [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+            ],
+            where: {
+                account_id: { [Op.in]: accountIds }
+            },
+            include: [{
+                model: JournalEntry,
+                as: 'journal_entry',
+                attributes: [],
+                where: {
+                    entry_date: { [Op.lte]: targetDate }
+                }
+            }],
+            raw: true
+        });
+
+        const totalDebit = parseFloat(result?.total_debit || 0);
+        const totalCredit = parseFloat(result?.total_credit || 0);
+
+        return totalDebit - totalCredit;
+    };
+
+    // Get detailed breakdown
+    const getAccountDetails = async (parentAccountId) => {
+        const children = await Account.findAll({
+            where: { parent_account_id: parentAccountId },
+            attributes: ['id', 'name']
+        });
+
+        const details = [];
+        for (const child of children) {
+            const balance = await getAccountBalance(child.id);
+            if (Math.abs(balance) > 0.01) {
+                details.push({
+                    id: child.id,
+                    name: child.name,
+                    balance: balance
+                });
+            }
+        }
+        return details;
+    };
+
+    // Account IDs from the chart of accounts
+    const CURRENT_ASSETS_ID = 9;    // أصول متداولة
+    const CURRENT_LIABILITIES_ID = 12; // خصوم متداولة
+    const ZAKAT_RATE = 0.025; // 2.5%
+
+    // Calculate totals
+    const currentAssetsBalance = await getAccountBalance(CURRENT_ASSETS_ID);
+    const currentLiabilitiesBalance = await getAccountBalance(CURRENT_LIABILITIES_ID);
+
+    // For liabilities, the balance is typically credit - debit, so we negate
+    const adjustedLiabilities = -currentLiabilitiesBalance;
+
+    // Get detailed breakdowns
+    const currentAssetsDetails = await getAccountDetails(CURRENT_ASSETS_ID);
+    const currentLiabilitiesDetails = await getAccountDetails(CURRENT_LIABILITIES_ID);
+
+    // Calculate Zakat
+    const zakatBase = currentAssetsBalance - adjustedLiabilities;
+    const zakatDue = zakatBase > 0 ? zakatBase * ZAKAT_RATE : 0;
+
+    return {
+        date: targetDate.toISOString().split('T')[0],
+        summary: {
+            current_assets: currentAssetsBalance,
+            current_liabilities: adjustedLiabilities,
+            zakat_base: zakatBase,
+            zakat_rate: ZAKAT_RATE * 100,
+            zakat_due: zakatDue
+        },
+        details: {
+            current_assets: currentAssetsDetails,
+            current_liabilities: currentLiabilitiesDetails.map(item => ({
+                ...item,
+                balance: -item.balance // Show positive values for display
+            }))
+        }
+    };
+};
+
 export default {
     getDashboardSummary,
     getTopSellingProducts,
@@ -844,5 +958,6 @@ export default {
     getJobOrdersReport,
     getWarehouseReport,
     getIssueVouchersReport,
-    getOpeningSalesInvoicesReport
+    getOpeningSalesInvoicesReport,
+    getZakatReport
 };
