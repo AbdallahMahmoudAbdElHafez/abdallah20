@@ -54,10 +54,15 @@ class PurchaseInvoiceService {
         invoiceData.invoice_number = `PI-${year}-${String(nextNumber).padStart(6, '0')}`;
       }
 
+      // Check if invoice_type is 'opening' and items exist
+      if (invoiceData.invoice_type === 'opening' && items && items.length > 0) {
+        throw new Error('لا يمكن إضافة عناصر لفاتورة افتتاحية');
+      }
+
       const invoice = await PurchaseInvoice.create(invoiceData, { transaction });
 
-      // Create items if they exist
-      if (items && items.length > 0) {
+      // Create items if they exist (Skip for opening invoices)
+      if (invoiceData.invoice_type !== 'opening' && items && items.length > 0) {
         const itemsWithInvoiceId = items.map(item => ({
           ...item,
           purchase_invoice_id: invoice.id,
@@ -138,157 +143,175 @@ class PurchaseInvoiceService {
       const { createJournalEntry } = await import('./journal.service.js');
       const { Product: ProductModel } = await import('../models/index.js');
 
-      // Inventory Account IDs by Product Type
-      const INVENTORY_ACCOUNTS = {
-        FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
-        RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
-        DEFAULT: 49             // المخزون (fallback)
-      };
+      if (invoiceData.invoice_type === 'opening') {
+        const OPENING_BALANCES_ACCOUNT_ID = 117; // ح/ الأرصدة الافتتاحية
+        const SUPPLIERS_ACCOUNT_ID = 62; // ح/ الموردين (Default)
 
-      const PRODUCT_TYPE_TO_ACCOUNT = {
-        1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
-        2: INVENTORY_ACCOUNTS.RAW_MATERIALS
-      };
+        const supplier = await Party.findByPk(invoice.supplier_id, { transaction });
+        const supplierAccountId = supplier?.account_id || SUPPLIERS_ACCOUNT_ID;
 
-      // VAT: Try specific "ضريبة القيمه المضافه" (ID 65 specific) or standard.
-      let vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمه المضافه' }, transaction });
-      if (!vatAccount) vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمة المضافة' }, transaction });
-
-      const supplierAccount = await Account.findOne({ where: { name: 'الموردين' }, transaction });
-      const discountAccount = await Account.findOne({ where: { name: 'خصم مكتسب' }, transaction });
-      const taxAccount = await Account.findOne({ where: { name: 'خصم و اضافه ضرائب مشتريات' }, transaction });
-
-      console.log('JE Debug: PI Accounts Resolved', {
-        vat: !!vatAccount,
-        supplier: !!supplierAccount
-      });
-
-      // Check for ReferenceType
-      let refType = await ReferenceType.findOne({ where: { code: 'purchase_invoice' }, transaction });
-      if (!refType) {
-        refType = await ReferenceType.create({
-          code: 'purchase_invoice',
-          label: 'فاتورة شراء',
-          name: 'فاتورة شراء',
-          description: 'Journal Entry for Purchase Invoice'
+        await createJournalEntry({
+          refCode: 'purchase_invoice_opening',
+          refId: invoice.id,
+          entryDate: invoice.invoice_date,
+          description: `رصيد أول المدة (مورد) - فاتورة #${invoice.invoice_number}`,
+          lines: [
+            {
+              account_id: OPENING_BALANCES_ACCOUNT_ID,
+              debit: invoice.total_amount,
+              credit: 0,
+              description: `إثبات رصيد افتتاحى للمورد - فاتورة #${invoice.invoice_number}`
+            },
+            {
+              account_id: supplierAccountId,
+              debit: 0,
+              credit: invoice.total_amount,
+              description: `مقابل رصيد افتتاحى - فاتورة #${invoice.invoice_number}`
+            }
+          ],
+          entryTypeId: 1 // قيد افتتاحي
         }, { transaction });
-      }
 
-      if (supplierAccount && items && items.length > 0) {
-        const lines = [];
-
-        // Get products with type_id
-        const productIds = items.map(i => parseInt(i.product_id));
-
-        const products = await ProductModel.findAll({
-          where: { id: { [Op.in]: productIds } },
-          transaction
-        });
-
-        const productMap = new Map(products.map(p => [p.id, p]));
-
-        // Group subtotal by product type
-        const subtotalByType = {};
-        for (const item of items) {
-          const productId = parseInt(item.product_id);
-          const product = productMap.get(productId);
-          const typeId = product?.type_id || null;
-          const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
-
-          // Calculate item total from quantity * unit_price
-          const itemTotal = parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0);
-
-          if (!subtotalByType[accountId]) {
-            subtotalByType[accountId] = 0;
-          }
-          subtotalByType[accountId] += itemTotal;
-        }
-
-        // 1. Dr Inventory accounts by product type
-        for (const [accountId, amount] of Object.entries(subtotalByType)) {
-          if (amount > 0) {
-            const account = await Account.findByPk(accountId, { transaction });
-            lines.push({
-              account_id: parseInt(accountId),
-              debit: amount,
-              credit: 0,
-              description: `${account?.name || 'مخزون'} - PI #${invoice.invoice_number}`
-            });
-          }
-        }
-
-        // 2. Dr VAT
-        if (Number(invoice.vat_amount) > 0) {
-          if (vatAccount) {
-            lines.push({
-              account_id: vatAccount.id,
-              debit: invoice.vat_amount,
-              credit: 0,
-              description: `VAT - PI #${invoice.invoice_number}`
-            });
-          } else {
-            console.warn('JE Warning: VAT > 0 but Account MISSING');
-          }
-        }
-
-        // 3. Cr Discount (Additional Discount)
-        if (Number(invoice.additional_discount) > 0) {
-          if (discountAccount) {
-            lines.push({
-              account_id: discountAccount.id,
-              debit: 0,
-              credit: invoice.additional_discount,
-              description: `Discount Received - PI #${invoice.invoice_number}`
-            });
-          } else {
-            console.warn('JE Warning: Discount > 0 but Account MISSING');
-          }
-        }
-
-        // 4. Cr Withholding Tax
-        if (Number(invoice.tax_amount) > 0) {
-          if (taxAccount) {
-            lines.push({
-              account_id: taxAccount.id,
-              debit: 0,
-              credit: invoice.tax_amount,
-              description: `WHT - PI #${invoice.invoice_number}`
-            });
-          } else {
-            console.warn('JE Warning: TaxAmount > 0 but Account MISSING');
-          }
-        }
-
-        // 5. Cr Supplier (Total Payable)
-        if (Number(invoice.total_amount) > 0) {
-          lines.push({
-            account_id: supplierAccount.id,
-            debit: 0,
-            credit: invoice.total_amount,
-            description: `Supplier - PI #${invoice.invoice_number}`
-          });
-        }
-
-        if (lines.length > 0) {
-          try {
-            await createJournalEntry({
-              refCode: 'purchase_invoice',
-              refId: invoice.id,
-              entryDate: invoice.invoice_date,
-              description: `Purchase Invoice #${invoice.invoice_number}`,
-              lines: lines,
-              entryTypeId: 5
-            }, { transaction });
-            console.log('JE Success: PI Entry Created');
-          } catch (err) {
-            console.error('JE Error: PI Entry Failed', err);
-          }
-        }
+        console.log('JE Success: PI Opening Balance Entry Created');
       } else {
-        console.error('JE Error: PI Entry Skipped. Missing Essential Data:', {
-          supplier: !!supplierAccount ? supplierAccount.name : 'MISSING',
-          items: items?.length || 0
-        });
+        // Inventory Account IDs by Product Type
+        const INVENTORY_ACCOUNTS = {
+          FINISHED_GOODS: 110,    // مخزون تام الصنع (منتج تام - type_id: 1)
+          RAW_MATERIALS: 111,     // مخزون أولي (مستلزم انتاج - type_id: 2)
+          DEFAULT: 49             // المخزون (fallback)
+        };
+
+        const PRODUCT_TYPE_TO_ACCOUNT = {
+          1: INVENTORY_ACCOUNTS.FINISHED_GOODS,
+          2: INVENTORY_ACCOUNTS.RAW_MATERIALS
+        };
+
+        // VAT: Try specific "ضريبة القيمه المضافه" (ID 65 specific) or standard.
+        let vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمه المضافه' }, transaction });
+        if (!vatAccount) vatAccount = await Account.findOne({ where: { name: 'ضريبة القيمة المضافة' }, transaction });
+
+        const supplierAccount = await Account.findOne({ where: { name: 'الموردين' }, transaction });
+        const discountAccount = await Account.findOne({ where: { name: 'خصم مكتسب' }, transaction });
+        const taxAccount = await Account.findOne({ where: { name: 'خصم و اضافه ضرائب مشتريات' }, transaction });
+
+        // Check for ReferenceType
+        let refType = await ReferenceType.findOne({ where: { code: 'purchase_invoice' }, transaction });
+        if (!refType) {
+          refType = await ReferenceType.create({
+            code: 'purchase_invoice',
+            label: 'فاتورة شراء',
+            name: 'فاتورة شراء',
+            description: 'Journal Entry for Purchase Invoice'
+          }, { transaction });
+        }
+
+        if (supplierAccount && items && items.length > 0) {
+          const lines = [];
+
+          // Get products with type_id
+          const productIds = items.map(i => parseInt(i.product_id));
+
+          const products = await ProductModel.findAll({
+            where: { id: { [Op.in]: productIds } },
+            transaction
+          });
+
+          const productMap = new Map(products.map(p => [p.id, p]));
+
+          // Group subtotal by product type
+          const subtotalByType = {};
+          for (const item of items) {
+            const productId = parseInt(item.product_id);
+            const product = productMap.get(productId);
+            const typeId = product?.type_id || null;
+            const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+            // Calculate item total from quantity * unit_price
+            const itemTotal = parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0);
+
+            if (!subtotalByType[accountId]) {
+              subtotalByType[accountId] = 0;
+            }
+            subtotalByType[accountId] += itemTotal;
+          }
+
+          // 1. Dr Inventory accounts by product type
+          for (const [accountId, amount] of Object.entries(subtotalByType)) {
+            if (amount > 0) {
+              const account = await Account.findByPk(accountId, { transaction });
+              lines.push({
+                account_id: parseInt(accountId),
+                debit: amount,
+                credit: 0,
+                description: `${account?.name || 'مخزون'} - PI #${invoice.invoice_number}`
+              });
+            }
+          }
+
+          // 2. Dr VAT
+          if (Number(invoice.vat_amount) > 0) {
+            if (vatAccount) {
+              lines.push({
+                account_id: vatAccount.id,
+                debit: invoice.vat_amount,
+                credit: 0,
+                description: `VAT - PI #${invoice.invoice_number}`
+              });
+            }
+          }
+
+          // 3. Cr Discount (Additional Discount)
+          if (Number(invoice.additional_discount) > 0) {
+            if (discountAccount) {
+              lines.push({
+                account_id: discountAccount.id,
+                debit: 0,
+                credit: invoice.additional_discount,
+                description: `Discount Received - PI #${invoice.invoice_number}`
+              });
+            }
+          }
+
+          // 4. Cr Withholding Tax
+          if (Number(invoice.tax_amount) > 0) {
+            if (taxAccount) {
+              lines.push({
+                account_id: taxAccount.id,
+                debit: 0,
+                credit: invoice.tax_amount,
+                description: `WHT - PI #${invoice.invoice_number}`
+              });
+            }
+          }
+
+          // 5. Cr Supplier (Total Payable)
+          if (Number(invoice.total_amount) > 0) {
+            const supplier = await Party.findByPk(invoice.supplier_id, { transaction });
+            const supplierAccountId = supplier?.account_id || supplierAccount.id;
+
+            lines.push({
+              account_id: supplierAccountId,
+              debit: 0,
+              credit: invoice.total_amount,
+              description: `Supplier - PI #${invoice.invoice_number}`
+            });
+          }
+
+          if (lines.length > 0) {
+            try {
+              await createJournalEntry({
+                refCode: 'purchase_invoice',
+                refId: invoice.id,
+                entryDate: invoice.invoice_date,
+                description: `Purchase Invoice #${invoice.invoice_number}`,
+                lines: lines,
+                entryTypeId: 5
+              }, { transaction });
+            } catch (err) {
+              console.error('JE Error: PI Entry Failed', err);
+            }
+          }
+        }
       }
 
       if (!options.transaction) await transaction.commit();
@@ -310,74 +333,151 @@ class PurchaseInvoiceService {
 
       const { items, ...invoiceData } = data;
 
+      // Check if invoice_type is 'opening' and items exist
+      const invoiceType = invoiceData.invoice_type || invoice.invoice_type;
+      if (invoiceType === 'opening' && items && items.length > 0) {
+        await transaction.rollback();
+        throw new Error('لا يمكن إضافة عناصر لفاتورة افتتاحية');
+      }
+
       // Update invoice details
       await invoice.update(invoiceData, { transaction });
 
-      // If items are provided, replace them
-      if (items !== undefined) {
-        // 1. Reverse old inventory transactions
-        const oldItems = await PurchaseInvoiceItem.findAll({ where: { purchase_invoice_id: id }, transaction });
+      // 1. Reverse old inventory transactions and delete old items
+      const oldItems = await PurchaseInvoiceItem.findAll({ where: { purchase_invoice_id: id }, transaction });
+      const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
+      const { InventoryTransaction } = await import('../models/index.js');
 
-        const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
-        const { InventoryTransaction } = await import('../models/index.js');
+      for (const oldItem of oldItems) {
+        const oldTrx = await InventoryTransaction.findOne({
+          where: { source_type: 'purchase', source_id: oldItem.id },
+          transaction
+        });
+        if (oldTrx) {
+          await InventoryTransactionService.remove(oldTrx.id, { transaction });
+        }
+      }
+      await PurchaseInvoiceItem.destroy({ where: { purchase_invoice_id: id }, transaction });
 
-        for (const oldItem of oldItems) {
-          const oldTrx = await InventoryTransaction.findOne({
-            where: { source_type: 'purchase', source_id: oldItem.id },
-            transaction
-          });
-          if (oldTrx) {
-            await InventoryTransactionService.remove(oldTrx.id, { transaction });
+      // 2. Remove old Journal Entries
+      const { JournalEntry, ReferenceType } = await import('../models/index.js');
+      const refTypes = await ReferenceType.findAll({
+        where: { code: ['purchase_invoice', 'purchase_invoice_opening'] },
+        transaction
+      });
+      const refTypeIds = refTypes.map(rt => rt.id);
+      if (refTypeIds.length > 0) {
+        await JournalEntry.destroy({
+          where: {
+            reference_type_id: { [Op.in]: refTypeIds },
+            reference_id: id
+          },
+          transaction
+        });
+      }
+
+      // 3. Recreate items and inventory transactions if not opening
+      if (invoiceType !== 'opening' && items !== undefined && items.length > 0) {
+        for (const itemData of items) {
+          const newItem = await PurchaseInvoiceItem.create({ ...itemData, purchase_invoice_id: id }, { transaction });
+
+          if (Number(newItem.quantity) > 0) {
+            const batches = newItem.batch_number && newItem.expiry_date ?
+              [{ batch_number: newItem.batch_number, expiry_date: newItem.expiry_date, quantity: newItem.quantity, cost_per_unit: Number(newItem.unit_price) }] :
+              [{ batch_number: null, expiry_date: null, quantity: newItem.quantity, cost_per_unit: Number(newItem.unit_price) }];
+
+            await InventoryTransactionService.create({
+              product_id: newItem.product_id,
+              warehouse_id: newItem.warehouse_id || invoice.warehouse_id,
+              transaction_type: 'in',
+              transaction_date: invoice.invoice_date || new Date(),
+              note: `Purchase Invoice #${invoice.invoice_number || invoice.id}`,
+              source_type: 'purchase',
+              source_id: newItem.id,
+              batches: batches
+            }, { transaction });
+          }
+
+          if (Number(newItem.bonus_quantity) > 0) {
+            const bonusBatches = newItem.batch_number && newItem.expiry_date ?
+              [{ batch_number: newItem.batch_number, expiry_date: newItem.expiry_date, quantity: newItem.bonus_quantity, cost_per_unit: 0 }] :
+              [{ batch_number: null, expiry_date: null, quantity: newItem.bonus_quantity, cost_per_unit: 0 }];
+
+            await InventoryTransactionService.create({
+              product_id: newItem.product_id,
+              warehouse_id: newItem.warehouse_id || invoice.warehouse_id,
+              transaction_type: 'in',
+              transaction_date: invoice.invoice_date || new Date(),
+              note: `Purchase Invoice #${invoice.invoice_number || invoice.id} (Bonus)`,
+              source_type: 'purchase',
+              source_id: newItem.id,
+              batches: bonusBatches
+            }, { transaction });
           }
         }
+      }
 
-        // 2. Delete old items
-        await PurchaseInvoiceItem.destroy({ where: { purchase_invoice_id: id }, transaction });
+      // 4. Recreate Journal Entry
+      const { createJournalEntry } = await import('./journal.service.js');
+      if (invoiceType === 'opening') {
+        const OPENING_BALANCES_ACCOUNT_ID = 117;
+        const SUPPLIERS_ACCOUNT_ID = 62;
+        const supplier = await Party.findByPk(invoice.supplier_id, { transaction });
+        const supplierAccountId = supplier?.account_id || SUPPLIERS_ACCOUNT_ID;
 
-        // 3. Create new items
-        if (items.length > 0) {
-          const itemsWithInvoiceId = items.map(item => ({
-            ...item,
-            purchase_invoice_id: id
-          }));
+        await createJournalEntry({
+          refCode: 'purchase_invoice_opening',
+          refId: invoice.id,
+          entryDate: invoice.invoice_date,
+          description: `رصيد أول المدة (مورد) - فاتورة #${invoice.invoice_number}`,
+          lines: [
+            { account_id: OPENING_BALANCES_ACCOUNT_ID, debit: invoice.total_amount, credit: 0, description: `إثبات رصيد افتتاحى للمورد - فاتورة #${invoice.invoice_number}` },
+            { account_id: supplierAccountId, debit: 0, credit: invoice.total_amount, description: `مقابل رصيد افتتاحى - فاتورة #${invoice.invoice_number}` }
+          ],
+          entryTypeId: 1
+        }, { transaction });
+      } else {
+        const { Account, Product: ProductModel } = await import('../models/index.js');
+        const supplierAccount = await Account.findOne({ where: { name: 'الموردين' }, transaction });
+        const vatAccount = await Account.findOne({ where: { [Op.or]: [{ name: 'ضريبة القيمه المضافه' }, { name: 'ضريبة القيمة المضافة' }] }, transaction });
+        const discountAccount = await Account.findOne({ where: { name: 'خصم مكتسب' }, transaction });
+        const taxAccount = await Account.findOne({ where: { name: 'خصم و اضافه ضرائب مشتريات' }, transaction });
 
-          for (const itemData of itemsWithInvoiceId) {
-            const newItem = await PurchaseInvoiceItem.create(itemData, { transaction });
+        const currentItems = await PurchaseInvoiceItem.findAll({ where: { purchase_invoice_id: id }, transaction });
+        if (supplierAccount && currentItems.length > 0) {
+          const lines = [];
+          const productIds = currentItems.map(i => i.product_id);
+          const products = await ProductModel.findAll({ where: { id: { [Op.in]: productIds } }, transaction });
+          const productMap = new Map(products.map(p => [p.id, p]));
 
-            // 4. Create new inventory transactions
-            if (Number(newItem.quantity) > 0) {
-              const batches = newItem.batch_number && newItem.expiry_date ?
-                [{ batch_number: newItem.batch_number, expiry_date: newItem.expiry_date, quantity: newItem.quantity, cost_per_unit: Number(newItem.unit_price) }] :
-                [{ batch_number: null, expiry_date: null, quantity: newItem.quantity, cost_per_unit: Number(newItem.unit_price) }];
+          const INVENTORY_ACCOUNTS = { 1: 110, 2: 111, DEFAULT: 49 };
+          const subtotalByType = {};
+          for (const item of currentItems) {
+            const product = productMap.get(item.product_id);
+            const accountId = INVENTORY_ACCOUNTS[product?.type_id] || INVENTORY_ACCOUNTS.DEFAULT;
+            const itemTotal = parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0);
+            subtotalByType[accountId] = (subtotalByType[accountId] || 0) + itemTotal;
+          }
 
-              await InventoryTransactionService.create({
-                product_id: newItem.product_id,
-                warehouse_id: newItem.warehouse_id || invoice.warehouse_id,
-                transaction_type: 'in',
-                transaction_date: invoice.invoice_date || new Date(),
-                note: `Purchase Invoice #${invoice.invoice_number || invoice.id}`,
-                source_type: 'purchase',
-                source_id: newItem.id,
-                batches: batches
-              }, { transaction });
-            }
+          for (const [accountId, amount] of Object.entries(subtotalByType)) {
+            if (amount > 0) lines.push({ account_id: parseInt(accountId), debit: amount, credit: 0, description: `مخزون - PI #${invoice.invoice_number}` });
+          }
+          if (Number(invoice.vat_amount) > 0 && vatAccount) lines.push({ account_id: vatAccount.id, debit: invoice.vat_amount, credit: 0, description: `VAT - PI #${invoice.invoice_number}` });
+          if (Number(invoice.additional_discount) > 0 && discountAccount) lines.push({ account_id: discountAccount.id, debit: 0, credit: invoice.additional_discount, description: `Discount - PI #${invoice.invoice_number}` });
+          if (Number(invoice.tax_amount) > 0 && taxAccount) lines.push({ account_id: taxAccount.id, debit: 0, credit: invoice.tax_amount, description: `WHT - PI #${invoice.invoice_number}` });
 
-            if (Number(newItem.bonus_quantity) > 0) {
-              const bonusBatches = newItem.batch_number && newItem.expiry_date ?
-                [{ batch_number: newItem.batch_number, expiry_date: newItem.expiry_date, quantity: newItem.bonus_quantity, cost_per_unit: 0 }] :
-                [{ batch_number: null, expiry_date: null, quantity: newItem.bonus_quantity, cost_per_unit: 0 }];
+          const supplier = await Party.findByPk(invoice.supplier_id, { transaction });
+          lines.push({ account_id: supplier?.account_id || supplierAccount.id, debit: 0, credit: invoice.total_amount, description: `Supplier - PI #${invoice.invoice_number}` });
 
-              await InventoryTransactionService.create({
-                product_id: newItem.product_id,
-                warehouse_id: newItem.warehouse_id || invoice.warehouse_id,
-                transaction_type: 'in',
-                transaction_date: invoice.invoice_date || new Date(),
-                note: `Purchase Invoice #${invoice.invoice_number || invoice.id} (Bonus)`,
-                source_type: 'purchase',
-                source_id: newItem.id,
-                batches: bonusBatches
-              }, { transaction });
-            }
+          if (lines.length > 0) {
+            await createJournalEntry({
+              refCode: 'purchase_invoice',
+              refId: invoice.id,
+              entryDate: invoice.invoice_date,
+              description: `Purchase Invoice #${invoice.invoice_number}`,
+              lines,
+              entryTypeId: 5
+            }, { transaction });
           }
         }
       }

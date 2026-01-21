@@ -100,12 +100,14 @@ export default function purchaseInvoiceHooks(sequelize) {
   const { PurchaseInvoice, ReferenceType, Account, Party, PurchaseInvoiceItem, Product } = sequelize.models;
 
   PurchaseInvoice.afterUpdate(async (invoice, options) => {
+    if (invoice.invoice_type === 'opening') return; // Skip opening invoices
     if (invoice.changed('status') && invoice.status === 'approved') {
       await createPurchaseJournalEntry(invoice, { ReferenceType, Account, Party, PurchaseInvoiceItem, Product }, options);
     }
   });
 
   PurchaseInvoice.afterCreate(async (invoice, options) => {
+    if (invoice.invoice_type === 'opening') return; // Skip opening invoices
     if (invoice.status === 'approved') {
       await createPurchaseJournalEntry(invoice, { ReferenceType, Account, Party, PurchaseInvoiceItem, Product }, options);
     }

@@ -798,6 +798,42 @@ const getWarehouseReport = async (date = null) => {
     };
 };
 
+/**
+ * Opening Sales Invoices Report
+ */
+const getOpeningSalesInvoicesReport = async (startDate, endDate) => {
+    const dateFilter = { invoice_type: 'opening' };
+    if (startDate && endDate) {
+        dateFilter.invoice_date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        dateFilter.invoice_date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        dateFilter.invoice_date = { [Op.lte]: endDate };
+    }
+
+    const openingInvoices = await SalesInvoice.findAll({
+        where: dateFilter,
+        include: [
+            {
+                model: Party,
+                as: 'party',
+                attributes: ['id', 'name']
+            }
+        ],
+        order: [['invoice_date', 'DESC']]
+    });
+
+    const summary = {
+        total_invoices: openingInvoices.length,
+        total_amount: openingInvoices.reduce((sum, inv) => sum + parseFloat(inv.total_amount || 0), 0)
+    };
+
+    return {
+        data: openingInvoices,
+        summary
+    };
+};
+
 export default {
     getDashboardSummary,
     getTopSellingProducts,
@@ -807,5 +843,6 @@ export default {
     getExpensesReport,
     getJobOrdersReport,
     getWarehouseReport,
-    getIssueVouchersReport
+    getIssueVouchersReport,
+    getOpeningSalesInvoicesReport
 };

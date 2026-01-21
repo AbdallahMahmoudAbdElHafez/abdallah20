@@ -7,7 +7,8 @@ import {
     AccountBalance as ExpensesIcon,
     Build as JobOrdersIcon,
     Store as WarehouseIcon,
-    Receipt as VoucherIcon
+    Receipt as VoucherIcon,
+    AccountBalanceWallet as OpenBalanceIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -56,6 +57,13 @@ const ReportsDashboard = () => {
             icon: <VoucherIcon sx={{ fontSize: 60, color: '#fbc02d' }} />,
             path: '/reports/issue-vouchers',
             color: '#fffde7'
+        },
+        {
+            title: 'فواتير المبيعات الافتتاحية',
+            description: 'عرض جميع فواتير الأرصدة الافتتاحية للعملاء',
+            icon: <OpenBalanceIcon sx={{ fontSize: 60, color: '#00bcd4' }} />,
+            path: '/reports/opening-sales',
+            color: '#e0f7fa'
         }
     ];
 

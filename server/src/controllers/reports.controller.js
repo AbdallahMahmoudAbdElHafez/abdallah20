@@ -103,6 +103,17 @@ const reportsController = {
         }
     },
 
+    getOpeningSalesInvoicesReport: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.query;
+            const data = await reportsService.getOpeningSalesInvoicesReport(startDate, endDate);
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching opening sales invoices report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     // ============ EXPORT CONTROLLERS ============
 
     exportReport: async (req, res) => {
