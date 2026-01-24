@@ -59,27 +59,45 @@ export async function createPayment(data) {
             }, { transaction: t });
         }
 
+        // Build journal entry lines with withholding tax support
+        const withholdingTaxAmount = Number(data.withholding_tax_amount) || 0;
+        const invoiceTotal = Number(data.amount) + withholdingTaxAmount; // المبلغ المحصل + خصم الضريبة = إجمالي المستحق على العميل
+
+        const journalLines = [
+            {
+                account_id: data.account_id, // Cash/Bank/Cheque Account (مدين الصندوق/البنك)
+                debit: Number(data.amount),
+                credit: 0,
+                description: `تحصيل - ${data.payment_method}`,
+            },
+        ];
+
+        // Add withholding tax line if applicable (مدين خصم ضرائب)
+        if (withholdingTaxAmount > 0) {
+            journalLines.push({
+                account_id: 56, // Withholding Tax Account
+                debit: withholdingTaxAmount,
+                credit: 0,
+                description: "خصم ضريبة من المنبع",
+            });
+        }
+
+        // Credit customer account with total (دائن العملاء)
+        journalLines.push({
+            account_id: 47, // Customer Account
+            debit: 0,
+            credit: invoiceTotal,
+            description: "تخفيض مديونية العميل",
+        });
+
         await createJournalEntry(
             {
                 refCode: "sales_payment",
                 refId: payment.id,
                 entryDate: payment.payment_date,
-                description: `تحصيل فاتورة مبيعات #${invoice.invoice_number} - ${data.payment_method}`,
+                description: `تحصيل فاتورة مبيعات #${invoice.invoice_number} - ${data.payment_method}${withholdingTaxAmount > 0 ? ' (مع خصم منبع)' : ''}`,
                 entryTypeId: ENTRY_TYPES.SALES_COLLECTION,
-                lines: [
-                    {
-                        account_id: data.account_id, // Cash/Bank/Cheque Account
-                        debit: Number(data.amount),
-                        credit: 0,
-                        description: `تحصيل - ${data.payment_method}`,
-                    },
-                    {
-                        account_id: invoice.party.account_id, // Customer Account
-                        debit: 0,
-                        credit: Number(data.amount),
-                        description: "تخفيض مديونية العميل",
-                    },
-                ],
+                lines: journalLines,
             },
             { transaction: t }
         );

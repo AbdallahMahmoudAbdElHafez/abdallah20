@@ -26,6 +26,16 @@ export default (sequelize) => {
             reference_number: { type: DataTypes.STRING(100), allowNull: true },
             employee_id: { type: DataTypes.INTEGER, allowNull: true },
             note: { type: DataTypes.STRING(255), allowNull: true },
+            withholding_tax_rate: {
+                type: DataTypes.DECIMAL(5, 2),
+                allowNull: false,
+                defaultValue: 0.00
+            },
+            withholding_tax_amount: {
+                type: DataTypes.DECIMAL(10, 2),
+                allowNull: false,
+                defaultValue: 0.00
+            },
             created_at: {
                 type: DataTypes.DATE,
                 defaultValue: sequelize.literal("CURRENT_TIMESTAMP")

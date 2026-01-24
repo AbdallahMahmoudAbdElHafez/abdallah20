@@ -42,7 +42,9 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
         cheque_details: {
             bank_name: ""
         },
-        employee_id: ""
+        employee_id: "",
+        withholding_tax_rate: "",
+        withholding_tax_amount: ""
     });
 
     useEffect(() => {
@@ -73,6 +75,8 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
                 account_id: payment.account_id,
                 employee_id: payment.employee_id || "",
                 note: payment.note || "",
+                withholding_tax_rate: payment.withholding_tax_rate || "",
+                withholding_tax_amount: payment.withholding_tax_amount || ""
             });
         } else {
             setIsEditing(false);
@@ -87,7 +91,9 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
                 cheque_details: {
                     bank_name: ""
                 },
-                employee_id: ""
+                employee_id: "",
+                withholding_tax_rate: "",
+                withholding_tax_amount: ""
             });
         }
         setDialogOpen(true);
@@ -106,7 +112,9 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
 
     const columns = [
         { accessorKey: "id", header: "المعرف" },
-        { accessorKey: "amount", header: "المبلغ" },
+        { accessorKey: "amount", header: "المبلغ المحصل" },
+        { accessorKey: "withholding_tax_rate", header: "نسبة خصم المنبع %" },
+        { accessorKey: "withholding_tax_amount", header: "قيمة خصم المنبع" },
         { accessorKey: "payment_date", header: "التاريخ" },
         { accessorKey: "payment_method", header: "الطريقة" },
         {
@@ -163,10 +171,35 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
                 <DialogTitle>{isEditing ? "تعديل دفعة" : "إضافة دفعة"}</DialogTitle>
                 <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
                     <TextField
-                        label="المبلغ"
+                        label="المبلغ المحصل"
                         type="number"
                         value={formData.amount}
                         onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                        fullWidth
+                    />
+                    <TextField
+                        label="نسبة خصم المنبع %"
+                        type="number"
+                        value={formData.withholding_tax_rate}
+                        onChange={(e) => {
+                            const rate = Number(e.target.value) || 0;
+                            const amount = Number(formData.amount) || 0;
+                            // Calculate withholding amount based on rate
+                            // Formula: withholding = amount * rate / (100 - rate)
+                            const withholdingAmount = rate > 0 && rate < 100 ? (amount * rate / (100 - rate)).toFixed(2) : 0;
+                            setFormData({
+                                ...formData,
+                                withholding_tax_rate: e.target.value,
+                                withholding_tax_amount: withholdingAmount
+                            });
+                        }}
+                        fullWidth
+                    />
+                    <TextField
+                        label="قيمة خصم المنبع"
+                        type="number"
+                        value={formData.withholding_tax_amount}
+                        onChange={(e) => setFormData({ ...formData, withholding_tax_amount: e.target.value })}
                         fullWidth
                     />
                     <TextField
