@@ -34,7 +34,7 @@ const SalesReportPage = () => {
     const [salesByProduct, setSalesByProduct] = useState([]);
     const [salesByEmployeeProduct, setSalesByEmployeeProduct] = useState([]); // [NEW]
     const [salesByRegion, setSalesByRegion] = useState([]);
-    const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot' | 'employee_product'
+    const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot' | 'employee_product' | 'review'
 
     const [data, setData] = useState([]);
     const [summary, setSummary] = useState({});
@@ -126,6 +126,74 @@ const SalesReportPage = () => {
         { accessorKey: 'product', id: 'product', header: 'المنتج', size: 200 },
         { accessorKey: 'quantity', id: 'quantity', header: 'الكمية المباعة', size: 130 },
         { accessorKey: 'revenue', id: 'revenue', header: 'قيمة المبيعات', Cell: ({ cell }) => formatCurrency(cell.getValue()), size: 150 },
+    ], []);
+
+    // --- Invoice Review Columns ---
+    const reviewColumns = useMemo(() => [
+        { accessorKey: 'invoice_number', id: 'invoice_number', header: 'رقم الفاتورة', size: 120 },
+        { accessorKey: 'invoice_date', id: 'invoice_date', header: 'التاريخ', size: 110, Cell: ({ cell }) => cell.getValue()?.slice(0, 10) },
+        {
+            id: 'items_list',
+            header: 'المنتجات',
+            size: 300,
+            Cell: ({ row }) => {
+                const items = row.original.items || [];
+                return items.map(item => `${item.product?.name || '-'} (${item.quantity})`).join(' ، ') || '-';
+            }
+        },
+        {
+            accessorKey: 'party.name',
+            id: 'customer_name',
+            header: 'العميل',
+            size: 180,
+            Cell: ({ row }) => row.original.party?.name || '-'
+        },
+        {
+            id: 'city_name',
+            header: 'المدينة',
+            size: 140,
+            Cell: ({ row }) => row.original.party?.city?.name || '-'
+        },
+        {
+            accessorKey: 'total_amount',
+            id: 'total_amount',
+            header: 'الإجمالي',
+            size: 130,
+            Cell: ({ cell }) => formatCurrency(cell.getValue())
+        },
+        {
+            accessorKey: 'status',
+            id: 'payment_status',
+            header: 'حالة السداد',
+            size: 120,
+            Cell: ({ row }) => {
+                const status = row.original.status;
+                const invoiceStatus = row.original.invoice_status;
+
+                let displayStatus = status;
+                if (invoiceStatus === 'cancelled') {
+                    displayStatus = 'cancelled';
+                }
+
+                const statusMap = {
+                    'paid': { label: 'مسددة', color: 'success.main', bg: '#e8f5e9' },
+                    'partial': { label: 'جزئي', color: 'warning.main', bg: '#fff3e0' },
+                    'unpaid': { label: 'غير مسددة', color: 'error.main', bg: '#ffebee' },
+                    'cancelled': { label: 'ملغاة', color: 'text.disabled', bg: '#f5f5f5' }
+                };
+                const s = statusMap[displayStatus] || { label: displayStatus, color: 'text.primary', bg: '#f5f5f5' };
+                return (
+                    <Box sx={{
+                        px: 1.5, py: 0.5, borderRadius: 2,
+                        bgcolor: s.bg, color: s.color,
+                        fontWeight: 'bold', textAlign: 'center',
+                        display: 'inline-block'
+                    }}>
+                        {s.label}
+                    </Box>
+                );
+            }
+        },
     ], []);
 
     // --- 3. Matrix Pivot Logic ---
@@ -324,10 +392,11 @@ const SalesReportPage = () => {
             <Box mb={4} sx={{ display: 'flex', justifyContent: 'center' }}>
                 <Paper sx={{ p: 0.5, borderRadius: 3, display: 'inline-flex', bgcolor: '#e9ecef' }}>
                     <ToggleButtonGroup value={viewMode} exclusive onChange={(e, m) => m && setViewMode(m)}>
-                        <ToggleButton value="list" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <ListIcon sx={{ mr: 1 }} /> القائمة </ToggleButton>
-                        <ToggleButton value="product_pivot" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <PivotIcon sx={{ mr: 1 }} /> تحليل المنتجات </ToggleButton>
-                        <ToggleButton value="employee_product" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TrendIcon sx={{ mr: 1 }} /> تحليل المناديب </ToggleButton>
-                        <ToggleButton value="invoice_pivot" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TableIcon sx={{ mr: 1 }} /> مصفوفة الفواتير </ToggleButton>
+                        <ToggleButton value="list" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <ListIcon sx={{ mr: 1 }} /> القائمة </ToggleButton>
+                        <ToggleButton value="review" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <InvoiceIcon sx={{ mr: 1 }} /> مراجعة الفواتير </ToggleButton>
+                        <ToggleButton value="product_pivot" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <PivotIcon sx={{ mr: 1 }} /> تحليل المنتجات </ToggleButton>
+                        <ToggleButton value="employee_product" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TrendIcon sx={{ mr: 1 }} /> تحليل المناديب </ToggleButton>
+                        <ToggleButton value="invoice_pivot" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TableIcon sx={{ mr: 1 }} /> مصفوفة الفواتير </ToggleButton>
                     </ToggleButtonGroup>
                 </Paper>
             </Box>
@@ -431,6 +500,25 @@ const SalesReportPage = () => {
                                     <Button variant="contained" color="success" startIcon={<DownloadIcon />}
                                         onClick={() => handleExport(table, 'Sales_Matrix', { heatmap: true, freezeColumns: 3 })}>
                                         تصدير المبيعات التفصيلية
+                                    </Button>
+                                )}
+                            />
+                        </Paper>
+                    )}
+
+                    {viewMode === 'review' && (
+                        <Paper sx={{ borderRadius: 3, boxShadow: 2, overflow: 'hidden' }}>
+                            <MaterialReactTable
+                                columns={reviewColumns}
+                                {...defaultTableProps}
+                                data={data}
+                                enableExporting
+                                enableFilters
+                                enableColumnFilters
+                                renderTopToolbarCustomActions={({ table }) => (
+                                    <Button variant="contained" color="success" startIcon={<DownloadIcon />}
+                                        onClick={() => handleExport(table, 'Invoice_Review')}>
+                                        تصدير إلى Excel
                                     </Button>
                                 )}
                             />
