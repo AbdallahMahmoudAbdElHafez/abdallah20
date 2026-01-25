@@ -37,6 +37,7 @@ const SalesReportPage = () => {
     const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot' | 'employee_product' | 'review'
 
     const [data, setData] = useState([]);
+    const [returns, setReturns] = useState([]); // [NEW]
     const [summary, setSummary] = useState({});
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -54,6 +55,7 @@ const SalesReportPage = () => {
         try {
             const res = await reportsApi.getSalesReport({ startDate, endDate });
             setData(res.data.data);
+            setReturns(res.data.returns || []); // [NEW]
             setSummary(res.data.summary);
             setChartData(res.data.chartData);
             setSalesByProduct(res.data.salesByProduct || []);
@@ -135,11 +137,22 @@ const SalesReportPage = () => {
         {
             id: 'items_list',
             header: 'المنتجات',
+            accessorFn: (row) => {
+                const items = row.items || [];
+                return items.map(item => {
+                    const productName = item.product ? item.product.name : (item.product_name || '-');
+                    return `${productName} (${item.quantity})`;
+                }).join(' ، ') || '-';
+            },
             size: 300,
-            Cell: ({ row }) => {
-                const items = row.original.items || [];
-                return items.map(item => `${item.product?.name || '-'} (${item.quantity})`).join(' ، ') || '-';
-            }
+            Cell: ({ cell }) => cell.getValue()
+        },
+        {
+            accessorKey: 'employee.name',
+            id: 'employee_name',
+            header: 'مندوب المبيعات',
+            size: 150,
+            Cell: ({ row }) => row.original.employee?.name || '-'
         },
         {
             accessorKey: 'party.name',
@@ -198,10 +211,11 @@ const SalesReportPage = () => {
 
     // --- 3. Matrix Pivot Logic ---
     const { detailedPivotColumns, detailedPivotData } = useMemo(() => {
-        if (!data || data.length === 0) return { detailedPivotColumns: [], detailedPivotData: [] };
+        if ((!data || data.length === 0) && (!returns || returns.length === 0)) return { detailedPivotColumns: [], detailedPivotData: [] };
 
         const allProducts = new Set();
         data.forEach(inv => inv.items?.forEach(it => allProducts.add(it.product?.name || 'Unknown')));
+        returns.forEach(ret => ret.items?.forEach(it => allProducts.add(it.product?.name || 'Unknown')));
         const sortedProducts = Array.from(allProducts).sort();
 
         const cols = [
@@ -286,6 +300,40 @@ const SalesReportPage = () => {
             return row;
         });
 
+        // --- Process Returns ---
+        const returnRows = returns.map(ret => {
+            const row = {
+                invoice_number: `مرتجع ${ret.id}`,
+                date: ret.return_date?.slice(0, 10),
+                customer_name: ret.customer?.name || '-',
+                governate: ret.customer?.city?.governate?.name || '-',
+                city: ret.customer?.city?.name || '-',
+                additional_discount_pct: 0,
+                total_invoice: -parseFloat(ret.total_amount || 0),
+                is_return: true
+            };
+
+            sortedProducts.forEach(p => {
+                row[`${p}_qty`] = 0;
+                row[`${p}_bonus`] = 0;
+                row[`${p}_val`] = 0;
+                row[`${p}_disc_pct`] = 0;
+            });
+
+            ret.items?.forEach(item => {
+                const p = item.product?.name || 'Unknown';
+                const qty = parseFloat(item.quantity || 0);
+                const price = parseFloat(item.price || 0);
+                // For returns, we treat the value as negative
+                row[`${p}_qty`] -= qty;
+                row[`${p}_val`] -= (qty * price);
+            });
+
+            return row;
+        });
+
+        const allRows = [...rows, ...returnRows];
+
         // --- Add Totals Row ---
         if (rows.length > 0) {
             const totalsRow = {
@@ -308,26 +356,36 @@ const SalesReportPage = () => {
                 totalsRow[`${p}_disc_pct`] = 0; // Average or N/A
             });
 
-            data.forEach((invoice, idx) => {
-                const r = rows[idx];
-                totalSubtotal += parseFloat(invoice.subtotal || 0);
-                totalAddDisc += parseFloat(invoice.additional_discount || 0);
-                totalsRow.total_invoice += r.total_invoice;
-
-                sortedProducts.forEach(p => {
-                    totalsRow[`${p}_qty`] += r[`${p}_qty`];
-                    totalsRow[`${p}_bonus`] += r[`${p}_bonus`];
-                    totalsRow[`${p}_val`] += r[`${p}_val`];
-                });
+            allRows.forEach((r) => {
+                if (r.is_return) {
+                    totalsRow.total_invoice += r.total_invoice;
+                    sortedProducts.forEach(p => {
+                        totalsRow[`${p}_qty`] += r[`${p}_qty`];
+                        totalsRow[`${p}_val`] += r[`${p}_val`];
+                    });
+                } else {
+                    // Find original invoice for subtotal/discount calcs
+                    const invoice = data.find(inv => inv.invoice_number === r.invoice_number);
+                    if (invoice) {
+                        totalSubtotal += parseFloat(invoice.subtotal || 0);
+                        totalAddDisc += parseFloat(invoice.additional_discount || 0);
+                    }
+                    totalsRow.total_invoice += r.total_invoice;
+                    sortedProducts.forEach(p => {
+                        totalsRow[`${p}_qty`] += r[`${p}_qty`];
+                        totalsRow[`${p}_bonus`] += r[`${p}_bonus`];
+                        totalsRow[`${p}_val`] += r[`${p}_val`];
+                    });
+                }
             });
 
             totalsRow.additional_discount_pct = totalSubtotal > 0 ? (totalAddDisc / totalSubtotal) * 100 : 0;
 
-            rows.push(totalsRow);
+            allRows.push(totalsRow);
         }
 
-        return { detailedPivotColumns: cols, detailedPivotData: rows };
-    }, [data]);
+        return { detailedPivotColumns: cols, detailedPivotData: allRows };
+    }, [data, returns]);
 
     const StatCard = ({ title, value, icon, color, bg }) => (
         <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', background: bg || '#fff', border: '1px solid #f0f0f0' }}>
@@ -371,20 +429,30 @@ const SalesReportPage = () => {
 
             {/* KPI Cards */}
             <Grid container spacing={3} mb={4}>
-                <Grid item xs={12} sm={6} md={2.4}>
-                    <StatCard title="إجمالي المبيعات" value={formatCurrency(summary.total_amount)} icon={<SaleIcon />} color="#2196f3" />
+                <Grid item xs={12} sm={6} md={3}>
+                    <StatCard title="صافي المبيعات" value={formatCurrency(summary.net_sales)} icon={<SaleIcon />} color="#2196f3" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
-                    <StatCard title="عدد الفواتير" value={summary.total_invoices || 0} icon={<InvoiceIcon />} color="#4caf50" />
+                <Grid item xs={12} sm={6} md={3}>
+                    <StatCard title="إجمالي المبيعات" value={formatCurrency(summary.total_sales)} icon={<TrendIcon />} color="#4caf50" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
+                <Grid item xs={12} sm={6} md={3}>
+                    <StatCard title="إجمالي المرتجعات" value={formatCurrency(summary.total_returns)} icon={<BackIcon />} color="#f44336" />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <StatCard title="عدد الفواتير" value={summary.total_invoices || 0} icon={<InvoiceIcon />} color="#ff9800" />
+                </Grid>
+
+                <Grid item xs={12} sm={6} md={3}>
                     <StatCard title="ض.ق.م (14%)" value={formatCurrency(summary.total_vat)} icon={<BankIcon />} color="#9c27b0" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
-                    <StatCard title="ضرائب أخرى" value={formatCurrency(summary.total_tax - summary.total_vat)} icon={<BankIcon />} color="#ff9800" />
+                <Grid item xs={12} sm={6} md={3}>
+                    <StatCard title="مرتجع نقدي" value={formatCurrency(summary.total_returns_cash)} icon={<SaleIcon />} color="#607d8b" />
                 </Grid>
-                <Grid item xs={12} sm={6} md={2.4}>
-                    <StatCard title="إجمالي الخصم" value={formatCurrency(summary.total_discount)} icon={<TrendIcon />} color="#f44336" />
+                <Grid item xs={12} sm={6} md={3}>
+                    <StatCard title="مرتجع آجل" value={formatCurrency(summary.total_returns_credit)} icon={<SaleIcon />} color="#795548" />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <StatCard title="إجمالي الخصم" value={formatCurrency(summary.total_discount)} icon={<TrendIcon />} color="#e91e63" />
                 </Grid>
             </Grid>
 
