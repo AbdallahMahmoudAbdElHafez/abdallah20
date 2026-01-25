@@ -7,6 +7,7 @@ export default (sequelize) => {
             id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
             sales_invoice_id: { type: DataTypes.INTEGER, allowNull: true },
             party_id: { type: DataTypes.INTEGER, allowNull: false },
+            employee_id: { type: DataTypes.INTEGER, allowNull: true },
             warehouse_id: { type: DataTypes.INTEGER, allowNull: false },
             return_date: { type: DataTypes.DATEONLY, allowNull: false, defaultValue: sequelize.literal("CURDATE()") },
             notes: { type: DataTypes.TEXT },
@@ -18,7 +19,13 @@ export default (sequelize) => {
         },
         {
             timestamps: false,
-            tableName: "sales_returns"
+            tableName: "sales_returns",
+            indexes: [
+                { fields: ["sales_invoice_id"] },
+                { fields: ["party_id"] },
+                { fields: ["warehouse_id"] },
+                { fields: ["employee_id"] }
+            ]
         }
     );
 }

@@ -10,7 +10,8 @@ export default {
                     association: "invoice",
                     include: ["party"]
                 },
-                { association: "items", include: ["product"] }
+                { association: "items", include: ["product"] },
+                { association: "employee" }
             ]
         });
     },
@@ -22,7 +23,8 @@ export default {
                     association: "invoice",
                     include: ["party"]
                 },
-                { association: "items", include: ["product"] }
+                { association: "items", include: ["product"] },
+                { association: "employee" }
             ]
         });
     },

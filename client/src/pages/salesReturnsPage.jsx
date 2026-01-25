@@ -36,6 +36,7 @@ import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchProducts } from "../features/products/productsSlice";
 import { fetchAccounts } from "../features/accounts/accountsSlice";
+import { fetchEmployees } from "../features/employees/employeesSlice";
 import { Edit as EditIcon, Delete as DeleteIcon, Add as AddIcon } from "@mui/icons-material";
 
 // دالة لتنسيق العملة
@@ -80,6 +81,10 @@ export default function SalesReturnsPage() {
         items: accounts = []
     } = useSelector((state) => state.accounts);
 
+    const {
+        list: employees = []
+    } = useSelector((state) => state.employees);
+
     // Filter only customers
     const customers = useMemo(() => parties.filter(p => p.party_type === 'customer' || p.party_type === 'both'), [parties]);
 
@@ -93,7 +98,8 @@ export default function SalesReturnsPage() {
         return_date: new Date().toISOString().split('T')[0],
         notes: "",
         return_type: "cash",
-        account_id: ""
+        account_id: "",
+        employee_id: ""
     });
 
     // State for selected items to return
@@ -109,6 +115,7 @@ export default function SalesReturnsPage() {
         dispatch(fetchWarehouses());
         dispatch(fetchProducts());
         dispatch(fetchAccounts());
+        dispatch(fetchEmployees());
     }, [dispatch]);
 
     const handleOpen = (returnItem = null) => {
@@ -128,7 +135,8 @@ export default function SalesReturnsPage() {
                 return_date: returnItem.return_date ? new Date(returnItem.return_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
                 notes: returnItem.notes || "",
                 return_type: returnItem.return_type || "cash",
-                account_id: returnItem.account_id || ""
+                account_id: returnItem.account_id || "",
+                employee_id: returnItem.employee_id || ""
             });
             // Fetch items for this invoice to show in edit mode? 
             // Editing returns is complex because we need to know what was returned vs what is available.
@@ -144,7 +152,8 @@ export default function SalesReturnsPage() {
                 return_date: new Date().toISOString().split('T')[0],
                 notes: "",
                 return_type: "cash",
-                account_id: ""
+                account_id: "",
+                employee_id: ""
             });
             setSelectedItems({});
         }
@@ -324,6 +333,12 @@ export default function SalesReturnsPage() {
             accessorKey: "warehouse.name",
             header: "المخزن",
             size: 150,
+        },
+        {
+            accessorKey: "employee.name",
+            header: "الموظف",
+            size: 150,
+            Cell: ({ row }) => row.original.employee?.name || "—"
         },
         {
             accessorKey: "return_date",
@@ -518,6 +533,21 @@ export default function SalesReturnsPage() {
                                 {warehouses.map((warehouse) => (
                                     <MenuItem key={warehouse.id} value={warehouse.id}>
                                         {warehouse.name}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+
+                            <TextField
+                                select
+                                label="الموظف"
+                                value={formData.employee_id || ""}
+                                onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
+                                fullWidth
+                            >
+                                <MenuItem value="">اختر الموظف</MenuItem>
+                                {employees.map((employee) => (
+                                    <MenuItem key={employee.id} value={employee.id}>
+                                        {employee.name}
                                     </MenuItem>
                                 ))}
                             </TextField>

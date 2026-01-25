@@ -8,6 +8,10 @@ export async function createPayment(data) {
     if (data.employee_id === '') data.employee_id = null;
     if (data.account_id === '') delete data.account_id; // Let validation handle missing required fields
 
+    // Sanitize decimal fields
+    if (data.withholding_tax_rate === '' || data.withholding_tax_rate === null) data.withholding_tax_rate = 0;
+    if (data.withholding_tax_amount === '' || data.withholding_tax_amount === null) data.withholding_tax_amount = 0;
+
     const t = await sequelize.transaction();
     try {
         // 1️⃣ اجلب الفاتورة مع بيانات العميل
@@ -129,6 +133,10 @@ export async function updatePayment(id, data) {
     // Sanitize input data
     if (data.employee_id === '') data.employee_id = null;
     if (data.account_id === '') delete data.account_id;
+
+    // Sanitize decimal fields
+    if (data.withholding_tax_rate === '' || data.withholding_tax_rate === null) data.withholding_tax_rate = 0;
+    if (data.withholding_tax_amount === '' || data.withholding_tax_amount === null) data.withholding_tax_amount = 0;
 
     const t = await sequelize.transaction();
     try {

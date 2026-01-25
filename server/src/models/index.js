@@ -601,6 +601,15 @@ SalesReturn.belongsTo(Warehouse, {
   as: "warehouse"
 });
 
+SalesReturn.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employee"
+});
+Employee.hasMany(SalesReturn, {
+  foreignKey: "employee_id",
+  as: "sales_returns"
+});
+
 // === SalesReturn ↔ SalesReturnItem ===
 SalesReturn.hasMany(SalesReturnItem, {
   foreignKey: "sales_return_id",
