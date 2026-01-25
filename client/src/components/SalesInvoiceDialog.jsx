@@ -85,6 +85,7 @@ export default function SalesInvoiceDialog({
         sales_order_id: "",
         warehouse_id: "",
         employee_id: "",
+        distributor_employee_id: "",
         invoice_date: "",
         due_date: "",
         invoice_type: "normal",
@@ -144,6 +145,7 @@ export default function SalesInvoiceDialog({
                 sales_order_id: invoice.sales_order_id ?? "",
                 warehouse_id: invoice.warehouse_id ?? "",
                 employee_id: invoice.employee_id ?? "",
+                distributor_employee_id: invoice.distributor_employee_id ?? "",
                 invoice_date: invoice.invoice_date ?? new Date().toISOString().split("T")[0],
                 due_date: invoice.due_date ?? "",
                 invoice_type: invoice.invoice_type ?? "normal",
@@ -171,6 +173,7 @@ export default function SalesInvoiceDialog({
                 sales_order_id: "",
                 warehouse_id: "",
                 employee_id: "",
+                distributor_employee_id: "",
                 invoice_date: new Date().toISOString().split("T")[0],
                 due_date: "",
                 invoice_type: "normal",
@@ -364,6 +367,7 @@ export default function SalesInvoiceDialog({
             sales_order_id: invoiceHead.sales_order_id || null,
             warehouse_id: invoiceHead.warehouse_id || null,
             employee_id: invoiceHead.employee_id || null,
+            distributor_employee_id: invoiceHead.distributor_employee_id || null,
             account_id: invoiceHead.account_id || null,
             items: items.map(({ tempId, ...rest }) => rest),
         };
@@ -733,6 +737,25 @@ export default function SalesInvoiceDialog({
                                     }
                                 >
                                     <MenuItem value="">اختر الموظف</MenuItem>
+                                    {employees.map((e) => (
+                                        <MenuItem key={e.id} value={e.id}>
+                                            {e.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Grid>
+
+                            <Grid item xs={12} md={3}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="مندوب التوزيع"
+                                    value={invoiceHead.distributor_employee_id}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, distributor_employee_id: e.target.value })
+                                    }
+                                >
+                                    <MenuItem value="">اختر المندوب</MenuItem>
                                     {employees.map((e) => (
                                         <MenuItem key={e.id} value={e.id}>
                                             {e.name}

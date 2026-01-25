@@ -652,6 +652,9 @@ Warehouse.hasMany(SalesInvoice, { foreignKey: "warehouse_id", as: "sales_invoice
 SalesInvoice.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
 Employee.hasMany(SalesInvoice, { foreignKey: "employee_id", as: "sales_invoices" });
 
+SalesInvoice.belongsTo(Employee, { foreignKey: "distributor_employee_id", as: "distributor_employee" });
+Employee.hasMany(SalesInvoice, { foreignKey: "distributor_employee_id", as: "distributed_sales_invoices" });
+
 SalesInvoice.belongsTo(SalesOrder, { foreignKey: "sales_order_id", as: "sales_order" });
 SalesOrder.hasMany(SalesInvoice, { foreignKey: "sales_order_id", as: "invoices" });
 

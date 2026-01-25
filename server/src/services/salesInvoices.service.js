@@ -27,6 +27,7 @@ export default {
                 { association: "party" },
                 { association: "warehouse" },
                 { association: "employee" },
+                { association: "distributor_employee" },
                 { association: "sales_order" },
                 { association: "account" }
             ],
@@ -40,6 +41,7 @@ export default {
                 { association: "party" },
                 { association: "warehouse" },
                 { association: "employee" },
+                { association: "distributor_employee" },
                 { association: "sales_order" },
                 { association: "account" },
                 { association: "items", include: ["product"] }

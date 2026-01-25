@@ -40,6 +40,7 @@ export default (sequelize) => {
                 defaultValue: sequelize.literal("CURRENT_TIMESTAMP")
             },
             employee_id: { type: DataTypes.INTEGER, allowNull: true },
+            distributor_employee_id: { type: DataTypes.INTEGER, allowNull: true },
             warehouse_id: { type: DataTypes.INTEGER, allowNull: true },
             subtotal: {
                 type: DataTypes.DECIMAL(18, 2),
@@ -91,6 +92,7 @@ export default (sequelize) => {
                 { fields: ["party_id"] },
                 { fields: ["account_id"] },
                 { fields: ["employee_id"] },
+                { fields: ["distributor_employee_id"] },
                 { fields: ["warehouse_id"] }
             ]
         }
