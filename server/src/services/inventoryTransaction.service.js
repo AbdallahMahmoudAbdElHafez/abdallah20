@@ -529,7 +529,7 @@ class InventoryTransactionService {
     // 1. Define Constants
     const REFERENCE_TYPE_ID = 73; // Opening Inventory Reference Type
     const ENTRY_TYPE_ID = 1;      // Opening Entry Type
-    const CAPITAL_ACCOUNT_ID = 14; // رأس المال
+    const CAPITAL_ACCOUNT_ID = 117; // الارصدة الافتتاحية
 
     // 2. Prepare Account Mapping
     const INVENTORY_ACCOUNTS = {
@@ -573,7 +573,7 @@ class InventoryTransactionService {
       account_id: CAPITAL_ACCOUNT_ID,
       debit: 0,
       credit: totalCost,
-      description: `رأس المال - مخزون افتتاحي - ${product?.name || ''}`
+      description: `رصيد افتتاحي   - مخزون افتتاحي - ${product?.name || ''}`
     });
 
     // 5. Find or Create Journal Entry

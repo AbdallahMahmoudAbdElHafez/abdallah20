@@ -196,7 +196,7 @@ export default {
                 const TAX_ACCOUNT_ID = 66; // مصلحة الضرائب
                 const DISCOUNT_ALLOWED_ID = 108;
                 const COGS_ACCOUNT_ID = 15;
-                const OPENING_BALANCE_OFFSET_ID = 14; // ارباح مرحلة (Equity/Balance Sheet Offset)
+                const OPENING_BALANCE_OFFSET_ID = 117; // الارصدة الافتتاحية(Equity/Balance Sheet Offset)
 
                 // Calculations derived from invoice details
                 const subtotal = Number(invoice.subtotal) || 0;
