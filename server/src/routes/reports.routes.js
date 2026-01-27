@@ -18,6 +18,7 @@ router.get('/issue-vouchers', reportsController.getIssueVouchersReport);
 router.get('/opening-sales', reportsController.getOpeningSalesInvoicesReport);
 router.get('/zakat', reportsController.getZakatReport);
 router.get('/customer-receivables', reportsController.getCustomerReceivables);
+router.get('/profit', reportsController.getProfitReport);
 
 // Export
 router.get('/export/:type', reportsController.exportReport);

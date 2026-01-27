@@ -1044,6 +1044,127 @@ const getOpeningSalesInvoicesReport = async (startDate, endDate) => {
 };
 
 /**
+ * Profit Calculation Report
+ * Revenue = Account 5 (ايرادات)
+ * Direct Expenses = Account 3 (مصروفات مباشره)
+ * Gross Profit = Revenue - Direct Expenses
+ * Indirect Expenses = Account 4 (مصروفات غير مباشره)
+ * Net Profit = Gross Profit - Indirect Expenses
+ */
+const getProfitReport = async (startDate, endDate) => {
+    const { Account, JournalEntryLine, JournalEntry } = await import('../models/index.js');
+
+    const dateFilter = {};
+    if (startDate && endDate) {
+        dateFilter.entry_date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        dateFilter.entry_date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        dateFilter.entry_date = { [Op.lte]: endDate };
+    }
+
+    // Helper function to get account balance with children within date range
+    const getAccountBalance = async (accountId) => {
+        const getAllChildIds = async (parentId) => {
+            const children = await Account.findAll({
+                where: { parent_account_id: parentId },
+                attributes: ['id']
+            });
+            let ids = [parentId];
+            for (const child of children) {
+                const childIds = await getAllChildIds(child.id);
+                ids = ids.concat(childIds);
+            }
+            return ids;
+        };
+
+        const accountIds = await getAllChildIds(accountId);
+
+        const result = await JournalEntryLine.findOne({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+                [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+            ],
+            where: {
+                account_id: { [Op.in]: accountIds }
+            },
+            include: [{
+                model: JournalEntry,
+                as: 'journal_entry',
+                attributes: [],
+                where: dateFilter
+            }],
+            raw: true
+        });
+
+        const totalDebit = parseFloat(result?.total_debit || 0);
+        const totalCredit = parseFloat(result?.total_credit || 0);
+
+        // For Revenue and Liabilities, balance is Credit - Debit
+        // For Expenses and Assets, balance is Debit - Credit
+        const account = await Account.findByPk(accountId);
+        if (account.normal_balance === 'credit') {
+            return totalCredit - totalDebit;
+        } else {
+            return totalDebit - totalCredit;
+        }
+    };
+
+    // Get detailed breakdown
+    const getAccountDetails = async (parentAccountId) => {
+        const children = await Account.findAll({
+            where: { parent_account_id: parentAccountId },
+            attributes: ['id', 'name', 'normal_balance']
+        });
+
+        const details = [];
+        for (const child of children) {
+            const balance = await getAccountBalance(child.id);
+            if (Math.abs(balance) > 0.01) {
+                details.push({
+                    id: child.id,
+                    name: child.name,
+                    balance: balance
+                });
+            }
+        }
+        return details;
+    };
+
+    const REVENUE_ID = 5;
+    const DIRECT_EXPENSES_ID = 3;
+    const INDIRECT_EXPENSES_ID = 4;
+
+    const revenueBalance = await getAccountBalance(REVENUE_ID);
+    const directExpensesBalance = await getAccountBalance(DIRECT_EXPENSES_ID);
+    const indirectExpensesBalance = await getAccountBalance(INDIRECT_EXPENSES_ID);
+
+    const revenueDetails = await getAccountDetails(REVENUE_ID);
+    const directExpensesDetails = await getAccountDetails(DIRECT_EXPENSES_ID);
+    const indirectExpensesDetails = await getAccountDetails(INDIRECT_EXPENSES_ID);
+
+    const grossProfit = revenueBalance - directExpensesBalance;
+    const netProfit = grossProfit - indirectExpensesBalance;
+
+    return {
+        startDate,
+        endDate,
+        summary: {
+            total_revenue: revenueBalance,
+            total_direct_expenses: directExpensesBalance,
+            gross_profit: grossProfit,
+            total_indirect_expenses: indirectExpensesBalance,
+            net_profit: netProfit
+        },
+        details: {
+            revenue: revenueDetails,
+            direct_expenses: directExpensesDetails,
+            indirect_expenses: indirectExpensesDetails
+        }
+    };
+};
+
+/**
  * Zakat Calculation Report
  * Zakat Base = Current Assets (Account 9) - Current Liabilities (Account 12)
  * Zakat Due = Base × 2.5%
@@ -1169,5 +1290,6 @@ export default {
     getIssueVouchersReport,
     getOpeningSalesInvoicesReport,
     getZakatReport,
+    getProfitReport,
     getCustomerReceivablesReport
 };

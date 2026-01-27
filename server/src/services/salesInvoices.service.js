@@ -486,6 +486,11 @@ export default {
                 return null;
             }
 
+            // [RESTRICTION] Only allow updates if status is 'draft'
+            if (invoice.invoice_status !== 'draft') {
+                throw new Error('لا يمكن تعديل الفاتورة إلا إذا كانت في حالة مسودة (Draft)');
+            }
+
             const invoice_type = invoiceData.invoice_type || invoice.invoice_type;
             if (invoice_type === 'opening' && items && items.length > 0) {
                 await transaction.rollback();
@@ -665,7 +670,7 @@ export default {
                 const TAX_ACCOUNT_ID = 66;
                 const DISCOUNT_ALLOWED_ID = 108;
                 const COGS_ACCOUNT_ID = 15;
-                const OPENING_BALANCE_OFFSET_ID = 14;
+                const OPENING_BALANCE_OFFSET_ID = 117;
 
                 const subtotal = Number(invoice.subtotal) || 0;
                 const shippingAmount = Number(invoice.shipping_amount) || 0;
@@ -857,40 +862,6 @@ export default {
     },
 
     delete: async (id) => {
-        const row = await SalesInvoice.findByPk(id);
-        if (!row) return null;
-
-        const items = await SalesInvoiceItem.findAll({
-            where: { sales_invoice_id: id }
-        });
-        const itemIds = items.map(i => i.id);
-
-        const oldTransactions = await InventoryTransaction.findAll({
-            where: {
-                source_type: 'sales_invoice',
-                source_id: { [Op.in]: itemIds }
-            }
-        });
-        for (const trx of oldTransactions) {
-            await InventoryTransactionService.remove(trx.id);
-        }
-
-        // Remove Journal Entries
-        const { JournalEntry, ReferenceType } = await import('../models/index.js');
-        const refTypes = await ReferenceType.findAll({
-            where: { code: ['sales_invoice', 'sales_invoice_cost', 'opening_balance'] }
-        });
-        const refTypeIds = refTypes.map(rt => rt.id);
-        if (refTypeIds.length > 0) {
-            await JournalEntry.destroy({
-                where: {
-                    reference_type_id: { [Op.in]: refTypeIds },
-                    reference_id: id
-                }
-            });
-        }
-
-        await row.destroy();
-        return true;
+        throw new Error('حذف فواتير المبيعات غير مسموح به نهائياً');
     }
 };

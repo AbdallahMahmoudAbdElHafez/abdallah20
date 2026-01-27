@@ -15,6 +15,7 @@ const reportsApi = {
     getIssueVouchersReport: (params) => axiosClient.get('/reports/issue-vouchers', { params }),
     getOpeningSalesReport: (params) => axiosClient.get('/reports/opening-sales', { params }),
     getZakatReport: (params) => axiosClient.get('/reports/zakat', { params }),
+    getProfitReport: (params) => axiosClient.get('/reports/profit', { params }),
 
     // Export
     exportReport: (type, params) => {

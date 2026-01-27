@@ -104,6 +104,8 @@ export default function SalesInvoiceDialog({
         note: "",
     });
 
+    const isReadOnly = invoice && invoice.invoice_status !== 'draft';
+
     const [items, setItems] = useState([]);
     const [itemForm, setItemForm] = useState({
         product_id: "",
@@ -569,6 +571,12 @@ export default function SalesInvoiceDialog({
                     </Alert>
                 )}
 
+                {isReadOnly && (
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                        هذه الفاتورة للعرض فقط ولا يمكن تعديلها (الحالة: {invoiceStatusConfig[invoiceHead.invoice_status]?.label || invoiceHead.invoice_status})
+                    </Alert>
+                )}
+
                 <Card sx={{ mb: 3 }}>
                     <CardContent>
                         <Grid container spacing={2}>
@@ -582,6 +590,7 @@ export default function SalesInvoiceDialog({
                                     }
                                     placeholder="تلقائي في حال تركه فارغاً"
                                     helperText="اتركه فارغاً للتوليد التلقائي"
+                                    disabled={isReadOnly}
                                 />
                             </Grid>
 
@@ -594,6 +603,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, party_id: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 >
                                     <MenuItem value="">اختر العميل</MenuItem>
                                     {customers
@@ -620,6 +630,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, warehouse_id: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 >
                                     <MenuItem value="">اختر المخزن</MenuItem>
                                     {warehouses.map((w) => (
@@ -639,6 +650,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, account_id: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 >
                                     <MenuItem value="">اختر الحساب</MenuItem>
                                     {accounts.map((acc) => (
@@ -659,6 +671,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, invoice_date: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 />
                             </Grid>
 
@@ -672,6 +685,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, due_date: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 />
                             </Grid>
 
@@ -684,6 +698,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, invoice_type: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 >
                                     <MenuItem value="normal">فاتورة عادية</MenuItem>
                                     <MenuItem value="opening">رصيد افتتاحي</MenuItem>
@@ -699,6 +714,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, status: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 >
                                     {Object.entries(statusConfig).map(([key, cfg]) => (
                                         <MenuItem key={key} value={key}>
@@ -717,6 +733,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, invoice_status: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 >
                                     {Object.entries(invoiceStatusConfig).map(([key, cfg]) => (
                                         <MenuItem key={key} value={key}>
@@ -735,6 +752,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, employee_id: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 >
                                     <MenuItem value="">اختر الموظف</MenuItem>
                                     {employees.map((e) => (
@@ -754,6 +772,7 @@ export default function SalesInvoiceDialog({
                                     onChange={(e) =>
                                         setInvoiceHead({ ...invoiceHead, distributor_employee_id: e.target.value })
                                     }
+                                    disabled={isReadOnly}
                                 >
                                     <MenuItem value="">اختر المندوب</MenuItem>
                                     {employees.map((e) => (
@@ -1068,17 +1087,20 @@ export default function SalesInvoiceDialog({
                     </CardContent>
                 </Card>
             </DialogContent>
-
-            <DialogActions>
-                <Button onClick={onClose}>إلغاء</Button>
-                <Button
-                    variant="contained"
-                    onClick={handleSaveAll}
-                    disabled={saving || loadingMeta}
-                    startIcon={saving ? <CircularProgress size={20} /> : <SaveIcon />}
-                >
-                    {saving ? "جاري الحفظ..." : invoice ? "تحديث الفاتورة" : "حفظ الفاتورة"}
+            <DialogActions sx={{ p: 2 }}>
+                <Button onClick={onClose} color="inherit">
+                    إلغاء
                 </Button>
+                {!isReadOnly && (
+                    <Button
+                        onClick={handleSaveAll}
+                        variant="contained"
+                        startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+                        disabled={saving}
+                    >
+                        {saving ? "جاري الحفظ..." : "حفظ الفاتورة"}
+                    </Button>
+                )}
             </DialogActions>
         </Dialog>
     );

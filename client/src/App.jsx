@@ -52,6 +52,7 @@ import ServicePaymentsPage from "./pages/servicePaymentsPage";
 import DoctorsPage from "./pages/DoctorsPage";
 import InventoryAdjustmentPage from "./pages/InventoryAdjustmentPage";
 import CustomerReceivablesReportPage from "./pages/CustomerReceivablesReportPage";
+import ProfitReportPage from "./pages/ProfitReportPage";
 
 const drawerWidth = 240;
 
@@ -111,6 +112,7 @@ export default function App() {
           <Route path="/reports/opening-sales" element={<OpeningSalesReportPage />} />
           <Route path="/reports/zakat" element={<ZakatReportPage />} />
           <Route path="/reports/customer-receivables" element={<CustomerReceivablesReportPage />} />
+          <Route path="/reports/profit" element={<ProfitReportPage />} />
           <Route path="/service-payments" element={<ServicePaymentsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/inventory-adjustment" element={<InventoryAdjustmentPage />} />

@@ -247,10 +247,17 @@ export default function SalesInvoicesPage() {
             header: "إجراءات",
             Cell: ({ row }) => (
                 <Stack direction="row" spacing={0.5}>
-                    <Tooltip title="تعديل">
-                        <IconButton size="small" color="primary" onClick={() => handleEdit(row.original)}>
-                            <EditIcon fontSize="small" />
-                        </IconButton>
+                    <Tooltip title={row.original.invoice_status === 'draft' ? "تعديل" : "لا يمكن التعديل (الفاتورة معتمدة أو ملغاة)"}>
+                        <span>
+                            <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => handleEdit(row.original)}
+                                disabled={row.original.invoice_status !== 'draft'}
+                            >
+                                <EditIcon fontSize="small" />
+                            </IconButton>
+                        </span>
                     </Tooltip>
                     <Tooltip title="عرض الطلب">
                         <IconButton size="small" color="secondary" onClick={() => navigate(`/sales-orders?order_id=${row.original.sales_order_id}`)}>

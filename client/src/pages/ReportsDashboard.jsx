@@ -9,7 +9,8 @@ import {
     Store as WarehouseIcon,
     Receipt as VoucherIcon,
     AccountBalanceWallet as OpenBalanceIcon,
-    Calculate as ZakatIcon
+    Calculate as ZakatIcon,
+    AccountBalance as ProfitIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -72,6 +73,20 @@ const ReportsDashboard = () => {
             icon: <ZakatIcon sx={{ fontSize: 60, color: '#009688' }} />,
             path: '/reports/zakat',
             color: '#e0f2f1'
+        },
+        {
+            title: 'تقرير الأرباح والخسائر',
+            description: 'تحليل الإيرادات والمصروفات وصافي الربح',
+            icon: <ProfitIcon sx={{ fontSize: 60, color: '#1976d2' }} />,
+            path: '/reports/profit',
+            color: '#e3f2fd'
+        },
+        {
+            title: 'تقرير مديونيات العملاء',
+            description: 'عرض أرصدة العملاء والتحصيلات والمبيعات',
+            icon: <SalesIcon sx={{ fontSize: 60, color: '#607d8b' }} />,
+            path: '/reports/customer-receivables',
+            color: '#eceff1'
         }
     ];
 
