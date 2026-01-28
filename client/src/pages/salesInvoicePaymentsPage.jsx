@@ -19,6 +19,8 @@ import {
     updatePayment,
 } from "../features/salesInvoicePayments/salesInvoicePaymentsSlice";
 import { defaultTableProps } from "../config/tableConfig";
+import { exportToExcel } from "../utils/exportUtils";
+import { Download as DownloadIcon } from "@mui/icons-material";
 
 export default function SalesInvoicePaymentsPage() {
     const dispatch = useDispatch();
@@ -83,6 +85,19 @@ export default function SalesInvoicePaymentsPage() {
         setEditOpen(false);
     };
 
+    const handleExport = async (table) => {
+        try {
+            await exportToExcel(
+                table.getFilteredRowModel().rows,
+                table.getVisibleLeafColumns(),
+                "Sales_Payments_Report"
+            );
+        } catch (error) {
+            console.error("Export failed:", error);
+            alert("حدث خطأ أثناء تصدير الملف.");
+        }
+    };
+
     const columns = [
         { accessorKey: "id", header: "المعرف" },
         { accessorKey: "sales_invoice.invoice_number", header: "رقم الفاتورة" },
@@ -127,7 +142,22 @@ export default function SalesInvoicePaymentsPage() {
                     <CircularProgress />
                 </Box>
             ) : (
-                <MaterialReactTable {...defaultTableProps} columns={columns} data={allPayments} />
+                <MaterialReactTable
+                    {...defaultTableProps}
+                    columns={columns}
+                    data={allPayments}
+                    enableExporting
+                    renderTopToolbarCustomActions={({ table }) => (
+                        <Button
+                            variant="contained"
+                            color="success"
+                            startIcon={<DownloadIcon />}
+                            onClick={() => handleExport(table)}
+                        >
+                            تصدير لإكسل
+                        </Button>
+                    )}
+                />
             )}
 
             {/* ===== Date Range Dialog ===== */}

@@ -174,7 +174,7 @@ export const exportToExcel = async (data, columns, fileName = 'Report', options 
                     const isNumeric = typeof cell.value === 'number';
 
                     if (isNumeric) {
-                        if (headerLower.includes('قيمة') || headerLower.includes('إجمالي') || headerLower.includes('سعر') || headerLower.includes('val')) {
+                        if (headerLower.includes('قيمة') || headerLower.includes('إجمالي') || headerLower.includes('سعر') || headerLower.includes('val') || headerLower.includes('مبلغ')) {
                             cell.numFmt = '#,##0.00 "EGP"';
                         } else if (headerLower.includes('%') || headerLower.includes('خصم')) {
                             cell.numFmt = '0.0 "%"';

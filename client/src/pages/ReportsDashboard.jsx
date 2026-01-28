@@ -10,7 +10,8 @@ import {
     Receipt as VoucherIcon,
     AccountBalanceWallet as OpenBalanceIcon,
     Calculate as ZakatIcon,
-    AccountBalance as ProfitIcon
+    AccountBalance as ProfitIcon,
+    Payment as PaymentIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -87,6 +88,13 @@ const ReportsDashboard = () => {
             icon: <SalesIcon sx={{ fontSize: 60, color: '#607d8b' }} />,
             path: '/reports/customer-receivables',
             color: '#eceff1'
+        },
+        {
+            title: 'تحصيلات المبيعات',
+            description: 'تقرير تفصيلي بجميع سندات قبض المبيعات',
+            icon: <PaymentIcon sx={{ fontSize: 60, color: '#4caf50' }} />,
+            path: '/sales-invoice-payments',
+            color: '#e8f5e9'
         }
     ];
 
