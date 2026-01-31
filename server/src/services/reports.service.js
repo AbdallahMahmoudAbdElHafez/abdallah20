@@ -190,7 +190,7 @@ const getSalesReport = async (startDate, endDate) => {
                 ]
             }
         ],
-        order: [['invoice_date', 'DESC']]
+        order: [['invoice_date', 'ASC']]
     });
 
     // --- Fetch Sales Returns ---
