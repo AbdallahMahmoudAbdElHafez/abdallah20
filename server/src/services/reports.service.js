@@ -18,10 +18,13 @@ import {
     City,
     Governate,
     IssueVoucher,
-    IssueVoucherItem,
+    Account,
+    JournalEntry,
+    JournalEntryLine,
     sequelize
 } from '../models/index.js';
 import { Op } from 'sequelize';
+import ENTRY_TYPES from '../constants/entryTypes.js';
 
 const getDashboardSummary = async (startDate, endDate) => {
     const dateFilter = {};
@@ -477,9 +480,21 @@ const getExpensesReport = async (startDate, endDate) => {
         dateFilter.expense_date = { [Op.lte]: endDate };
     }
 
-    // Fetch expenses without expense_category to avoid table not found error
+    // Fetch expenses with account names
     const expenses = await Expense.findAll({
         where: dateFilter,
+        include: [
+            {
+                model: Account,
+                as: 'debitAccount',
+                attributes: ['id', 'name']
+            },
+            {
+                model: Account,
+                as: 'creditAccount',
+                attributes: ['id', 'name']
+            }
+        ],
         order: [['expense_date', 'DESC']]
     });
 
@@ -498,6 +513,64 @@ const getExpensesReport = async (startDate, endDate) => {
         data: expenses,
         summary,
         chartData: chartArray
+    };
+};
+
+/**
+ * Journal Expenses Report - Detailed (Check Ledger)
+ */
+const getJournalExpensesReport = async (startDate, endDate) => {
+    const dateFilter = {};
+    if (startDate && endDate) {
+        dateFilter.entry_date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        dateFilter.entry_date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        dateFilter.entry_date = { [Op.lte]: endDate };
+    }
+    dateFilter.entry_type_id = ENTRY_TYPES.EXPENSE;
+
+    const journals = await JournalEntry.findAll({
+        where: dateFilter,
+        include: [
+            {
+                model: JournalEntryLine,
+                as: 'lines',
+                include: [{
+                    model: Account,
+                    attributes: ['id', 'name', 'account_type']
+                }]
+            }
+        ],
+        order: [['entry_date', 'DESC']]
+    });
+
+    // Transform to flat format: Date, Description, Debit Acc, Credit Acc, Amount
+    // Assuming simple expense (1 debit, 1 credit) or taking the first debit/credit pair.
+    const flatData = journals.map(journal => {
+        // Find Debit Line (usually the Expense Account)
+        const debitLine = journal.lines.find(l => parseFloat(l.debit) > 0);
+        // Find Credit Line (usually the Payment Account)
+        const creditLine = journal.lines.find(l => parseFloat(l.credit) > 0);
+
+        return {
+            id: journal.id,
+            entry_date: journal.entry_date,
+            description: journal.description,
+            amount: debitLine ? debitLine.debit : 0,
+            debit_account: debitLine?.Account?.name || 'Multiple/Unknown',
+            credit_account: creditLine?.Account?.name || 'Multiple/Unknown',
+        };
+    });
+
+    const summary = {
+        total_entries: journals.length,
+        total_amount: flatData.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0)
+    };
+
+    return {
+        data: flatData,
+        summary
     };
 };
 
@@ -1291,5 +1364,6 @@ export default {
     getOpeningSalesInvoicesReport,
     getZakatReport,
     getProfitReport,
-    getCustomerReceivablesReport
+    getCustomerReceivablesReport,
+    getJournalExpensesReport
 };

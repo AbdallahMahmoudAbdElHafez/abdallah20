@@ -3,7 +3,7 @@ import {
     Box, Typography, Button, TextField, CircularProgress, Paper,
     Grid, Card, CardContent
 } from '@mui/material';
-import { Download as DownloadIcon, ArrowBack as BackIcon } from '@mui/icons-material';
+import { Download as DownloadIcon, ArrowBack as BackIcon, Article as ArticleIcon } from '@mui/icons-material';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { MaterialReactTable } from 'material-react-table';
@@ -65,15 +65,15 @@ const ExpensesReportPage = () => {
             Cell: ({ cell }) => formatCurrency(cell.getValue())
         },
         {
-            accessorKey: 'debit_account_id',
-            header: 'حساب المدين',
-            size: 100,
+            accessorKey: 'debitAccount.name',
+            header: 'مدفوع لحساب',
+            size: 150,
             enableHiding: true
         },
         {
-            accessorKey: 'credit_account_id',
-            header: 'حساب الدائن',
-            size: 100,
+            accessorKey: 'creditAccount.name',
+            header: 'مدفوع من حساب',
+            size: 150,
             enableHiding: true
         },
         {
@@ -111,9 +111,21 @@ const ExpensesReportPage = () => {
 
     return (
         <Box p={3}>
+
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>تقرير المصروفات التفصيلي</Typography>
-                <Button variant="outlined" startIcon={<BackIcon />} onClick={() => navigate('/reports-dashboard')}>رجوع</Button>
+                <Box>
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        startIcon={<ArticleIcon />}
+                        onClick={() => navigate('/reports/journal-expenses')}
+                        sx={{ mr: 1 }}
+                    >
+                        عرض كشف حساب (قيود)
+                    </Button>
+                    <Button variant="outlined" startIcon={<BackIcon />} onClick={() => navigate('/reports-dashboard')}>رجوع</Button>
+                </Box>
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
@@ -186,8 +198,8 @@ const ExpensesReportPage = () => {
                         initialState={{
                             columnVisibility: {
                                 id: false,
-                                debit_account_id: false,
-                                credit_account_id: false,
+                                'debitAccount.name': true,
+                                'creditAccount.name': true,
                                 city_id: false,
                                 employee_id: false,
                                 party_id: false,

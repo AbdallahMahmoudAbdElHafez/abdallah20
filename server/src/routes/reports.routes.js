@@ -12,6 +12,7 @@ router.get('/low-stock', reportsController.getLowStockItems);
 router.get('/sales', reportsController.getSalesReport);
 router.get('/purchases', reportsController.getPurchasesReport);
 router.get('/expenses', reportsController.getExpensesReport);
+router.get('/journal-expenses', reportsController.getJournalExpensesReport);
 router.get('/job-orders', reportsController.getJobOrdersReport);
 router.get('/warehouse', reportsController.getWarehouseReport);
 router.get('/issue-vouchers', reportsController.getIssueVouchersReport);

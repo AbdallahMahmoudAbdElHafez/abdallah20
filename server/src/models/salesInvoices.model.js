@@ -34,6 +34,11 @@ export default (sequelize) => {
                 allowNull: false,
                 defaultValue: 0.00
             },
+            shipping_by: {
+                type: DataTypes.ENUM('شركة شحن', 'مندوب'),
+                allowNull: false,
+                defaultValue: 'شركة شحن'
+            },
             account_id: { type: DataTypes.INTEGER, allowNull: true },
             created_at: {
                 type: DataTypes.DATE,
