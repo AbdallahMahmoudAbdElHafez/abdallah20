@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as controller from "../controllers/salesInvoicePayments.controller.js";
-import { SalesInvoicePayment, SalesInvoice, Party } from "../models/index.js";
+import { SalesInvoicePayment, SalesInvoice, Party, City, Employee } from "../models/index.js";
 import { Op } from "sequelize";
 
 const router = Router();
@@ -18,11 +18,28 @@ router.get("/all", async (req, res, next) => {
 
         const payments = await SalesInvoicePayment.findAll({
             where: whereClause,
-            include: [{
-                model: SalesInvoice,
-                as: "sales_invoice",
-                include: [{ model: Party, as: "party" }]
-            }],
+            include: [
+                {
+                    model: SalesInvoice,
+                    as: "sales_invoice",
+                    include: [
+                        {
+                            model: Party,
+                            as: "party",
+                            include: [{
+                                model: City,
+                                as: "city",
+                                attributes: ["id", "name"]
+                            }]
+                        }
+                    ]
+                },
+                {
+                    model: Employee,
+                    as: "employee",
+                    attributes: ["id", "name"]
+                }
+            ],
             order: [["payment_date", "DESC"]],
         });
         res.json(payments);
@@ -34,6 +51,7 @@ router.get("/all", async (req, res, next) => {
 router.post("/", controller.createPayment);
 router.get("/detail/:paymentId", controller.getPaymentDetail);
 router.put("/:paymentId", controller.updatePayment);
+router.delete("/:paymentId", controller.deletePayment);
 router.get("/:invoiceId", controller.getPayments);
 
 export default router;

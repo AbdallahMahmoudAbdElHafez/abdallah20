@@ -357,7 +357,7 @@ const exportCustomerReceivablesReport = async (data, summary) => {
     worksheet.addRow([]);
 
     // Headers
-    const headers = ['العميل', 'رقم الهاتف', 'إجمالي المبيعات', 'إجمالي السداد', 'المرتجعات', 'الرصيد الحالي'];
+    const headers = ['العميل', 'رقم الهاتف', 'المدينة', 'الموظف', 'إجمالي المبيعات', 'إجمالي السداد', 'المرتجعات', 'الرصيد الحالي'];
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true };
     headerRow.fill = {
@@ -371,6 +371,8 @@ const exportCustomerReceivablesReport = async (data, summary) => {
         worksheet.addRow([
             row.name || '',
             row.phone || '',
+            row.city_name || '',
+            row.employee_name || '',
             parseFloat(row.total_sales || 0),
             parseFloat(row.total_payments || 0),
             parseFloat(row.total_returns || 0),

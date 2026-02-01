@@ -81,30 +81,32 @@ const CustomerReceivablesReportPage = () => {
 
     const columns = useMemo(() => [
         { accessorKey: 'name', header: 'العميل', size: 200 },
-        { accessorKey: 'phone', header: 'رقم الهاتف', size: 150 },
+        { accessorKey: 'phone', header: 'رقم الهاتف', size: 120 },
+        { accessorKey: 'city_name', header: 'المدينة', size: 120 },
+        { accessorKey: 'employee_name', header: 'الموظف', size: 120 },
         {
             accessorKey: 'total_sales',
             header: 'إجمالي المبيعات',
             Cell: ({ cell }) => formatCurrency(cell.getValue()),
-            size: 150
+            size: 140
         },
         {
             accessorKey: 'total_payments',
             header: 'إجمالي السداد',
             Cell: ({ cell }) => <Box color="success.main">{formatCurrency(cell.getValue())}</Box>,
-            size: 150
+            size: 140
         },
         {
             accessorKey: 'total_returns',
             header: 'المرتجعات',
             Cell: ({ cell }) => <Box color="error.main">{formatCurrency(cell.getValue())}</Box>,
-            size: 150
+            size: 120
         },
         {
             accessorKey: 'net_balance',
             header: 'الرصيد الحالي',
             Cell: ({ cell }) => <Box fontWeight="bold" color="primary.main">{formatCurrency(cell.getValue())}</Box>,
-            size: 150
+            size: 140
         },
     ], []);
 

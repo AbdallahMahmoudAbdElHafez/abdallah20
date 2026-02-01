@@ -18,6 +18,7 @@ import {
     City,
     Governate,
     IssueVoucher,
+    IssueVoucherItem,
     Account,
     JournalEntry,
     JournalEntryLine,
@@ -779,22 +780,30 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
         dateFilter.date = { [Op.lte]: endDate };
     }
 
-    // 1. Get all customers
+    // 1. Get all customers with City
     const customers = await Party.findAll({
         where: { party_type: ['customer', 'both'] },
-        attributes: ['id', 'name', 'phone', 'address', 'opening_balance'],
-        raw: true
+        attributes: ['id', 'name', 'phone', 'address', 'opening_balance', 'city_id'],
+        include: [{
+            model: City,
+            as: 'city',
+            attributes: ['id', 'name']
+        }],
+        raw: true,
+        nest: true
     });
 
     // 2. Aggregate Data
     // We will fetch totals for each customer. 
     // Optimization: Instead of N+1 queries, we can use group by queries for each table.
 
-    // Sales Totals
+    // Sales Totals (also get the most common employee for each customer)
     const sales = await SalesInvoice.findAll({
         attributes: [
             'party_id',
-            [sequelize.fn('SUM', sequelize.col('total_amount')), 'total_sales']
+            [sequelize.fn('SUM', sequelize.col('total_amount')), 'total_sales'],
+            // Get mode of employee_id (most common)
+            [sequelize.fn('MAX', sequelize.col('employee_id')), 'employee_id']
         ],
         where: {
             invoice_status: 'approved',
@@ -803,6 +812,18 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
         group: ['party_id'],
         raw: true
     });
+
+    // Get employee names
+    const employeeIds = [...new Set(sales.map(s => s.employee_id).filter(id => id))];
+    const employeeMap = {};
+    if (employeeIds.length > 0) {
+        const employeeRecords = await Employee.findAll({
+            where: { id: employeeIds },
+            attributes: ['id', 'name'],
+            raw: true
+        });
+        employeeRecords.forEach(emp => employeeMap[emp.id] = emp.name);
+    }
 
     // Payments Totals
     const payments = await SalesInvoicePayment.findAll({
@@ -869,7 +890,11 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
 
     // 3. Merge Data
     const salesMap = {};
-    sales.forEach(s => salesMap[s.party_id] = parseFloat(s.total_sales || 0));
+    const employeeByPartyMap = {};
+    sales.forEach(s => {
+        salesMap[s.party_id] = parseFloat(s.total_sales || 0);
+        employeeByPartyMap[s.party_id] = s.employee_id;
+    });
 
     const paymentsMap = {};
     payments.forEach(p => paymentsMap[p.party_id] = parseFloat(p.total_payments || 0));
@@ -891,8 +916,14 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
 
         if (netBalance !== 0 || totalSales !== 0 || totalPayments !== 0 || openingBalance !== 0) {
             totalReceivables += netBalance;
+            const empId = employeeByPartyMap[customer.id];
             return {
-                ...customer,
+                id: customer.id,
+                name: customer.name,
+                phone: customer.phone,
+                address: customer.address,
+                city_name: customer.city?.name || '',
+                employee_name: empId ? (employeeMap[empId] || '') : '',
                 opening_balance: openingBalance,
                 total_sales: totalSales,
                 total_replacements: totalReplacements,
