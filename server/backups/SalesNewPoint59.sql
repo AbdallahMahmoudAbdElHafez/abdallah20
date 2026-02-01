@@ -3,7 +3,6 @@
 -- Host: localhost    Database: nurivina_erp
 -- ------------------------------------------------------
 -- Server version	8.0.42
-use nurivina_erp;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -2231,6 +2230,7 @@ CREATE TABLE `service_payments` (
   `payment_method` enum('cash','bank','cheque','other') DEFAULT 'cash',
   `reference_number` varchar(255) DEFAULT NULL,
   `account_id` int NOT NULL,
+  `credit_account_id` int NOT NULL,
   `external_job_order_id` int DEFAULT NULL,
   `note` text,
   `created_at` datetime NOT NULL,
@@ -2241,6 +2241,8 @@ CREATE TABLE `service_payments` (
   KEY `account_id` (`account_id`),
   KEY `external_job_order_id` (`external_job_order_id`),
   KEY `fk_sp_employee` (`employee_id`),
+  KEY `fk_sp_credit_account` (`credit_account_id`),
+  CONSTRAINT `fk_sp_credit_account` FOREIGN KEY (`credit_account_id`) REFERENCES `accounts` (`id`),
   CONSTRAINT `fk_sp_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `service_payments_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `service_payments_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON UPDATE CASCADE,
@@ -2986,4 +2988,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-31 12:44:43
+-- Dump completed on 2026-01-31 19:51:35

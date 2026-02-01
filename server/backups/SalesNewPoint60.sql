@@ -3,7 +3,6 @@
 -- Host: localhost    Database: nurivina_erp
 -- ------------------------------------------------------
 -- Server version	8.0.42
-use nurivina_erp;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -597,6 +596,41 @@ CREATE TABLE `external_job_order_items` (
 LOCK TABLES `external_job_order_items` WRITE;
 /*!40000 ALTER TABLE `external_job_order_items` DISABLE KEYS */;
 /*!40000 ALTER TABLE `external_job_order_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `external_job_order_services`
+--
+
+DROP TABLE IF EXISTS `external_job_order_services`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `external_job_order_services` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `job_order_id` int NOT NULL,
+  `party_id` int NOT NULL,
+  `service_date` date DEFAULT NULL,
+  `amount` decimal(18,2) NOT NULL,
+  `status` enum('unpaid','partially_paid','paid') DEFAULT 'unpaid',
+  `note` text,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `job_order_id` (`job_order_id`),
+  KEY `party_id` (`party_id`),
+  CONSTRAINT `external_job_order_services_ibfk_1` FOREIGN KEY (`job_order_id`) REFERENCES `external_job_orders` (`id`),
+  CONSTRAINT `external_job_order_services_ibfk_2` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `external_job_order_services`
+--
+
+LOCK TABLES `external_job_order_services` WRITE;
+/*!40000 ALTER TABLE `external_job_order_services` DISABLE KEYS */;
+INSERT INTO `external_job_order_services` VALUES (1,1,74,'2026-02-01',500.00,'unpaid','Verification Accrual','2026-01-31 23:16:22','2026-01-31 23:16:22'),(2,1,74,'2026-02-01',500.00,'unpaid','Verification Accrual','2026-01-31 23:17:31','2026-01-31 23:17:31');
+/*!40000 ALTER TABLE `external_job_order_services` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -2231,6 +2265,7 @@ CREATE TABLE `service_payments` (
   `payment_method` enum('cash','bank','cheque','other') DEFAULT 'cash',
   `reference_number` varchar(255) DEFAULT NULL,
   `account_id` int NOT NULL,
+  `credit_account_id` int NOT NULL,
   `external_job_order_id` int DEFAULT NULL,
   `note` text,
   `created_at` datetime NOT NULL,
@@ -2241,6 +2276,8 @@ CREATE TABLE `service_payments` (
   KEY `account_id` (`account_id`),
   KEY `external_job_order_id` (`external_job_order_id`),
   KEY `fk_sp_employee` (`employee_id`),
+  KEY `fk_sp_credit_account` (`credit_account_id`),
+  CONSTRAINT `fk_sp_credit_account` FOREIGN KEY (`credit_account_id`) REFERENCES `accounts` (`id`),
   CONSTRAINT `fk_sp_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `service_payments_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `service_payments_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON UPDATE CASCADE,
@@ -2986,4 +3023,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-01-31 12:44:43
+-- Dump completed on 2026-02-01  1:51:07

@@ -1,9 +1,9 @@
 import { Op } from "sequelize";
-import { PurchaseInvoice, PurchaseInvoicePayment, Party, ExternalJobOrder, ServicePayment, PurchaseReturn } from "../models/index.js";
+import { PurchaseInvoice, PurchaseInvoicePayment, Party, ExternalJobOrder, ServicePayment, PurchaseReturn, Account, ExternalJobOrderService } from "../models/index.js";
 
 export async function getSupplierStatement(supplierId, { from, to }) {
   const supplier = await Party.findByPk(supplierId, {
-    attributes: ["id", "name", "email", "phone"],
+    attributes: ["id", "name", "email", "phone", "account_id"],
   });
   if (!supplier) throw new Error("Supplier not found");
 
@@ -12,13 +12,6 @@ export async function getSupplierStatement(supplierId, { from, to }) {
   if (from && to) dateFilter[Op.between] = [from, to];
   else if (from) dateFilter[Op.gte] = from;
   else if (to) dateFilter[Op.lte] = to;
-
-  // Filter for Job Orders
-  const jobOrderDateFilter = {};
-  if (from && to) jobOrderDateFilter[Op.between] = [from, to];
-  else if (from) jobOrderDateFilter[Op.gte] = from;
-  else if (to) jobOrderDateFilter[Op.lte] = to;
-
 
   // 1️⃣ Invoices (Liabilities)
   const invoices = await PurchaseInvoice.findAll({
@@ -38,16 +31,8 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     raw: true
   });
 
-  // 2️⃣ Job Orders (Liabilities - Service & Transport Cost)
-  const jobOrders = await ExternalJobOrder.findAll({
-    where: {
-      party_id: supplierId,
-      status: 'completed',
-      ...(Object.keys(jobOrderDateFilter).length ? { start_date: jobOrderDateFilter } : {}),
-    },
-    raw: true
-  });
-
+  // 2️⃣ (REMOVED) Job Orders Implicit Liability
+  // Liability is now recorded via ServicePayments (Accrual)
 
   // 3️⃣ Invoice Payments
   const payments = await PurchaseInvoicePayment.findAll({
@@ -64,10 +49,26 @@ export async function getSupplierStatement(supplierId, { from, to }) {
   });
 
   // 4️⃣ Service Payments
+  // Note: We need 'credit_account_id' to determine if it's Cash or Accrual,
+  // and 'account_id' to determine if it's a Settlement (Payment).
   const servicePayments = await ServicePayment.findAll({
     where: {
       party_id: supplierId,
       ...(Object.keys(dateFilter).length ? { payment_date: dateFilter } : {}),
+    },
+    include: [
+      { model: Account, as: 'account', attributes: ['id', 'account_type'] },
+      { model: Account, as: 'credit_account', attributes: ['id', 'account_type'] }
+    ],
+    raw: true,
+    nest: true
+  });
+
+  // 4b️⃣ Job Order Service Invoices (Liability Accrual)
+  const serviceInvoices = await ExternalJobOrderService.findAll({
+    where: {
+      party_id: supplierId,
+      ...(Object.keys(dateFilter).length ? { service_date: dateFilter } : {}),
     },
     raw: true
   });
@@ -75,7 +76,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
 
   // 5️⃣ Merge Movements
   const movements = [
-    // Invoices
+    // ... items ...
     ...invoices.map(inv => ({
       type: "invoice",
       date: inv.invoice_date,
@@ -85,21 +86,6 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       debit: 0,
       credit: Number(inv.total_amount),
     })),
-    // Job Orders (Liability)
-    ...jobOrders.map(jo => {
-      const serviceCost = Number(jo.actual_processing_cost_per_unit || 0) * Number(jo.produced_quantity || 0);
-      const transportCost = Number(jo.transport_cost || 0);
-      const amountOwed = serviceCost + transportCost;
-      const dateVal = jo.end_date || jo.start_date || new Date().toISOString().split('T')[0];
-
-      return {
-        type: "job_order",
-        date: dateVal,
-        description: `استحقاق تشغيل خارجي - أمر #${jo.id}`,
-        debit: 0,
-        credit: amountOwed,
-      };
-    }).filter(m => m.credit > 0),
 
     // Invoice Payments (Debit)
     ...payments.map(pay => ({
@@ -110,14 +96,31 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       credit: 0,
     })),
 
-    // Service Payments (Debit)
-    ...servicePayments.map(sp => ({
-      type: "service_payment",
-      date: sp.payment_date,
-      description: sp.note || `سداد دفعة خدمة`,
-      debit: Number(sp.amount),
-      credit: 0,
-    }))
+    // Service Invoices (Credit Supplier - Liability Recognition)
+    ...serviceInvoices.map(si => ({
+      type: "service_accrual",
+      date: si.service_date,
+      description: si.note || `فاتورة خدمات تشغيل (أمر #${si.job_order_id})`,
+      debit: 0,
+      credit: Number(si.amount)
+    })),
+
+    // Service Payments (Only Settlements now)
+    ...servicePayments.map(sp => {
+      const debitAccountType = sp.account?.account_type;
+
+      if (debitAccountType === 'liability') {
+        // Settlement: Debit Supplier (Liability Decrease / Payment)
+        return {
+          type: "service_settlement",
+          date: sp.payment_date,
+          description: sp.note || `سداد مديونية (خدمات)`,
+          debit: Number(sp.amount),
+          credit: 0
+        };
+      }
+      return null;
+    }).filter(Boolean)
 
   ];
 
@@ -132,12 +135,6 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       credit: 0
     });
 
-    // If Cash Return: We got money back. 
-    // This increases our "Liability/Balance" to the supplier effectively? No.
-    // Cash Return: 
-    // 1. Return items -> Debit Supplier, Credit Inventory. (Supplier owes us money now / We owe less).
-    // 2. We get Cash -> Debit Cash, Credit Supplier. (Supplier pays us, balance settles).
-    // So if Cash, we add a paired "Refund" transaction (Credit Supplier).
     if (ret.return_type === 'cash') {
       movements.push({
         type: "refund",
@@ -172,23 +169,29 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       }],
     });
 
-    const prevJobOrders = await ExternalJobOrder.findAll({
-      where: {
-        party_id: supplierId,
-        status: 'completed',
-        start_date: { [Op.lt]: from }
-      },
-      attributes: ['actual_processing_cost_per_unit', 'produced_quantity', 'transport_cost']
-    });
-    const prevJobOrdersLiability = prevJobOrders.reduce((sum, jo) => {
-      const serviceCost = Number(jo.actual_processing_cost_per_unit || 0) * Number(jo.produced_quantity || 0);
-      return sum + serviceCost + Number(jo.transport_cost || 0);
-    }, 0);
-
-    const prevServicePayments = await ServicePayment.sum("amount", {
+    // Service Payments (Accruals & Settlements)
+    const prevServicePayments = await ServicePayment.findAll({
       where: {
         party_id: supplierId,
         payment_date: { [Op.lt]: from }
+      },
+      include: [
+        { model: Account, as: 'account', attributes: ['account_type'] },
+        { model: Account, as: 'credit_account', attributes: ['account_type'] }
+      ]
+    });
+
+    const prevServiceTotalMovement = prevServicePayments.reduce((sum, sp) => {
+      if (sp.account?.account_type === 'liability') {
+        return sum - Number(sp.amount || 0); // Debit (-)
+      }
+      return sum;
+    }, 0);
+
+    const prevServiceInvoices = await ExternalJobOrderService.sum("amount", {
+      where: {
+        party_id: supplierId,
+        service_date: { [Op.lt]: from }
       }
     });
 
@@ -200,7 +203,14 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       }
     });
 
-    openingBalance = (prevInvoices || 0) + prevJobOrdersLiability - ((prevPayments || 0) + (prevServicePayments || 0) + (prevReturns || 0));
+    // Formula:
+    // + Invoices (Credits)
+    // + Service Invoices (Credits)
+    // - Service Payments (Debits)
+    // - Invoice Payments (Debits)
+    // - Returns (Debits)
+    openingBalance = (prevInvoices || 0) + (prevServiceInvoices || 0) + prevServiceTotalMovement - ((prevPayments || 0) + (prevReturns || 0));
+
   }
 
   const statement = movements.map(row => {

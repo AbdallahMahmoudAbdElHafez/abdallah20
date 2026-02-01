@@ -24,6 +24,7 @@ export default function ServicePaymentsPage() {
     const [parties, setParties] = useState([]);
     const [accounts, setAccounts] = useState([]);
     const [employees, setEmployees] = useState([]);
+    const [jobOrders, setJobOrders] = useState([]);
 
     // Date Range State
     const [dateDialogOpen, setDateDialogOpen] = useState(true);
@@ -42,6 +43,8 @@ export default function ServicePaymentsPage() {
         payment_date: new Date().toISOString().split("T")[0],
         payment_method: "cash",
         account_id: "",
+        credit_account_id: "",
+        external_job_order_id: "",
         reference_number: "",
         note: "",
         cheque_number: "",
@@ -58,14 +61,16 @@ export default function ServicePaymentsPage() {
 
     const fetchDropdowns = async () => {
         try {
-            const [partiesRes, accountsRes, employeesRes] = await Promise.all([
+            const [partiesRes, accountsRes, employeesRes, jobOrdersRes] = await Promise.all([
                 axiosClient.get("/parties"),
                 axiosClient.get("/accounts"),
-                axiosClient.get("/employees")
+                axiosClient.get("/employees"),
+                axiosClient.get("/external-job-orders")
             ]);
             setParties(partiesRes.data);
             setAccounts(accountsRes.data);
             setEmployees(employeesRes.data);
+            setJobOrders(jobOrdersRes.data);
         } catch (err) {
             console.error(err);
         }
@@ -111,6 +116,8 @@ export default function ServicePaymentsPage() {
             payment_date: new Date().toISOString().split("T")[0],
             payment_method: "cash",
             account_id: "",
+            credit_account_id: "",
+            external_job_order_id: "",
             reference_number: "",
             note: "",
             cheque_number: "",
@@ -129,6 +136,8 @@ export default function ServicePaymentsPage() {
             payment_date: row.payment_date,
             payment_method: row.payment_method,
             account_id: row.account_id,
+            credit_account_id: row.credit_account_id,
+            external_job_order_id: row.external_job_order_id || "",
             reference_number: row.reference_number || "",
             note: row.note || "",
             cheque_number: row.cheque_number || "",
@@ -178,8 +187,18 @@ export default function ServicePaymentsPage() {
         { accessorKey: "payment_method", header: "طريقة الدفع" },
         {
             accessorKey: "account_id",
-            header: "الخزينة/البنك",
+            header: "حساب الخدمة (المدين)",
             Cell: ({ cell }) => accounts.find(a => a.id === cell.getValue())?.name || cell.getValue()
+        },
+        {
+            accessorKey: "credit_account_id",
+            header: "حساب الدفع (الدائن)",
+            Cell: ({ cell }) => accounts.find(a => a.id === cell.getValue())?.name || cell.getValue()
+        },
+        {
+            accessorKey: "external_job_order_id",
+            header: "أمر، شغل خارجي",
+            Cell: ({ cell }) => jobOrders.find(j => j.id === cell.getValue())?.job_order_number || "-"
         },
         {
             accessorKey: "employee_id",
@@ -300,10 +319,21 @@ export default function ServicePaymentsPage() {
                         <Grid item xs={6}>
                             <TextField
                                 select
-                                label="الخزينة / البنك"
+                                label="حساب الخدمة (المدين)"
                                 fullWidth
                                 value={formData.account_id}
                                 onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
+                            >
+                                {accounts.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                select
+                                label="حساب الدفع (الخزينة/البنك)"
+                                fullWidth
+                                value={formData.credit_account_id}
+                                onChange={(e) => setFormData({ ...formData, credit_account_id: e.target.value })}
                             >
                                 {accounts.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
                             </TextField>
@@ -330,6 +360,19 @@ export default function ServicePaymentsPage() {
                                 onChange={(e) => setFormData({ ...formData, reference_number: e.target.value })}
                             />
                         </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                select
+                                label="أمر شغل خارجي"
+                                fullWidth
+                                value={formData.external_job_order_id}
+                                onChange={(e) => setFormData({ ...formData, external_job_order_id: e.target.value })}
+                            >
+                                <MenuItem value=""><em>لا يوجد</em></MenuItem>
+                                {jobOrders.map(j => <MenuItem key={j.id} value={j.id}>{j.job_order_number || j.id}</MenuItem>)}
+                            </TextField>
+                        </Grid>
+
                         <Grid item xs={6}>
                             <TextField
                                 select
