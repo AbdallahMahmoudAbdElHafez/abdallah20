@@ -3,7 +3,10 @@
 -- Host: localhost    Database: nurivina_erp
 -- ------------------------------------------------------
 -- Server version	8.0.42
+<<<<<<< HEAD
 use nurivina_erp;
+=======
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -600,6 +603,43 @@ LOCK TABLES `external_job_order_items` WRITE;
 UNLOCK TABLES;
 
 --
+<<<<<<< HEAD
+=======
+-- Table structure for table `external_job_order_services`
+--
+
+DROP TABLE IF EXISTS `external_job_order_services`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `external_job_order_services` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `job_order_id` int NOT NULL,
+  `party_id` int NOT NULL,
+  `service_date` date DEFAULT NULL,
+  `amount` decimal(18,2) NOT NULL,
+  `status` enum('unpaid','partially_paid','paid') DEFAULT 'unpaid',
+  `note` text,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `job_order_id` (`job_order_id`),
+  KEY `party_id` (`party_id`),
+  CONSTRAINT `external_job_order_services_ibfk_1` FOREIGN KEY (`job_order_id`) REFERENCES `external_job_orders` (`id`),
+  CONSTRAINT `external_job_order_services_ibfk_2` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `external_job_order_services`
+--
+
+LOCK TABLES `external_job_order_services` WRITE;
+/*!40000 ALTER TABLE `external_job_order_services` DISABLE KEYS */;
+/*!40000 ALTER TABLE `external_job_order_services` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
 -- Table structure for table `external_job_orders`
 --
 
@@ -2217,6 +2257,80 @@ INSERT INTO `sales_returns` VALUES (1,31,16,NULL,8,'2026-01-12','','2026-01-17 0
 UNLOCK TABLES;
 
 --
+<<<<<<< HEAD
+=======
+-- Table structure for table `service_invoice_items`
+--
+
+DROP TABLE IF EXISTS `service_invoice_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `service_invoice_items` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `service_invoice_id` int NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `account_id` int NOT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `tax_rate` decimal(5,2) DEFAULT '0.00',
+  `tax_amount` decimal(15,2) DEFAULT '0.00',
+  `note` text,
+  PRIMARY KEY (`id`),
+  KEY `service_invoice_id` (`service_invoice_id`),
+  KEY `account_id` (`account_id`),
+  CONSTRAINT `service_invoice_items_ibfk_1` FOREIGN KEY (`service_invoice_id`) REFERENCES `service_invoices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `service_invoice_items_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `service_invoice_items`
+--
+
+LOCK TABLES `service_invoice_items` WRITE;
+/*!40000 ALTER TABLE `service_invoice_items` DISABLE KEYS */;
+INSERT INTO `service_invoice_items` VALUES (1,1,'Test Expense Item',3,1000.00,10.00,100.00,NULL);
+/*!40000 ALTER TABLE `service_invoice_items` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `service_invoices`
+--
+
+DROP TABLE IF EXISTS `service_invoices`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `service_invoices` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `invoice_number` varchar(50) NOT NULL,
+  `reference_number` varchar(100) DEFAULT NULL,
+  `invoice_date` date DEFAULT NULL,
+  `due_date` date DEFAULT NULL,
+  `party_id` int NOT NULL,
+  `total_amount` decimal(15,2) DEFAULT '0.00',
+  `tax_amount` decimal(15,2) DEFAULT '0.00',
+  `discount_amount` decimal(15,2) DEFAULT '0.00',
+  `note` text,
+  `status` enum('draft','approved','cancelled') DEFAULT 'draft',
+  `payment_status` enum('unpaid','partial','paid') DEFAULT 'unpaid',
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `party_id` (`party_id`),
+  CONSTRAINT `service_invoices_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `service_invoices`
+--
+
+LOCK TABLES `service_invoices` WRITE;
+/*!40000 ALTER TABLE `service_invoices` DISABLE KEYS */;
+INSERT INTO `service_invoices` VALUES (1,'TEST-INV-001',NULL,'2026-02-01',NULL,74,1100.00,100.00,0.00,NULL,'approved','unpaid','2026-02-01 08:16:02');
+/*!40000 ALTER TABLE `service_invoices` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
 -- Table structure for table `service_payments`
 --
 
@@ -2231,6 +2345,10 @@ CREATE TABLE `service_payments` (
   `payment_method` enum('cash','bank','cheque','other') DEFAULT 'cash',
   `reference_number` varchar(255) DEFAULT NULL,
   `account_id` int NOT NULL,
+<<<<<<< HEAD
+=======
+  `credit_account_id` int NOT NULL,
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
   `external_job_order_id` int DEFAULT NULL,
   `note` text,
   `created_at` datetime NOT NULL,
@@ -2241,6 +2359,11 @@ CREATE TABLE `service_payments` (
   KEY `account_id` (`account_id`),
   KEY `external_job_order_id` (`external_job_order_id`),
   KEY `fk_sp_employee` (`employee_id`),
+<<<<<<< HEAD
+=======
+  KEY `fk_sp_credit_account` (`credit_account_id`),
+  CONSTRAINT `fk_sp_credit_account` FOREIGN KEY (`credit_account_id`) REFERENCES `accounts` (`id`),
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
   CONSTRAINT `fk_sp_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `service_payments_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `service_payments_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON UPDATE CASCADE,
@@ -2986,4 +3109,8 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+<<<<<<< HEAD
 -- Dump completed on 2026-01-31 12:44:43
+=======
+-- Dump completed on 2026-02-01 11:16:38
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf

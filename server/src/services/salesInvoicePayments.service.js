@@ -196,3 +196,82 @@ export async function listPayments(invoiceId) {
 export async function getPaymentById(id) {
     return await SalesInvoicePayment.findByPk(id);
 }
+
+export async function deletePayment(id) {
+    const t = await sequelize.transaction();
+    try {
+        // 1️⃣ اجلب السند والبيانات المرتبطة
+        const payment = await SalesInvoicePayment.findByPk(id, {
+            include: [{ model: SalesInvoice, as: "sales_invoice" }],
+            transaction: t
+        });
+        if (!payment) throw new Error("Payment not found");
+
+        const invoice = payment.sales_invoice;
+
+        // 2️⃣ جلب القيد الأصلي لعمل العكس
+        // نستخدم ReferenceType و ReferenceId للوصول للقيد
+        const { JournalEntry, JournalEntryLine, ReferenceType } = await import("../models/index.js");
+        const refType = await ReferenceType.findOne({ where: { code: 'sales_payment' }, transaction: t });
+
+        if (refType) {
+            const originalEntry = await JournalEntry.findOne({
+                where: { reference_type_id: refType.id, reference_id: payment.id },
+                include: [{ model: JournalEntryLine, as: "lines" }],
+                transaction: t
+            });
+
+            if (originalEntry && originalEntry.lines.length > 0) {
+                // إنشاء قيد عكسي
+                const reversalLines = originalEntry.lines.map(line => ({
+                    account_id: line.account_id,
+                    debit: line.credit,  // عكس: الدائن يصبح مدين
+                    credit: line.debit, // عكس: المدين يصبح دائن
+                    description: `عكس قيد: ${line.description || ''}`
+                }));
+
+                await createJournalEntry({
+                    refCode: "manual_entry", // أو "sales_payment_reversal" إذا كان موجوداً
+                    refId: payment.id,
+                    entryDate: new Date(),
+                    description: `إلغاء/عكس تحصيل فاتورة #${invoice.invoice_number} - السند رقم ${payment.id}`,
+                    entryTypeId: ENTRY_TYPES.ADJUSTMENT,
+                    lines: reversalLines
+                }, { transaction: t });
+            }
+        }
+
+        // 3️⃣ حذف الشيكات المرتبطة إن وجدت
+        await Cheque.destroy({
+            where: { sales_payment_id: payment.id },
+            transaction: t
+        });
+
+        // 4️⃣ حذف سجل الدفعة
+        await payment.destroy({ transaction: t });
+
+        // 5️⃣ إعادة حساب حالة الفاتورة
+        const totalPaid = await SalesInvoicePayment.sum("amount", {
+            where: { sales_invoice_id: invoice.id },
+            transaction: t,
+        });
+
+        const currentPaid = Number(totalPaid || 0);
+        const newStatus =
+            currentPaid >= Number(invoice.total_amount)
+                ? "paid"
+                : currentPaid > 0
+                    ? "partial"
+                    : "unpaid";
+
+        if (newStatus !== invoice.status) {
+            await invoice.update({ status: newStatus }, { transaction: t });
+        }
+
+        await t.commit();
+        return { success: true };
+    } catch (err) {
+        await t.rollback();
+        throw err;
+    }
+}

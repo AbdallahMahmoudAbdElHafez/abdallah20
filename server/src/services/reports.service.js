@@ -19,9 +19,13 @@ import {
     Governate,
     IssueVoucher,
     IssueVoucherItem,
+    Account,
+    JournalEntry,
+    JournalEntryLine,
     sequelize
 } from '../models/index.js';
 import { Op } from 'sequelize';
+import ENTRY_TYPES from '../constants/entryTypes.js';
 
 const getDashboardSummary = async (startDate, endDate) => {
     const dateFilter = {};
@@ -477,9 +481,21 @@ const getExpensesReport = async (startDate, endDate) => {
         dateFilter.expense_date = { [Op.lte]: endDate };
     }
 
-    // Fetch expenses without expense_category to avoid table not found error
+    // Fetch expenses with account names
     const expenses = await Expense.findAll({
         where: dateFilter,
+        include: [
+            {
+                model: Account,
+                as: 'debitAccount',
+                attributes: ['id', 'name']
+            },
+            {
+                model: Account,
+                as: 'creditAccount',
+                attributes: ['id', 'name']
+            }
+        ],
         order: [['expense_date', 'DESC']]
     });
 
@@ -498,6 +514,64 @@ const getExpensesReport = async (startDate, endDate) => {
         data: expenses,
         summary,
         chartData: chartArray
+    };
+};
+
+/**
+ * Journal Expenses Report - Detailed (Check Ledger)
+ */
+const getJournalExpensesReport = async (startDate, endDate) => {
+    const dateFilter = {};
+    if (startDate && endDate) {
+        dateFilter.entry_date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        dateFilter.entry_date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        dateFilter.entry_date = { [Op.lte]: endDate };
+    }
+    dateFilter.entry_type_id = ENTRY_TYPES.EXPENSE;
+
+    const journals = await JournalEntry.findAll({
+        where: dateFilter,
+        include: [
+            {
+                model: JournalEntryLine,
+                as: 'lines',
+                include: [{
+                    model: Account,
+                    attributes: ['id', 'name', 'account_type']
+                }]
+            }
+        ],
+        order: [['entry_date', 'DESC']]
+    });
+
+    // Transform to flat format: Date, Description, Debit Acc, Credit Acc, Amount
+    // Assuming simple expense (1 debit, 1 credit) or taking the first debit/credit pair.
+    const flatData = journals.map(journal => {
+        // Find Debit Line (usually the Expense Account)
+        const debitLine = journal.lines.find(l => parseFloat(l.debit) > 0);
+        // Find Credit Line (usually the Payment Account)
+        const creditLine = journal.lines.find(l => parseFloat(l.credit) > 0);
+
+        return {
+            id: journal.id,
+            entry_date: journal.entry_date,
+            description: journal.description,
+            amount: debitLine ? debitLine.debit : 0,
+            debit_account: debitLine?.Account?.name || 'Multiple/Unknown',
+            credit_account: creditLine?.Account?.name || 'Multiple/Unknown',
+        };
+    });
+
+    const summary = {
+        total_entries: journals.length,
+        total_amount: flatData.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0)
+    };
+
+    return {
+        data: flatData,
+        summary
     };
 };
 
@@ -706,22 +780,30 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
         dateFilter.date = { [Op.lte]: endDate };
     }
 
-    // 1. Get all customers
+    // 1. Get all customers with City
     const customers = await Party.findAll({
         where: { party_type: ['customer', 'both'] },
-        attributes: ['id', 'name', 'phone', 'address', 'opening_balance'],
-        raw: true
+        attributes: ['id', 'name', 'phone', 'address', 'opening_balance', 'city_id'],
+        include: [{
+            model: City,
+            as: 'city',
+            attributes: ['id', 'name']
+        }],
+        raw: true,
+        nest: true
     });
 
     // 2. Aggregate Data
     // We will fetch totals for each customer. 
     // Optimization: Instead of N+1 queries, we can use group by queries for each table.
 
-    // Sales Totals
+    // Sales Totals (also get the most common employee for each customer)
     const sales = await SalesInvoice.findAll({
         attributes: [
             'party_id',
-            [sequelize.fn('SUM', sequelize.col('total_amount')), 'total_sales']
+            [sequelize.fn('SUM', sequelize.col('total_amount')), 'total_sales'],
+            // Get mode of employee_id (most common)
+            [sequelize.fn('MAX', sequelize.col('employee_id')), 'employee_id']
         ],
         where: {
             invoice_status: 'approved',
@@ -730,6 +812,18 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
         group: ['party_id'],
         raw: true
     });
+
+    // Get employee names
+    const employeeIds = [...new Set(sales.map(s => s.employee_id).filter(id => id))];
+    const employeeMap = {};
+    if (employeeIds.length > 0) {
+        const employeeRecords = await Employee.findAll({
+            where: { id: employeeIds },
+            attributes: ['id', 'name'],
+            raw: true
+        });
+        employeeRecords.forEach(emp => employeeMap[emp.id] = emp.name);
+    }
 
     // Payments Totals
     const payments = await SalesInvoicePayment.findAll({
@@ -796,7 +890,11 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
 
     // 3. Merge Data
     const salesMap = {};
-    sales.forEach(s => salesMap[s.party_id] = parseFloat(s.total_sales || 0));
+    const employeeByPartyMap = {};
+    sales.forEach(s => {
+        salesMap[s.party_id] = parseFloat(s.total_sales || 0);
+        employeeByPartyMap[s.party_id] = s.employee_id;
+    });
 
     const paymentsMap = {};
     payments.forEach(p => paymentsMap[p.party_id] = parseFloat(p.total_payments || 0));
@@ -818,8 +916,14 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
 
         if (netBalance !== 0 || totalSales !== 0 || totalPayments !== 0 || openingBalance !== 0) {
             totalReceivables += netBalance;
+            const empId = employeeByPartyMap[customer.id];
             return {
-                ...customer,
+                id: customer.id,
+                name: customer.name,
+                phone: customer.phone,
+                address: customer.address,
+                city_name: customer.city?.name || '',
+                employee_name: empId ? (employeeMap[empId] || '') : '',
                 opening_balance: openingBalance,
                 total_sales: totalSales,
                 total_replacements: totalReplacements,
@@ -1291,5 +1395,6 @@ export default {
     getOpeningSalesInvoicesReport,
     getZakatReport,
     getProfitReport,
-    getCustomerReceivablesReport
+    getCustomerReceivablesReport,
+    getJournalExpensesReport
 };

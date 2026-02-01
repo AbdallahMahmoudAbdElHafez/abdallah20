@@ -133,7 +133,7 @@ const exportExpensesReport = async (expensesData, summary) => {
     worksheet.addRow([]);
 
     // Headers
-    const headers = ['التاريخ', 'الفئة', 'الوصف', 'المبلغ', 'الملاحظات'];
+    const headers = ['التاريخ', 'الفئة', 'مدفوع لحساب', 'مدفوع من حساب', 'الوصف', 'المبلغ', 'الملاحظات'];
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true };
     headerRow.fill = {
@@ -147,6 +147,8 @@ const exportExpensesReport = async (expensesData, summary) => {
         worksheet.addRow([
             expense.expense_date || '',
             'غير مصنف',
+            expense.debitAccount?.name || '',
+            expense.creditAccount?.name || '',
             expense.description || '',
             parseFloat(expense.amount || 0),
             expense.notes || ''
@@ -355,7 +357,7 @@ const exportCustomerReceivablesReport = async (data, summary) => {
     worksheet.addRow([]);
 
     // Headers
-    const headers = ['العميل', 'رقم الهاتف', 'إجمالي المبيعات', 'إجمالي السداد', 'المرتجعات', 'الرصيد الحالي'];
+    const headers = ['العميل', 'رقم الهاتف', 'المدينة', 'الموظف', 'إجمالي المبيعات', 'إجمالي السداد', 'المرتجعات', 'الرصيد الحالي'];
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true };
     headerRow.fill = {
@@ -369,6 +371,8 @@ const exportCustomerReceivablesReport = async (data, summary) => {
         worksheet.addRow([
             row.name || '',
             row.phone || '',
+            row.city_name || '',
+            row.employee_name || '',
             parseFloat(row.total_sales || 0),
             parseFloat(row.total_payments || 0),
             parseFloat(row.total_returns || 0),

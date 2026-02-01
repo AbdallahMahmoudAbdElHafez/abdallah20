@@ -102,6 +102,8 @@ export default function SalesInvoicePaymentsPage() {
         { accessorKey: "id", header: "المعرف" },
         { accessorKey: "sales_invoice.invoice_number", header: "رقم الفاتورة" },
         { accessorKey: "sales_invoice.party.name", header: "اسم العميل" },
+        { accessorKey: "sales_invoice.party.city.name", header: "المدينة" },
+        { accessorKey: "employee.name", header: "الموظف" },
         { accessorKey: "amount", header: "المبلغ" },
         { accessorKey: "payment_date", header: "تاريخ السداد" },
         { accessorKey: "payment_method", header: "طريقة السداد" },

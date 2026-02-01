@@ -147,6 +147,17 @@ const reportsController = {
         }
     },
 
+    getJournalExpensesReport: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.query;
+            const data = await reportsService.getJournalExpensesReport(startDate, endDate);
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching journal expenses report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     // ============ EXPORT CONTROLLERS ============
 
     exportReport: async (req, res) => {

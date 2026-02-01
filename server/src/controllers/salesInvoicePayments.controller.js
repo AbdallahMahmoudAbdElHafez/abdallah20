@@ -42,3 +42,12 @@ export async function updatePayment(req, res, next) {
         next(err);
     }
 }
+
+export async function deletePayment(req, res, next) {
+    try {
+        const result = await paymentService.deletePayment(req.params.paymentId);
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+}
