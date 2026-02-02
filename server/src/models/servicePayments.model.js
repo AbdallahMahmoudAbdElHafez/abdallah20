@@ -11,8 +11,9 @@ export default (sequelize) => {
             payment_method: { type: DataTypes.ENUM('cash', 'bank', 'cheque', 'other'), defaultValue: 'cash' },
             reference_number: { type: DataTypes.STRING, allowNull: true },
             account_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'accounts', key: 'id' } },
-            external_job_order_id: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'external_job_orders', key: 'id' } },
-            employee_id: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'employees', key: 'id' } },
+            credit_account_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'accounts', key: 'id' } },
+            external_service_id: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'external_job_order_services', key: 'id' } },
+            employee_id: { type: DataTypes.INTEGER, allowNull: true, defaultValue: null, references: { model: 'employees', key: 'id' } },
             note: { type: DataTypes.TEXT, allowNull: true },
         },
         {

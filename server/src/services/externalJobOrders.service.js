@@ -14,7 +14,8 @@ import {
   CurrentInventory,
   ServicePayment,
   EntryType,
-  ReferenceType
+  ReferenceType,
+  ExternalJobOrderService
 } from "../models/index.js";
 import InventoryTransactionService from './inventoryTransaction.service.js';
 
@@ -285,6 +286,11 @@ const ExternalJobOrdersService = {
   /**
    * Receive Finished Goods
    */
+  /**
+   * Receive Finished Goods (Close Job Order)
+   * Dr Finished Goods (Asset)
+   * Cr WIP (Asset)
+   */
   receiveFinishedGoods: async (jobOrderId, data) => {
     const t = await sequelize.transaction();
     try {
@@ -294,30 +300,39 @@ const ExternalJobOrdersService = {
       });
       if (!order) throw new Error("Job Order not found");
 
-      // 1. Calculate Costs
+      // 1. Calculate Actual WIP Costs (Materials + Payments)
+
+      // A. Material Cost (Already issued to WIP 109)
       const materials = await ExternalJobOrderItem.findAll({
         where: { job_order_id: jobOrderId },
         transaction: t
       });
-
       const totalMaterialCost = materials.reduce((sum, item) => sum + Number(item.total_cost), 0);
-      const serviceCost = Number(data.service_cost || 0);
-      const transportCost = Number(data.transport_cost || 0);
-      const totalCost = totalMaterialCost + serviceCost + transportCost;
+
+      // B. Service Costs (Accrued Service Invoices - recognize cost even if not paid)
+      const services = await ExternalJobOrderService.findAll({
+        where: { job_order_id: jobOrderId },
+        transaction: t
+      });
+      const totalServiceCost = services.reduce((sum, s) => sum + Number(s.amount), 0);
+
+      // Total Cost to capitalize
+      const totalCost = totalMaterialCost + totalServiceCost;
 
       const producedQty = Number(data.produced_quantity);
+      const wasteQty = Number(data.waste_quantity || 0);
       const unitCost = producedQty > 0 ? totalCost / producedQty : 0;
 
-      // 2. Update Product Cost
+      // 2. Update Product Cost (Weighted Average or Last Cost)
       const product = await Product.findByPk(order.product_id, { transaction: t });
       await product.update({ cost_price: unitCost }, { transaction: t });
 
-      // 3. Inventory Transaction (IN) - Finished Good (Using Service to create Batches)
+      // 3. Inventory Transaction (IN) - Finished Good
       await InventoryTransactionService.create({
         product_id: order.product_id,
-        warehouse_id: order.warehouse_id, // Target warehouse
+        warehouse_id: order.warehouse_id,
         transaction_type: 'in',
-        quantity: producedQty, // Used for validation/current inventory
+        quantity: producedQty,
         transaction_date: new Date(),
         source_type: 'external_job_order',
         source_id: jobOrderId,
@@ -326,18 +341,13 @@ const ExternalJobOrdersService = {
           quantity: producedQty,
           batch_number: data.batch_number || `PROD-${jobOrderId}`,
           expiry_date: data.expiry_date || null,
-          cost_per_unit: unitCost // Explicitly pass the correct cost
+          cost_per_unit: unitCost
         }]
       }, { transaction: t });
 
-      // 4. Journal Entry
-      // Accounts
-      const rmInvAccountId = 49; // المخزون (Raw Materials)
-      const wipAccountId = 109; // تحت التشغيل (WIP)
-      const fgInvAccountId = 110; // مخزون تام الصنع (Finished Goods)
-
-      const supplierAccountId = order.party?.account_id;
-      if (!supplierAccountId) throw new Error("Supplier does not have a linked account");
+      // 4. Journal Entry (Close WIP -> FG)
+      const wipAccountId = 109; // WIP
+      const fgInvAccountId = 110; // Finished Goods
 
       let refType = await ReferenceType.findOne({ where: { code: 'external_job_order_receive' }, transaction: t });
       if (!refType) {
@@ -350,59 +360,18 @@ const ExternalJobOrdersService = {
       }
 
       const je = await JournalEntry.create({
-        entry_type_id: 13, // Production/Manufacturing
+        entry_type_id: 13, // Production
         reference_type_id: refType.id,
         reference_id: jobOrderId,
         date: new Date(),
-        description: `تسويات إنتاج تام - أمر تشغيل #${jobOrderId} (خامات + تشغيل + نقل)`,
+        description: `إقفال أمر تشغيل خارجي #${jobOrderId} - استلام منتج تام`,
         status: 'posted'
       }, { transaction: t });
 
       const jeLines = [];
 
-      // 1. (REMOVED) Issue Materials to WIP 
-      // This is now done in 'sendMaterials' step to reflect accurate timing.
-
-      // 2. Load Service Cost to WIP (Debit WIP, Credit Supplier)
-      if (serviceCost > 0) {
-        jeLines.push({
-          journal_entry_id: je.id,
-          account_id: wipAccountId,
-          debit: serviceCost,
-          credit: 0,
-          description: `تحميل تكلفة تشغيل خارجي - أمر #${jobOrderId}`
-        });
-        jeLines.push({
-          journal_entry_id: je.id,
-          account_id: supplierAccountId,
-          debit: 0,
-          credit: serviceCost,
-          description: `استحقاق تشغيل خارجي - أمر #${jobOrderId}`
-        });
-      }
-
-      // 3. Load Transport Cost to WIP (Debit WIP, Credit Supplier/Cash)
-      if (transportCost > 0) {
-        jeLines.push({
-          journal_entry_id: je.id,
-          account_id: wipAccountId,
-          debit: transportCost,
-          credit: 0,
-          description: `تحميل تكلفة نقل - أمر #${jobOrderId}`
-        });
-        // Assuming paid by Supplier or added to Supplier account as requested ("Credit Suppliers...").
-        // If Cash is needed, logic would differ, but defaulting to Supplier matches the context of outsourcing liabilities.
-        jeLines.push({
-          journal_entry_id: je.id,
-          account_id: supplierAccountId,
-          debit: 0,
-          credit: transportCost,
-          description: `استحقاق نقل - أمر #${jobOrderId}`
-        });
-      }
-
-      // 4. Close WIP to Finished Goods (Debit FG Inv, Credit WIP)
       if (totalCost > 0) {
+        // Debit Finished Goods
         jeLines.push({
           journal_entry_id: je.id,
           account_id: fgInvAccountId,
@@ -410,6 +379,8 @@ const ExternalJobOrdersService = {
           credit: 0,
           description: `استلام منتج تام - أمر #${jobOrderId}`
         });
+
+        // Credit WIP
         jeLines.push({
           journal_entry_id: je.id,
           account_id: wipAccountId,
@@ -421,18 +392,18 @@ const ExternalJobOrdersService = {
 
       await JournalEntryLine.bulkCreate(jeLines, { transaction: t });
 
-      // 5. Update Order
+      // 5. Update Order Status
       await order.update({
         status: 'completed',
         produced_quantity: producedQty,
-        waste_quantity: data.waste_quantity,
-        actual_processing_cost_per_unit: serviceCost / producedQty,
-        actual_raw_material_cost_per_unit: totalMaterialCost / producedQty,
-        total_actual_cost: totalCost,
-        transport_cost: transportCost
+        waste_quantity: wasteQty,
+        // Calculate actual per-unit costs based on total accumulated figures
+        actual_processing_cost_per_unit: producedQty > 0 ? totalServiceCost / producedQty : 0,
+        actual_raw_material_cost_per_unit: producedQty > 0 ? totalMaterialCost / producedQty : 0,
+        total_actual_cost: totalCost
       }, {
         transaction: t,
-        hooks: false // Disable hooks to prevent duplicate InventoryTransaction from externalJobOrderHooks.js
+        hooks: false
       });
 
       await t.commit();

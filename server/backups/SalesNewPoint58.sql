@@ -3,6 +3,10 @@
 -- Host: localhost    Database: nurivina_erp
 -- ------------------------------------------------------
 -- Server version	8.0.42
+<<<<<<< HEAD
+use nurivina_erp;
+=======
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -599,6 +603,8 @@ LOCK TABLES `external_job_order_items` WRITE;
 UNLOCK TABLES;
 
 --
+<<<<<<< HEAD
+=======
 -- Table structure for table `external_job_order_services`
 --
 
@@ -633,6 +639,7 @@ LOCK TABLES `external_job_order_services` WRITE;
 UNLOCK TABLES;
 
 --
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
 -- Table structure for table `external_job_orders`
 --
 
@@ -2250,6 +2257,8 @@ INSERT INTO `sales_returns` VALUES (1,31,16,NULL,8,'2026-01-12','','2026-01-17 0
 UNLOCK TABLES;
 
 --
+<<<<<<< HEAD
+=======
 -- Table structure for table `service_invoice_items`
 --
 
@@ -2321,6 +2330,7 @@ INSERT INTO `service_invoices` VALUES (1,'TEST-INV-001',NULL,'2026-02-01',NULL,7
 UNLOCK TABLES;
 
 --
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
 -- Table structure for table `service_payments`
 --
 
@@ -2335,7 +2345,10 @@ CREATE TABLE `service_payments` (
   `payment_method` enum('cash','bank','cheque','other') DEFAULT 'cash',
   `reference_number` varchar(255) DEFAULT NULL,
   `account_id` int NOT NULL,
+<<<<<<< HEAD
+=======
   `credit_account_id` int NOT NULL,
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
   `external_job_order_id` int DEFAULT NULL,
   `note` text,
   `created_at` datetime NOT NULL,
@@ -2346,8 +2359,11 @@ CREATE TABLE `service_payments` (
   KEY `account_id` (`account_id`),
   KEY `external_job_order_id` (`external_job_order_id`),
   KEY `fk_sp_employee` (`employee_id`),
+<<<<<<< HEAD
+=======
   KEY `fk_sp_credit_account` (`credit_account_id`),
   CONSTRAINT `fk_sp_credit_account` FOREIGN KEY (`credit_account_id`) REFERENCES `accounts` (`id`),
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf
   CONSTRAINT `fk_sp_employee` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `service_payments_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `service_payments_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON UPDATE CASCADE,
@@ -3093,4 +3109,8 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+<<<<<<< HEAD
+-- Dump completed on 2026-01-31 12:44:43
+=======
 -- Dump completed on 2026-02-01 11:16:38
+>>>>>>> 2a2fe2c1a5fc8ea05f17b42f39c94b0f65df90bf

@@ -62,6 +62,7 @@ import ChequeModel from "./cheque.model.js";
 import ServicePaymentModel from "./servicePayments.model.js";
 import DoctorModel from "./doctors.model.js";
 import ProductTypeModel from "./productTypes.model.js";
+import ExternalJobOrderServiceModel from './externalJobOrderService.model.js';
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -99,6 +100,7 @@ const ProductCost = ProductCostModel(sequelize);
 const Process = ProcessModel(sequelize);
 const ExternalJobOrder = ExternalJobOrderModel(sequelize);
 const ExternalJobOrderItem = ExternalJobOrderItemModel(sequelize);
+const ExternalJobOrderService = ExternalJobOrderServiceModel(sequelize);
 const CurrentInventory = CurrentInventoryModel(sequelize);
 const Department = DepartmentModel(sequelize);
 const JobTitle = jobTitleModel(sequelize);
@@ -767,8 +769,17 @@ Party.hasMany(ServicePayment, { foreignKey: "party_id", as: "service_payments" }
 
 ServicePayment.belongsTo(Account, { foreignKey: "account_id", as: "account" });
 Account.hasMany(ServicePayment, { foreignKey: "account_id", as: "service_payments" });
+ServicePayment.belongsTo(Account, { foreignKey: "credit_account_id", as: "credit_account" });
+Account.hasMany(ServicePayment, { foreignKey: "credit_account_id", as: "credit_service_payments" });
 ServicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
 Employee.hasMany(ServicePayment, { foreignKey: "employee_id", as: "service_payments" });
+
+// External Job Order Service Associations
+ExternalJobOrderService.belongsTo(ExternalJobOrder, { foreignKey: "job_order_id", as: "job_order" });
+ExternalJobOrder.hasMany(ExternalJobOrderService, { foreignKey: "job_order_id", as: "services" });
+
+ExternalJobOrderService.belongsTo(Party, { foreignKey: "party_id", as: "party" });
+Party.hasMany(ExternalJobOrderService, { foreignKey: "party_id", as: "job_order_services" });
 
 // Doctor Associations
 Doctor.belongsTo(City, { foreignKey: "city_id", as: "city" });
@@ -832,5 +843,6 @@ export {
   ServicePayment,
   Doctor,
   ProductType,
+  ExternalJobOrderService,
 
 };

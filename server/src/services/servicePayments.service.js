@@ -1,4 +1,4 @@
-import { ServicePayment, JournalEntry, JournalEntryLine, Party, Account, Cheque, sequelize, ReferenceType } from '../models/index.js';
+import { ServicePayment, JournalEntry, JournalEntryLine, Party, Account, Cheque, sequelize, ReferenceType, Employee, ExternalJobOrder } from '../models/index.js';
 
 const ServicePaymentsService = {
     getAll: async (filters = {}) => {
@@ -25,7 +25,9 @@ const ServicePaymentsService = {
             where,
             include: [
                 { model: Party, as: 'party' },
-                { model: Account, as: 'account' }
+                { model: Account, as: 'account' },
+                { model: Account, as: 'credit_account' },
+                { model: Employee, as: 'employee' }
             ],
             order: [['payment_date', 'DESC']]
         });
@@ -35,7 +37,9 @@ const ServicePaymentsService = {
         return await ServicePayment.findByPk(id, {
             include: [
                 { model: Party, as: 'party' },
-                { model: Account, as: 'account' }
+                { model: Account, as: 'account' },
+                { model: Account, as: 'credit_account' },
+                { model: Employee, as: 'employee' }
             ]
         });
     },
@@ -44,15 +48,28 @@ const ServicePaymentsService = {
         const t = await sequelize.transaction();
         try {
             if (data.payment_date === '') data.payment_date = new Date();
-
-            const payment = await ServicePayment.create(data, { transaction: t });
-
-            // Create Journal Entry
-            // Debit: Supplier (Liability decrease)
-            // Credit: Bank/Cash (Asset decrease)
+            if (data.external_service_id === '') data.external_service_id = null;
+            if (data.employee_id === '') data.employee_id = null;
 
             const supplier = await Party.findByPk(data.party_id, { transaction: t });
-            if (!supplier || !supplier.account_id) throw new Error("Supplier account not found");
+            if (!supplier) throw new Error("Party not found");
+
+            // --- STRICT ACCOUNTING LOGIC ---
+            const debitAccount = await Account.findByPk(data.account_id, { transaction: t });
+            if (!debitAccount) throw new Error("Debit Account not found");
+
+            // 1. Prohibit direct WIP inflation
+            if (debitAccount.id === 109) {
+                throw new Error("Accounting Rule: Service Payments cannot debit WIP (109) directly. Please record a 'Service Invoice' first to recognize the cost, then use this screen to record the cash payment against the Supplier.");
+            }
+
+            // 2. Enforce Liability Debit (Settlement)
+            if (debitAccount.account_type !== 'liability') {
+                throw new Error("Invalid Account: Service payments must debit a Liability account (e.g., Suppliers) to settle an existing debt.");
+            }
+            // ------------------------------------
+
+            const payment = await ServicePayment.create(data, { transaction: t });
 
             let refType = await ReferenceType.findOne({ where: { code: 'service_payment' }, transaction: t });
             if (!refType) {
@@ -60,7 +77,7 @@ const ServicePaymentsService = {
                     code: 'service_payment',
                     label: 'سداد خدمات',
                     name: 'سداد خدمات',
-                    description: 'Journal Entry for Service Payment'
+                    description: 'Journal Entry for Service Payment (Settlement)'
                 }, { transaction: t });
             }
 
@@ -69,24 +86,24 @@ const ServicePaymentsService = {
                 reference_type_id: refType.id,
                 reference_id: payment.id,
                 date: data.payment_date,
-                description: `دفعة خدمة - ${supplier.name} - ${data.note || ''}`,
+                description: `سداد مديونية (خدمات) - ${supplier.name} - ${data.note || ''}`,
                 status: 'posted'
             }, { transaction: t });
 
             await JournalEntryLine.bulkCreate([
                 {
                     journal_entry_id: je.id,
-                    account_id: supplier.account_id, // Debit Supplier
+                    account_id: data.account_id, // Debit Supplier (Reduction of liability)
                     debit: data.amount,
                     credit: 0,
-                    description: `دفعة خدمة - ${supplier.name}`
+                    description: `سداد مستحقات للمورد ${supplier.name}`
                 },
                 {
                     journal_entry_id: je.id,
-                    account_id: data.account_id, // Credit Bank/Cash
+                    account_id: data.credit_account_id, // Credit Bank/Cash
                     debit: 0,
                     credit: data.amount,
-                    description: `دفعة خدمة - ${supplier.name}`
+                    description: `سداد مديونية (خدمات) - ${supplier.name}`
                 }
             ], { transaction: t });
 
@@ -99,7 +116,7 @@ const ServicePaymentsService = {
                 await Cheque.create({
                     cheque_number: data.cheque_number,
                     cheque_type: 'outgoing', // Service payment is outgoing
-                    account_id: data.account_id,
+                    account_id: data.credit_account_id, // Source account (Bank)
                     issue_date: data.issue_date || data.payment_date,
                     due_date: data.due_date,
                     amount: data.amount,
@@ -118,6 +135,9 @@ const ServicePaymentsService = {
     },
 
     update: async (id, data) => {
+        if (data.external_job_order_id === '') data.external_job_order_id = null;
+        if (data.employee_id === '') data.employee_id = null;
+
         const item = await ServicePayment.findByPk(id);
         if (!item) return null;
         return await item.update(data);

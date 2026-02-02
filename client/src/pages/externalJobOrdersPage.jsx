@@ -52,8 +52,6 @@ export default function ExternalJobOrdersPage() {
   const [receiveData, setReceiveData] = useState({
     produced_quantity: "",
     waste_quantity: 0,
-    service_cost: 0,
-    transport_cost: 0,
     batch_number: "",
     expiry_date: ""
   });
@@ -67,6 +65,7 @@ export default function ExternalJobOrdersPage() {
     payment_date: new Date().toISOString().split("T")[0],
     payment_method: "cash",
     account_id: "",
+    credit_account_id: "",
     reference_number: "",
     note: "",
     external_job_order_id: null,
@@ -204,8 +203,6 @@ export default function ExternalJobOrdersPage() {
     setReceiveData({
       produced_quantity: order.order_quantity,
       waste_quantity: 0,
-      service_cost: 0,
-      transport_cost: 0,
       batch_number: `PROD-${order.id}`,
       expiry_date: ""
     });
@@ -232,6 +229,7 @@ export default function ExternalJobOrdersPage() {
       payment_date: new Date().toISOString().split("T")[0],
       payment_method: "cash",
       account_id: "",
+      credit_account_id: "",
       reference_number: "",
       note: `دفعة مقابل أمر تشغيل #${order.id}`,
       external_job_order_id: order.id,
@@ -412,19 +410,6 @@ export default function ExternalJobOrdersPage() {
               }}
             />
             <TextField
-              label="تكلفة التشغيل (الإجمالية)"
-              type="number"
-              helperText="المبلغ المستحق للمورد مقابل التصنيع"
-              value={receiveData.service_cost}
-              onChange={(e) => setReceiveData({ ...receiveData, service_cost: e.target.value })}
-            />
-            <TextField
-              label="تكلفة النقل"
-              type="number"
-              value={receiveData.transport_cost}
-              onChange={(e) => setReceiveData({ ...receiveData, transport_cost: e.target.value })}
-            />
-            <TextField
               label="رقم التشغيلة (Batch Number)"
               value={receiveData.batch_number}
               onChange={(e) => setReceiveData({ ...receiveData, batch_number: e.target.value })}
@@ -498,10 +483,21 @@ export default function ExternalJobOrdersPage() {
             <Grid item xs={6}>
               <TextField
                 select
-                label="الخزينة / البنك"
+                label="حساب الخدمة (المدين)"
                 fullWidth
                 value={paymentData.account_id}
                 onChange={(e) => setPaymentData({ ...paymentData, account_id: e.target.value })}
+              >
+                {accounts.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
+              </TextField>
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                select
+                label="حساب الدفع (الدائن)"
+                fullWidth
+                value={paymentData.credit_account_id}
+                onChange={(e) => setPaymentData({ ...paymentData, credit_account_id: e.target.value })}
               >
                 {accounts.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
               </TextField>

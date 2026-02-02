@@ -57,6 +57,7 @@ import productTypesRoutes from './routes/productTypes.routes.js';
 import databaseRoutes from './routes/database.routes.js';
 import systemRoutes from './routes/system.routes.js';
 import warehouseInventoryRoutes from './routes/warehouseInventory.routes.js';
+import externalJobOrderServicesRoutes from './routes/externalJobOrderServices.routes.js';
 
 const app = express();
 app.use(cors());
@@ -121,6 +122,7 @@ app.use('/api/product-types', productTypesRoutes);
 app.use('/api/database', databaseRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/warehouse-inventory', warehouseInventoryRoutes);
+app.use('/api/external-job-order-services', externalJobOrderServicesRoutes);
 
 app.use(errorHandler);
 export default app;
