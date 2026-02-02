@@ -79,7 +79,7 @@ const reportsMenu = [
   { label: "القيود", path: "/journal-entry-lines" },
   { label: "ملخص التقارير", path: "/reports" },
   { label: "تقرير مستحقات العملاء", path: "/reports/customer-receivables" },
-
+  { label: "أرصدة البنوك والصناديق", path: "/reports/bank-cash" },
 ];
 function Sidebar() {
   const location = useLocation();

@@ -17,6 +17,8 @@ const reportsApi = {
     getOpeningSalesReport: (params) => axiosClient.get('/reports/opening-sales', { params }),
     getZakatReport: (params) => axiosClient.get('/reports/zakat', { params }),
     getProfitReport: (params) => axiosClient.get('/reports/profit', { params }),
+    getBankAndCashReport: (params) => axiosClient.get('/reports/bank-cash', { params }),
+    getCustomerReceivables: (params) => axiosClient.get('/reports/customer-receivables', { params }),
 
     // Export
     exportReport: (type, params) => {

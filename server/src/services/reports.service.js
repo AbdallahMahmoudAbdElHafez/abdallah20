@@ -536,51 +536,65 @@ const getExpensesReport = async (startDate, endDate) => {
  * Journal Expenses Report - Detailed (Check Ledger)
  */
 const getJournalExpensesReport = async (startDate, endDate) => {
-    const dateFilter = {};
+    const entryDateFilter = {};
     if (startDate && endDate) {
-        dateFilter.entry_date = { [Op.between]: [startDate, endDate] };
+        entryDateFilter.entry_date = { [Op.between]: [startDate, endDate] };
     } else if (startDate) {
-        dateFilter.entry_date = { [Op.gte]: startDate };
+        entryDateFilter.entry_date = { [Op.gte]: startDate };
     } else if (endDate) {
-        dateFilter.entry_date = { [Op.lte]: endDate };
+        entryDateFilter.entry_date = { [Op.lte]: endDate };
     }
-    dateFilter.entry_type_id = ENTRY_TYPES.EXPENSE;
 
-    const journals = await JournalEntry.findAll({
-        where: dateFilter,
+    // Find all journal entry lines that belong to an expense account
+    const expenseLines = await JournalEntryLine.findAll({
+        where: {
+            debit: { [Op.gt]: 0 }
+        },
         include: [
             {
-                model: JournalEntryLine,
-                as: 'lines',
-                include: [{
-                    model: Account,
-                    attributes: ['id', 'name', 'account_type']
-                }]
+                model: Account,
+                where: { account_type: 'expense' },
+                attributes: ['id', 'name']
+            },
+            {
+                model: JournalEntry,
+                as: 'journal_entry',
+                where: entryDateFilter,
+                attributes: ['id', 'entry_date', 'description'],
+                include: [
+                    {
+                        model: JournalEntryLine,
+                        as: 'lines',
+                        attributes: ['account_id', 'credit'],
+                        include: [{
+                            model: Account,
+                            attributes: ['id', 'name']
+                        }]
+                    }
+                ]
             }
         ],
-        order: [['entry_date', 'DESC']]
+        order: [[{ model: JournalEntry, as: 'journal_entry' }, 'entry_date', 'DESC']]
     });
 
-    // Transform to flat format: Date, Description, Debit Acc, Credit Acc, Amount
-    // Assuming simple expense (1 debit, 1 credit) or taking the first debit/credit pair.
-    const flatData = journals.map(journal => {
-        // Find Debit Line (usually the Expense Account)
-        const debitLine = journal.lines.find(l => parseFloat(l.debit) > 0);
-        // Find Credit Line (usually the Payment Account)
+    const flatData = expenseLines.map(line => {
+        const journal = line.journal_entry;
+        // Find the credit line in the same journal entry (usually the payment source)
+        // If there are multiple credits, we take the first one that isn't the same line
         const creditLine = journal.lines.find(l => parseFloat(l.credit) > 0);
 
         return {
             id: journal.id,
             entry_date: journal.entry_date,
             description: journal.description,
-            amount: debitLine ? debitLine.debit : 0,
-            debit_account: debitLine?.Account?.name || 'Multiple/Unknown',
-            credit_account: creditLine?.Account?.name || 'Multiple/Unknown',
+            amount: line.debit,
+            debit_account: line.Account?.name || 'Unknown Expense',
+            credit_account: creditLine?.Account?.name || 'Multiple/Unknown Payment',
         };
     });
 
     const summary = {
-        total_entries: journals.length,
+        total_entries: flatData.length,
         total_amount: flatData.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0)
     };
 
@@ -1397,6 +1411,109 @@ const getZakatReport = async (date = null) => {
     };
 };
 
+/**
+ * Bank and Cash Balances Report
+ * Returns balances for all accounts under Root ID 40 (صندوق وبنوك)
+ */
+const getBankAndCashReport = async (date = null) => {
+    const { Account, JournalEntryLine, JournalEntry } = await import('../models/index.js');
+    const targetDate = date ? new Date(date) : new Date();
+
+    // Helper function to get account balances recursively
+    const getAccountBalances = async (accountId) => {
+        const getAllChildIds = async (parentId) => {
+            const children = await Account.findAll({
+                where: { parent_account_id: parentId },
+                attributes: ['id']
+            });
+            let ids = [parentId];
+            for (const child of children) {
+                const childIds = await getAllChildIds(child.id);
+                ids = ids.concat(childIds);
+            }
+            return ids;
+        };
+
+        const accountIds = await getAllChildIds(accountId);
+
+        // Fetch balances grouped by entry type (Opening vs Others)
+        const entries = await JournalEntryLine.findAll({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+                [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit'],
+                [sequelize.col('journal_entry.entry_type_id'), 'entry_type_id']
+            ],
+            where: {
+                account_id: { [Op.in]: accountIds }
+            },
+            include: [{
+                model: JournalEntry,
+                as: 'journal_entry',
+                attributes: [],
+                where: {
+                    entry_date: { [Op.lte]: targetDate }
+                }
+            }],
+            group: [sequelize.col('journal_entry.entry_type_id')],
+            raw: true
+        });
+
+        let openingBalance = 0;
+        let periodTransactions = 0;
+
+        entries.forEach(entry => {
+            const balance = parseFloat(entry.total_debit || 0) - parseFloat(entry.total_credit || 0);
+            if (parseInt(entry.entry_type_id) === 1) { // 1 = OPENING
+                openingBalance += balance;
+            } else {
+                periodTransactions += balance;
+            }
+        });
+
+        return {
+            opening_balance: openingBalance,
+            period_transactions: periodTransactions,
+            net_balance: openingBalance + periodTransactions
+        };
+    };
+
+    const rootAccountId = 40; // صندوق وبنوك
+    const accounts = await Account.findAll({
+        where: { parent_account_id: rootAccountId },
+        attributes: ['id', 'name']
+    });
+
+    const reportData = [];
+    let grandTotalOpening = 0;
+    let grandTotalTransactions = 0;
+    let grandTotalNet = 0;
+
+    for (const acc of accounts) {
+        const balances = await getAccountBalances(acc.id);
+        if (Math.abs(balances.net_balance) > 0.01 || Math.abs(balances.opening_balance) > 0.01) {
+            reportData.push({
+                id: acc.id,
+                name: acc.name,
+                ...balances
+            });
+            grandTotalOpening += balances.opening_balance;
+            grandTotalTransactions += balances.period_transactions;
+            grandTotalNet += balances.net_balance;
+        }
+    }
+
+    return {
+        date: targetDate.toISOString().split('T')[0],
+        data: reportData,
+        summary: {
+            total_opening: grandTotalOpening,
+            total_transactions: grandTotalTransactions,
+            total_net_balance: grandTotalNet,
+            total_accounts: reportData.length
+        }
+    };
+};
+
 export default {
     getDashboardSummary,
     getTopSellingProducts,
@@ -1411,5 +1528,6 @@ export default {
     getZakatReport,
     getProfitReport,
     getCustomerReceivablesReport,
-    getJournalExpensesReport
+    getJournalExpensesReport,
+    getBankAndCashReport
 };
