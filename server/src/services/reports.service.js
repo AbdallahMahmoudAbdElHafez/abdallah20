@@ -481,7 +481,7 @@ const getExpensesReport = async (startDate, endDate) => {
         dateFilter.expense_date = { [Op.lte]: endDate };
     }
 
-    // Fetch expenses with account names
+    // Fetch expenses with names and accounts
     const expenses = await Expense.findAll({
         where: dateFilter,
         include: [
@@ -493,6 +493,21 @@ const getExpensesReport = async (startDate, endDate) => {
             {
                 model: Account,
                 as: 'creditAccount',
+                attributes: ['id', 'name']
+            },
+            {
+                model: City,
+                as: 'city',
+                attributes: ['id', 'name']
+            },
+            {
+                model: Employee,
+                as: 'employee',
+                attributes: ['id', 'name']
+            },
+            {
+                model: Party,
+                as: 'party',
                 attributes: ['id', 'name']
             }
         ],

@@ -77,21 +77,21 @@ const ExpensesReportPage = () => {
             enableHiding: true
         },
         {
-            accessorKey: 'city_id',
+            accessorKey: 'city.name',
             header: 'المدينة',
             size: 100,
             enableHiding: true
         },
         {
-            accessorKey: 'employee_id',
+            accessorKey: 'employee.name',
             header: 'الموظف',
-            size: 100,
+            size: 150,
             enableHiding: true
         },
         {
-            accessorKey: 'party_id',
+            accessorKey: 'party.name',
             header: 'الطرف',
-            size: 100,
+            size: 150,
             enableHiding: true
         },
         {
@@ -200,9 +200,9 @@ const ExpensesReportPage = () => {
                                 id: false,
                                 'debitAccount.name': true,
                                 'creditAccount.name': true,
-                                city_id: false,
-                                employee_id: false,
-                                party_id: false,
+                                'city.name': true,
+                                'employee.name': true,
+                                'party.name': false,
                                 notes: false,
                                 created_at: false,
                             }
