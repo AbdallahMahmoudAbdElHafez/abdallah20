@@ -183,26 +183,30 @@ export default function SalesInvoicesPage() {
         {
             accessorKey: "invoice_number",
             header: "رقم الفاتورة",
+            size: 100,
             Cell: ({ cell }) => (
                 <Typography variant="body2" sx={{ fontWeight: 700, color: 'primary.main' }}>
                     {cell.getValue()}
                 </Typography>
             )
         },
-        { accessorKey: "party.name", header: "العميل" },
+        { accessorKey: "party.name", header: "العميل", size: 180 },
         {
             accessorKey: "invoice_type",
             header: "نوع الفاتورة",
+            size: 120,
             Cell: ({ cell }) => cell.getValue() === 'opening' ? 'رصيد افتتاحي' : 'فاتورة عادية'
         },
         {
             accessorKey: "invoice_date",
             header: "التاريخ",
+            size: 100,
             Cell: ({ cell }) => new Date(cell.getValue()).toLocaleDateString('ar-EG')
         },
         {
             accessorKey: "invoice_status",
             header: "حالة الفاتورة",
+            size: 110,
             Cell: ({ cell }) => {
                 const status = cell.getValue();
                 const cfg = invoiceStatusConfig[status] || { color: "default", label: status };
@@ -220,6 +224,7 @@ export default function SalesInvoicesPage() {
         {
             accessorKey: "status",
             header: "حالة الدفع",
+            size: 110,
             Cell: ({ cell }) => {
                 const status = cell.getValue();
                 const cfg = statusConfig[status] || { color: "default", label: status };
@@ -237,6 +242,7 @@ export default function SalesInvoicesPage() {
         {
             accessorKey: "total_amount",
             header: "الإجمالي",
+            size: 120,
             Cell: ({ cell }) => (
                 <Typography variant="body2" sx={{ fontWeight: 800 }}>
                     {Number(cell.getValue()).toLocaleString()} ج.م
@@ -245,6 +251,7 @@ export default function SalesInvoicesPage() {
         },
         {
             header: "إجراءات",
+            size: 140,
             Cell: ({ row }) => (
                 <Stack direction="row" spacing={0.5}>
                     <Tooltip title={row.original.invoice_status === 'draft' ? "تعديل" : "لا يمكن التعديل (الفاتورة معتمدة أو ملغاة)"}>

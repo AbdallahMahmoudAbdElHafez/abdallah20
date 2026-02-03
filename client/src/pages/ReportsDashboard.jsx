@@ -83,6 +83,13 @@ const ReportsDashboard = () => {
             color: '#e3f2fd'
         },
         {
+            title: 'سجل مصروفات (قيود يومية)',
+            description: 'عرض مالي من واقع القيود المحاسبية حسب التاريخ',
+            icon: <AssessmentIcon sx={{ fontSize: 60, color: '#ff5722' }} />,
+            path: '/reports/journal-expenses',
+            color: '#fff3e0'
+        },
+        {
             title: 'تقرير مديونيات العملاء',
             description: 'عرض أرصدة العملاء والتحصيلات والمبيعات',
             icon: <SalesIcon sx={{ fontSize: 60, color: '#607d8b' }} />,

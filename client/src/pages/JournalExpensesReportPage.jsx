@@ -42,14 +42,28 @@ const JournalExpensesReportPage = () => {
         return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(amount || 0);
     };
 
+    const handleExport = async (table) => {
+        try {
+            await exportToExcel(
+                table.getFilteredRowModel().rows,
+                table.getVisibleLeafColumns(),
+                'Journal_Expenses_Report'
+            );
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('حدث خطأ أثناء محاولة تصدير الملف.');
+        }
+    };
+
     const columns = useMemo(() => [
-        { accessorKey: 'id', header: 'رقم القيد', size: 80 },
-        { accessorKey: 'entry_date', header: 'التاريخ', size: 110, Cell: ({ cell }) => cell.getValue() ? new Date(cell.getValue()).toLocaleDateString('ar-EG') : '-' },
-        { accessorKey: 'description', header: 'الوصف', size: 250 },
-        { accessorKey: 'debit_account', header: 'حساب المصروف (مدين)', size: 180 },
-        { accessorKey: 'credit_account', header: 'طريقة الدفع (دائن)', size: 180 },
+        { accessorKey: 'id', id: 'id', header: 'رقم القيد', size: 80 },
+        { accessorKey: 'entry_date', id: 'entry_date', header: 'التاريخ', size: 110, Cell: ({ cell }) => cell.getValue() ? new Date(cell.getValue()).toLocaleDateString('ar-EG') : '-' },
+        { accessorKey: 'description', id: 'description', header: 'الوصف', size: 250 },
+        { accessorKey: 'debit_account', id: 'debit_account', header: 'حساب المصروف (مدين)', size: 180 },
+        { accessorKey: 'credit_account', id: 'credit_account', header: 'طريقة الدفع (دائن)', size: 180 },
         {
             accessorKey: 'amount',
+            id: 'amount',
             header: 'المبلغ',
             Cell: ({ cell }) => formatCurrency(cell.getValue())
         }
@@ -66,8 +80,8 @@ const JournalExpensesReportPage = () => {
             </Box>
 
             <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
-                <TextField label="من تاريخ" type="date" InputLabelProps={{ shrink: true }} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-                <TextField label="إلى تاريخ" type="date" InputLabelProps={{ shrink: true }} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                <TextField label="من تاريخ القيد" type="date" InputLabelProps={{ shrink: true }} value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                <TextField label="إلى تاريخ القيد" type="date" InputLabelProps={{ shrink: true }} value={endDate} onChange={(e) => setEndDate(e.target.value)} />
                 <Button variant="contained" onClick={fetchReport}>عرض التقرير</Button>
             </Box>
 
@@ -95,7 +109,21 @@ const JournalExpensesReportPage = () => {
                         {...defaultTableProps}
                         data={data}
                         enableColumnVisibility={true}
-                        enableExporting={true} // Default export is fine for now
+                        enableExporting={true}
+                        initialState={{
+                            sorting: [{ id: 'entry_date', desc: true }]
+                        }}
+                        renderTopToolbarCustomActions={({ table }) => (
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<DownloadIcon />}
+                                onClick={() => handleExport(table)}
+                                disabled={data.length === 0}
+                            >
+                                تصدير إلى Excel
+                            </Button>
+                        )}
                         muiToolbarAlertBannerProps={false}
                         muiTableHeadCellProps={{
                             sx: { bgcolor: '#f5f5f5' }

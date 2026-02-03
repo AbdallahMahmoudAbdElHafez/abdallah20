@@ -537,11 +537,11 @@ const getExpensesReport = async (startDate, endDate) => {
  */
 const getJournalExpensesReport = async (startDate, endDate) => {
     const entryDateFilter = {};
-    if (startDate && endDate) {
+    if (startDate && startDate.trim() !== '' && endDate && endDate.trim() !== '') {
         entryDateFilter.entry_date = { [Op.between]: [startDate, endDate] };
-    } else if (startDate) {
+    } else if (startDate && startDate.trim() !== '') {
         entryDateFilter.entry_date = { [Op.gte]: startDate };
-    } else if (endDate) {
+    } else if (endDate && endDate.trim() !== '') {
         entryDateFilter.entry_date = { [Op.lte]: endDate };
     }
 
@@ -571,17 +571,17 @@ const getJournalExpensesReport = async (startDate, endDate) => {
                             attributes: ['id', 'name']
                         }]
                     }
-                ]
+                ],
+                required: true // Ensure we only get lines where the journal entry matches the filter
             }
         ],
-        order: [[{ model: JournalEntry, as: 'journal_entry' }, 'entry_date', 'DESC']]
+        order: [[{ model: JournalEntry, as: 'journal_entry' }, 'entry_date', 'DESC'], ['id', 'DESC']]
     });
 
     const flatData = expenseLines.map(line => {
         const journal = line.journal_entry;
         // Find the credit line in the same journal entry (usually the payment source)
-        // If there are multiple credits, we take the first one that isn't the same line
-        const creditLine = journal.lines.find(l => parseFloat(l.credit) > 0);
+        const creditLine = journal.lines.find(l => parseFloat(l.credit || 0) > 0);
 
         return {
             id: journal.id,
