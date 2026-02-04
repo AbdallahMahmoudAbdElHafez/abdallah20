@@ -241,6 +241,16 @@ export default function SalesReturnsPage() {
         }));
     };
 
+    const handleItemPriceChange = (itemId, price) => {
+        setSelectedItems(prev => ({
+            ...prev,
+            [itemId]: {
+                ...prev[itemId],
+                price: Number(price)
+            }
+        }));
+    };
+
     const handleSave = async () => {
         // Prepare items array from selected items
         const itemsArray = Object.entries(selectedItems)
@@ -250,7 +260,7 @@ export default function SalesReturnsPage() {
                 return {
                     product_id: item.product_id,
                     quantity: data.quantity,
-                    price: item.price,
+                    price: data.price !== undefined ? data.price : item.price,
                     return_condition: data.return_condition || 'good',
                     batch_number: data.batch_number,
                     expiry_date: data.expiry_date,
@@ -642,7 +652,16 @@ export default function SalesReturnsPage() {
                                                     </TableCell>
                                                     <TableCell>{item.product?.name || item.product_id}</TableCell>
                                                     <TableCell>{item.quantity}</TableCell>
-                                                    <TableCell>{formatCurrency(item.price)}</TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="number"
+                                                            size="small"
+                                                            value={selectedItems[item.id]?.price ?? item.price}
+                                                            onChange={(e) => handleItemPriceChange(item.id, e.target.value)}
+                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            fullWidth
+                                                        />
+                                                    </TableCell>
                                                     <TableCell>
                                                         <TextField
                                                             type="number"

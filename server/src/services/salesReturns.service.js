@@ -107,12 +107,12 @@ export default {
                             // For now, strict if invoice linked.
                             throw new Error(`Product ${item.product_id} not found in original Invoice.`);
                         }
-                        unitPrice = Number(originalItem.price);
+                        // Prioritize price from request if provided, otherwise fallback to original item price
+                        unitPrice = (item.price !== undefined && item.price !== null) ? Number(item.price) : Number(originalItem.price);
                     } else {
                         // No invoice linked, must rely on manual price or product price
-                        // If not manual, we need a price source.
                         const product = await Product.findByPk(item.product_id, { transaction });
-                        unitPrice = Number(item.price) || Number(product.price) || 0;
+                        unitPrice = (item.price !== undefined && item.price !== null) ? Number(item.price) : (Number(product.price) || 0);
                     }
 
                     // 2a. Cumulative Validation - Don't return more than sold across all returns (Only if invoice linked)
