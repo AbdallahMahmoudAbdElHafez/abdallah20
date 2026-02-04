@@ -1514,6 +1514,148 @@ const getBankAndCashReport = async (date = null) => {
     };
 };
 
+/**
+ * Detailed Movement Report for Safe/Fund
+ */
+const getSafeMovementsReport = async (accountId, startDate, endDate) => {
+    const {
+        Account,
+        JournalEntryLine,
+        JournalEntry,
+        ReferenceType,
+        SalesInvoicePayment,
+        SalesInvoice,
+        PurchaseInvoicePayment,
+        PurchaseInvoice,
+        Party,
+        Expense
+    } = await import('../models/index.js');
+
+    const account = await Account.findByPk(accountId, { attributes: ['id', 'name', 'account_type', 'normal_balance'] });
+    if (!account) throw new Error('Account not found');
+
+    const refTypes = await ReferenceType.findAll();
+    const refTypeMap = refTypes.reduce((map, rt) => {
+        map[rt.id] = rt.code;
+        return map;
+    }, {});
+
+    // 1. Calculate Opening Balance
+    const openingResult = await JournalEntryLine.findOne({
+        attributes: [
+            [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+            [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+        ],
+        where: { account_id: accountId },
+        include: [{
+            model: JournalEntry,
+            as: 'journal_entry',
+            attributes: [],
+            where: {
+                entry_date: { [Op.lt]: startDate }
+            }
+        }],
+        raw: true
+    });
+
+    const openingDebit = parseFloat(openingResult?.total_debit || 0);
+    const openingCredit = parseFloat(openingResult?.total_credit || 0);
+    let openingBalance = account.normal_balance === 'debit'
+        ? openingDebit - openingCredit
+        : openingCredit - openingDebit;
+
+    // 2. Fetch Movements within period
+    const movements = await JournalEntryLine.findAll({
+        where: { account_id: accountId },
+        include: [
+            {
+                model: JournalEntry,
+                as: 'journal_entry',
+                where: {
+                    entry_date: { [Op.between]: [startDate, endDate] }
+                },
+                include: [{
+                    model: JournalEntryLine,
+                    as: 'lines',
+                    include: [{ model: Account, attributes: ['id', 'name'] }]
+                }]
+            }
+        ],
+        order: [[{ model: JournalEntry, as: 'journal_entry' }, 'entry_date', 'ASC'], ['id', 'ASC']]
+    });
+
+    let currentBalance = openingBalance;
+    const movementData = await Promise.all(movements.map(async line => {
+        const journal = line.journal_entry;
+        const debit = parseFloat(line.debit || 0);
+        const credit = parseFloat(line.credit || 0);
+
+        // Find contra account name
+        let contraAccountName = '';
+        const refType = refTypeMap[journal.reference_type_id];
+
+        if (refType === 'sales_payment' && journal.reference_id) {
+            const payment = await SalesInvoicePayment.findByPk(journal.reference_id, {
+                include: [{ model: SalesInvoice, as: 'sales_invoice', include: [{ model: Party, as: 'party' }] }]
+            });
+            contraAccountName = payment?.sales_invoice?.party?.name || 'تحصيل مبيعات';
+        } else if (refType === 'purchase_payment' && journal.reference_id) {
+            const payment = await PurchaseInvoicePayment.findByPk(journal.reference_id, {
+                include: [{ model: PurchaseInvoice, as: 'purchase_invoice', include: [{ model: Party, as: 'supplier' }] }]
+            });
+            contraAccountName = payment?.purchase_invoice?.supplier?.name || 'سداد مشتريات';
+        } else if (refType === 'expense' && journal.reference_id) {
+            const expense = await Expense.findByPk(journal.reference_id);
+            contraAccountName = expense?.beneficiary || 'مصروفات';
+        }
+
+        // Fallback to traditional contra-account if not identified by reference
+        if (!contraAccountName) {
+            const contraLines = journal.lines.filter(l => l.account_id !== accountId);
+            contraAccountName = contraLines.length === 1
+                ? contraLines[0].Account?.name
+                : contraLines.length > 1
+                    ? 'مذكورين'
+                    : 'غير محدد';
+        }
+
+        if (account.normal_balance === 'debit') {
+            currentBalance += debit - credit;
+        } else {
+            currentBalance += credit - debit;
+        }
+
+        return {
+            id: line.id,
+            date: journal.entry_date,
+            description: journal.description,
+            reference_no: journal.id,
+            debit: debit,
+            credit: credit,
+            contra_account: contraAccountName,
+            balance: currentBalance
+        };
+    }));
+
+    const totalDebit = movementData.reduce((sum, m) => sum + m.debit, 0);
+    const totalCredit = movementData.reduce((sum, m) => sum + m.credit, 0);
+
+    return {
+        account: {
+            id: account.id,
+            name: account.name
+        },
+        period: { startDate, endDate },
+        openingBalance,
+        movements: movementData,
+        summary: {
+            totalDebit,
+            totalCredit,
+            closingBalance: currentBalance
+        }
+    };
+};
+
 export default {
     getDashboardSummary,
     getTopSellingProducts,
@@ -1529,5 +1671,6 @@ export default {
     getProfitReport,
     getCustomerReceivablesReport,
     getJournalExpensesReport,
-    getBankAndCashReport
+    getBankAndCashReport,
+    getSafeMovementsReport
 };

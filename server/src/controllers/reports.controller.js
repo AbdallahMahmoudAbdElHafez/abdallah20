@@ -169,6 +169,20 @@ const reportsController = {
         }
     },
 
+    getSafeMovementsReport: async (req, res) => {
+        try {
+            const { accountId, startDate, endDate } = req.query;
+            if (!accountId || !startDate || !endDate) {
+                return res.status(400).json({ message: 'Missing required parameters' });
+            }
+            const data = await reportsService.getSafeMovementsReport(accountId, startDate, endDate);
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching safe movements report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     // ============ EXPORT CONTROLLERS ============
 
     exportReport: async (req, res) => {
@@ -210,12 +224,20 @@ const reportsController = {
                     filename = `Customer_Receivables_${startDate}_${endDate}.xlsx`;
                     break;
 
+                case 'safe-movements':
+                    const { accountId } = req.query;
+                    const movementsData = await reportsService.getSafeMovementsReport(accountId, startDate, endDate);
+                    buffer = await exportService.exportSafeMovementsReport(movementsData);
+                    filename = `Safe_Movements_${movementsData.account.name}_${startDate}_${endDate}.xlsx`;
+                    break;
+
                 default:
                     return res.status(400).json({ message: 'Invalid report type' });
             }
 
+            const encodedFilename = encodeURIComponent(filename);
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.setHeader('Content-Disposition', `attachment; filename="${encodedFilename}"; filename*=UTF-8''${encodedFilename}`);
             res.send(buffer);
         } catch (error) {
             console.error('Error exporting report:', error);

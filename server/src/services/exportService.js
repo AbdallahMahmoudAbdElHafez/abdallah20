@@ -388,11 +388,110 @@ const exportCustomerReceivablesReport = async (data, summary) => {
     return await workbook.xlsx.writeBuffer();
 };
 
+/**
+ * Export Safe Movements Report to Excel
+ */
+const exportSafeMovementsReport = async (reportData) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('حركة الصندوق');
+
+    worksheet.views = [{ rightToLeft: true }];
+
+    // Title
+    worksheet.mergeCells('A1:G1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = `حركة حساب: ${reportData.account.name}`;
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Period & Opening
+    worksheet.addRow([]);
+    worksheet.addRow(['خلال الفترة من:', reportData.period.startDate, 'إلى:', reportData.period.endDate]);
+    worksheet.addRow(['الرصيد الافتتاحي:', parseFloat(reportData.openingBalance || 0)]);
+    worksheet.addRow([]);
+
+    // Headers
+    const headers = ['التاريخ', 'البيان', 'رقم المرجع', 'الحساب المقابل', 'سحب (مدين)', 'إيداع (دائن)', 'الرصيد'];
+    const headerRow = worksheet.addRow(headers);
+    headerRow.font = { bold: true };
+    headerRow.eachCell(cell => {
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF1F8E9' }
+        };
+        cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+        };
+        cell.alignment = { horizontal: 'center' };
+    });
+
+    // Data
+    reportData.movements.forEach(m => {
+        const row = worksheet.addRow([
+            m.date || '',
+            m.description || '',
+            m.reference_no || '',
+            m.contra_account || '',
+            parseFloat(m.debit || 0),
+            parseFloat(m.credit || 0),
+            parseFloat(m.balance || 0)
+        ]);
+        row.eachCell(cell => {
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+            cell.alignment = { horizontal: 'center' };
+        });
+    });
+
+    // Summary/Totals
+    const totalRow = worksheet.addRow([
+        '', 'الإجمالي', '', '',
+        parseFloat(reportData.summary.totalDebit || 0),
+        parseFloat(reportData.summary.totalCredit || 0),
+        parseFloat(reportData.summary.closingBalance || 0)
+    ]);
+    totalRow.font = { bold: true };
+    totalRow.eachCell((cell, colNumber) => {
+        if (colNumber >= 2) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F5E9' } };
+            cell.border = {
+                top: { style: 'medium' },
+                left: { style: 'thin' },
+                bottom: { style: 'medium' },
+                right: { style: 'thin' }
+            };
+            cell.alignment = { horizontal: 'center' };
+        }
+    });
+
+    // Formatting
+    worksheet.columns = [
+        { width: 15 }, // Date
+        { width: 35 }, // Description
+        { width: 15 }, // Reference
+        { width: 25 }, // Contra
+        { width: 15 }, // Debit
+        { width: 15 }, // Credit
+        { width: 15 }  // Balance
+    ];
+
+    return await workbook.xlsx.writeBuffer();
+};
+
 export default {
     exportSalesReport,
     exportPurchasesReport,
     exportExpensesReport,
     exportJobOrdersReport,
     exportCustomerStatement,
-    exportCustomerReceivablesReport
+    exportCustomerReceivablesReport,
+    exportSafeMovementsReport
 };

@@ -80,6 +80,7 @@ const reportsMenu = [
   { label: "ملخص التقارير", path: "/reports" },
   { label: "تقرير مستحقات العملاء", path: "/reports/customer-receivables" },
   { label: "أرصدة البنوك والصناديق", path: "/reports/bank-cash" },
+  { label: "كشف حركة الصندوق/البنك", path: "/reports/safe-movements" },
 ];
 function Sidebar() {
   const location = useLocation();
