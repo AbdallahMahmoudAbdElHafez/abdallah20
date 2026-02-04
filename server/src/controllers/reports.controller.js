@@ -172,10 +172,19 @@ const reportsController = {
     getSafeMovementsReport: async (req, res) => {
         try {
             const { accountId, startDate, endDate } = req.query;
-            if (!accountId || !startDate || !endDate) {
+            if (!startDate || !endDate) {
                 return res.status(400).json({ message: 'Missing required parameters' });
             }
-            const data = await reportsService.getSafeMovementsReport(accountId, startDate, endDate);
+
+            let data;
+            if (accountId === 'all') {
+                data = await reportsService.getConsolidatedSafeMovementsReport(startDate, endDate);
+            } else if (accountId) {
+                data = await reportsService.getSafeMovementsReport(accountId, startDate, endDate);
+            } else {
+                return res.status(400).json({ message: 'AccountId is required or set to "all"' });
+            }
+
             res.json(data);
         } catch (error) {
             console.error('Error fetching safe movements report:', error);
@@ -225,8 +234,10 @@ const reportsController = {
                     break;
 
                 case 'safe-movements':
-                    const { accountId } = req.query;
-                    const movementsData = await reportsService.getSafeMovementsReport(accountId, startDate, endDate);
+                    const { accountId: moveAccId } = req.query;
+                    const movementsData = moveAccId === 'all'
+                        ? await reportsService.getConsolidatedSafeMovementsReport(startDate, endDate)
+                        : await reportsService.getSafeMovementsReport(moveAccId, startDate, endDate);
                     buffer = await exportService.exportSafeMovementsReport(movementsData);
                     filename = `Safe_Movements_${movementsData.account.name}_${startDate}_${endDate}.xlsx`;
                     break;

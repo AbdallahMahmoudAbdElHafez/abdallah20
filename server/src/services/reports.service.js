@@ -1585,7 +1585,7 @@ const getSafeMovementsReport = async (accountId, startDate, endDate) => {
     });
 
     let currentBalance = openingBalance;
-    const movementData = await Promise.all(movements.map(async line => {
+    const baseMovementData = await Promise.all(movements.map(async line => {
         const journal = line.journal_entry;
         const debit = parseFloat(line.debit || 0);
         const credit = parseFloat(line.credit || 0);
@@ -1619,12 +1619,6 @@ const getSafeMovementsReport = async (accountId, startDate, endDate) => {
                     : 'غير محدد';
         }
 
-        if (account.normal_balance === 'debit') {
-            currentBalance += debit - credit;
-        } else {
-            currentBalance += credit - debit;
-        }
-
         return {
             id: line.id,
             date: journal.entry_date,
@@ -1632,10 +1626,19 @@ const getSafeMovementsReport = async (accountId, startDate, endDate) => {
             reference_no: journal.id,
             debit: debit,
             credit: credit,
-            contra_account: contraAccountName,
-            balance: currentBalance
+            contra_account: contraAccountName
         };
     }));
+
+    // Sequential balance calculation to avoid race conditions
+    const movementData = baseMovementData.map(m => {
+        if (account.normal_balance === 'debit') {
+            currentBalance += m.debit - m.credit;
+        } else {
+            currentBalance += m.credit - m.debit;
+        }
+        return { ...m, balance: currentBalance };
+    });
 
     const totalDebit = movementData.reduce((sum, m) => sum + m.debit, 0);
     const totalCredit = movementData.reduce((sum, m) => sum + m.credit, 0);
@@ -1645,6 +1648,148 @@ const getSafeMovementsReport = async (accountId, startDate, endDate) => {
             id: account.id,
             name: account.name
         },
+        period: { startDate, endDate },
+        openingBalance,
+        movements: movementData,
+        summary: {
+            totalDebit,
+            totalCredit,
+            closingBalance: currentBalance
+        }
+    };
+};
+
+/**
+ * Consolidated Movement Report for all Safes/Banks
+ */
+const getConsolidatedSafeMovementsReport = async (startDate, endDate) => {
+    const {
+        Account,
+        JournalEntryLine,
+        JournalEntry,
+        ReferenceType,
+        SalesInvoicePayment,
+        SalesInvoice,
+        PurchaseInvoicePayment,
+        PurchaseInvoice,
+        Party,
+        Expense
+    } = await import('../models/index.js');
+
+    // 1. Get all accounts under root 40
+    const rootAccountId = 40;
+    const accounts = await Account.findAll({
+        where: { parent_account_id: rootAccountId },
+        attributes: ['id', 'name']
+    });
+    const accountIds = accounts.map(a => a.id);
+    const accountMap = accounts.reduce((map, acc) => {
+        map[acc.id] = acc.name;
+        return map;
+    }, {});
+
+    const refTypes = await ReferenceType.findAll();
+    const refTypeMap = refTypes.reduce((map, rt) => {
+        map[rt.id] = rt.code;
+        return map;
+    }, {});
+
+    // 2. Calculate Aggregate Opening Balance
+    const openingResult = await JournalEntryLine.findOne({
+        attributes: [
+            [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+            [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+        ],
+        where: { account_id: { [Op.in]: accountIds } },
+        include: [{
+            model: JournalEntry,
+            as: 'journal_entry',
+            attributes: [],
+            where: {
+                entry_date: { [Op.lt]: startDate }
+            }
+        }],
+        raw: true
+    });
+
+    const openingBalance = parseFloat(openingResult?.total_debit || 0) - parseFloat(openingResult?.total_credit || 0);
+
+    // 3. Fetch Movements within period
+    const movements = await JournalEntryLine.findAll({
+        where: { account_id: { [Op.in]: accountIds } },
+        include: [
+            {
+                model: JournalEntry,
+                as: 'journal_entry',
+                where: {
+                    entry_date: { [Op.between]: [startDate, endDate] }
+                },
+                include: [{
+                    model: JournalEntryLine,
+                    as: 'lines',
+                    include: [{ model: Account, attributes: ['id', 'name'] }]
+                }]
+            }
+        ],
+        order: [[{ model: JournalEntry, as: 'journal_entry' }, 'entry_date', 'ASC'], ['id', 'ASC']]
+    });
+
+    let currentBalance = openingBalance;
+    const baseMovementData = await Promise.all(movements.map(async line => {
+        const journal = line.journal_entry;
+        const debit = parseFloat(line.debit || 0);
+        const credit = parseFloat(line.credit || 0);
+
+        let contraAccountName = '';
+        const refType = refTypeMap[journal.reference_type_id];
+
+        if (refType === 'sales_payment' && journal.reference_id) {
+            const payment = await SalesInvoicePayment.findByPk(journal.reference_id, {
+                include: [{ model: SalesInvoice, as: 'sales_invoice', include: [{ model: Party, as: 'party' }] }]
+            });
+            contraAccountName = payment?.sales_invoice?.party?.name || 'تحصيل مبيعات';
+        } else if (refType === 'purchase_payment' && journal.reference_id) {
+            const payment = await PurchaseInvoicePayment.findByPk(journal.reference_id, {
+                include: [{ model: PurchaseInvoice, as: 'purchase_invoice', include: [{ model: Party, as: 'supplier' }] }]
+            });
+            contraAccountName = payment?.purchase_invoice?.supplier?.name || 'سداد مشتريات';
+        } else if (refType === 'expense' && journal.reference_id) {
+            const expense = await Expense.findByPk(journal.reference_id);
+            contraAccountName = expense?.beneficiary || 'مصروفات';
+        }
+
+        if (!contraAccountName) {
+            const contraLines = journal.lines.filter(l => !accountIds.includes(l.account_id));
+            contraAccountName = contraLines.length === 1
+                ? contraLines[0].Account?.name
+                : contraLines.length > 1
+                    ? 'مذكورين'
+                    : 'غير محدد';
+        }
+
+        return {
+            id: line.id,
+            date: journal.entry_date,
+            description: journal.description,
+            account_name: accountMap[line.account_id],
+            reference_no: journal.id,
+            debit: debit,
+            credit: credit,
+            contra_account: contraAccountName
+        };
+    }));
+
+    // Sequential balance calculation for consolidated
+    const movementData = baseMovementData.map(m => {
+        currentBalance += m.debit - m.credit;
+        return { ...m, balance: currentBalance };
+    });
+
+    const totalDebit = movementData.reduce((sum, m) => sum + m.debit, 0);
+    const totalCredit = movementData.reduce((sum, m) => sum + m.credit, 0);
+
+    return {
+        account: { id: 'all', name: 'تقرير مجمع لكافة الصناديق والبنوك' },
         period: { startDate, endDate },
         openingBalance,
         movements: movementData,
@@ -1672,5 +1817,6 @@ export default {
     getCustomerReceivablesReport,
     getJournalExpensesReport,
     getBankAndCashReport,
-    getSafeMovementsReport
+    getSafeMovementsReport,
+    getConsolidatedSafeMovementsReport
 };

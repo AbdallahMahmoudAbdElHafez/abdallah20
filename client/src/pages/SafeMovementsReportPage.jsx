@@ -56,7 +56,8 @@ const SafeMovementsReportPage = () => {
                 // Based on getBankAndCashReport, root is 40.
                 const safeAccounts = response.data.filter(acc => acc.parent_account_id === 40);
                 setAccounts(safeAccounts);
-                if (safeAccounts.length > 0) setSelectedAccount(safeAccounts[0].id);
+                // setSelectedAccount(safeAccounts[0]?.id || ''); // Don't auto-select first one, or select 'all'
+                setSelectedAccount('all'); // Default to consolidated
             } catch (err) {
                 console.error('Error fetching accounts:', err);
                 setError('خطأ في تحميل الحسابات');
@@ -96,7 +97,7 @@ const SafeMovementsReportPage = () => {
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            const accountName = accounts.find(a => a.id === selectedAccount)?.name || 'Account';
+            const accountName = selectedAccount === 'all' ? 'التقرير_المجمع' : (accounts.find(a => a.id === selectedAccount)?.name || 'Account');
             link.setAttribute('download', `حركة_${accountName}_${startDate}_${endDate}.xlsx`);
             document.body.appendChild(link);
             link.click();
@@ -119,6 +120,11 @@ const SafeMovementsReportPage = () => {
                 header: 'البيان',
                 size: 250,
             },
+            ...(selectedAccount === 'all' ? [{
+                accessorKey: 'account_name',
+                header: 'الصندوق/البنك',
+                size: 150,
+            }] : []),
             {
                 accessorKey: 'contra_account',
                 header: 'الحساب المقابل',
@@ -126,9 +132,9 @@ const SafeMovementsReportPage = () => {
             },
             {
                 accessorKey: 'debit',
-                header: 'سحب (مدين)',
+                header: 'وارد (مدين)',
                 Cell: ({ cell }) => (
-                    <Typography color="error.main" sx={{ fontWeight: cell.getValue() > 0 ? 'bold' : 'normal' }}>
+                    <Typography color="success.main" sx={{ fontWeight: cell.getValue() > 0 ? 'bold' : 'normal' }}>
                         {cell.getValue() > 0 ? formatCurrency(cell.getValue()) : '-'}
                     </Typography>
                 ),
@@ -136,9 +142,9 @@ const SafeMovementsReportPage = () => {
             },
             {
                 accessorKey: 'credit',
-                header: 'إيداع (دائن)',
+                header: 'منصرف (دائن)',
                 Cell: ({ cell }) => (
-                    <Typography color="success.main" sx={{ fontWeight: cell.getValue() > 0 ? 'bold' : 'normal' }}>
+                    <Typography color="error.main" sx={{ fontWeight: cell.getValue() > 0 ? 'bold' : 'normal' }}>
                         {cell.getValue() > 0 ? formatCurrency(cell.getValue()) : '-'}
                     </Typography>
                 ),
@@ -155,7 +161,7 @@ const SafeMovementsReportPage = () => {
                 muiTableBodyCellProps: { align: 'right' },
             },
         ],
-        [],
+        [selectedAccount],
     );
 
     return (
@@ -175,6 +181,8 @@ const SafeMovementsReportPage = () => {
                                     label="اختر الحساب"
                                     onChange={(e) => setSelectedAccount(e.target.value)}
                                 >
+                                    <MenuItem value="all">تقرير مجمع (كافة الصناديق والبنوك)</MenuItem>
+                                    <Divider />
                                     {accounts.map(acc => (
                                         <MenuItem key={acc.id} value={acc.id}>{acc.name}</MenuItem>
                                     ))}
@@ -237,9 +245,9 @@ const SafeMovementsReportPage = () => {
                                 </Card>
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <Card sx={{ bgcolor: 'error.light', color: 'error.contrastText' }}>
+                                <Card sx={{ bgcolor: 'success.light', color: 'success.contrastText' }}>
                                     <CardContent>
-                                        <Typography gutterBottom>إجمالي المسحوبات</Typography>
+                                        <Typography gutterBottom>إجمالي الوارد</Typography>
                                         <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                                             {formatCurrency(reportData.summary.totalDebit)}
                                         </Typography>
@@ -247,9 +255,9 @@ const SafeMovementsReportPage = () => {
                                 </Card>
                             </Grid>
                             <Grid item xs={12} md={3}>
-                                <Card sx={{ bgcolor: 'success.light', color: 'success.contrastText' }}>
+                                <Card sx={{ bgcolor: 'error.light', color: 'error.contrastText' }}>
                                     <CardContent>
-                                        <Typography gutterBottom>إجمالي الإيداعات</Typography>
+                                        <Typography gutterBottom>إجمالي المنصرف</Typography>
                                         <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                                             {formatCurrency(reportData.summary.totalCredit)}
                                         </Typography>

@@ -398,9 +398,11 @@ const exportSafeMovementsReport = async (reportData) => {
     worksheet.views = [{ rightToLeft: true }];
 
     // Title
-    worksheet.mergeCells('A1:G1');
+    const isConsolidated = reportData.account.id === 'all';
+    const lastColLetter = isConsolidated ? 'H' : 'G';
+    worksheet.mergeCells(`A1:${lastColLetter}1`);
     const titleCell = worksheet.getCell('A1');
-    titleCell.value = `حركة حساب: ${reportData.account.name}`;
+    titleCell.value = reportData.account.name;
     titleCell.font = { size: 16, bold: true };
     titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
@@ -411,7 +413,7 @@ const exportSafeMovementsReport = async (reportData) => {
     worksheet.addRow([]);
 
     // Headers
-    const headers = ['التاريخ', 'البيان', 'رقم المرجع', 'الحساب المقابل', 'سحب (مدين)', 'إيداع (دائن)', 'الرصيد'];
+    const headers = ['التاريخ', 'البيان', ...(isConsolidated ? ['الصندوق'] : []), 'رقم المرجع', 'الحساب المقابل', 'وارد (مدين)', 'منصرف (دائن)', 'الرصيد'];
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true };
     headerRow.eachCell(cell => {
@@ -431,15 +433,17 @@ const exportSafeMovementsReport = async (reportData) => {
 
     // Data
     reportData.movements.forEach(m => {
-        const row = worksheet.addRow([
+        const rowData = [
             m.date || '',
             m.description || '',
+            ...(isConsolidated ? [m.account_name || ''] : []),
             m.reference_no || '',
             m.contra_account || '',
             parseFloat(m.debit || 0),
             parseFloat(m.credit || 0),
             parseFloat(m.balance || 0)
-        ]);
+        ];
+        const row = worksheet.addRow(rowData);
         row.eachCell(cell => {
             cell.border = {
                 top: { style: 'thin' },
@@ -453,7 +457,7 @@ const exportSafeMovementsReport = async (reportData) => {
 
     // Summary/Totals
     const totalRow = worksheet.addRow([
-        '', 'الإجمالي', '', '',
+        '', 'الإجمالي', ...(isConsolidated ? [''] : []), '', '',
         parseFloat(reportData.summary.totalDebit || 0),
         parseFloat(reportData.summary.totalCredit || 0),
         parseFloat(reportData.summary.closingBalance || 0)
