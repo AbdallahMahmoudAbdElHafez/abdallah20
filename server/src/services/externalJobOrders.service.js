@@ -221,7 +221,7 @@ const ExternalJobOrdersService = {
 
       // 3. Create Journal Entry (Issue Materials)
       // Credit account depends on product type: 1 -> 110 (Finished Goods), 2 -> 111 (Raw Materials), Else -> 49 (Inventory)
-      const wipAccountId = 109;
+      const wipMaterialsAccount = 127; // WIP - Raw Materials
 
       if (totalMaterialCost > 0) {
         let refType = await ReferenceType.findOne({ where: { code: 'external_job_order_issue' }, transaction: t });
@@ -246,7 +246,7 @@ const ExternalJobOrdersService = {
         const lines = [
           {
             journal_entry_id: je.id,
-            account_id: wipAccountId,
+            account_id: wipMaterialsAccount,
             debit: totalMaterialCost,
             credit: 0,
             description: `منصرف خامات ومستلزمات - أمر #${jobOrderId}`
@@ -346,7 +346,8 @@ const ExternalJobOrdersService = {
       }, { transaction: t });
 
       // 4. Journal Entry (Close WIP -> FG)
-      const wipAccountId = 109; // WIP
+      const wipMaterialsAccountId = 127; // WIP - Materials
+      const wipServicesAccountId = 128;  // WIP - Services
       const fgInvAccountId = 110; // Finished Goods
 
       let refType = await ReferenceType.findOne({ where: { code: 'external_job_order_receive' }, transaction: t });
@@ -380,13 +381,22 @@ const ExternalJobOrdersService = {
           description: `استلام منتج تام - أمر #${jobOrderId}`
         });
 
-        // Credit WIP
+        // Credit WIP Materials
         jeLines.push({
           journal_entry_id: je.id,
-          account_id: wipAccountId,
+          account_id: wipMaterialsAccountId,
           debit: 0,
-          credit: totalCost,
-          description: `إقفال تحت التشغيل - أمر #${jobOrderId}`
+          credit: totalMaterialCost,
+          description: `إقفال خامات تحت التشغيل - أمر #${jobOrderId}`
+        });
+
+        // Credit WIP Services
+        jeLines.push({
+          journal_entry_id: je.id,
+          account_id: wipServicesAccountId,
+          debit: 0,
+          credit: totalServiceCost,
+          description: `إقفال خدمات تحت التشغيل - أمر #${jobOrderId}`
         });
       }
 

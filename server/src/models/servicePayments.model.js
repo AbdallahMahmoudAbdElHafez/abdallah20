@@ -13,6 +13,7 @@ export default (sequelize) => {
             account_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'accounts', key: 'id' } },
             credit_account_id: { type: DataTypes.INTEGER, allowNull: false, references: { model: 'accounts', key: 'id' } },
             external_service_id: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'external_job_order_services', key: 'id' } },
+            external_service_invoice_id: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'external_service_invoices', key: 'id' } },
             employee_id: { type: DataTypes.INTEGER, allowNull: true, defaultValue: null, references: { model: 'employees', key: 'id' } },
             note: { type: DataTypes.TEXT, allowNull: true },
         },

@@ -54,6 +54,8 @@ const purchasesMenu = [
 
 const manufacturingMenu = [
   { label: "أوامر التشغيل", path: "/external-job-orders" },
+  { label: "فواتير الخدمات", path: "/external-service-invoices" },
+  { label: "أنواع الخدمات", path: "/service-types" },
   { label: "مدفوعات خدمية", path: "/service-payments" },
 ];
 

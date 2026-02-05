@@ -50,7 +50,7 @@ const ExternalJobOrderServicesService = {
             }
 
             // Journal Entry: Dr WIP (109) / Cr Supplier (Liability Account)
-            const WIP_ACCOUNT_ID = 109;
+            const WIP_ACCOUNT_ID = 128; // WIP - External Services
             await createJournalEntry({
                 refCode: 'job_order_service_accrual',
                 refId: service.id,

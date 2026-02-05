@@ -4,6 +4,7 @@ const ServicePaymentsService = {
     getAll: async (filters = {}) => {
         const where = {};
         if (filters.external_job_order_id) where.external_job_order_id = filters.external_job_order_id;
+        if (filters.external_service_invoice_id) where.external_service_invoice_id = filters.external_service_invoice_id;
         if (filters.party_id) where.party_id = filters.party_id;
 
         // Date range filtering
@@ -49,6 +50,7 @@ const ServicePaymentsService = {
         try {
             if (data.payment_date === '') data.payment_date = new Date();
             if (data.external_service_id === '') data.external_service_id = null;
+            if (data.external_service_invoice_id === '') data.external_service_invoice_id = null;
             if (data.employee_id === '') data.employee_id = null;
 
             const supplier = await Party.findByPk(data.party_id, { transaction: t });
@@ -58,9 +60,10 @@ const ServicePaymentsService = {
             const debitAccount = await Account.findByPk(data.account_id, { transaction: t });
             if (!debitAccount) throw new Error("Debit Account not found");
 
-            // 1. Prohibit direct WIP inflation
-            if (debitAccount.id === 109) {
-                throw new Error("Accounting Rule: Service Payments cannot debit WIP (109) directly. Please record a 'Service Invoice' first to recognize the cost, then use this screen to record the cash payment against the Supplier.");
+            // 1. Prohibit direct WIP inflation (Parent 109 and Sub-accounts 127, 128)
+            const blockedWipAccounts = [109, 127, 128];
+            if (blockedWipAccounts.includes(debitAccount.id)) {
+                throw new Error(`Accounting Rule: Service Payments cannot debit WIP accounts (${debitAccount.name}) directly. Please record a 'Service Invoice' first to recognize the cost, then use this screen to record the cash payment against the Supplier.`);
             }
 
             // 2. Enforce Liability Debit (Settlement)
@@ -136,6 +139,7 @@ const ServicePaymentsService = {
 
     update: async (id, data) => {
         if (data.external_job_order_id === '') data.external_job_order_id = null;
+        if (data.external_service_invoice_id === '') data.external_service_invoice_id = null;
         if (data.employee_id === '') data.employee_id = null;
 
         const item = await ServicePayment.findByPk(id);

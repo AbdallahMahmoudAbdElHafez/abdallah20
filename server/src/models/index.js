@@ -63,6 +63,11 @@ import ServicePaymentModel from "./servicePayments.model.js";
 import DoctorModel from "./doctors.model.js";
 import ProductTypeModel from "./productTypes.model.js";
 import ExternalJobOrderServiceModel from './externalJobOrderService.model.js';
+import ServiceTypeModel from './serviceTypes.model.js';
+import ExternalServiceInvoiceModel from './externalServiceInvoice.model.js';
+import ExternalServiceInvoiceItemModel from './externalServiceInvoiceItem.model.js';
+import ExternalServiceInvoiceItemTaxModel from './externalServiceInvoiceItemTax.model.js';
+import JobOrderCostTransactionModel from './jobOrderCostTransaction.model.js';
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -126,6 +131,11 @@ const Cheque = ChequeModel(sequelize);
 const ServicePayment = ServicePaymentModel(sequelize);
 const Doctor = DoctorModel(sequelize);
 const ProductType = ProductTypeModel(sequelize);
+const ServiceType = ServiceTypeModel(sequelize);
+const ExternalServiceInvoice = ExternalServiceInvoiceModel(sequelize);
+const ExternalServiceInvoiceItem = ExternalServiceInvoiceItemModel(sequelize);
+const ExternalServiceInvoiceItemTax = ExternalServiceInvoiceItemTaxModel(sequelize);
+const JobOrderCostTransaction = JobOrderCostTransactionModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -788,6 +798,37 @@ City.hasMany(Doctor, { foreignKey: "city_id", as: "doctors" });
 IssueVoucher.belongsTo(Doctor, { foreignKey: 'doctor_id', as: 'doctor' });
 Doctor.hasMany(IssueVoucher, { foreignKey: 'doctor_id', as: 'issue_vouchers' });
 
+// === Service Type Associations ===
+ServiceType.belongsTo(Account, { foreignKey: 'account_id', as: 'account' });
+Account.hasMany(ServiceType, { foreignKey: 'account_id', as: 'service_types' });
+
+// === External Service Invoice Associations ===
+ExternalServiceInvoice.belongsTo(ExternalJobOrder, { foreignKey: 'job_order_id', as: 'job_order' });
+ExternalJobOrder.hasMany(ExternalServiceInvoice, { foreignKey: 'job_order_id', as: 'service_invoices' });
+
+ExternalServiceInvoice.belongsTo(Party, { foreignKey: 'party_id', as: 'party' });
+Party.hasMany(ExternalServiceInvoice, { foreignKey: 'party_id', as: 'service_invoices' });
+
+ExternalServiceInvoice.belongsTo(JournalEntry, { foreignKey: 'journal_entry_id', as: 'journal_entry' });
+JournalEntry.hasMany(ExternalServiceInvoice, { foreignKey: 'journal_entry_id', as: 'service_invoices' });
+
+ExternalServiceInvoice.hasMany(ExternalServiceInvoiceItem, { foreignKey: 'invoice_id', as: 'items', onDelete: 'CASCADE' });
+ExternalServiceInvoiceItem.belongsTo(ExternalServiceInvoice, { foreignKey: 'invoice_id', as: 'invoice' });
+
+// === External Service Invoice Item Associations ===
+ExternalServiceInvoiceItem.belongsTo(ServiceType, { foreignKey: 'service_type_id', as: 'service_type' });
+ServiceType.hasMany(ExternalServiceInvoiceItem, { foreignKey: 'service_type_id', as: 'invoice_items' });
+
+ExternalServiceInvoiceItem.hasMany(ExternalServiceInvoiceItemTax, { foreignKey: 'invoice_item_id', as: 'taxes', onDelete: 'CASCADE' });
+ExternalServiceInvoiceItemTax.belongsTo(ExternalServiceInvoiceItem, { foreignKey: 'invoice_item_id', as: 'invoice_item' });
+
+// === Job Order Cost Transaction Associations ===
+JobOrderCostTransaction.belongsTo(ExternalJobOrder, { foreignKey: 'job_order_id', as: 'job_order' });
+ExternalJobOrder.hasMany(JobOrderCostTransaction, { foreignKey: 'job_order_id', as: 'cost_transactions' });
+
+JobOrderCostTransaction.belongsTo(ExternalServiceInvoice, { foreignKey: 'invoice_id', as: 'invoice' });
+ExternalServiceInvoice.hasMany(JobOrderCostTransaction, { foreignKey: 'invoice_id', as: 'cost_transactions' });
+
 export {
   sequelize,
   Company,
@@ -844,5 +885,10 @@ export {
   Doctor,
   ProductType,
   ExternalJobOrderService,
+  ServiceType,
+  ExternalServiceInvoice,
+  ExternalServiceInvoiceItem,
+  ExternalServiceInvoiceItemTax,
+  JobOrderCostTransaction,
 
 };
