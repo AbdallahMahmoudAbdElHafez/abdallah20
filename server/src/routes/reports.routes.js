@@ -22,6 +22,7 @@ router.get('/customer-receivables', reportsController.getCustomerReceivables);
 router.get('/profit', reportsController.getProfitReport);
 router.get('/bank-cash', reportsController.getBankAndCashReport);
 router.get('/safe-movements', reportsController.getSafeMovementsReport);
+router.get('/general-ledger', reportsController.getGeneralLedgerReport);
 
 // Export
 router.get('/export/:type', reportsController.exportReport);

@@ -58,6 +58,7 @@ import BankAndCashBalancesPage from "./pages/BankAndCashBalancesPage";
 import SafeMovementsReportPage from "./pages/SafeMovementsReportPage";
 import ExternalServiceInvoicesPage from "./pages/ExternalServiceInvoicesPage";
 import ServiceTypesPage from "./pages/ServiceTypesPage";
+import GeneralLedgerReport from "./pages/GeneralLedgerReport";
 
 const drawerWidth = 240;
 
@@ -121,6 +122,7 @@ export default function App() {
           <Route path="/reports/profit" element={<ProfitReportPage />} />
           <Route path="/reports/bank-cash" element={<BankAndCashBalancesPage />} />
           <Route path="/reports/safe-movements" element={<SafeMovementsReportPage />} />
+          <Route path="/reports/general-ledger" element={<GeneralLedgerReport />} />
           <Route path="/service-payments" element={<ServicePaymentsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/inventory-adjustment" element={<InventoryAdjustmentPage />} />

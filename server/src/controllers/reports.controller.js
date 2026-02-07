@@ -192,6 +192,21 @@ const reportsController = {
         }
     },
 
+    getGeneralLedgerReport: async (req, res) => {
+        try {
+            const { accountId, startDate, endDate } = req.query;
+            if (!accountId || !startDate || !endDate) {
+                return res.status(400).json({ message: 'Missing required parameters (accountId, startDate, endDate)' });
+            }
+
+            const data = await reportsService.getGeneralLedgerReport(accountId, startDate, endDate);
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching general ledger report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     // ============ EXPORT CONTROLLERS ============
 
     exportReport: async (req, res) => {
@@ -240,6 +255,13 @@ const reportsController = {
                         : await reportsService.getSafeMovementsReport(moveAccId, startDate, endDate);
                     buffer = await exportService.exportSafeMovementsReport(movementsData);
                     filename = `Safe_Movements_${movementsData.account.name}_${startDate}_${endDate}.xlsx`;
+                    break;
+
+                case 'general-ledger':
+                    const { accountId: glAccId } = req.query;
+                    const glData = await reportsService.getGeneralLedgerReport(glAccId, startDate, endDate);
+                    buffer = await exportService.exportGeneralLedgerReport(glData);
+                    filename = `General_Ledger_${glData.account.name}_${startDate}_${endDate}.xlsx`;
                     break;
 
                 default:

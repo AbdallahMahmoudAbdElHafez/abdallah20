@@ -1818,5 +1818,181 @@ export default {
     getJournalExpensesReport,
     getBankAndCashReport,
     getSafeMovementsReport,
-    getConsolidatedSafeMovementsReport
+    getConsolidatedSafeMovementsReport,
+    getGeneralLedgerReport: async (accountId, startDate, endDate) => {
+        const {
+            Account,
+            JournalEntryLine,
+            JournalEntry,
+            ReferenceType,
+            SalesInvoicePayment,
+            SalesInvoice,
+            PurchaseInvoicePayment,
+            PurchaseInvoice,
+            Party,
+            Expense
+        } = await import('../models/index.js');
+
+        const account = await Account.findByPk(accountId, { attributes: ['id', 'name', 'account_type', 'normal_balance'] });
+        if (!account) throw new Error('Account not found');
+
+        const refTypes = await ReferenceType.findAll();
+        const refTypeMap = refTypes.reduce((map, rt) => {
+            map[rt.id] = rt.code;
+            return map;
+        }, {});
+
+        // 1. Calculate Opening Balance (Sum all before startDate)
+        const openingResult = await JournalEntryLine.findOne({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+                [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+            ],
+            where: { account_id: accountId },
+            include: [{
+                model: JournalEntry,
+                as: 'journal_entry',
+                attributes: [],
+                where: {
+                    entry_date: { [Op.lt]: startDate }
+                }
+            }],
+            raw: true
+        });
+
+        const openingDebit = parseFloat(openingResult?.total_debit || 0);
+        const openingCredit = parseFloat(openingResult?.total_credit || 0);
+
+        // Balance = Debit - Credit for normal debit accounts, Credit - Debit for others
+        let openingBalance = account.normal_balance === 'debit'
+            ? openingDebit - openingCredit
+            : openingCredit - openingDebit;
+
+        // 2. Fetch Movements within period
+        const movements = await JournalEntryLine.findAll({
+            where: { account_id: accountId },
+            include: [
+                {
+                    model: JournalEntry,
+                    as: 'journal_entry',
+                    where: {
+                        entry_date: { [Op.between]: [startDate, endDate] }
+                    },
+                    include: [{
+                        model: JournalEntryLine,
+                        as: 'lines',
+                        include: [{ model: Account, attributes: ['id', 'name'] }]
+                    }]
+                }
+            ],
+            order: [[{ model: JournalEntry, as: 'journal_entry' }, 'entry_date', 'ASC'], ['id', 'ASC']]
+        });
+
+        let currentBalance = openingBalance;
+        const movementData = [];
+
+        for (const line of movements) {
+            const journal = line.journal_entry;
+            const originalDebit = parseFloat(line.debit || 0);
+            const originalCredit = parseFloat(line.credit || 0);
+            const isDebitSide = originalDebit > 0;
+
+            // Get all lines of this journal entry to find contra-accounts
+            const allLines = journal.lines;
+            const contraSideLines = allLines.filter(l => isDebitSide ? parseFloat(l.credit || 0) > 0 : parseFloat(l.debit || 0) > 0);
+            const totalContraAmount = contraSideLines.reduce((sum, l) => sum + parseFloat(isDebitSide ? l.credit : l.debit), 0);
+
+            // Determine if we should split
+            // If we have multiple contra-accounts, we split this line into multiple report rows
+            if (contraSideLines.length > 0) {
+                for (const contraLine of contraSideLines) {
+                    const contraAmount = parseFloat(isDebitSide ? contraLine.credit : contraLine.debit);
+                    const ratio = totalContraAmount > 0 ? (contraAmount / totalContraAmount) : (1 / contraSideLines.length);
+
+                    const decomposedDebit = isDebitSide ? (originalDebit * ratio) : 0;
+                    const decomposedCredit = !isDebitSide ? (originalCredit * ratio) : 0;
+
+                    // Calculate running balance per decomposed row
+                    if (account.normal_balance === 'debit') {
+                        currentBalance += decomposedDebit - decomposedCredit;
+                    } else {
+                        currentBalance += decomposedCredit - decomposedDebit;
+                    }
+
+                    // Identify Contra Account Name (Priority: Party Name if exists, then Account Name)
+                    let contraAccountName = '';
+                    const refType = refTypeMap[journal.reference_type_id];
+
+                    // Check if there's a specific party linked to this journal entry
+                    if (refType === 'sales_payment' && journal.reference_id) {
+                        const payment = await SalesInvoicePayment.findByPk(journal.reference_id, {
+                            include: [{ model: SalesInvoice, as: 'sales_invoice', include: [{ model: Party, as: 'party' }] }]
+                        });
+                        contraAccountName = payment?.sales_invoice?.party?.name;
+                    } else if (refType === 'purchase_payment' && journal.reference_id) {
+                        const payment = await PurchaseInvoicePayment.findByPk(journal.reference_id, {
+                            include: [{ model: PurchaseInvoice, as: 'purchase_invoice', include: [{ model: Party, as: 'supplier' }] }]
+                        });
+                        contraAccountName = payment?.purchase_invoice?.supplier?.name;
+                    } else if (refType === 'expense' && journal.reference_id) {
+                        const expense = await Expense.findByPk(journal.reference_id);
+                        contraAccountName = expense?.beneficiary;
+                    }
+
+                    // Fallback to the specific account name in the contra line
+                    if (!contraAccountName) {
+                        contraAccountName = contraLine.Account?.name || 'غير محدد';
+                    }
+
+                    movementData.push({
+                        id: `${line.id}_${contraLine.id}`,
+                        date: journal.entry_date,
+                        description: journal.description,
+                        reference_no: journal.id,
+                        debit: decomposedDebit,
+                        credit: decomposedCredit,
+                        balance: currentBalance,
+                        contra_account: contraAccountName
+                    });
+                }
+            } else {
+                // No contra lines (should not happen in balanced accounting, but for safety)
+                if (account.normal_balance === 'debit') {
+                    currentBalance += originalDebit - originalCredit;
+                } else {
+                    currentBalance += originalCredit - originalDebit;
+                }
+
+                movementData.push({
+                    id: line.id,
+                    date: journal.entry_date,
+                    description: journal.description,
+                    reference_no: journal.id,
+                    debit: originalDebit,
+                    credit: originalCredit,
+                    balance: currentBalance,
+                    contra_account: 'بدون طرف مقابل'
+                });
+            }
+        }
+
+        const totalDebit = movementData.reduce((sum, m) => sum + m.debit, 0);
+        const totalCredit = movementData.reduce((sum, m) => sum + m.credit, 0);
+
+        return {
+            account: {
+                id: account.id,
+                name: account.name,
+                normal_balance: account.normal_balance
+            },
+            period: { startDate, endDate },
+            openingBalance,
+            movements: movementData,
+            summary: {
+                totalDebit,
+                totalCredit,
+                closingBalance: currentBalance
+            }
+        };
+    }
 };

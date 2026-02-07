@@ -102,6 +102,20 @@ const ReportsDashboard = () => {
             icon: <PaymentIcon sx={{ fontSize: 60, color: '#4caf50' }} />,
             path: '/sales-invoice-payments',
             color: '#e8f5e9'
+        },
+        {
+            title: 'كشف الحسابات العامة',
+            description: 'عرض تفصيلي لحركات أي حساب في الشجرة المحاسبية',
+            icon: <AssessmentIcon sx={{ fontSize: 60, color: '#673ab7' }} />,
+            path: '/reports/general-ledger',
+            color: '#ede7f6'
+        },
+        {
+            title: 'حركات الصناديق والبنوك',
+            description: 'تقرير تفصيلي لحركات النقدية والبنوك مع الرصيد',
+            icon: <PaymentIcon sx={{ fontSize: 60, color: '#009688' }} />,
+            path: '/reports/safe-movements',
+            color: '#e0f2f1'
         }
     ];
 
