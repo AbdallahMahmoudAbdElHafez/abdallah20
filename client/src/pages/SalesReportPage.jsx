@@ -168,6 +168,12 @@ const SalesReportPage = () => {
             Cell: ({ row }) => row.original.party?.city?.name || '-'
         },
         {
+            accessorKey: 'shipping_by',
+            id: 'shipping_by',
+            header: 'الشحن بواسطة',
+            size: 120,
+        },
+        {
             accessorKey: 'total_amount',
             id: 'total_amount',
             header: 'الإجمالي',
@@ -206,6 +212,12 @@ const SalesReportPage = () => {
                     </Box>
                 );
             }
+        },
+        {
+            accessorKey: 'note',
+            id: 'note',
+            header: 'ملاحظات',
+            size: 200,
         },
     ], []);
 

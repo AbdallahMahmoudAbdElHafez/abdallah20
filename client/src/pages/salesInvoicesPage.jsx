@@ -204,6 +204,11 @@ export default function SalesInvoicesPage() {
             Cell: ({ cell }) => new Date(cell.getValue()).toLocaleDateString('ar-EG')
         },
         {
+            accessorKey: "shipping_by",
+            header: "بواسطة",
+            size: 110,
+        },
+        {
             accessorKey: "invoice_status",
             header: "حالة الفاتورة",
             size: 110,
@@ -248,6 +253,11 @@ export default function SalesInvoicesPage() {
                     {Number(cell.getValue()).toLocaleString()} ج.م
                 </Typography>
             )
+        },
+        {
+            accessorKey: "note",
+            header: "ملاحظات",
+            size: 200,
         },
         {
             header: "إجراءات",

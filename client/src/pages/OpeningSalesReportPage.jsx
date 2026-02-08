@@ -68,6 +68,7 @@ const OpeningSalesReportPage = () => {
         { accessorKey: 'invoice_number', id: 'invoice_number', header: 'رقم الفاتورة', size: 150 },
         { accessorKey: 'party.name', id: 'customer_name', header: 'العميل', size: 200 },
         { accessorKey: 'invoice_date', id: 'invoice_date', header: 'التاريخ', Cell: ({ cell }) => cell.getValue()?.slice(0, 10), size: 120 },
+        { accessorKey: 'shipping_by', id: 'shipping_by', header: 'بواسطة', size: 100 },
         { accessorKey: 'total_amount', id: 'total_amount', header: 'المبلغ', Cell: ({ cell }) => <Box fontWeight="bold" color="primary.main">{formatCurrency(cell.getValue())}</Box>, size: 150 },
         { accessorKey: 'note', id: 'note', header: 'ملاحظات', size: 200 },
     ], []);

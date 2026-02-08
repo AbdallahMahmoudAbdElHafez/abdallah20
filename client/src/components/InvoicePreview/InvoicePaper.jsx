@@ -61,6 +61,12 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                         <span className="inv-label">الحالة:</span>
                         <span style={{ textTransform: 'uppercase' }}>{invoice.status}</span>
                     </div>
+                    {invoice.shipping_by && (
+                        <div className="inv-meta-row">
+                            <span className="inv-label">بواسطة:</span>
+                            <span>{invoice.shipping_by}</span>
+                        </div>
+                    )}
                 </div>
             </div >
 
@@ -153,6 +159,13 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                     </div>
                 </div>
             </div >
+
+            {invoice.note && (
+                <div className="inv-notes" style={{ marginTop: '20px', padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>
+                    <div className="inv-label" style={{ fontWeight: 'bold', marginBottom: '5px' }}>ملاحظات:</div>
+                    <div style={{ whiteSpace: 'pre-wrap' }}>{invoice.note}</div>
+                </div>
+            )}
 
             {/* Footer */}
             < div className="inv-footer" >
