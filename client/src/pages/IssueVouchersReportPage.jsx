@@ -19,19 +19,30 @@ import {
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { MaterialReactTable } from 'material-react-table';
+import { saveAs } from 'file-saver';
+import { useReactToPrint } from 'react-to-print';
 import reportsApi from '../api/reportsApi';
+import issueVouchersApi from '../api/issueVouchersApi';
 import { defaultTableProps } from "../config/tableConfig";
+import PrintVoucher from '../components/PrintVoucher';
+import IssueVoucherPreviewDialog from '../components/IssueVoucherPreview/IssueVoucherPreviewDialog';
+import { Print as PrintIcon, Visibility as ViewIcon } from '@mui/icons-material';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
 const IssueVouchersReportPage = () => {
     const navigate = useNavigate();
-    const [viewMode, setViewMode] = useState('list'); // 'list' | 'chart'
+    const [viewMode, setViewMode] = useState('list'); // 'list' | 'chart' | 'summary'
+    const [summaryData, setSummaryData] = useState([]);
+    const [summaryStats, setSummaryStats] = useState({});
 
     const [data, setData] = useState([]);
     const [summary, setSummary] = useState({});
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [selectedVoucher, setSelectedVoucher] = useState(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const printRef = React.useRef();
 
     // Default to current month
     const date = new Date();
@@ -44,12 +55,18 @@ const IssueVouchersReportPage = () => {
     const fetchReport = async () => {
         setLoading(true);
         try {
-            const res = await reportsApi.getIssueVouchersReport({ startDate, endDate });
-            setData(res.data.data);
-            setSummary(res.data.summary);
-            setChartData(res.data.chartData);
+            if (viewMode === 'summary') {
+                const res = await reportsApi.getIssueVouchersEmployeeSummary({ startDate, endDate });
+                setSummaryData(res.data.data);
+                setSummaryStats(res.data.summary);
+            } else {
+                const res = await reportsApi.getIssueVouchersReport({ startDate, endDate });
+                setData(res.data.data);
+                setSummary(res.data.summary);
+                setChartData(res.data.chartData);
+            }
         } catch (error) {
-            console.error('Error fetching issue vouchers report:', error);
+            console.error('Error fetching report:', error);
         } finally {
             setLoading(false);
         }
@@ -57,7 +74,7 @@ const IssueVouchersReportPage = () => {
 
     useEffect(() => {
         fetchReport();
-    }, []);
+    }, [viewMode]);
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('ar-EG', { style: 'currency', currency: 'EGP' }).format(amount || 0);
@@ -77,7 +94,8 @@ const IssueVouchersReportPage = () => {
     const columns = useMemo(() => [
         { accessorKey: 'voucher_no', header: 'رقم الإذن', size: 100 },
         { accessorKey: 'issue_date', header: 'تاريخ الصرف', Cell: ({ cell }) => cell.getValue()?.slice(0, 10), size: 120 },
-        { accessorKey: 'warehouse.name', header: 'المخزن', size: 150 },
+        { accessorFn: (row) => row.warehouse?.name || '-', id: 'warehouse.name', header: 'المخزن', size: 150 },
+        { accessorFn: (row) => row.responsible_employee?.name || '-', id: 'responsible_employee.name', header: 'الموظف المسؤول', size: 150 },
         { accessorKey: 'status', header: 'الحالة', size: 100 },
         { accessorKey: 'items.length', header: 'عدد الأصناف', size: 100 },
         {
@@ -88,6 +106,65 @@ const IssueVouchersReportPage = () => {
         },
         { accessorKey: 'note', header: 'ملاحظات', size: 200 },
     ], []);
+
+    const summaryColumns = useMemo(() => [
+        { accessorKey: 'employee_name', header: 'الموظف', size: 200 },
+        { accessorKey: 'product_name', header: 'المنتج', size: 250 },
+        { accessorKey: 'total_quantity', header: 'إجمالي الكمية', size: 150 },
+        {
+            accessorKey: 'total_cost',
+            header: 'إجمالي التكلفة',
+            Cell: ({ cell }) => <Box fontWeight="bold" color="error.main">{formatCurrency(cell.getValue())}</Box>,
+            size: 150
+        },
+    ], []);
+
+    const handleExport = async () => {
+        setLoading(true);
+        try {
+            const type = viewMode === 'summary' ? 'issue-vouchers-employee' : 'issue-vouchers';
+            const response = await reportsApi.exportReport(type, { startDate, endDate });
+            const blob = new Blob([response.data], { type: 'application/octet-stream' });
+            saveAs(blob, `Issue_Vouchers_${type}_${startDate}_${endDate}.xlsx`);
+        } catch (error) {
+            console.error('Error exporting report:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePrint = useReactToPrint({
+        contentRef: printRef,
+        documentTitle: `Voucher_${selectedVoucher?.voucher_no || 'Issue'}`,
+    });
+
+    const triggerPrint = async (voucher) => {
+        try {
+            setLoading(true);
+            const res = await issueVouchersApi.getById(voucher.id, { include_items: true });
+            setSelectedVoucher(res.data.data);
+            setTimeout(() => {
+                handlePrint();
+                setLoading(false);
+            }, 300);
+        } catch (error) {
+            console.error('Error fetching voucher for print:', error);
+            setLoading(false);
+        }
+    };
+
+    const triggerPreview = async (voucher) => {
+        try {
+            setLoading(true);
+            const res = await issueVouchersApi.getById(voucher.id, { include_items: true });
+            setSelectedVoucher(res.data.data);
+            setIsPreviewOpen(true);
+        } catch (error) {
+            console.error('Error fetching voucher for preview:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const StatCard = ({ title, value, icon, color, bg }) => (
         <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.05)', background: bg || '#fff', border: '1px solid #f0f0f0' }}>
@@ -132,24 +209,43 @@ const IssueVouchersReportPage = () => {
             {/* KPI Cards */}
             <Grid container spacing={3} mb={4}>
                 <Grid item xs={12} sm={4}>
-                    <StatCard title="إجمالي الأذونات" value={summary.total_vouchers || 0} icon={<VoucherIcon />} color="#2196f3" />
+                    <StatCard
+                        title={viewMode === 'summary' ? "عدد الموظفين" : "إجمالي الأذونات"}
+                        value={viewMode === 'summary' ? new Set(summaryData.map(d => d.employee_id)).size : (summary.total_vouchers || 0)}
+                        icon={<VoucherIcon />}
+                        color="#2196f3"
+                    />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                    <StatCard title="عدد الأصناف المصروفة" value={summary.total_items || 0} icon={<InventoryIcon />} color="#4caf50" />
+                    <StatCard
+                        title={viewMode === 'summary' ? "إجمالي الكمية" : "عدد الأصناف المصروفة"}
+                        value={viewMode === 'summary' ? (summaryStats.total_items || 0) : (summary.total_items || 0)}
+                        icon={<InventoryIcon />}
+                        color="#4caf50"
+                    />
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                    <StatCard title="إجمالي التكلفة" value={formatCurrency(summary.total_cost)} icon={<CostIcon />} color="#f44336" />
+                    <StatCard
+                        title="إجمالي التكلفة"
+                        value={formatCurrency(viewMode === 'summary' ? summaryStats.total_cost : summary.total_cost)}
+                        icon={<CostIcon />}
+                        color="#f44336"
+                    />
                 </Grid>
             </Grid>
 
             {/* View Mode Toggle */}
-            <Box mb={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Box mb={4} sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
                 <Paper sx={{ p: 0.5, borderRadius: 3, display: 'inline-flex', bgcolor: '#e9ecef' }}>
                     <ToggleButtonGroup value={viewMode} exclusive onChange={(e, m) => m && setViewMode(m)}>
                         <ToggleButton value="list" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <ListIcon sx={{ mr: 1 }} /> القائمة </ToggleButton>
+                        <ToggleButton value="summary" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <InventoryIcon sx={{ mr: 1 }} /> ملخص الموظفين </ToggleButton>
                         <ToggleButton value="chart" sx={{ px: 4, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <ChartIcon sx={{ mr: 1 }} /> التحليل البياني </ToggleButton>
                     </ToggleButtonGroup>
                 </Paper>
+                {viewMode === 'summary' && (
+                    <Button variant="contained" startIcon={<DownloadIcon />} onClick={handleExport} sx={{ borderRadius: 3, bgcolor: '#4caf50', '&:hover': { bgcolor: '#43a047' } }}>تصدير إكسل</Button>
+                )}
             </Box>
 
             {loading ? (
@@ -166,6 +262,38 @@ const IssueVouchersReportPage = () => {
                                 {...defaultTableProps}
                                 data={data}
                                 enableExporting
+                                renderTopToolbarCustomActions={() => (
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<DownloadIcon />}
+                                            onClick={handleExport}
+                                            disabled={loading || data.length === 0}
+                                        >
+                                            تصدير كامل التقرير (Excel)
+                                        </Button>
+                                    </Box>
+                                )}
+                                enableRowActions
+                                positionActionsColumn="last"
+                                renderRowActions={({ row }) => (
+                                    <Box sx={{ display: 'flex', gap: 1 }}>
+                                        <IconButton
+                                            color="info"
+                                            onClick={() => triggerPreview(row.original)}
+                                            title="معاينة"
+                                        >
+                                            <ViewIcon />
+                                        </IconButton>
+                                        <IconButton
+                                            color="primary"
+                                            onClick={() => triggerPrint(row.original)}
+                                            title="طباعة"
+                                        >
+                                            <PrintIcon />
+                                        </IconButton>
+                                    </Box>
+                                )}
                                 renderDetailPanel={({ row }) => (
                                     <Box sx={{ p: 2, bgcolor: '#f8f9fa' }}>
                                         <Typography variant="h6" gutterBottom>تفاصيل الأصناف</Typography>
@@ -184,6 +312,17 @@ const IssueVouchersReportPage = () => {
                                         </Grid>
                                     </Box>
                                 )}
+                            />
+                        </Paper>
+                    )}
+
+                    {viewMode === 'summary' && (
+                        <Paper sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: 2 }}>
+                            <MaterialReactTable
+                                columns={summaryColumns}
+                                {...defaultTableProps}
+                                data={summaryData}
+                                enableExporting
                             />
                         </Paper>
                     )}
@@ -209,6 +348,17 @@ const IssueVouchersReportPage = () => {
                     )}
                 </Box>
             )}
+
+            {/* Hidden Print Content */}
+            <Box sx={{ display: 'none' }}>
+                <PrintVoucher ref={printRef} voucher={selectedVoucher} />
+            </Box>
+
+            <IssueVoucherPreviewDialog
+                open={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                voucher={selectedVoucher}
+            />
         </Box>
     );
 };

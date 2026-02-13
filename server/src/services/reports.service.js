@@ -797,6 +797,111 @@ const getIssueVouchersReport = async (startDate, endDate) => {
 };
 
 /**
+ * Issue Vouchers Employee Summary Report
+ */
+const getIssueVouchersEmployeeSummary = async (startDate, endDate) => {
+    const dateFilter = {};
+    if (startDate && endDate) {
+        dateFilter.issue_date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        dateFilter.issue_date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        dateFilter.issue_date = { [Op.lte]: endDate };
+    }
+
+    const vouchers = await IssueVoucher.findAll({
+        where: dateFilter,
+        include: [
+            {
+                model: Employee,
+                as: 'responsible_employee',
+                attributes: ['id', 'name']
+            },
+            {
+                model: IssueVoucherItem,
+                as: 'items',
+                include: [
+                    {
+                        model: Product,
+                        as: 'product',
+                        attributes: ['id', 'name', 'cost_price']
+                    },
+                    {
+                        model: InventoryTransaction,
+                        as: 'inventory_transactions',
+                        required: false,
+                        include: [{
+                            model: InventoryTransactionBatches,
+                            as: 'transaction_batches',
+                            required: false
+                        }]
+                    }
+                ]
+            }
+        ]
+    });
+
+    console.log(`[DEBUG] Found ${vouchers.length} vouchers for summary between ${startDate} and ${endDate}`);
+
+    const summaryMap = {}; // Key: employeeId-productId
+
+    vouchers.forEach(voucher => {
+        const employeeId = voucher.responsible_employee?.id || 0;
+        const employeeName = voucher.responsible_employee?.name || 'غير محدد';
+
+        if (!voucher.items || voucher.items.length === 0) {
+            console.log(`[DEBUG] Voucher ${voucher.id} has no items`);
+        }
+
+        voucher.items.forEach(item => {
+            const productId = item.product_id;
+            const productName = item.product?.name || 'منتج غير معروف';
+            const quantity = parseFloat(item.quantity || 0);
+
+            let itemCost = 0;
+            if (item.inventory_transactions && item.inventory_transactions.length > 0) {
+                item.inventory_transactions.forEach(trx => {
+                    if (trx.transaction_batches && trx.transaction_batches.length > 0) {
+                        trx.transaction_batches.forEach(batch => {
+                            itemCost += parseFloat(batch.quantity || 0) * parseFloat(batch.cost_per_unit || 0);
+                        });
+                    } else {
+                        itemCost += parseFloat(trx.quantity || 0) * parseFloat(item.product?.cost_price || 0);
+                    }
+                });
+            } else {
+                itemCost += quantity * parseFloat(item.product?.cost_price || 0);
+            }
+
+            const key = `${employeeId}-${productId}`;
+            if (!summaryMap[key]) {
+                summaryMap[key] = {
+                    employee_id: employeeId,
+                    employee_name: employeeName,
+                    product_id: productId,
+                    product_name: productName,
+                    total_quantity: 0,
+                    total_cost: 0
+                };
+            }
+
+            summaryMap[key].total_quantity += quantity;
+            summaryMap[key].total_cost += itemCost;
+        });
+    });
+
+    const data = Object.values(summaryMap).sort((a, b) => a.employee_name.localeCompare(b.employee_name));
+
+    return {
+        data,
+        summary: {
+            total_items: data.reduce((sum, item) => sum + item.total_quantity, 0),
+            total_cost: data.reduce((sum, item) => sum + item.total_cost, 0)
+        }
+    };
+};
+
+/**
  * Customer Receivables Report
  */
 const getCustomerReceivablesReport = async (startDate, endDate) => {
@@ -1811,6 +1916,7 @@ export default {
     getJobOrdersReport,
     getWarehouseReport,
     getIssueVouchersReport,
+    getIssueVouchersEmployeeSummary,
     getOpeningSalesInvoicesReport,
     getZakatReport,
     getProfitReport,

@@ -11,6 +11,7 @@ import {
     JournalEntry,
     JournalEntryLine,
     ReferenceType,
+    Warehouse,
     sequelize
 } from "../models/index.js";
 
@@ -43,7 +44,11 @@ const ExternalServiceInvoicesService = {
                 ]
             },
             include: [
-                { model: ExternalJobOrder, as: 'job_order' },
+                {
+                    model: ExternalJobOrder,
+                    as: 'job_order',
+                    include: [{ model: Warehouse, as: 'warehouse', attributes: ['name'] }]
+                },
                 { model: Party, as: 'party' },
                 {
                     model: ExternalServiceInvoiceItem,
@@ -86,7 +91,11 @@ const ExternalServiceInvoicesService = {
                 ]
             },
             include: [
-                { model: ExternalJobOrder, as: 'job_order' },
+                {
+                    model: ExternalJobOrder,
+                    as: 'job_order',
+                    include: [{ model: Warehouse, as: 'warehouse', attributes: ['name'] }]
+                },
                 { model: Party, as: 'party' },
                 { model: JournalEntry, as: 'journal_entry' },
                 {

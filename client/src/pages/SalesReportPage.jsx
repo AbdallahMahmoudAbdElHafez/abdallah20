@@ -148,6 +148,13 @@ const SalesReportPage = () => {
             Cell: ({ cell }) => cell.getValue()
         },
         {
+            accessorKey: 'warehouse.name',
+            id: 'warehouse_name',
+            header: 'المخزن',
+            size: 120,
+            Cell: ({ row }) => row.original.warehouse?.name || '-'
+        },
+        {
             accessorKey: 'employee.name',
             id: 'employee_name',
             header: 'مندوب المبيعات',
