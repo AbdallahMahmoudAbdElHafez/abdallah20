@@ -14,6 +14,7 @@ const reportsApi = {
     getJobOrdersReport: (params) => axiosClient.get('/reports/job-orders', { params }),
     getWarehouseReport: (params) => axiosClient.get('/reports/warehouse', { params }),
     getIssueVouchersReport: (params) => axiosClient.get('/reports/issue-vouchers', { params }),
+    getIssueVouchersEmployeeSummary: (params) => axiosClient.get('/reports/issue-vouchers-employee', { params }),
     getOpeningSalesReport: (params) => axiosClient.get('/reports/opening-sales', { params }),
     getZakatReport: (params) => axiosClient.get('/reports/zakat', { params }),
     getProfitReport: (params) => axiosClient.get('/reports/profit', { params }),

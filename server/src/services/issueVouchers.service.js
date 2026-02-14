@@ -9,7 +9,8 @@ import {
   Account,
   ReferenceType,
   Doctor,
-  EntryType
+  EntryType,
+  Unit
 } from '../models/index.js';
 import { Op } from 'sequelize';
 import { ENTRY_TYPES } from '../constants/entryTypes.js';
@@ -211,7 +212,14 @@ export class IssueVouchersService {
             {
               model: Product,
               as: 'product',
-              attributes: ['id', 'name', 'cost_price', 'price']
+              attributes: ['id', 'name', 'cost_price', 'price'],
+              include: [
+                {
+                  model: Unit,
+                  as: 'unit',
+                  attributes: ['id', 'name']
+                }
+              ]
             }
           ]
         });

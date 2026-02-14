@@ -283,9 +283,10 @@ export default function ExternalServiceInvoicesPage() {
         { accessorKey: "invoice_no", header: "رقم الفاتورة" },
         { accessorKey: "invoice_date", header: "التاريخ" },
         {
-            accessorKey: "job_order_id",
-            header: "أمر التشغيل",
-            Cell: ({ cell }) => `أمر #${cell.getValue()}`,
+            accessorKey: "job_order.warehouse.name",
+            header: "المخزن",
+            size: 100,
+            Cell: ({ cell }) => cell.getValue() || "-",
         },
         {
             accessorKey: "party_id",

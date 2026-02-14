@@ -16,6 +16,7 @@ router.get('/journal-expenses', reportsController.getJournalExpensesReport);
 router.get('/job-orders', reportsController.getJobOrdersReport);
 router.get('/warehouse', reportsController.getWarehouseReport);
 router.get('/issue-vouchers', reportsController.getIssueVouchersReport);
+router.get('/issue-vouchers-employee', reportsController.getIssueVouchersEmployeeSummary);
 router.get('/opening-sales', reportsController.getOpeningSalesInvoicesReport);
 router.get('/zakat', reportsController.getZakatReport);
 router.get('/customer-receivables', reportsController.getCustomerReceivables);

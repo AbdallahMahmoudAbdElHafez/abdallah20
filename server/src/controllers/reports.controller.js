@@ -103,6 +103,17 @@ const reportsController = {
         }
     },
 
+    getIssueVouchersEmployeeSummary: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.query;
+            const data = await reportsService.getIssueVouchersEmployeeSummary(startDate, endDate);
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching issue vouchers employee summary:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     getOpeningSalesInvoicesReport: async (req, res) => {
         try {
             const { startDate, endDate } = req.query;
@@ -262,6 +273,17 @@ const reportsController = {
                     const glData = await reportsService.getGeneralLedgerReport(glAccId, startDate, endDate);
                     buffer = await exportService.exportGeneralLedgerReport(glData);
                     filename = `General_Ledger_${glData.account.name}_${startDate}_${endDate}.xlsx`;
+                    break;
+
+                case 'issue-vouchers':
+                    const issueData = await reportsService.getIssueVouchersReport(startDate, endDate);
+                    buffer = await exportService.exportIssueVouchersListReport(issueData.data, issueData.summary);
+                    filename = `Issue_Vouchers_${startDate}_${endDate}.xlsx`;
+                    break;
+                case 'issue-vouchers-employee':
+                    const issueEmpData = await reportsService.getIssueVouchersEmployeeSummary(startDate, endDate);
+                    buffer = await exportService.exportIssueVouchersEmployeeReport(issueEmpData.data, issueEmpData.summary);
+                    filename = `Issue_Vouchers_Employee_${startDate}_${endDate}.xlsx`;
                     break;
 
                 default:

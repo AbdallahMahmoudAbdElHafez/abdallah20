@@ -589,6 +589,134 @@ const exportGeneralLedgerReport = async (reportData) => {
     return await workbook.xlsx.writeBuffer();
 };
 
+/**
+ * Export Issue Vouchers List Report to Excel
+ */
+const exportIssueVouchersListReport = async (data, summary) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('تقرير أذونات الصرف');
+
+    worksheet.views = [{ rightToLeft: true }];
+
+    // Title
+    worksheet.mergeCells('A1:F1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = 'تقرير أذونات الصرف التفصيلي';
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Summary
+    worksheet.addRow([]);
+    worksheet.addRow(['إجمالي الأذونات:', summary.total_vouchers]);
+    worksheet.addRow(['إجمالي الكمية:', summary.total_items]);
+    worksheet.addRow(['إجمالي التكلفة:', summary.total_cost]);
+    worksheet.addRow([]);
+
+    // Headers
+    const headers = ['رقم الإذن', 'التاريخ', 'الموظف المسؤول', 'الجهة/العميل', 'المخزن', 'إجمالي التكلفة'];
+    const headerRow = worksheet.addRow(headers);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F5E9' }
+    };
+
+    // Data
+    data.forEach(voucher => {
+        // Voucher main row
+        const voucherRow = worksheet.addRow([
+            voucher.voucher_no || '',
+            voucher.issue_date || '',
+            voucher.responsible_employee?.name || '',
+            voucher.party?.name || '',
+            voucher.warehouse?.name || '',
+            parseFloat(voucher.total_cost || 0)
+        ]);
+        voucherRow.font = { bold: true };
+        voucherRow.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF5F5F5' }
+        };
+
+        // Item Header Row
+        const itemHeader = worksheet.addRow(['', 'م', 'اسم الصنف', 'الكمية', 'ت. الوحدة', 'إجمالي الصنف']);
+        itemHeader.font = { italic: true, bold: true, size: 10, color: { argb: 'FF455A64' } };
+
+        // Item Data
+        if (voucher.items && voucher.items.length > 0) {
+            voucher.items.forEach((item, index) => {
+                worksheet.addRow([
+                    '', // Spacing
+                    index + 1,
+                    item.product?.name || 'غير معروف',
+                    parseFloat(item.quantity || 0),
+                    parseFloat(item.product?.cost_price || 0),
+                    parseFloat(item.total_cost || 0)
+                ]);
+            });
+        }
+
+        worksheet.addRow([]); // Blank row for spacing between records
+    });
+
+    worksheet.columns.forEach(column => {
+        column.width = 22;
+    });
+
+    return await workbook.xlsx.writeBuffer();
+};
+
+/**
+ * Export Issue Vouchers Employee Summary Report to Excel
+ */
+const exportIssueVouchersEmployeeReport = async (data, summary) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('إجمالي صرف الموظفين');
+
+    worksheet.views = [{ rightToLeft: true }];
+
+    // Title
+    worksheet.mergeCells('A1:D1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = 'تقرير إجمالي المنتجات المنصرفة لكل موظف';
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Summary
+    worksheet.addRow([]);
+    worksheet.addRow(['إجمالي الكمية:', summary.total_items]);
+    worksheet.addRow(['إجمالي التكلفة:', summary.total_cost]);
+    worksheet.addRow([]);
+
+    // Headers
+    const headers = ['الموظف', 'المنتج', 'الكمية المنصرفة', 'إجمالي التكلفة'];
+    const headerRow = worksheet.addRow(headers);
+    headerRow.font = { bold: true };
+    headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE8F5E9' }
+    };
+
+    // Data
+    data.forEach(row => {
+        worksheet.addRow([
+            row.employee_name || '',
+            row.product_name || '',
+            parseFloat(row.total_quantity || 0),
+            parseFloat(row.total_cost || 0)
+        ]);
+    });
+
+    worksheet.columns.forEach(column => {
+        column.width = 25;
+    });
+
+    return await workbook.xlsx.writeBuffer();
+};
+
 export default {
     exportSalesReport,
     exportPurchasesReport,
@@ -597,5 +725,7 @@ export default {
     exportCustomerStatement,
     exportCustomerReceivablesReport,
     exportSafeMovementsReport,
-    exportGeneralLedgerReport
+    exportGeneralLedgerReport,
+    exportIssueVouchersEmployeeReport,
+    exportIssueVouchersListReport
 };
