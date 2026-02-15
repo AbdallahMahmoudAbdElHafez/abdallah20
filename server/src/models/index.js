@@ -295,6 +295,9 @@ PurchaseInvoicePayment.belongsTo(PurchaseInvoice, {
 PurchaseInvoicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
 Employee.hasMany(PurchaseInvoicePayment, { foreignKey: "employee_id", as: "purchase_payments" });
 
+PurchaseInvoicePayment.belongsTo(Account, { foreignKey: "account_id", as: "account" });
+Account.hasMany(PurchaseInvoicePayment, { foreignKey: "account_id", as: "purchase_invoice_payments" });
+
 
 PurchaseInvoicePayment.hasMany(SupplierCheque, {
   foreignKey: "purchase_payment_id",
@@ -783,6 +786,12 @@ ServicePayment.belongsTo(Account, { foreignKey: "credit_account_id", as: "credit
 Account.hasMany(ServicePayment, { foreignKey: "credit_account_id", as: "credit_service_payments" });
 ServicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
 Employee.hasMany(ServicePayment, { foreignKey: "employee_id", as: "service_payments" });
+
+ServicePayment.belongsTo(ExternalServiceInvoice, { foreignKey: "external_service_invoice_id", as: "external_service_invoice" });
+ExternalServiceInvoice.hasMany(ServicePayment, { foreignKey: "external_service_invoice_id", as: "service_payments" });
+
+ServicePayment.belongsTo(ExternalJobOrderService, { foreignKey: "external_service_id", as: "external_service" });
+ExternalJobOrderService.hasMany(ServicePayment, { foreignKey: "external_service_id", as: "service_payments" });
 
 // External Job Order Service Associations
 ExternalJobOrderService.belongsTo(ExternalJobOrder, { foreignKey: "job_order_id", as: "job_order" });

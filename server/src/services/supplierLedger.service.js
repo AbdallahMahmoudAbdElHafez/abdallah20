@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { PurchaseInvoice, PurchaseInvoicePayment, Party, ExternalJobOrder, ServicePayment, PurchaseReturn, Account, ExternalJobOrderService } from "../models/index.js";
+import { PurchaseInvoice, PurchaseInvoicePayment, Party, ExternalJobOrder, ServicePayment, PurchaseReturn, Account, ExternalJobOrderService, ExternalServiceInvoice } from "../models/index.js";
 
 export async function getSupplierStatement(supplierId, { from, to }) {
   const supplier = await Party.findByPk(supplierId, {
@@ -64,11 +64,21 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     nest: true
   });
 
-  // 4b️⃣ Job Order Service Invoices (Liability Accrual)
-  const serviceInvoices = await ExternalJobOrderService.findAll({
+  // 4b️⃣ Job Order Service Invoices (Legacy Liability Accrual - old system)
+  const serviceInvoicesOld = await ExternalJobOrderService.findAll({
     where: {
       party_id: supplierId,
       ...(Object.keys(dateFilter).length ? { service_date: dateFilter } : {}),
+    },
+    raw: true
+  });
+
+  // 4c️⃣ External Service Invoices (New Liability Accrual)
+  const serviceInvoicesNew = await ExternalServiceInvoice.findAll({
+    where: {
+      party_id: supplierId,
+      status: 'Posted',
+      ...(Object.keys(dateFilter).length ? { invoice_date: dateFilter } : {}),
     },
     raw: true
   });
@@ -96,13 +106,22 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       credit: 0,
     })),
 
-    // Service Invoices (Credit Supplier - Liability Recognition)
-    ...serviceInvoices.map(si => ({
-      type: "service_accrual",
+    // Service Invoices (Old System - Credit Supplier)
+    ...serviceInvoicesOld.map(si => ({
+      type: "service_accrual_old",
       date: si.service_date,
-      description: si.note || `فاتورة خدمات تشغيل (أمر #${si.job_order_id})`,
+      description: si.note || `خدمات تشغيل (قديم - أمر #${si.job_order_id})`,
       debit: 0,
       credit: Number(si.amount)
+    })),
+
+    // External Service Invoices (New System - Credit Supplier)
+    ...serviceInvoicesNew.map(si => ({
+      type: "service_invoice",
+      date: si.invoice_date,
+      description: si.notes || `فاتورة خدمات تشغيل #${si.invoice_no || si.id} (أمر #${si.job_order_id})`,
+      debit: 0,
+      credit: Number(si.total_amount)
     })),
 
     // Service Payments (Only Settlements now)
@@ -188,10 +207,18 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       return sum;
     }, 0);
 
-    const prevServiceInvoices = await ExternalJobOrderService.sum("amount", {
+    const prevServiceInvoicesOld = await ExternalJobOrderService.sum("amount", {
       where: {
         party_id: supplierId,
         service_date: { [Op.lt]: from }
+      }
+    });
+
+    const prevServiceInvoicesNew = await ExternalServiceInvoice.sum("total_amount", {
+      where: {
+        party_id: supplierId,
+        status: 'Posted',
+        invoice_date: { [Op.lt]: from }
       }
     });
 
@@ -209,7 +236,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     // - Service Payments (Debits)
     // - Invoice Payments (Debits)
     // - Returns (Debits)
-    openingBalance = (prevInvoices || 0) + (prevServiceInvoices || 0) + prevServiceTotalMovement - ((prevPayments || 0) + (prevReturns || 0));
+    openingBalance = (prevInvoices || 0) + (prevServiceInvoicesOld || 0) + (prevServiceInvoicesNew || 0) + prevServiceTotalMovement - ((prevPayments || 0) + (prevReturns || 0));
 
   }
 

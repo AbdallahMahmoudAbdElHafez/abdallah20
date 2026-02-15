@@ -15,7 +15,8 @@ import {
   ServicePayment,
   EntryType,
   ReferenceType,
-  ExternalJobOrderService
+  ExternalJobOrderService,
+  JobOrderCostTransaction
 } from "../models/index.js";
 import InventoryTransactionService from './inventoryTransaction.service.js';
 
@@ -310,11 +311,20 @@ const ExternalJobOrdersService = {
       const totalMaterialCost = materials.reduce((sum, item) => sum + Number(item.total_cost), 0);
 
       // B. Service Costs (Accrued Service Invoices - recognize cost even if not paid)
+      // We check both ExternalJobOrderService (simple system) and JobOrderCostTransaction (from formal Service Invoices)
       const services = await ExternalJobOrderService.findAll({
         where: { job_order_id: jobOrderId },
         transaction: t
       });
-      const totalServiceCost = services.reduce((sum, s) => sum + Number(s.amount), 0);
+      const simpleServiceCost = services.reduce((sum, s) => sum + Number(s.amount), 0);
+
+      const costTransactions = await JobOrderCostTransaction.findAll({
+        where: { job_order_id: jobOrderId },
+        transaction: t
+      });
+      const formalServiceCost = costTransactions.reduce((sum, ct) => sum + Number(ct.amount), 0);
+
+      const totalServiceCost = simpleServiceCost + formalServiceCost;
 
       // Total Cost to capitalize
       const totalCost = totalMaterialCost + totalServiceCost;

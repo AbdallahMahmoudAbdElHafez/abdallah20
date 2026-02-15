@@ -109,17 +109,20 @@ const InventoryTransactionsPage = () => {
 
   const columns = [
     {
-      accessorKey: "product_id",
+      id: "product_id",
+      accessorFn: (row) => products.find((p) => p.id === row.product_id)?.name || "—",
       header: "المنتج",
-      Cell: ({ cell }) => products.find((p) => p.id === cell.getValue())?.name || "—",
     },
     {
-      accessorKey: "warehouse_id",
+      id: "warehouse_id",
+      accessorFn: (row) => warehouses.find((w) => w.id === row.warehouse_id)?.name || "—",
       header: "المخزن",
-      Cell: ({ cell }) =>
-        warehouses.find((w) => w.id === cell.getValue())?.name || "—",
     },
-    { accessorKey: "transaction_type", header: "النوع" },
+    {
+      accessorKey: "transaction_type",
+      header: "النوع",
+      accessorFn: (row) => row.transaction_type === "in" ? "إدخال" : "إخراج"
+    },
     {
       id: "quantity",
       accessorFn: (row) => row.transaction_batches?.reduce((sum, b) => sum + Number(b.quantity), 0) || 0,
@@ -145,7 +148,20 @@ const InventoryTransactionsPage = () => {
         }).join(", ");
       }
     },
-    { accessorKey: "source_type", header: "المصدر" },
+    {
+      accessorKey: "source_type",
+      header: "المصدر",
+      accessorFn: (row) => {
+        const types = {
+          opening: "رصيد افتتاحي",
+          purchase: "مشتريات",
+          manufacturing: "تصنيع",
+          transfer: "تحويل",
+          adjustment: "تسوية"
+        };
+        return types[row.source_type] || row.source_type;
+      }
+    },
     { accessorKey: "source_id", header: "رقم المصدر" },
     {
       accessorKey: "transaction_date",
