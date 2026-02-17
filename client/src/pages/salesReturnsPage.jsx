@@ -242,13 +242,54 @@ export default function SalesReturnsPage() {
     };
 
     const handleItemPriceChange = (itemId, price) => {
-        setSelectedItems(prev => ({
-            ...prev,
-            [itemId]: {
-                ...prev[itemId],
-                price: Number(price)
-            }
-        }));
+        const val = Number(price);
+        setSelectedItems(prev => {
+            const currentItem = prev[itemId] || {};
+            return {
+                ...prev,
+                [itemId]: {
+                    ...currentItem,
+                    price: val,
+                    // Clear discount/public balance if price is manually edited to stay consistent?
+                    // Or just leave them and let user decide. 
+                    // Usually, manual price override is fine.
+                }
+            };
+        });
+    };
+
+    const handleItemPublicPriceChange = (itemId, publicPrice) => {
+        const pPrice = Number(publicPrice);
+        setSelectedItems(prev => {
+            const currentItem = prev[itemId] || {};
+            const discount = currentItem.discount_percentage || 0;
+            const newPrice = pPrice * (1 - discount / 100);
+            return {
+                ...prev,
+                [itemId]: {
+                    ...currentItem,
+                    public_price: pPrice,
+                    price: Number(newPrice.toFixed(2))
+                }
+            };
+        });
+    };
+
+    const handleItemDiscountChange = (itemId, discount) => {
+        const disc = Number(discount);
+        setSelectedItems(prev => {
+            const currentItem = prev[itemId] || {};
+            const pPrice = currentItem.public_price || 0;
+            const newPrice = pPrice * (1 - disc / 100);
+            return {
+                ...prev,
+                [itemId]: {
+                    ...currentItem,
+                    discount_percentage: disc,
+                    price: Number(newPrice.toFixed(2))
+                }
+            };
+        });
     };
 
     const handleSave = async () => {
@@ -631,7 +672,9 @@ export default function SalesReturnsPage() {
                                                 </TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 200, bgcolor: '#f5f5f5' }}>المنتج</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 100, bgcolor: '#f5f5f5' }}>الكمية المتاحة</TableCell>
-                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>السعر</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 100, bgcolor: '#f5f5f5' }}>سعر الجمهور</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 100, bgcolor: '#f5f5f5' }}>الخصم %</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>السعر النهائي</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>الكمية المرتجعة</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 150, bgcolor: '#f5f5f5' }}>حالة المرتجع</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 150, bgcolor: '#f5f5f5' }}>رقم الباتش</TableCell>
@@ -652,6 +695,26 @@ export default function SalesReturnsPage() {
                                                     </TableCell>
                                                     <TableCell>{item.product?.name || item.product_id}</TableCell>
                                                     <TableCell>{item.quantity}</TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="number"
+                                                            size="small"
+                                                            value={selectedItems[item.id]?.public_price ?? ""}
+                                                            onChange={(e) => handleItemPublicPriceChange(item.id, e.target.value)}
+                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            fullWidth
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="number"
+                                                            size="small"
+                                                            value={selectedItems[item.id]?.discount_percentage ?? ""}
+                                                            onChange={(e) => handleItemDiscountChange(item.id, e.target.value)}
+                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            fullWidth
+                                                        />
+                                                    </TableCell>
                                                     <TableCell>
                                                         <TextField
                                                             type="number"
@@ -745,14 +808,28 @@ export default function SalesReturnsPage() {
                                                             <TextField
                                                                 type="number"
                                                                 size="small"
+                                                                value={data.public_price || ""}
+                                                                onChange={(e) => handleItemPublicPriceChange(id, e.target.value)}
+                                                                disabled={!data.isSelected}
+                                                                fullWidth
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                type="number"
+                                                                size="small"
+                                                                value={data.discount_percentage || ""}
+                                                                onChange={(e) => handleItemDiscountChange(id, e.target.value)}
+                                                                disabled={!data.isSelected}
+                                                                fullWidth
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                type="number"
+                                                                size="small"
                                                                 value={data.price}
-                                                                onChange={(e) => {
-                                                                    const val = e.target.value;
-                                                                    setSelectedItems(prev => ({
-                                                                        ...prev,
-                                                                        [id]: { ...prev[id], price: Number(val) }
-                                                                    }));
-                                                                }}
+                                                                onChange={(e) => handleItemPriceChange(id, e.target.value)}
                                                                 disabled={!data.isSelected}
                                                             />
                                                         </TableCell>
@@ -877,6 +954,6 @@ export default function SalesReturnsPage() {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Box>
+        </Box >
     );
 }
