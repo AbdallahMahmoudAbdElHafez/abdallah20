@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { MaterialReactTable } from 'material-react-table';
 import { defaultTableProps } from "../config/tableConfig";
 import { Box, Button, IconButton, Typography } from '@mui/material';
-import { Add, Edit, Delete } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
 import {
   loadTransfers,
   addTransfer,
@@ -12,6 +12,7 @@ import {
   removeTransfer,
 } from '../features/warehouseTransfers/warehouseTransfersSlice';
 import WarehouseTransferDialog from '../components/WarehouseTransferDialog';
+import WarehouseTransferPreviewDialog from '../components/WarehouseTransferPreview/WarehouseTransferPreviewDialog';
 
 export default function WarehouseTransfersPage() {
   const dispatch = useDispatch();
@@ -19,6 +20,7 @@ export default function WarehouseTransfersPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [previewTransfer, setPreviewTransfer] = useState(null);
 
   useEffect(() => { dispatch(loadTransfers()); }, [dispatch]);
 
@@ -66,6 +68,9 @@ export default function WarehouseTransfersPage() {
         positionActionsColumn="last"
         renderRowActions={({ row }) => (
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <IconButton color="info" onClick={() => setPreviewTransfer(row.original)} title="معاينة">
+              <Visibility />
+            </IconButton>
             <IconButton color="primary" onClick={() => { setEditing(row.original); setOpen(true); }}>
               <Edit />
             </IconButton>
@@ -74,6 +79,12 @@ export default function WarehouseTransfersPage() {
             </IconButton>
           </Box>
         )}
+      />
+
+      <WarehouseTransferPreviewDialog
+        open={!!previewTransfer}
+        onClose={() => setPreviewTransfer(null)}
+        transfer={previewTransfer}
       />
 
       <WarehouseTransferDialog
