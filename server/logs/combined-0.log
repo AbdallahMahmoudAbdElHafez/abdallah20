@@ -23965,3 +23965,100 @@ Error
 2026-02-25T14:59:13: Journal Entry created for Expense #104
 2026-02-25T15:01:11: Journal Entry created for Expense #105
 2026-02-25T15:02:27: Journal Entry created for Expense #106
+2026-02-25T16:07:44: === Creating Sales Invoice ===
+2026-02-25T16:07:44: Request body: {
+  "invoice_number": "",
+  "party_id": 100,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 3,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-02-25",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 1040,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1040,
+  "note": "",
+  "items": [
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 520,
+      "discount": 0,
+      "discount_percent": 0,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-02-25T16:07:44: Service: Starting invoice creation
+2026-02-25T16:07:44: Service: Transaction committed
+2026-02-25T16:08:13: Service: Invoice updated. ID: 219, Status: draft
+2026-02-25T20:45:15: ✅ Database connected
+2026-02-25T20:45:15: 🚀 Server listening on http://localhost:5000
+2026-02-25T20:48:21: Journal Entry created for Expense #107
+2026-02-26T15:32:19: ✅ Database connected
+2026-02-26T15:32:19: 🚀 Server listening on http://localhost:5000
+2026-02-26T15:33:53: Journal Entry created for Expense #108
+2026-02-27T01:03:37: ✅ Database connected
+2026-02-27T01:03:37: 🚀 Server listening on http://localhost:5000
+2026-02-27T01:10:57: === Creating Sales Invoice ===
+2026-02-27T01:10:57: Request body: {
+  "invoice_number": "",
+  "party_id": 31,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 2,
+  "distributor_employee_id": 2,
+  "invoice_date": "2026-02-26",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 5610,
+  "additional_discount": "168.30",
+  "additional_discount_percent": "3",
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 5441.7,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 20,
+      "price": 330,
+      "discount": 990,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-02-27T01:10:57: Service: Starting invoice creation
+2026-02-27T01:10:57: Service: Transaction committed
+2026-02-27T01:12:14: Service: Invoice updated. ID: 220, Status: draft
+2026-02-28T10:18:26: ✅ Database connected
+2026-02-28T10:18:26: 🚀 Server listening on http://localhost:5000
+2026-02-28T10:19:42: Service: Invoice updated. ID: 220, Status: draft
