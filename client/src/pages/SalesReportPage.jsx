@@ -241,6 +241,7 @@ const SalesReportPage = () => {
             { accessorKey: 'invoice_number', id: 'invoice_number', header: 'رقم الفاتورة', size: 120, enablePinning: true },
             { accessorKey: 'date', id: 'date', header: 'التاريخ', size: 100, enablePinning: true, Cell: ({ cell }) => cell.getValue() },
             { accessorKey: 'customer_name', id: 'customer_name', header: 'العميل', size: 180, enablePinning: true },
+            { accessorKey: 'employee_name', id: 'employee_name', header: 'اسم الموظف', size: 150 },
             { accessorKey: 'governate', id: 'governate', header: 'المحافظة', size: 120 },
             { accessorKey: 'city', id: 'city', header: 'المنطقة', size: 120 },
         ];
@@ -278,6 +279,7 @@ const SalesReportPage = () => {
                 invoice_number: invoice.invoice_number,
                 date: invoice.invoice_date?.slice(0, 10), // Corrected to invoice_date
                 customer_name: invoice.party?.name || '-',
+                employee_name: invoice.employee?.name || '-',
                 governate: invoice.party?.city?.governate?.name || '-',
                 city: invoice.party?.city?.name || '-',
                 additional_discount_pct: addDiscPct,
@@ -325,6 +327,7 @@ const SalesReportPage = () => {
                 invoice_number: `مرتجع ${ret.id}`,
                 date: ret.return_date?.slice(0, 10),
                 customer_name: ret.customer?.name || '-',
+                employee_name: ret.employee?.name || '-',
                 governate: ret.customer?.city?.governate?.name || '-',
                 city: ret.customer?.city?.name || '-',
                 additional_discount_pct: 0,
@@ -359,6 +362,7 @@ const SalesReportPage = () => {
                 invoice_number: 'الإجمالي',
                 date: '',
                 customer_name: '',
+                employee_name: '',
                 governate: '',
                 city: '',
                 additional_discount_pct: 0,
