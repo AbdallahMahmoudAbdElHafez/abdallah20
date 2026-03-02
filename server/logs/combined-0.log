@@ -24745,3 +24745,5 @@ Error
 2026-03-01T11:42:45: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 3 quantityChange: -1
 2026-03-01T11:42:45: Debug: Updated batch_inventory for batch 2
 2026-03-01T11:42:45: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1772357944007
+2026-03-01T13:05:40: ✅ Database connected
+2026-03-01T13:05:40: 🚀 Server listening on http://localhost:5000
