@@ -34,6 +34,7 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
     const dispatch = useDispatch();
     const { items: companies } = useSelector((state) => state.companies);
     const [selectedCompanyId, setSelectedCompanyId] = useState('');
+    const [paperSize, setPaperSize] = useState('A4');
 
     // Initial Columns State
     const [columns, setColumns] = useState([
@@ -110,10 +111,11 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
 
         // --- Styles ---
         const headerFont = { name: 'Arial', size: 16, bold: true, color: { argb: 'FF2C3E50' } };
-        const labelFont = { name: 'Arial', size: 12, bold: true, color: { argb: 'FF7F8C8D' } };
-        const valFont = { name: 'Arial', size: 12 };
+        const labelFont = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF7F8C8D' } };
+        const valFont = { name: 'Arial', size: 14, bold: true };
         const tableHeaderFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2C3E50' } };
-        const tableHeaderFont = { name: 'Arial', size: 12, bold: true, color: { argb: 'FFFFFFFF' } };
+        const tableHeaderFont = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+        const bodyFont = { name: 'Arial', size: 12, bold: true };
         const borderStyle = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
 
         // --- Define Columns First (to determine width) ---
@@ -151,8 +153,8 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
                 const logoColIndex = wsColumns.length - 1;
 
                 worksheet.addImage(imageId, {
-                    tl: { col: logoColIndex - 1, row: 0 }, // Move closer to the edge (was -2)
-                    ext: { width: 280, height: 150 },
+                    tl: { col: logoColIndex - 1, row: 0 },
+                    ext: { width: 189, height: 100 }, // 5cm ≈ 189px at 96 DPI
                     editAs: 'oneCell'
                 });
             } catch (error) {
@@ -164,8 +166,8 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         worksheet.mergeCells('A1:C1'); // Reduced merge to keep it right-aligned visually
         const titleCell = worksheet.getCell('A1');
         titleCell.value = selectedCompany.company_name || 'شركة نوريفيناء';
-        titleCell.font = { name: 'Arial', size: 24, bold: true, color: { argb: 'FF2C3E50' } };
-        titleCell.alignment = { horizontal: 'right', vertical: 'middle' }; // Right align in cell
+        titleCell.font = { name: 'Arial', size: 36, bold: true, color: { argb: 'FF2C3E50' } };
+        titleCell.alignment = { horizontal: 'right', vertical: 'middle' };
 
         worksheet.mergeCells('A2:E2'); // Subtitle can span more
         const subTitle = worksheet.getCell('A2');
@@ -187,7 +189,7 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         // Join with newlines for stacking in Excel cell
         const detailsText = companyDetails.filter(Boolean).join('\n');
         subTitle.value = detailsText || 'الرياض، المملكة العربية السعودية | هاتف: 011-1234567';
-        subTitle.font = { name: 'Arial', size: 12, color: { argb: 'FF7F8C8D' } };
+        subTitle.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF7F8C8D' } };
         subTitle.alignment = { horizontal: 'right', vertical: 'top', wrapText: true }; // Enable wrapText for newlines
 
         // Adjust row height based on number of lines
@@ -195,16 +197,16 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         worksheet.getRow(2).height = Math.max(20, lineCount * 15);
 
         // Spacer (Make it bigger for logo)
-        worksheet.getRow(1).height = 150; // Match logo height
+        worksheet.getRow(1).height = 100; // Match logo height
         worksheet.addRow([]);
 
         // --- 2. Invoice Meta ---
         const metaStartRow = 4;
         worksheet.getRow(metaStartRow).values = ['رقم الفاتورة:', invoice.invoice_number, '', 'فاتورة إلى:', invoice.party?.name || invoice.supplier?.name || "N/A"];
         worksheet.getRow(metaStartRow).font = labelFont;
-        worksheet.getCell(`B${metaStartRow}`).font = { bold: true };
+        worksheet.getCell(`B${metaStartRow}`).font = valFont;
         worksheet.getCell(`D${metaStartRow}`).font = labelFont;
-        worksheet.getCell(`E${metaStartRow}`).font = { bold: true };
+        worksheet.getCell(`E${metaStartRow}`).font = valFont;
 
         // Removed Status Row as per request, just showing Date and Phone/Address
         worksheet.getRow(metaStartRow + 1).values = ['التاريخ:', invoice.invoice_date, '', 'العنوان:', invoice.party?.address || invoice.supplier?.address || "-"];
@@ -259,9 +261,10 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
             if (visibleCols.find(c => c.key === 'total')) rowData.push(((qty * price) - discountVal));
 
             const row = worksheet.addRow(rowData);
-            row.height = 30; // Increase row height as requested
+            row.height = 30;
             row.eachCell((cell) => {
                 cell.border = borderStyle;
+                cell.font = bodyFont;
                 cell.alignment = { horizontal: 'center', vertical: 'middle' };
             });
         });
@@ -295,12 +298,11 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         // Helper to add total row
         const addTotalRow = (label, value, isFinal = false) => {
             const r = worksheet.addRow([]);
-            // Merge cells for label if needed, or just place it
             r.getCell(totalLabelCol).value = label;
             r.getCell(totalValCol).value = Number(value);
 
-            r.getCell(totalLabelCol).font = isFinal ? { bold: true, color: { argb: 'FFFFFFFF' } } : { bold: true };
-            r.getCell(totalValCol).font = isFinal ? { bold: true, color: { argb: 'FFFFFFFF' } } : {};
+            r.getCell(totalLabelCol).font = isFinal ? { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFFFF' } } : { name: 'Arial', size: 14, bold: true };
+            r.getCell(totalValCol).font = isFinal ? { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFFFF' } } : { name: 'Arial', size: 14, bold: true };
 
             if (isFinal) {
                 r.getCell(totalLabelCol).fill = tableHeaderFill;
@@ -316,15 +318,16 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
 
         // --- Page Setup ---
         worksheet.pageSetup = {
+            paperSize: paperSize === 'A5' ? 11 : 9,
+            orientation: 'landscape',
             fitToPage: true,
             fitToHeight: 1,
             fitToWidth: 1,
             margins: {
-                left: 1, right: 1, top: 1, bottom: 1,
-                header: 0.3, footer: 0.3
+                left: 0, right: 0, top: 0, bottom: 0,
+                header: 0, footer: 0
             },
             horizontalCentered: true,
-            verticalCentered: false
         };
 
         // --- Write File ---
@@ -376,6 +379,20 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
                                         {company.company_name}
                                     </MenuItem>
                                 ))}
+                            </Select>
+                        </FormControl>
+                    </Box>
+
+                    <Box sx={{ mb: 2 }}>
+                        <FormControl fullWidth size="small">
+                            <InputLabel>حجم الورق (Excel)</InputLabel>
+                            <Select
+                                value={paperSize}
+                                label="حجم الورق (Excel)"
+                                onChange={(e) => setPaperSize(e.target.value)}
+                            >
+                                <MenuItem value="A4">A4</MenuItem>
+                                <MenuItem value="A5">A5</MenuItem>
                             </Select>
                         </FormControl>
                     </Box>
