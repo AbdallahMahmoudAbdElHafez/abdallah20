@@ -495,6 +495,7 @@ IssueVoucher.belongsTo(Account, {
   foreignKey: "account_id",
   as: "account"
 });
+
 // العلاقات الجديدة
 // IssueVoucher ↔ IssueVoucherItem
 IssueVoucher.hasMany(IssueVoucherItem, {

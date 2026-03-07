@@ -22,6 +22,7 @@ import {
     Account,
     JournalEntry,
     JournalEntryLine,
+    Doctor,
     sequelize
 } from '../models/index.js';
 import { Op } from 'sequelize';
@@ -690,6 +691,11 @@ const getIssueVouchersReport = async (startDate, endDate) => {
                 attributes: ['id', 'name']
             },
             {
+                model: Doctor,
+                as: 'doctor',
+                attributes: ['id', 'name']
+            },
+            {
                 model: IssueVoucherItem,
                 as: 'items',
                 include: [
@@ -818,6 +824,11 @@ const getIssueVouchersEmployeeSummary = async (startDate, endDate) => {
                 attributes: ['id', 'name']
             },
             {
+                model: Doctor,
+                as: 'doctor',
+                attributes: ['id', 'name']
+            },
+            {
                 model: IssueVoucherItem,
                 as: 'items',
                 include: [
@@ -873,11 +884,14 @@ const getIssueVouchersEmployeeSummary = async (startDate, endDate) => {
                 itemCost += quantity * parseFloat(item.product?.cost_price || 0);
             }
 
+            const doctorName = voucher.doctor?.name || '';
+
             const key = `${employeeId}-${productId}`;
             if (!summaryMap[key]) {
                 summaryMap[key] = {
                     employee_id: employeeId,
                     employee_name: employeeName,
+                    doctor_name: doctorName,
                     product_id: productId,
                     product_name: productName,
                     total_quantity: 0,

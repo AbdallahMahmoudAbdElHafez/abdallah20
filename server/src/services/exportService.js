@@ -613,7 +613,7 @@ const exportIssueVouchersListReport = async (data, summary) => {
     worksheet.addRow([]);
 
     // Headers
-    const headers = ['رقم الإذن', 'التاريخ', 'الموظف المسؤول', 'الجهة/العميل', 'المخزن', 'إجمالي التكلفة'];
+    const headers = ['رقم الإذن', 'التاريخ', 'الموظف المسؤول', 'الدكتور', 'الجهة/العميل', 'المخزن', 'إجمالي التكلفة'];
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true };
     headerRow.fill = {
@@ -629,6 +629,7 @@ const exportIssueVouchersListReport = async (data, summary) => {
             voucher.voucher_no || '',
             voucher.issue_date || '',
             voucher.responsible_employee?.name || '',
+            voucher.doctor?.name || '',
             voucher.party?.name || '',
             voucher.warehouse?.name || '',
             parseFloat(voucher.total_cost || 0)
@@ -691,7 +692,7 @@ const exportIssueVouchersEmployeeReport = async (data, summary) => {
     worksheet.addRow([]);
 
     // Headers
-    const headers = ['الموظف', 'المنتج', 'الكمية المنصرفة', 'إجمالي التكلفة'];
+    const headers = ['الموظف', 'الدكتور', 'المنتج', 'الكمية المنصرفة', 'إجمالي التكلفة'];
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true };
     headerRow.fill = {
@@ -704,6 +705,7 @@ const exportIssueVouchersEmployeeReport = async (data, summary) => {
     data.forEach(row => {
         worksheet.addRow([
             row.employee_name || '',
+            row.doctor_name || '',
             row.product_name || '',
             parseFloat(row.total_quantity || 0),
             parseFloat(row.total_cost || 0)

@@ -96,6 +96,7 @@ const IssueVouchersReportPage = () => {
         { accessorKey: 'issue_date', header: 'تاريخ الصرف', Cell: ({ cell }) => cell.getValue()?.slice(0, 10), size: 120 },
         { accessorFn: (row) => row.warehouse?.name || '-', id: 'warehouse.name', header: 'المخزن', size: 150 },
         { accessorFn: (row) => row.responsible_employee?.name || '-', id: 'responsible_employee.name', header: 'الموظف المسؤول', size: 150 },
+        { accessorFn: (row) => row.doctor?.name || '-', id: 'doctor.name', header: 'الدكتور', size: 150 },
         { accessorKey: 'status', header: 'الحالة', size: 100 },
         { accessorKey: 'items.length', header: 'عدد الأصناف', size: 100 },
         {
@@ -109,6 +110,7 @@ const IssueVouchersReportPage = () => {
 
     const summaryColumns = useMemo(() => [
         { accessorKey: 'employee_name', header: 'الموظف', size: 200 },
+        { accessorKey: 'doctor_name', header: 'الدكتور', size: 200 },
         { accessorKey: 'product_name', header: 'المنتج', size: 250 },
         { accessorKey: 'total_quantity', header: 'إجمالي الكمية', size: 150 },
         {

@@ -14,8 +14,8 @@ export default function IssueVoucherPaper({ voucher, company }) {
 
     const items = voucher.items || [];
     const partyName = voucher.party?.name || "غير محدد";
-    const warehouseName = voucher.warehouse?.name || "غير محدد";
     const employeeName = voucher.responsible_employee?.name || "غير محدد";
+    const doctorName = voucher.doctor?.name || "غير محدد";
 
     return (
         <div className="invoice-paper" dir="rtl">
@@ -68,6 +68,10 @@ export default function IssueVoucherPaper({ voucher, company }) {
                     <div className="inv-meta-row" style={{ marginTop: '5px' }}>
                         <span className="inv-label">الجهة/العميل:</span>
                         <span>{partyName}</span>
+                    </div>
+                    <div className="inv-meta-row" style={{ marginTop: '5px' }}>
+                        <span className="inv-label">الدكتور:</span>
+                        <span>{doctorName}</span>
                     </div>
                 </div>
                 <div className="inv-addr-block">
