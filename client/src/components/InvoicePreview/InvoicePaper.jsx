@@ -10,7 +10,7 @@ const formatCurrency = (amount) => {
     }).format(amount || 0);
 };
 
-export default function InvoicePaper({ invoice, items, columns, type = 'sales', company, showPhone }) {
+export default function InvoicePaper({ invoice, items, columns, type = 'sales', company, showPhone, isBonus = false }) {
     if (!invoice) return null;
 
     // Helper to check if col is visible
@@ -23,11 +23,15 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
     const partyAddress = invoice.party?.address || invoice.supplier?.address || "العنوان غير متوفر";
     const partyPhone = invoice.party?.phone || invoice.supplier?.phone || "";
 
-    const invoiceTitle = isSales ? "فاتورة مبيعات" : "فاتورة مشتريات";
+    const invoiceTitle = isBonus ? "فاتورة بونص" : (isSales ? "فاتورة مبيعات" : "فاتورة مشتريات");
+    const displayItems = isBonus ? items.filter(item => Number(item.bonus) > 0) : items;
 
     return (
         <div className="invoice-paper" dir="rtl">
             {/* Header */}
+            <h2 style={{ textAlign: 'center', margin: '10px 0', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>
+                {invoiceTitle}
+            </h2>
             <div className="inv-header">
                 <div className="inv-company-info">
                     {company?.logo_path && (
@@ -85,21 +89,21 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                 <thead>
                     <tr>
                         <th>#</th>
-                        {showCol('product') && <th>المنتج</th>}
-                        {showCol('batch_number') && <th>رقم التشغيلة</th>}
-                        {showCol('expiry_date') && <th>تاريخ الصلاحية</th>}
-                        {showCol('quantity') && <th>الكمية</th>}
-                        {showCol('bonus') && <th>بونص</th>}
-                        {showCol('unit_price') && <th>السعر</th>}
-                        {showCol('total_before_discount') && <th>الإجمالي قبل الخصم</th>}
-                        {showCol('discount_percent') && <th>نسبة الخصم</th>}
-                        {showCol('discount') && <th>قيمة الخصم</th>}
-                        {showCol('tax') && <th>الضريبة</th>}
-                        {showCol('total') && <th>الإجمالي</th>}
+                        {(!isBonus && showCol('product') || isBonus) && <th>المنتج</th>}
+                        {(!isBonus && showCol('batch_number') || isBonus) && <th>رقم التشغيلة</th>}
+                        {(!isBonus && showCol('expiry_date') || isBonus) && <th>تاريخ الصلاحية</th>}
+                        {(!isBonus && showCol('quantity') || isBonus) && <th>الكمية</th>}
+                        {!isBonus && showCol('bonus') && <th>بونص</th>}
+                        {!isBonus && showCol('unit_price') && <th>السعر</th>}
+                        {!isBonus && showCol('total_before_discount') && <th>الإجمالي قبل الخصم</th>}
+                        {!isBonus && showCol('discount_percent') && <th>نسبة الخصم</th>}
+                        {!isBonus && showCol('discount') && <th>قيمة الخصم</th>}
+                        {!isBonus && showCol('tax') && <th>الضريبة</th>}
+                        {!isBonus && showCol('total') && <th>الإجمالي</th>}
                     </tr>
                 </thead>
                 <tbody>
-                    {items.map((item, index) => {
+                    {displayItems.map((item, index) => {
                         const qty = Number(item.quantity) || 0;
                         const price = Number(item.price || item.unit_price) || 0;
                         const discountVal = Number(item.discount) || 0;
@@ -119,17 +123,17 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                         return (
                             <tr key={index}>
                                 <td>{index + 1}</td>
-                                {showCol('product') && <td>{item.product_name || item.product?.name || item.Product?.name || "منتج غير معروف"}</td>}
-                                {showCol('batch_number') && <td>{item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.batch_number || item.batch_number || "-"}</td>}
-                                {showCol('expiry_date') && <td>{item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.expiry_date || item.expiry_date || "-"}</td>}
-                                {showCol('quantity') && <td>{qty}</td>}
-                                {showCol('bonus') && <td>{bonus}</td>}
-                                {showCol('unit_price') && <td>{formatCurrency(price)}</td>}
-                                {showCol('total_before_discount') && <td>{formatCurrency(totalBeforeDiscount)}</td>}
-                                {showCol('discount_percent') && <td>{discountPercent.toFixed(2)}%</td>}
-                                {showCol('discount') && <td>{formatCurrency(discountVal)}</td>}
-                                {showCol('tax') && <td>-</td>}
-                                {showCol('total') && <td>{formatCurrency(lineTotal)}</td>}
+                                {(!isBonus && showCol('product') || isBonus) && <td>{item.product_name || item.product?.name || item.Product?.name || "منتج غير معروف"}</td>}
+                                {(!isBonus && showCol('batch_number') || isBonus) && <td>{item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.batch_number || item.batch_number || "-"}</td>}
+                                {(!isBonus && showCol('expiry_date') || isBonus) && <td>{item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.expiry_date || item.expiry_date || "-"}</td>}
+                                {(!isBonus && showCol('quantity') || isBonus) && <td>{isBonus ? bonus : qty}</td>}
+                                {!isBonus && showCol('bonus') && <td>{bonus}</td>}
+                                {!isBonus && showCol('unit_price') && <td>{formatCurrency(price)}</td>}
+                                {!isBonus && showCol('total_before_discount') && <td>{formatCurrency(totalBeforeDiscount)}</td>}
+                                {!isBonus && showCol('discount_percent') && <td>{discountPercent.toFixed(2)}%</td>}
+                                {!isBonus && showCol('discount') && <td>{formatCurrency(discountVal)}</td>}
+                                {!isBonus && showCol('tax') && <td>-</td>}
+                                {!isBonus && showCol('total') && <td>{formatCurrency(lineTotal)}</td>}
                             </tr>
                         );
                     })}
@@ -137,28 +141,30 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
             </table >
 
             {/* Totals */}
-            < div className="inv-totals" >
-                <div className="inv-totals-box">
-                    <div className="inv-total-row">
-                        <span>المجموع الفرعي:</span>
-                        <span>{formatCurrency(invoice.subtotal)}</span>
-                    </div>
-                    <div className="inv-total-row">
-                        <span>الخصم الإضافي:</span>
-                        <span>{formatCurrency(invoice.additional_discount)}</span>
-                    </div>
-                    {(Number(invoice.vat_amount) > 0) && (
+            {!isBonus && (
+                < div className="inv-totals" >
+                    <div className="inv-totals-box">
                         <div className="inv-total-row">
-                            <span>ضريبة القيمة المضافة:</span>
-                            <span>{formatCurrency(invoice.vat_amount)}</span>
+                            <span>المجموع الفرعي:</span>
+                            <span>{formatCurrency(invoice.subtotal)}</span>
                         </div>
-                    )}
-                    <div className="inv-total-row final">
-                        <span>الإجمالي النهائي:</span>
-                        <span>{formatCurrency(invoice.total_amount)}</span>
+                        <div className="inv-total-row">
+                            <span>الخصم الإضافي:</span>
+                            <span>{formatCurrency(invoice.additional_discount)}</span>
+                        </div>
+                        {(Number(invoice.vat_amount) > 0) && (
+                            <div className="inv-total-row">
+                                <span>ضريبة القيمة المضافة:</span>
+                                <span>{formatCurrency(invoice.vat_amount)}</span>
+                            </div>
+                        )}
+                        <div className="inv-total-row final">
+                            <span>الإجمالي النهائي:</span>
+                            <span>{formatCurrency(invoice.total_amount)}</span>
+                        </div>
                     </div>
-                </div>
-            </div >
+                </div >
+            )}
 
             {invoice.note && (
                 <div className="inv-notes" style={{ marginTop: '20px', padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}>

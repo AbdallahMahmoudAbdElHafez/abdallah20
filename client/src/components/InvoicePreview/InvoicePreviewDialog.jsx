@@ -56,6 +56,9 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
     const [showPhone, setShowPhone] = useState(false);
 
     const componentRef = useRef();
+    const bonusComponentRef = useRef();
+
+    const hasBonusItems = items?.some(item => Number(item.bonus) > 0);
 
     useEffect(() => {
         if (open) {
@@ -99,7 +102,199 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         documentTitle: `Invoice-${invoice?.invoice_number || 'draft'}`,
     });
 
+    const handlePrintBonus = useReactToPrint({
+        content: () => bonusComponentRef.current,
+        documentTitle: `Bonus-Invoice-${invoice?.invoice_number || 'draft'}`,
+    });
+
     const selectedCompany = companies.find(c => c.id === selectedCompanyId) || {};
+
+    const handleExportBonusExcel = async () => {
+        if (!invoice || !items) return;
+
+        const displayItems = items.filter(item => Number(item.bonus) > 0);
+        if (displayItems.length === 0) return;
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Bonus Invoice', {
+            views: [{ rightToLeft: true }]
+        });
+
+        // --- Styles ---
+        const headerFont = { name: 'Arial', size: 16, bold: true, color: { argb: 'FF2C3E50' } };
+        const labelFont = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF7F8C8D' } };
+        const valFont = { name: 'Arial', size: 14, bold: true };
+        const tableHeaderFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2C3E50' } };
+        const tableHeaderFont = { name: 'Arial', size: 14, bold: true, color: { argb: 'FFFFFFFF' } };
+        const bodyFont = { name: 'Arial', size: 12, bold: true };
+        const borderStyle = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+
+        // --- Define Columns First (to determine width) ---
+        const visibleCols = columns.filter(c => c.visible);
+        const wsColumns = [
+            { header: '#', key: 'index', width: 5 },
+        ];
+        if (visibleCols.find(c => c.key === 'product')) wsColumns.push({ header: 'المنتج', key: 'product', width: 30 });
+        if (visibleCols.find(c => c.key === 'batch_number')) wsColumns.push({ header: 'رقم التشغيلة', key: 'batch_number', width: 15 });
+        if (visibleCols.find(c => c.key === 'expiry_date')) wsColumns.push({ header: 'تاريخ الصلاحية', key: 'expiry_date', width: 15 });
+        if (visibleCols.find(c => c.key === 'quantity') || visibleCols.find(c => c.key === 'bonus')) wsColumns.push({ header: 'الكمية', key: 'quantity', width: 10 });
+
+        // --- 1. Header (Company Info & Logo) ---
+        // Add Logo if exists
+        if (selectedCompany.logo_path) {
+            try {
+                const response = await fetch(`http://localhost:5000/${selectedCompany.logo_path}`);
+                const blob = await response.blob();
+                const buffer = await blob.arrayBuffer();
+
+                const imageId = workbook.addImage({
+                    buffer: buffer,
+                    extension: 'png', // Assuming png/jpg, exceljs handles standard types
+                });
+
+                // In RTL, column 0 is Right. Last column is Left.
+                // Place logo at the far left (last column) to align with the table edge
+                const logoColIndex = wsColumns.length - 1;
+
+                worksheet.addImage(imageId, {
+                    tl: { col: logoColIndex - 1, row: 0 },
+                    ext: { width: 189, height: 100 }, // 5cm ≈ 189px at 96 DPI
+                    editAs: 'oneCell'
+                });
+            } catch (error) {
+                console.error("Error fetching logo for excel:", error);
+            }
+        }
+
+        // Company Name at Far Right (Column A in RTL)
+        worksheet.mergeCells('A1:C1'); // Reduced merge to keep it right-aligned visually
+        const titleCell = worksheet.getCell('A1');
+        titleCell.value = selectedCompany.company_name || 'شركة نوريفيناء';
+        titleCell.font = { name: 'Arial', size: 36, bold: true, color: { argb: 'FF2C3E50' } };
+        titleCell.alignment = { horizontal: 'right', vertical: 'middle' };
+
+        worksheet.mergeCells('A2:E2'); // Subtitle can span more
+        const subTitle = worksheet.getCell('A2');
+
+        let companyDetails = [selectedCompany.city?.name];
+
+        if (showCompanyAddress) {
+            companyDetails.push(selectedCompany.address);
+        }
+
+        companyDetails.push(selectedCompany.phone && `هاتف: ${selectedCompany.phone}`);
+
+        if (showCompanyIds) {
+            if (selectedCompany.commercial_register) companyDetails.push(`سجل تجاري : ${selectedCompany.commercial_register}`);
+            if (selectedCompany.tax_number) companyDetails.push(`رقم التسجيل الضريبي : ${selectedCompany.tax_number}`);
+            if (selectedCompany.vat_number) companyDetails.push(`رقم التسجيل الضريبي للقيمة المضافة : ${selectedCompany.vat_number}`);
+        }
+
+        // Join with newlines for stacking in Excel cell
+        const detailsText = companyDetails.filter(Boolean).join('\n');
+        subTitle.value = detailsText || 'الرياض، المملكة العربية السعودية | هاتف: 011-1234567';
+        subTitle.font = { name: 'Arial', size: 14, bold: true, color: { argb: 'FF7F8C8D' } };
+        subTitle.alignment = { horizontal: 'right', vertical: 'top', wrapText: true }; // Enable wrapText for newlines
+
+        // Adjust row height based on number of lines
+        const lineCount = companyDetails.filter(Boolean).length || 1;
+        worksheet.getRow(2).height = Math.max(20, lineCount * 15);
+
+        // Spacer (Make it bigger for logo)
+        worksheet.getRow(1).height = 100; // Match logo height
+        worksheet.addRow([]);
+
+        // --- 2. Invoice Meta ---
+        const metaStartRow = 4;
+        worksheet.getRow(metaStartRow).values = ['فاتورة بونص رقم:', invoice.invoice_number, '', 'فاتورة إلى:', invoice.party?.name || invoice.supplier?.name || "N/A"];
+        worksheet.getRow(metaStartRow).font = labelFont;
+        worksheet.getCell(`B${metaStartRow}`).font = valFont;
+        worksheet.getCell(`D${metaStartRow}`).font = labelFont;
+        worksheet.getCell(`E${metaStartRow}`).font = valFont;
+
+        // Removed Status Row as per request, just showing Date and Phone/Address
+        worksheet.getRow(metaStartRow + 1).values = ['التاريخ:', invoice.invoice_date, '', 'العنوان:', invoice.party?.address || invoice.supplier?.address || "-"];
+        worksheet.getRow(metaStartRow + 2).values = ['الهاتف:', invoice.party?.phone || invoice.supplier?.phone || "-", '', '', ''];
+
+        // Spacer
+        worksheet.addRow([]);
+        worksheet.addRow([]);
+
+        // --- 3. Items Table ---
+        // Manually Add Header Row to apply styles easily
+        const headerRow = worksheet.addRow(wsColumns.map(c => c.header));
+        headerRow.eachCell((cell) => {
+            cell.fill = tableHeaderFill;
+            cell.font = tableHeaderFont;
+            cell.alignment = { horizontal: 'center' };
+            cell.border = borderStyle;
+        });
+
+        // Add Data
+        displayItems.forEach((item, index) => {
+            const rowData = [(index + 1)];
+            const bonus = Number(item.bonus) || 0;
+
+            if (visibleCols.find(c => c.key === 'product')) rowData.push(item.product_name || item.Product?.name);
+            if (visibleCols.find(c => c.key === 'batch_number')) {
+                const batchNum = item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.batch_number || item.batch_number || "-";
+                rowData.push(batchNum);
+            }
+            if (visibleCols.find(c => c.key === 'expiry_date')) {
+                const expiryDate = item.inventory_transactions?.[0]?.transaction_batches?.[0]?.batch?.expiry_date || item.expiry_date || "-";
+                rowData.push(expiryDate);
+            }
+            if (visibleCols.find(c => c.key === 'quantity') || visibleCols.find(c => c.key === 'bonus')) rowData.push(bonus);
+
+            const row = worksheet.addRow(rowData);
+            row.height = 30;
+            row.eachCell((cell) => {
+                cell.border = borderStyle;
+                cell.font = bodyFont;
+                cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            });
+        });
+
+        // Auto Fit Columns - Based on table content only (ignoring header/logo)
+        // User requested to start from row 9
+        const tableStartRow = 9;
+
+        worksheet.columns.forEach((column) => {
+            let maxLength = 0;
+            // Iterate only cells starting from the table header
+            column.eachCell({ includeEmpty: true }, (cell) => {
+                if (cell.row >= tableStartRow) {
+                    const columnLength = cell.value ? cell.value.toString().length : 10;
+                    if (columnLength > maxLength) {
+                        maxLength = columnLength;
+                    }
+                }
+            });
+            column.width = maxLength < 10 ? 10 : maxLength + 2;
+        });
+
+        // Spacer
+        worksheet.addRow([]);
+
+        // --- Page Setup ---
+        worksheet.pageSetup = {
+            paperSize: paperSize === 'A5' ? 11 : 9,
+            orientation: 'landscape',
+            fitToPage: true,
+            fitToHeight: 1,
+            fitToWidth: 1,
+            margins: {
+                left: 0, right: 0, top: 0, bottom: 0,
+                header: 0, footer: 0
+            },
+            horizontalCentered: true,
+        };
+
+        // --- Write File ---
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/octet-stream' });
+        saveAs(blob, `Bonus_Invoice_${invoice.invoice_number}.xlsx`);
+    };
 
     const handleExportExcel = async () => {
         if (!invoice || !items) return;
@@ -352,8 +547,28 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
                     <Button autoFocus color="inherit" onClick={handleExportExcel} startIcon={<FileDownloadIcon />}>
                         تصدير Excel
                     </Button>
+                    <Button
+                        autoFocus
+                        color="inherit"
+                        onClick={handleExportBonusExcel}
+                        startIcon={<FileDownloadIcon />}
+                        sx={{ ml: 2 }}
+                        disabled={!hasBonusItems}
+                    >
+                        تصدير بونص Excel
+                    </Button>
                     <Button autoFocus color="inherit" onClick={handlePrint} startIcon={<PrintIcon />} sx={{ ml: 2 }}>
                         طباعة
+                    </Button>
+                    <Button
+                        autoFocus
+                        color="inherit"
+                        onClick={handlePrintBonus}
+                        startIcon={<PrintIcon />}
+                        sx={{ ml: 2 }}
+                        disabled={!hasBonusItems}
+                    >
+                        طباعة بونص
                     </Button>
                 </Toolbar>
             </AppBar>
@@ -451,6 +666,22 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
                             showCompanyIds={showCompanyIds}
                             showPhone={showPhone}
                         />
+                    </div>
+                    {/* Hidden Bonus Invoice for Printing */}
+                    <div style={{ display: 'none' }}>
+                        <div ref={bonusComponentRef}>
+                            <InvoicePaper
+                                invoice={invoice}
+                                items={items}
+                                columns={columns}
+                                type={type}
+                                company={selectedCompany}
+                                showCompanyAddress={showCompanyAddress}
+                                showCompanyIds={showCompanyIds}
+                                showPhone={showPhone}
+                                isBonus={true}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
