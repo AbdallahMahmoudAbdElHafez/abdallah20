@@ -6024,3 +6024,128 @@
 2026-03-08T16:08:04: ✅ Database connected
 2026-03-08T16:08:04: 🚀 Server listening on http://localhost:5000
 2026-03-08T16:11:29: Journal Entry created for Expense #132
+2026-03-09T10:04:07: ✅ Database connected
+2026-03-09T10:04:07: 🚀 Server listening on http://localhost:5000
+2026-03-09T10:31:34: === Creating Sales Invoice ===
+2026-03-09T10:31:34: Request body: {
+  "invoice_number": "",
+  "party_id": 16,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-03-09",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 11935,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 11935,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 330,
+      "discount": 759,
+      "discount_percent": 23,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 430,
+      "discount": 989,
+      "discount_percent": 23,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 520,
+      "discount": 1196,
+      "discount_percent": 23,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 270,
+      "discount": 621,
+      "discount_percent": 23,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-03-09T10:31:34: Service: Starting invoice creation
+2026-03-09T10:31:34: Service: Transaction committed
+2026-03-09T10:32:13: === Creating Sales Invoice ===
+2026-03-09T10:32:13: Request body: {
+  "invoice_number": "",
+  "party_id": 15,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-03-09",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 5280,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 5280,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 20,
+      "price": 330,
+      "discount": 1320,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-03-09T10:32:13: Service: Starting invoice creation
+2026-03-09T10:32:13: Service: Transaction committed
+2026-03-09T15:11:20: ✅ Database connected
+2026-03-09T15:11:20: 🚀 Server listening on http://localhost:5000
+2026-03-09T15:14:38: Journal Entry created for Expense #133
