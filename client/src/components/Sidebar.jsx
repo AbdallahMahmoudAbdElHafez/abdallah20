@@ -72,6 +72,7 @@ const warehousesMenu = [
   { label: "دليل المخازن", path: "/warehouses" },
   { label: "التحويل من مخزن الى مخزن", path: "/warehouse-transfers" },
   { label: "اذونات الصرف", path: "/issue-vouchers" },
+  { label: "مرتجعات اذون الصرف", path: "/issue-voucher-returns" },
   { label: "تسوية جرد", path: "/inventory-adjustment" },
 ];
 const reportsMenu = [

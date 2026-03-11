@@ -49,6 +49,80 @@ export async function createJournalEntry({
   }
 }
 
+/**
+ * إنشاء قيد عكسي بالكامل (يزيد الدائن ويجعل المدين دائن)
+ */
+export async function createReverseJournalEntry({
+  originalRefCode,
+  originalRefId,
+  newRefCode,
+  newRefId,
+  newDescription = "",
+  entryDate = new Date(),
+}, options = {}) {
+  const t = options.transaction || await sequelize.transaction();
+  const external = !!options.transaction;
+  try {
+    const origRefType = await ReferenceType.findOne({ where: { code: originalRefCode }, transaction: t });
+    if (!origRefType) throw new Error(`Original reference type '${originalRefCode}' not found`);
+
+    const originalEntry = await JournalEntry.findOne({
+      where: { reference_type_id: origRefType.id, reference_id: originalRefId },
+      include: [{ model: JournalEntryLine, as: 'lines' }],
+      transaction: t
+    });
+
+    if (!originalEntry || !originalEntry.lines || originalEntry.lines.length === 0) {
+      if (!external) await t.commit();
+      return null;
+    }
+
+    let newRefType = await ReferenceType.findOne({ where: { code: newRefCode }, transaction: t });
+    if (!newRefType) {
+      newRefType = await ReferenceType.create({
+        code: newRefCode,
+        name: newRefCode,
+        label: newRefCode,
+        description: 'Reverse Entry'
+      }, { transaction: t });
+    }
+
+    // منع التكرار
+    const existing = await JournalEntry.findOne({
+      where: { reference_type_id: newRefType.id, reference_id: newRefId },
+      transaction: t
+    });
+    if (existing) {
+      if (!external) await t.commit();
+      return existing;
+    }
+
+    const entry = await JournalEntry.create({
+      entry_date: entryDate,
+      description: newDescription || `قيد عكسي لـ: ${originalEntry.description}`,
+      reference_type_id: newRefType.id,
+      reference_id: newRefId,
+      entry_type_id: originalEntry.entry_type_id
+    }, { transaction: t });
+
+    const linesData = originalEntry.lines.map(l => ({
+      journal_entry_id: entry.id,
+      account_id: l.account_id,
+      debit: Number(l.credit) || 0,   // Reverse
+      credit: Number(l.debit) || 0,   // Reverse
+      description: `عكس: ${l.description || ''}`
+    }));
+
+    await JournalEntryLine.bulkCreate(linesData, { transaction: t });
+
+    if (!external) await t.commit();
+    return entry;
+  } catch (err) {
+    if (!external) await t.rollback();
+    throw err;
+  }
+}
+
 // إنشاء قيد يدوي (Manual Journal Entry)
 export async function createManualJournalEntry({
   entryDate = new Date(),

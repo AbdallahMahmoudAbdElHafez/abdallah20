@@ -30,6 +30,7 @@ import DepartmentsPage from "./pages/DepartmentsPage";
 import JobTitlesPage from "./pages/JobTitlesPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import IssueVouchersPage from "./pages/issueVouchersPage";
+import IssueVoucherReturnsPage from "./pages/IssueVoucherReturnsPage";
 import PurchaseReturnsPage from "./pages/purchaseReturnsPage";
 import ExpensesPage from "./pages/ExpensesPage";
 import SalesOrdersPage from "./pages/salesOrdersPage";
@@ -98,6 +99,7 @@ export default function App() {
           <Route path="/job-titles" element={<JobTitlesPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
           <Route path="/issue-vouchers" element={<IssueVouchersPage />} />
+          <Route path="/issue-voucher-returns" element={<IssueVoucherReturnsPage />} />
           <Route path="/purchase-returns" element={<PurchaseReturnsPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/sales-orders" element={<SalesOrdersPage />} />

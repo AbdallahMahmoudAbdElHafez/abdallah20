@@ -60,6 +60,7 @@ import warehouseInventoryRoutes from './routes/warehouseInventory.routes.js';
 import externalJobOrderServicesRoutes from './routes/externalJobOrderServices.routes.js';
 import externalServiceInvoicesRoutes from './routes/externalServiceInvoices.routes.js';
 import serviceTypesRoutes from './routes/serviceTypes.routes.js';
+import issueVoucherReturnsRoutes from './routes/issueVoucherReturns.routes.js';
 
 const app = express();
 app.use(cors());
@@ -127,6 +128,7 @@ app.use('/api/warehouse-inventory', warehouseInventoryRoutes);
 app.use('/api/external-job-order-services', externalJobOrderServicesRoutes);
 app.use('/api/external-service-invoices', externalServiceInvoicesRoutes);
 app.use('/api/service-types', serviceTypesRoutes);
+app.use('/api/issue-voucher-returns', issueVoucherReturnsRoutes);
 
 app.use(errorHandler);
 export default app;

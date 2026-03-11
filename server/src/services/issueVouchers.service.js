@@ -357,6 +357,7 @@ export class IssueVouchersService {
   }
 
   async updateVoucherStatus(id, status, approvedBy = null) {
+    const transaction = await sequelize.transaction();
     try {
       const updateData = { status };
 
@@ -364,9 +365,67 @@ export class IssueVouchersService {
         updateData.approved_by = approvedBy;
       }
 
-      const voucher = await this.updateIssueVoucher(id, updateData);
-      return voucher;
+      const voucher = await IssueVoucher.findByPk(id, { transaction });
+      if (!voucher) throw new Error('Issue voucher not found');
+
+      const oldStatus = voucher.status;
+      await voucher.update(updateData, { transaction });
+
+      if (status === 'cancelled' && oldStatus !== 'cancelled') {
+        const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
+        const { createReverseJournalEntry } = await import('./journal.service.js');
+        const { InventoryTransaction, InventoryTransactionBatches } = await import('../models/index.js');
+
+        // 1. Get voucher with items
+        const voucherWithItems = await this.getIssueVoucherById(id, true);
+
+        // 2. Create reverse inventory transactions (IN)
+        for (const item of voucherWithItems.items) {
+          if (Number(item.quantity) > 0) {
+            // Find the original Out transactions for this item to get the exact batches used
+            const originalOutTxs = await InventoryTransaction.findAll({
+              where: { source_type: 'issue_voucher', source_id: item.id },
+              include: [{ model: InventoryTransactionBatches, as: 'transaction_batches' }],
+              transaction
+            });
+
+            for (const outTx of originalOutTxs) {
+              // Create IN transaction to return exact batches
+              const batches = outTx.transaction_batches ? outTx.transaction_batches.map(b => ({
+                batch_id: b.batch_id,
+                quantity: b.quantity,
+                cost_per_unit: b.cost_per_unit
+              })) : [];
+
+              await InventoryTransactionService.create({
+                product_id: outTx.product_id,
+                warehouse_id: outTx.warehouse_id,
+                transaction_type: 'in',
+                transaction_date: new Date(),
+                note: `استرجاع كميات لإلغاء اذن صرف رقم #${voucher.voucher_no}`,
+                source_type: 'issue_voucher_cancel',
+                source_id: item.id,
+                batches: batches.length > 0 ? batches : [{ quantity: outTx.quantity, cost_per_unit: 0 }]
+              }, { transaction });
+            }
+          }
+        }
+
+        // 3. Create Reverse Journal Entry
+        await createReverseJournalEntry({
+          originalRefCode: 'issue_voucher',
+          originalRefId: id,
+          newRefCode: 'issue_voucher_cancel',
+          newRefId: id,
+          newDescription: `قيد عكسي لإلغاء اذن صرف رقم #${voucher.voucher_no}`,
+          entryDate: new Date()
+        }, { transaction });
+      }
+
+      await transaction.commit();
+      return await this.getIssueVoucherById(id, true);
     } catch (error) {
+      await transaction.rollback();
       throw new Error(`Error updating voucher status: ${error.message}`);
     }
   }

@@ -68,6 +68,8 @@ import ExternalServiceInvoiceModel from './externalServiceInvoice.model.js';
 import ExternalServiceInvoiceItemModel from './externalServiceInvoiceItem.model.js';
 import ExternalServiceInvoiceItemTaxModel from './externalServiceInvoiceItemTax.model.js';
 import JobOrderCostTransactionModel from './jobOrderCostTransaction.model.js';
+import IssueVoucherReturnModel from './issueVoucherReturns.model.js';
+import IssueVoucherReturnItemModel from './issueVoucherReturnItems.model.js';
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -136,6 +138,8 @@ const ExternalServiceInvoice = ExternalServiceInvoiceModel(sequelize);
 const ExternalServiceInvoiceItem = ExternalServiceInvoiceItemModel(sequelize);
 const ExternalServiceInvoiceItemTax = ExternalServiceInvoiceItemTaxModel(sequelize);
 const JobOrderCostTransaction = JobOrderCostTransactionModel(sequelize);
+const IssueVoucherReturn = IssueVoucherReturnModel(sequelize);
+const IssueVoucherReturnItem = IssueVoucherReturnItemModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -839,6 +843,70 @@ ExternalJobOrder.hasMany(JobOrderCostTransaction, { foreignKey: 'job_order_id', 
 JobOrderCostTransaction.belongsTo(ExternalServiceInvoice, { foreignKey: 'invoice_id', as: 'invoice' });
 ExternalServiceInvoice.hasMany(JobOrderCostTransaction, { foreignKey: 'invoice_id', as: 'cost_transactions' });
 
+// === IssueVoucherReturn Associations ===
+// IssueVoucherReturn ↔ IssueVoucher
+IssueVoucher.hasMany(IssueVoucherReturn, {
+  foreignKey: "issue_voucher_id",
+  as: "returns",
+  onDelete: "RESTRICT"
+});
+IssueVoucherReturn.belongsTo(IssueVoucher, {
+  foreignKey: "issue_voucher_id",
+  as: "issue_voucher"
+});
+
+// IssueVoucherReturn ↔ Warehouse
+Warehouse.hasMany(IssueVoucherReturn, {
+  foreignKey: "warehouse_id",
+  as: "issue_voucher_returns"
+});
+IssueVoucherReturn.belongsTo(Warehouse, {
+  foreignKey: "warehouse_id",
+  as: "warehouse"
+});
+
+// IssueVoucherReturn ↔ Employee
+Employee.hasMany(IssueVoucherReturn, {
+  foreignKey: "employee_id",
+  as: "voucher_returns"
+});
+IssueVoucherReturn.belongsTo(Employee, {
+  foreignKey: "employee_id",
+  as: "employee"
+});
+
+// IssueVoucherReturn ↔ Employee (approved_by)
+Employee.hasMany(IssueVoucherReturn, {
+  foreignKey: "approved_by",
+  as: "approved_voucher_returns"
+});
+IssueVoucherReturn.belongsTo(Employee, {
+  foreignKey: "approved_by",
+  as: "approver"
+});
+
+// === IssueVoucherReturnItem Associations ===
+// IssueVoucherReturn ↔ IssueVoucherReturnItem
+IssueVoucherReturn.hasMany(IssueVoucherReturnItem, {
+  foreignKey: "return_id",
+  as: "items",
+  onDelete: "CASCADE"
+});
+IssueVoucherReturnItem.belongsTo(IssueVoucherReturn, {
+  foreignKey: "return_id",
+  as: "return"
+});
+
+// IssueVoucherReturnItem ↔ Product
+Product.hasMany(IssueVoucherReturnItem, {
+  foreignKey: "product_id",
+  as: "issue_voucher_return_items"
+});
+IssueVoucherReturnItem.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product"
+});
+
 export {
   sequelize,
   Company,
@@ -900,5 +968,7 @@ export {
   ExternalServiceInvoiceItem,
   ExternalServiceInvoiceItemTax,
   JobOrderCostTransaction,
+  IssueVoucherReturn,
+  IssueVoucherReturnItem,
 
 };
