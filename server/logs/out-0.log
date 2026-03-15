@@ -6960,3 +6960,44 @@
 2026-03-12T16:48:40: Service: Starting invoice creation
 2026-03-12T16:48:40: Service: Transaction committed
 2026-03-12T17:07:08: Journal Entry created for Expense #134
+2026-03-12T18:22:19: ✅ Database connected
+2026-03-12T18:22:19: 🚀 Server listening on http://localhost:5000
+2026-03-12T18:27:17: Journal Entry created for Expense #135
+2026-03-12T18:29:01: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-03-12T18:29:01: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 1 quantityChange: -112
+2026-03-12T18:29:01: Debug: Updated batch_inventory for batch 4
+2026-03-12T18:29:01: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-03-12T18:29:01: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: 112
+2026-03-12T18:29:01: Debug: Updated batch_inventory for batch 4
+2026-03-12T18:29:01: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-03-12T18:29:01: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 1 quantityChange: -56
+2026-03-12T18:29:01: Debug: Updated batch_inventory for batch 6
+2026-03-12T18:29:01: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-03-12T18:29:01: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: 56
+2026-03-12T18:29:01: Debug: Updated batch_inventory for batch 6
+2026-03-12T18:29:01: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-03-12T18:29:02: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 1 quantityChange: -56
+2026-03-12T18:29:02: Debug: Updated batch_inventory for batch 5
+2026-03-12T18:29:02: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-03-12T18:29:02: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: 56
+2026-03-12T18:29:02: Debug: Updated batch_inventory for batch 5
+2026-03-12T18:29:02: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-03-12T18:29:02: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 1 quantityChange: -112
+2026-03-12T18:29:02: Debug: Updated batch_inventory for batch 2
+2026-03-12T18:29:02: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-03-12T18:29:02: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: 112
+2026-03-12T18:29:02: Debug: Updated batch_inventory for batch 2
+2026-03-12T18:29:37: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-03-12T18:29:37: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 1 quantityChange: -112
+2026-03-12T18:29:37: Debug: Updated batch_inventory for batch 3
+2026-03-12T18:29:37: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-03-12T18:29:37: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: 112
+2026-03-12T18:29:37: Debug: Updated batch_inventory for batch 3
+2026-03-13T21:52:48: ✅ Database connected
+2026-03-13T21:52:48: 🚀 Server listening on http://localhost:5000
+2026-03-13T21:55:32: Journal Entry created for Expense #136
+2026-03-13T21:56:41: Journal Entry created for Expense #137
+2026-03-13T22:00:13: Journal Entry created for Expense #138
+2026-03-13T22:00:59: Journal Entry created for Expense #139
+2026-03-14T10:30:30: ✅ Database connected
+2026-03-14T10:30:30: 🚀 Server listening on http://localhost:5000
