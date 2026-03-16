@@ -27518,3 +27518,12 @@ Error
 2026-03-15T22:55:08: 🚀 Server listening on http://localhost:5000
 2026-03-15T23:47:10: Journal Entry created for Expense #140
 2026-03-15T23:49:18: Journal Entry created for Expense #141
+2026-03-16T10:15:36: ✅ Database connected
+2026-03-16T10:15:36: 🚀 Server listening on http://localhost:5000
+2026-03-16T10:38:01: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-03-16T10:38:01: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -1
+2026-03-16T10:38:01: Debug: Updated batch_inventory for batch 4
+2026-03-16T10:38:01: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-03-16T10:38:01: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -1
+2026-03-16T10:38:01: Debug: Updated batch_inventory for batch 5
+2026-03-16T10:38:01: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1773650233790
