@@ -1,4 +1,4 @@
-import { getCustomerStatement } from "../services/customerLedger.service.js";
+import { getCustomerStatement, getDetailedCustomerStatement } from "../services/customerLedger.service.js";
 import exportService from "../services/exportService.js";
 
 export async function getStatement(req, res, next) {
@@ -28,3 +28,32 @@ export async function exportStatement(req, res, next) {
         next(err);
     }
 }
+
+export async function getDetailedStatement(req, res, next) {
+    try {
+        const { from, to } = req.query;
+        const customerId = req.params.id;
+
+        const result = await getDetailedCustomerStatement(customerId, { from, to });
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
+}
+
+export async function exportDetailedStatement(req, res, next) {
+    try {
+        const { from, to } = req.query;
+        const customerId = req.params.id;
+
+        const result = await getDetailedCustomerStatement(customerId, { from, to });
+        const buffer = await exportService.exportDetailedCustomerStatement(result);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="Detailed_Customer_Statement_${customerId}.xlsx"`);
+        res.send(buffer);
+    } catch (err) {
+        next(err);
+    }
+}
+

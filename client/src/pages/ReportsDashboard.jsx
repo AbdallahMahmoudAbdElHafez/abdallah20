@@ -116,6 +116,13 @@ const ReportsDashboard = () => {
             icon: <PaymentIcon sx={{ fontSize: 60, color: '#009688' }} />,
             path: '/reports/safe-movements',
             color: '#e0f2f1'
+        },
+        {
+            title: 'كشف حساب عميل تفصيلي',
+            description: 'كشف حساب تفصيلي للعميل مع عرض تفاصيل الأصناف في كل فاتورة ومرتجع',
+            icon: <AssessmentIcon sx={{ fontSize: 60, color: '#00695c' }} />,
+            path: '/customers/statement-detailed',
+            color: '#e0f2f1'
         }
     ];
 

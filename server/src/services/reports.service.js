@@ -268,6 +268,7 @@ const getSalesReport = async (startDate, endDate) => {
     const chartData = {};
     const employeeData = {};
     const employeeProductStats = {};
+    const customerProductStats = {}; // [NEW] Customer Product Stats
     const regionData = {};
     const productStats = {};
 
@@ -317,6 +318,15 @@ const getSalesReport = async (startDate, endDate) => {
                 }
                 employeeProductStats[epKey].quantity += qty;
                 employeeProductStats[epKey].revenue += revenue;
+
+                // [NEW] Customer Product Stats
+                const customerName = sale.party?.name || 'غير محدد';
+                const cpKey = `${customerName}_${productId}`;
+                if (!customerProductStats[cpKey]) {
+                    customerProductStats[cpKey] = { customer: customerName, product: productName, quantity: 0, revenue: 0 };
+                }
+                customerProductStats[cpKey].quantity += qty;
+                customerProductStats[cpKey].revenue += revenue;
             });
         }
     });
@@ -366,6 +376,15 @@ const getSalesReport = async (startDate, endDate) => {
                 }
                 employeeProductStats[epKey].quantity -= qty;
                 employeeProductStats[epKey].revenue -= revenue;
+
+                // [NEW] Deduct from Customer Product Stats
+                const customerName = ret.customer?.name || 'غير محدد';
+                const cpKey = `${customerName}_${productId}`;
+                if (!customerProductStats[cpKey]) {
+                    customerProductStats[cpKey] = { customer: customerName, product: productName, quantity: 0, revenue: 0 };
+                }
+                customerProductStats[cpKey].quantity -= qty;
+                customerProductStats[cpKey].revenue -= revenue;
             });
         }
     });
@@ -394,6 +413,10 @@ const getSalesReport = async (startDate, endDate) => {
     const salesByEmployeeProduct = Object.values(employeeProductStats)
         .sort((a, b) => a.employee.localeCompare(b.employee) || b.revenue - a.revenue);
 
+    // [NEW] Convert and sort customer product stats
+    const salesByCustomerProduct = Object.values(customerProductStats)
+        .sort((a, b) => a.customer.localeCompare(b.customer) || b.revenue - a.revenue);
+
     return {
         data: sales,
         returns: returns, // [NEW] Send returns data too if needed for detailed list
@@ -402,7 +425,8 @@ const getSalesReport = async (startDate, endDate) => {
         salesByEmployee,
         salesByRegion,
         salesByProduct,
-        salesByEmployeeProduct
+        salesByEmployeeProduct,
+        salesByCustomerProduct // [NEW]
     };
 };
 

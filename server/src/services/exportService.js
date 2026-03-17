@@ -719,12 +719,133 @@ const exportIssueVouchersEmployeeReport = async (data, summary) => {
     return await workbook.xlsx.writeBuffer();
 };
 
+/**
+ * Export Detailed Customer Statement to Excel (with item breakdown)
+ */
+const exportDetailedCustomerStatement = async (statementData) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('كشف حساب تفصيلي');
+
+    worksheet.views = [{ rightToLeft: true }];
+
+    // Title
+    worksheet.mergeCells('A1:F1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = `كشف حساب تفصيلي: ${statementData.customer?.name || ''}`;
+    titleCell.font = { size: 18, bold: true, color: { argb: 'FF00695C' } };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    worksheet.addRow([]);
+    worksheet.addRow(['العميل:', statementData.customer?.name || '']);
+    worksheet.addRow(['التاريخ:', new Date().toLocaleDateString('ar-EG')]);
+    worksheet.addRow(['الرصيد الافتتاحي:', parseFloat(statementData.opening_balance || 0)]);
+    worksheet.addRow([]);
+
+    // Table Headers
+    const headers = ['التاريخ', 'النوع', 'الوصف', 'مدين', 'دائن', 'الرصيد'];
+    const headerRow = worksheet.addRow(headers);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.eachCell((cell) => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00695C' } };
+        cell.alignment = { horizontal: 'center' };
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+    });
+
+    const typeNames = {
+        invoice: 'فاتورة',
+        payment: 'سداد',
+        return: 'مرتجع',
+        refund: 'رد نقدية',
+        replacement: 'استبدال'
+    };
+
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    statementData.statement.forEach(row => {
+        const debit = parseFloat(row.debit || 0);
+        const credit = parseFloat(row.credit || 0);
+        totalDebit += debit;
+        totalCredit += credit;
+
+        // Main transaction row
+        const dataRow = worksheet.addRow([
+            (row.date || '').slice(0, 10),
+            typeNames[row.type] || row.type,
+            row.description || '',
+            debit,
+            credit,
+            parseFloat(row.running_balance || 0)
+        ]);
+        dataRow.font = { bold: true };
+        dataRow.eachCell((cell) => {
+            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            cell.alignment = { horizontal: 'center' };
+        });
+
+        // Item detail rows
+        if (row.items && row.items.length > 0) {
+            const itemHeaderRow = worksheet.addRow(['', '', 'المنتج', 'الكمية', 'السعر', 'الإجمالي']);
+            itemHeaderRow.font = { italic: true, bold: true, size: 10, color: { argb: 'FF455A64' } };
+            itemHeaderRow.eachCell((cell, colNumber) => {
+                if (colNumber >= 3) {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } };
+                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                }
+            });
+
+            row.items.forEach(item => {
+                const itemRow = worksheet.addRow([
+                    '',
+                    '',
+                    item.product_name || '',
+                    parseFloat(item.quantity || 0),
+                    parseFloat(item.price || 0),
+                    parseFloat(item.total || 0)
+                ]);
+                itemRow.font = { size: 10, color: { argb: 'FF616161' } };
+                itemRow.eachCell((cell, colNumber) => {
+                    if (colNumber >= 3) {
+                        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                        cell.alignment = { horizontal: 'center' };
+                    }
+                });
+            });
+        }
+    });
+
+    // Footer Totals
+    worksheet.addRow([]);
+    const footerRow = worksheet.addRow(['', '', 'الإجمالي', totalDebit, totalCredit, parseFloat(statementData.closing_balance || 0)]);
+    footerRow.font = { bold: true, size: 12 };
+    footerRow.eachCell((cell, colNumber) => {
+        if (colNumber >= 3) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE0F2F1' } };
+            cell.border = { top: { style: 'medium' }, left: { style: 'thin' }, bottom: { style: 'medium' }, right: { style: 'thin' } };
+            cell.alignment = { horizontal: 'center' };
+        }
+    });
+
+    // Column widths
+    worksheet.columns = [
+        { width: 15 },  // Date
+        { width: 12 },  // Type
+        { width: 40 },  // Description / Product
+        { width: 15 },  // Debit / Qty
+        { width: 15 },  // Credit / Price
+        { width: 15 }   // Balance / Total
+    ];
+
+    return await workbook.xlsx.writeBuffer();
+};
+
 export default {
     exportSalesReport,
     exportPurchasesReport,
     exportExpensesReport,
     exportJobOrdersReport,
     exportCustomerStatement,
+    exportDetailedCustomerStatement,
     exportCustomerReceivablesReport,
     exportSafeMovementsReport,
     exportGeneralLedgerReport,

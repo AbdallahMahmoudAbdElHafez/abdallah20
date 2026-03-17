@@ -60,6 +60,7 @@ import SafeMovementsReportPage from "./pages/SafeMovementsReportPage";
 import ExternalServiceInvoicesPage from "./pages/ExternalServiceInvoicesPage";
 import ServiceTypesPage from "./pages/ServiceTypesPage";
 import GeneralLedgerReport from "./pages/GeneralLedgerReport";
+import DetailedCustomerStatementPage from "./pages/DetailedCustomerStatementPage";
 
 const drawerWidth = 240;
 
@@ -107,6 +108,8 @@ export default function App() {
           <Route path="/sales-invoice-payments" element={<SalesInvoicePaymentsPage />} />
           <Route path="/customers/statement" element={<CustomerStatementPage />} />
           <Route path="/customers/:customerId/statement" element={<CustomerStatementPage />} />
+          <Route path="/customers/statement-detailed" element={<DetailedCustomerStatementPage />} />
+          <Route path="/customers/:customerId/statement-detailed" element={<DetailedCustomerStatementPage />} />
           <Route path="/sales-returns" element={<SalesReturnsPage />} />
           <Route path="/companies" element={<CompaniesPage />} />
           <Route path="/reports" element={<ReportsPage />} />
