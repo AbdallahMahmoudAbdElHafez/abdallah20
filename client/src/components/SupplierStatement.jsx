@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { fetchSupplierStatement } from "../api/supplierLedgerApi";
+import { fetchSupplierStatement, exportSupplierStatement } from "../api/supplierLedgerApi";
 import { defaultTableProps } from "../config/tableConfig";
 import {
   Card,
@@ -10,7 +10,9 @@ import {
   Box,
   Button,
   CircularProgress,
+  Stack,
 } from "@mui/material";
+import { FileDownload as FileDownloadIcon } from "@mui/icons-material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ar } from "date-fns/locale";
@@ -22,9 +24,32 @@ export default function SupplierStatement({ supplierId, fromParam, toParam }) {
   const [error, setError] = useState("");
   const [from, setFrom] = useState(fromParam ? new Date(fromParam) : null);
   const [to, setTo] = useState(toParam ? new Date(toParam) : null);
+  const [exporting, setExporting] = useState(false);
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const blob = await exportSupplierStatement(supplierId, {
+        from: from ? from.toISOString().slice(0, 10) : "",
+        to: to ? to.toISOString().slice(0, 10) : "",
+      });
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Supplier_Statement_${supplierId}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch (err) {
+      console.error("Export error:", err);
+      alert("حدث خطأ أثناء التصدير");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -102,10 +127,23 @@ export default function SupplierStatement({ supplierId, fromParam, toParam }) {
   return (
     <Card sx={{ maxWidth: "100%", mx: "auto", p: 2, boxShadow: 4 }}>
       <CardHeader
+        sx={{ bgcolor: 'primary.main', color: 'white' }}
         title={
-          <Typography variant="h5" fontWeight="bold" textAlign="center">
-            كشف حساب: {supplierName}
-          </Typography>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Typography variant="h5" fontWeight="bold">
+              كشف حساب: {supplierName}
+            </Typography>
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExport}
+              disabled={exporting}
+              sx={{ borderRadius: 2, fontWeight: 'bold' }}
+            >
+              {exporting ? "جاري التصدير..." : "تصدير Excel"}
+            </Button>
+          </Stack>
         }
       />
       <CardContent>

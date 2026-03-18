@@ -147,7 +147,6 @@ export default function ExpensesPage() {
             header: "إجراءات",
             Cell: ({ row }) => (
                 <Box>
-                    <Button onClick={() => handleOpen(row.original)}>تعديل</Button>
                     <Button color="error" onClick={() => handleDelete(row.original.id)}>
                         حذف
                     </Button>
