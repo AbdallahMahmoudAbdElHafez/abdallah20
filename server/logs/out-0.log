@@ -8340,3 +8340,159 @@
 2026-03-25T14:09:33: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
 2026-03-25T14:09:33: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: 56
 2026-03-25T14:09:33: Debug: Updated batch_inventory for batch 5
+2026-03-25T14:42:50: === Creating Sales Invoice ===
+2026-03-25T14:42:50: Request body: {
+  "invoice_number": "",
+  "party_id": 86,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-03-14",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 1001.3,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1001.3,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 430,
+      "discount": 64.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 228,
+      "discount": 34.2,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 520,
+      "discount": 78,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-03-25T14:42:50: Service: Starting invoice creation
+2026-03-25T14:42:50: Service: Transaction committed
+2026-03-25T14:43:52: Service: Invoice updated. ID: 289, Status: approved
+2026-03-25T14:43:52: Service: Status is approved, recreating side effects
+2026-03-25T14:43:52: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-03-25T14:43:52: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 3 quantityChange: -1
+2026-03-25T14:43:52: Debug: Updated batch_inventory for batch 4
+2026-03-25T14:43:52: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-03-25T14:43:52: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 3 quantityChange: -1
+2026-03-25T14:43:52: Debug: Updated batch_inventory for batch 6
+2026-03-25T14:43:52: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-03-25T14:43:52: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 3 quantityChange: -1
+2026-03-25T14:43:52: Debug: Updated batch_inventory for batch 2
+2026-03-25T14:43:52: Service: Invoice Journal Entry Created
+2026-03-25T14:51:46: === Creating Sales Invoice ===
+2026-03-25T14:51:46: Request body: {
+  "invoice_number": "",
+  "party_id": 108,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-03-18",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 1020,
+  "additional_discount": "31",
+  "additional_discount_percent": "3.04",
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 989,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 430,
+      "discount": 64.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 250,
+      "discount": 37.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 520,
+      "discount": 78,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-03-25T14:51:46: Service: Starting invoice creation
+2026-03-25T14:51:46: Service: Transaction committed
+2026-03-25T14:52:16: Service: Invoice updated. ID: 290, Status: approved
+2026-03-25T14:52:16: Service: Status is approved, recreating side effects
+2026-03-25T14:52:16: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-03-25T14:52:16: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 3 quantityChange: -1
+2026-03-25T14:52:16: Debug: Updated batch_inventory for batch 4
+2026-03-25T14:52:16: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-03-25T14:52:16: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 3 quantityChange: -1
+2026-03-25T14:52:16: Debug: Updated batch_inventory for batch 5
+2026-03-25T14:52:16: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-03-25T14:52:16: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 3 quantityChange: -1
+2026-03-25T14:52:16: Debug: Updated batch_inventory for batch 2
+2026-03-25T14:52:16: Service: Invoice Journal Entry Created
