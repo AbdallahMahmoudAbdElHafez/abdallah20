@@ -8134,3 +8134,209 @@
 2026-03-24T17:00:45: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
 2026-03-24T17:00:45: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 10 quantityChange: 15
 2026-03-24T17:00:45: Debug: Updated batch_inventory for batch 1
+2026-03-25T10:23:01: ✅ Database connected
+2026-03-25T10:23:01: 🚀 Server listening on http://localhost:5000
+2026-03-25T10:30:59: === Creating Sales Invoice ===
+2026-03-25T10:30:59: Request body: {
+  "invoice_number": "",
+  "party_id": 6,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-03-25",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 12609.03,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 1765.2642,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 14374.2942,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 430,
+      "discount": 1380.3,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 408.758
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 220,
+      "discount": 706.2,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 209.132
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 15,
+      "price": 250,
+      "discount": 1203.75,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 356.475
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 16,
+      "price": 520,
+      "discount": 2670.72,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 790.8992000000002
+    }
+  ]
+}
+2026-03-25T10:30:59: Service: Starting invoice creation
+2026-03-25T10:30:59: Service: Transaction committed
+2026-03-25T11:01:19: === Creating Sales Invoice ===
+2026-03-25T11:01:19: Request body: {
+  "invoice_number": "",
+  "party_id": 10,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 2,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-03-25",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 3960,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 3960,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 330,
+      "discount": 924,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 220,
+      "discount": 616,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-03-25T11:01:19: Service: Starting invoice creation
+2026-03-25T11:01:19: Service: Transaction committed
+2026-03-25T14:03:21: === Creating Sales Invoice ===
+2026-03-25T14:03:21: Request body: {
+  "invoice_number": "",
+  "party_id": 26,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 5,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-03-25",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 10736.01,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 1503.0413999999998,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 12239.0514,
+  "note": "",
+  "items": [
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 250,
+      "discount": 745.75,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 14,
+      "vat_amount": 245.595
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 20,
+      "price": 520,
+      "discount": 3102.32,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 2,
+      "vat_rate": 14,
+      "vat_amount": 1021.6752
+    },
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 240,
+      "discount": 715.92,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 14,
+      "vat_amount": 235.7712
+    }
+  ]
+}
+2026-03-25T14:03:21: Service: Starting invoice creation
+2026-03-25T14:03:22: Service: Transaction committed
+2026-03-25T14:09:32: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-03-25T14:09:33: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 1 quantityChange: -56
+2026-03-25T14:09:33: Debug: Updated batch_inventory for batch 5
+2026-03-25T14:09:33: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-03-25T14:09:33: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: 56
+2026-03-25T14:09:33: Debug: Updated batch_inventory for batch 5
