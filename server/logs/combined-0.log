@@ -28662,3 +28662,170 @@ Error
 2026-03-28T11:08:27: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 11 quantityChange: -1
 2026-03-28T11:08:27: Debug: Updated batch_inventory for batch 6
 2026-03-28T11:08:27: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1774688870405
+2026-03-29T09:54:23: ✅ Database connected
+2026-03-29T09:54:23: 🚀 Server listening on http://localhost:5000
+2026-03-29T10:01:55: Service: Invoice updated. ID: 287, Status: approved
+2026-03-29T10:01:55: Service: Status is approved, recreating side effects
+2026-03-29T10:01:55: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-03-29T10:01:55: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -10
+2026-03-29T10:01:55: Debug: Updated batch_inventory for batch 3
+2026-03-29T10:01:55: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-03-29T10:01:55: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -10
+2026-03-29T10:01:55: Debug: Updated batch_inventory for batch 1
+2026-03-29T10:01:55: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-03-29T10:01:55: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -5
+2026-03-29T10:01:55: Debug: Updated batch_inventory for batch 4
+2026-03-29T10:01:55: Service: Invoice Journal Entry Created
+2026-03-29T10:10:35: === Creating Sales Invoice ===
+2026-03-29T10:10:35: Request body: {
+  "invoice_number": "",
+  "party_id": 16,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-03-29",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 10164,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 10164,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 40,
+      "price": 330,
+      "discount": 3036,
+      "discount_percent": 23,
+      "tax_percent": 0,
+      "bonus": 2,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-03-29T10:10:35: Service: Starting invoice creation
+2026-03-29T10:10:35: Service: Transaction committed
+2026-03-29T10:13:16: === Creating Sales Invoice ===
+2026-03-29T10:13:16: Request body: {
+  "invoice_number": "",
+  "party_id": 17,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-03-29",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 6080,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 6080,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 330,
+      "discount": 660,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 430,
+      "discount": 860,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-03-29T10:13:16: Service: Starting invoice creation
+2026-03-29T10:13:16: Service: Transaction committed
+2026-03-29T10:20:32: === Creating Sales Invoice ===
+2026-03-29T10:20:32: Request body: {
+  "invoice_number": "",
+  "party_id": 31,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 5,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-03-29",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": "0",
+  "shipping_by": "شركة شحن",
+  "subtotal": 2422.5,
+  "additional_discount": "73.5",
+  "additional_discount_percent": "3.03",
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 2349,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 330,
+      "discount": 247.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 240,
+      "discount": 180,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-03-29T10:20:32: Service: Starting invoice creation
+2026-03-29T10:20:32: Service: Transaction committed
+2026-03-29T10:22:38: Service: Invoice updated. ID: 295, Status: draft
+2026-03-29T10:37:56: Journal Entry created for Expense #147
+2026-03-29T10:39:26: Journal Entry created for Expense #148
