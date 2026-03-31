@@ -19938,3 +19938,5 @@ Error
     at async Object.getAll (file:///d:/db/server/src/services/externalJobOrders.service.js:22:12)
     at async getAll (file:///d:/db/server/src/controllers/externalJobOrders.controller.js:28:18)
 2026-03-01T10:44:38: FIFO Cost Error for Product 5: No inventory available for product 5 in warehouse 10
+2026-03-30T17:49:37: FIFO Cost Error for Product 15: No inventory available for product 15 in warehouse 6
+2026-03-30T17:49:37: Issue Voucher: FIFO Cost Failed, falling back to cost_price
