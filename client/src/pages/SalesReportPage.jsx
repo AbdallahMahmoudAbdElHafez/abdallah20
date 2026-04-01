@@ -264,6 +264,7 @@ const SalesReportPage = () => {
                     { accessorKey: `${prod}_qty`, id: `${prod}_qty`, header: 'الكمية', size: 80 },
                     { accessorKey: `${prod}_bonus`, id: `${prod}_bonus`, header: 'بونص', size: 80 },
                     { accessorKey: `${prod}_disc_pct`, id: `${prod}_disc_pct`, header: 'الخصم %', size: 85, Cell: ({ cell }) => `${cell.getValue()?.toFixed(1) || 0}%` },
+                    { accessorKey: `${prod}_add_disc_val`, id: `${prod}_add_disc_val`, header: 'خ. إضافي', size: 100, Cell: ({ cell }) => formatCurrency(cell.getValue()) },
                     { accessorKey: `${prod}_val`, id: `${prod}_val`, header: 'القيمة', size: 100, Cell: ({ cell }) => formatCurrency(cell.getValue()) }
                 ]
             });
@@ -302,6 +303,7 @@ const SalesReportPage = () => {
                 row[`${p}_bonus`] = 0;
                 row[`${p}_val`] = 0;
                 row[`${p}_disc_pct`] = 0;
+                row[`${p}_add_disc_val`] = 0;
                 prodAggregation[p] = { baseTotal: 0, discTotal: 0 };
             });
 
@@ -313,9 +315,11 @@ const SalesReportPage = () => {
                 const tax = parseFloat(item.tax_amount || 0);
                 const vat = parseFloat(item.vat_amount || 0);
                 const base = qty * price;
+                const addDiscPortion = (base - disc) * (addDiscPct / 100);
                 row[`${p}_qty`] += qty;
                 row[`${p}_bonus`] += parseFloat(item.bonus || 0);
-                row[`${p}_val`] += base - disc + tax + vat;
+                row[`${p}_add_disc_val`] += addDiscPortion;
+                row[`${p}_val`] += base - disc - addDiscPortion + tax + vat;
                 if (prodAggregation[p]) {
                     prodAggregation[p].baseTotal += base;
                     prodAggregation[p].discTotal += disc;
@@ -350,6 +354,7 @@ const SalesReportPage = () => {
                 row[`${p}_bonus`] = 0;
                 row[`${p}_val`] = 0;
                 row[`${p}_disc_pct`] = 0;
+                row[`${p}_add_disc_val`] = 0;
             });
 
             ret.items?.forEach(item => {
@@ -358,6 +363,7 @@ const SalesReportPage = () => {
                 const price = parseFloat(item.price || 0);
                 // For returns, we treat the value as negative
                 row[`${p}_qty`] -= qty;
+                row[`${p}_add_disc_val`] -= 0; // Assuming returns don't have prorated additional discount or it's negligible here
                 row[`${p}_val`] -= (qty * price);
             });
 
@@ -387,6 +393,7 @@ const SalesReportPage = () => {
                 totalsRow[`${p}_bonus`] = 0;
                 totalsRow[`${p}_val`] = 0;
                 totalsRow[`${p}_disc_pct`] = 0; // Average or N/A
+                totalsRow[`${p}_add_disc_val`] = 0;
             });
 
             allRows.forEach((r) => {
@@ -395,6 +402,7 @@ const SalesReportPage = () => {
                     sortedProducts.forEach(p => {
                         totalsRow[`${p}_qty`] += r[`${p}_qty`];
                         totalsRow[`${p}_val`] += r[`${p}_val`];
+                        totalsRow[`${p}_add_disc_val`] += r[`${p}_add_disc_val`] || 0;
                     });
                 } else {
                     // Find original invoice for subtotal/discount calcs
@@ -408,6 +416,7 @@ const SalesReportPage = () => {
                         totalsRow[`${p}_qty`] += r[`${p}_qty`];
                         totalsRow[`${p}_bonus`] += r[`${p}_bonus`];
                         totalsRow[`${p}_val`] += r[`${p}_val`];
+                        totalsRow[`${p}_add_disc_val`] += r[`${p}_add_disc_val`] || 0;
                     });
                 }
             });

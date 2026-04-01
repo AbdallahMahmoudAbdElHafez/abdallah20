@@ -1944,6 +1944,89 @@ const getConsolidatedSafeMovementsReport = async (startDate, endDate) => {
     };
 };
 
+/**
+ * Sales Analysis and Purchasing Recommendation Report
+ */
+const getSalesAnalysisReport = async (startDate, endDate) => {
+    const { Product, CurrentInventory, SalesInvoiceItem, SalesInvoice, sequelize } = await import('../models/index.js');
+
+    // 1. Get all products with their current inventory
+    const products = await Product.findAll({
+        attributes: ['id', 'name'],
+        include: [{
+            model: CurrentInventory,
+            as: 'current_inventory',
+            attributes: ['quantity']
+        }]
+    });
+
+    // 2. Get total sales for each product in the period
+    const sales = await SalesInvoiceItem.findAll({
+        attributes: [
+            'product_id',
+            [sequelize.fn('SUM', sequelize.col('quantity')), 'total_sold']
+        ],
+        include: [{
+            model: SalesInvoice,
+            as: 'sales_invoice',
+            attributes: [],
+            where: {
+                invoice_date: { [Op.between]: [startDate, endDate] }
+            }
+        }],
+        group: ['product_id'],
+        raw: true
+    });
+
+    const salesMap = sales.reduce((acc, item) => {
+        acc[item.product_id] = parseFloat(item.total_sold || 0);
+        return acc;
+    }, {});
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const daysCount = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1);
+
+    // 3. Combine data and calculate recommendation
+    const reportData = products.map(product => {
+        const currentStock = product.current_inventory?.reduce((sum, inv) => sum + parseFloat(inv.quantity), 0) || 0;
+        const totalSold = salesMap[product.id] || 0;
+        const dailyAvg = parseFloat((totalSold / daysCount).toFixed(2));
+        const daysToStockout = dailyAvg > 0 ? Math.floor(currentStock / dailyAvg) : (currentStock > 0 ? 'غير محدد' : 0);
+
+        let status = 'Adequate Stock';
+        let suggestedQty = 0;
+
+        if (currentStock <= 0) {
+            status = 'Need to Order';
+            suggestedQty = totalSold > 0 ? totalSold : 10;
+        } else if (currentStock < totalSold) {
+            status = 'Need to Order';
+            suggestedQty = totalSold - currentStock;
+        }
+
+        return {
+            id: product.id,
+            name: product.name,
+            current_stock: currentStock,
+            total_sold: totalSold,
+            daily_avg: dailyAvg,
+            days_to_stockout: daysToStockout,
+            status,
+            suggested_qty: suggestedQty
+        };
+    });
+
+    return {
+        period: { startDate, endDate },
+        data: reportData,
+        summary: {
+            total_products: reportData.length,
+            items_to_order: reportData.filter(item => item.status === 'Need to Order').length
+        }
+    };
+};
+
 export default {
     getDashboardSummary,
     getTopSellingProducts,
@@ -1963,6 +2046,7 @@ export default {
     getBankAndCashReport,
     getSafeMovementsReport,
     getConsolidatedSafeMovementsReport,
+    getSalesAnalysisReport,
     getGeneralLedgerReport: async (accountId, startDate, endDate) => {
         const {
             Account,

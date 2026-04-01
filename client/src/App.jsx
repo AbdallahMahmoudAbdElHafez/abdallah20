@@ -61,6 +61,7 @@ import ExternalServiceInvoicesPage from "./pages/ExternalServiceInvoicesPage";
 import ServiceTypesPage from "./pages/ServiceTypesPage";
 import GeneralLedgerReport from "./pages/GeneralLedgerReport";
 import DetailedCustomerStatementPage from "./pages/DetailedCustomerStatementPage";
+import SalesAnalysisPage from "./pages/SalesAnalysisPage";
 
 const drawerWidth = 240;
 
@@ -114,6 +115,7 @@ export default function App() {
           <Route path="/companies" element={<CompaniesPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/reports-dashboard" element={<ReportsDashboard />} />
+          <Route path="/reports/sales-analysis" element={<SalesAnalysisPage />} />
           <Route path="/reports/sales" element={<SalesReportPage />} />
           <Route path="/reports/purchases" element={<PurchasesReportPage />} />
           <Route path="/reports/expenses" element={<ExpensesReportPage />} />

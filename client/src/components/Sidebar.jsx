@@ -79,6 +79,7 @@ const reportsMenu = [
   { label: "إعداد التقارير", path: "/reports-dashboard" },
   { label: "كشف حساب المورد", path: "/suppliers/statement" },
   { label: "كشف حساب العميل", path: "/customers/statement" },
+  { label: "تحليل المبيعات", path: "/reports/sales-analysis" },
   { label: "القيود", path: "/journal-entry-lines" },
   { label: "ملخص التقارير", path: "/reports" },
   { label: "تقرير مستحقات العملاء", path: "/reports/customer-receivables" },

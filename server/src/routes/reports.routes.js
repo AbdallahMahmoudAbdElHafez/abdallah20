@@ -9,6 +9,7 @@ router.get('/top-products', reportsController.getTopSellingProducts);
 router.get('/low-stock', reportsController.getLowStockItems);
 
 // Detailed Reports
+router.get('/sales-analysis', reportsController.getSalesAnalysis);
 router.get('/sales', reportsController.getSalesReport);
 router.get('/purchases', reportsController.getPurchasesReport);
 router.get('/expenses', reportsController.getExpensesReport);
