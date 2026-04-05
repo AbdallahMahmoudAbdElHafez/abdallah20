@@ -69,9 +69,14 @@ const IssueVouchersPage = () => {
     }
   };
 
-  const handleViewVoucher = (voucher) => {
-    setSelectedVoucher(voucher);
-    setShowDetails(true);
+  const handleViewVoucher = async (voucher) => {
+    try {
+      const result = await dispatch(fetchIssueVoucherById({ id: voucher.id, include_items: true })).unwrap();
+      setSelectedVoucher(result.data);
+      setShowDetails(true);
+    } catch (error) {
+      console.error('Failed to fetch voucher details:', error);
+    }
   };
 
   const handleDeleteVoucher = async (id) => {

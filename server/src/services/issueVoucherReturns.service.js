@@ -19,12 +19,21 @@ export class IssueVoucherReturnsService {
         try {
             const returnRecord = await IssueVoucherReturn.create(returnData, { transaction });
 
+            let createdItems = [];
             if (itemsData.length > 0) {
                 const items = itemsData.map(item => ({
                     ...item,
                     return_id: returnRecord.id
                 }));
                 await IssueVoucherReturnItem.bulkCreate(items, { transaction });
+                createdItems = await IssueVoucherReturnItem.findAll({
+                    where: { return_id: returnRecord.id },
+                    transaction
+                });
+            }
+
+            if (returnData.status === 'posted') {
+                await this._processPosting(returnRecord, createdItems, transaction);
             }
 
             await transaction.commit();
@@ -131,7 +140,7 @@ export class IssueVoucherReturnsService {
                     {
                         model: Product,
                         as: 'product',
-                        attributes: ['id', 'name', 'code'],
+                        attributes: ['id', 'name'],
                         include: [
                             { model: Unit, as: 'unit', attributes: ['id', 'name'] }
                         ]
@@ -158,6 +167,7 @@ export class IssueVoucherReturnsService {
                 throw new Error('Issue voucher return not found');
             }
 
+            const oldStatus = record.status;
             await record.update(updateData, { transaction });
 
             // حذف الأصناف القديمة وإنشاء الجديدة
@@ -166,12 +176,21 @@ export class IssueVoucherReturnsService {
                 transaction
             });
 
+            let createdItems = [];
             if (itemsData.length > 0) {
                 const items = itemsData.map(item => ({
                     ...item,
                     return_id: id
                 }));
                 await IssueVoucherReturnItem.bulkCreate(items, { transaction });
+                createdItems = await IssueVoucherReturnItem.findAll({
+                    where: { return_id: id },
+                    transaction
+                });
+            }
+
+            if (oldStatus !== 'posted' && updateData.status === 'posted') {
+                await this._processPosting(record, createdItems, transaction);
             }
 
             await transaction.commit();
@@ -216,115 +235,8 @@ export class IssueVoucherReturnsService {
             await record.update(updateData, { transaction });
 
             if (status === 'posted' && oldStatus !== 'posted') {
-                const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
-                const { createJournalEntry } = await import('./journal.service.js');
-                const { Account, ReferenceType, EntryType, Product: ProductModel } = await import('../models/index.js');
-                const { ENTRY_TYPES } = await import('../constants/entryTypes.js');
-
-                // 1. Get return with items and original voucher
-                const returnWithDetails = await this.getReturnById(id, true);
-                const originalVoucher = await IssueVoucher.findByPk(record.issue_voucher_id, { transaction });
-
-                const INVENTORY_ACCOUNTS = { FINISHED_GOODS: 110, RAW_MATERIALS: 111, DEFAULT: 49 };
-                const PRODUCT_TYPE_TO_ACCOUNT = { 1: INVENTORY_ACCOUNTS.FINISHED_GOODS, 2: INVENTORY_ACCOUNTS.RAW_MATERIALS };
-
-                let totalCreditAmount = 0;
-                const inventoryDebits = {};
-
-                // 2. Create IN transactions & calculate costs
-                for (const item of returnWithDetails.items) {
-                    if (Number(item.quantity) > 0) {
-                        const batchData = [{
-                            batch_number: item.batch_number,
-                            expiry_date: item.expiry_date,
-                            quantity: item.quantity,
-                            cost_per_unit: item.cost_per_unit || 0
-                        }];
-
-                        await InventoryTransactionService.create({
-                            product_id: item.product_id,
-                            warehouse_id: record.warehouse_id,
-                            transaction_type: 'in',
-                            transaction_date: record.return_date,
-                            note: `مرتجع اذن صرف رقم #${record.return_no}`,
-                            source_type: 'issue_voucher_return',
-                            source_id: item.id,
-                            batches: batchData
-                        }, { transaction });
-
-                        // Cost calculation
-                        const product = await ProductModel.findByPk(item.product_id, { transaction });
-                        const cost = Number(item.quantity) * Number(item.cost_per_unit || product?.cost_price || 0);
-                        const typeId = product?.type_id || null;
-                        const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
-
-                        if (!inventoryDebits[accountId]) inventoryDebits[accountId] = 0;
-                        inventoryDebits[accountId] += cost;
-                        totalCreditAmount += cost;
-                    }
-                }
-
-                // 3. Create Journal Entry
-                if (totalCreditAmount > 0) {
-                    let refType = await ReferenceType.findOne({ where: { code: 'issue_voucher_return' }, transaction });
-                    if (!refType) {
-                        refType = await ReferenceType.create({
-                            code: 'issue_voucher_return',
-                            name: 'مردود منصرف',
-                            label: 'مردود منصرف مخزني',
-                            description: 'Journal Entry for Issue Voucher Return'
-                        }, { transaction });
-                    }
-
-                    let entryType = await EntryType.findByPk(ENTRY_TYPES.ISSUE_VOUCHER, { transaction });
-                    if (!entryType) {
-                        await EntryType.create({ id: ENTRY_TYPES.ISSUE_VOUCHER, name: 'قيد سند صرف', note: 'سند صرف مخزني' }, { transaction });
-                    }
-
-                    const lines = [];
-                    // For returns, we Debit the Inventory accounts
-                    for (const [accountId, cost] of Object.entries(inventoryDebits)) {
-                        if (cost > 0) {
-                            const account = await Account.findByPk(accountId, { transaction });
-                            lines.push({
-                                account_id: parseInt(accountId),
-                                debit: Math.round(cost * 100) / 100,
-                                credit: 0,
-                                description: `${account?.name || 'مخزون'} - مردود منصرف رقم #${record.return_no}`
-                            });
-                        }
-                    }
-
-                    // And Credit the Expense/Original Debit Account
-                    let creditAccountId = originalVoucher.account_id;
-                    // Fallback to COGS if replacement
-                    if (originalVoucher.issue_type === 'replacement') {
-                        creditAccountId = 15; // COGS account ID
-                    }
-
-                    // Make sure creditAccountId is valid
-                    if (!creditAccountId) {
-                        // Default to miscellaneous expense if not found
-                        const defaultExpense = await Account.findOne({ where: { name: 'المصروفات' }, transaction });
-                        creditAccountId = defaultExpense ? defaultExpense.id : 49;
-                    }
-
-                    lines.push({
-                        account_id: creditAccountId,
-                        debit: 0,
-                        credit: Math.round(totalCreditAmount * 100) / 100,
-                        description: `مردود منصرف رقم #${record.return_no} (عكس التكلفة)`
-                    });
-
-                    await createJournalEntry({
-                        refCode: 'issue_voucher_return',
-                        refId: record.id,
-                        entryDate: record.return_date,
-                        description: `قيد مردود منصرف رقم #${record.return_no}${originalVoucher.issue_type === 'replacement' ? ' (استبدال)' : ''}`,
-                        lines,
-                        entryTypeId: ENTRY_TYPES.ISSUE_VOUCHER
-                    }, { transaction });
-                }
+                const items = await IssueVoucherReturnItem.findAll({ where: { return_id: id }, transaction });
+                await this._processPosting(record, items, transaction);
             }
 
             await transaction.commit();
@@ -356,7 +268,7 @@ export class IssueVoucherReturnsService {
                         {
                             model: Product,
                             as: 'product',
-                            attributes: ['id', 'name', 'code'],
+                            attributes: ['id', 'name'],
                             include: [
                                 { model: Unit, as: 'unit', attributes: ['id', 'name'] }
                             ]
@@ -371,5 +283,115 @@ export class IssueVoucherReturnsService {
         }
 
         return voucher.items;
+    }
+
+    async _processPosting(record, items, transaction) {
+        const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
+        const { createJournalEntry } = await import('./journal.service.js');
+        const { Account, ReferenceType, EntryType, Product: ProductModel } = await import('../models/index.js');
+        const { ENTRY_TYPES } = await import('../constants/entryTypes.js');
+
+        const originalVoucher = await IssueVoucher.findByPk(record.issue_voucher_id, { transaction });
+
+        const INVENTORY_ACCOUNTS = { FINISHED_GOODS: 110, RAW_MATERIALS: 111, DEFAULT: 49 };
+        const PRODUCT_TYPE_TO_ACCOUNT = { 1: INVENTORY_ACCOUNTS.FINISHED_GOODS, 2: INVENTORY_ACCOUNTS.RAW_MATERIALS };
+
+        let totalCreditAmount = 0;
+        const inventoryDebits = {};
+
+        // 2. Create IN transactions & calculate costs
+        for (const item of items) {
+            if (Number(item.quantity) > 0) {
+                const batchData = [{
+                    batch_number: item.batch_number,
+                    expiry_date: item.expiry_date,
+                    quantity: item.quantity,
+                    cost_per_unit: item.cost_per_unit || 0
+                }];
+
+                await InventoryTransactionService.create({
+                    product_id: item.product_id,
+                    warehouse_id: record.warehouse_id,
+                    transaction_type: 'in',
+                    transaction_date: record.return_date,
+                    note: `مرتجع اذن صرف رقم #${record.return_no}`,
+                    source_type: 'issue_voucher_return',
+                    source_id: item.id,
+                    batches: batchData
+                }, { transaction });
+
+                // Cost calculation
+                const product = await ProductModel.findByPk(item.product_id, { transaction });
+                const cost = Number(item.quantity) * Number(item.cost_per_unit || product?.cost_price || 0);
+                const typeId = product?.type_id || null;
+                const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+
+                if (!inventoryDebits[accountId]) inventoryDebits[accountId] = 0;
+                inventoryDebits[accountId] += cost;
+                totalCreditAmount += cost;
+            }
+        }
+
+        // 3. Create Journal Entry
+        if (totalCreditAmount > 0) {
+            let refType = await ReferenceType.findOne({ where: { code: 'issue_voucher_return' }, transaction });
+            if (!refType) {
+                refType = await ReferenceType.create({
+                    code: 'issue_voucher_return',
+                    name: 'مردود منصرف',
+                    label: 'مردود منصرف مخزني',
+                    description: 'Journal Entry for Issue Voucher Return'
+                }, { transaction });
+            }
+
+            let entryType = await EntryType.findByPk(ENTRY_TYPES.ISSUE_VOUCHER, { transaction });
+            if (!entryType) {
+                await EntryType.create({ id: ENTRY_TYPES.ISSUE_VOUCHER, name: 'قيد سند صرف', note: 'سند صرف مخزني' }, { transaction });
+            }
+
+            const lines = [];
+            // For returns, we Debit the Inventory accounts
+            for (const [accountId, cost] of Object.entries(inventoryDebits)) {
+                if (cost > 0) {
+                    const account = await Account.findByPk(accountId, { transaction });
+                    lines.push({
+                        account_id: parseInt(accountId),
+                        debit: Math.round(cost * 100) / 100,
+                        credit: 0,
+                        description: `${account?.name || 'مخزون'} - مردود منصرف رقم #${record.return_no}`
+                    });
+                }
+            }
+
+            // And Credit the Expense/Original Debit Account
+            let creditAccountId = originalVoucher.account_id;
+            // Fallback to COGS if replacement
+            if (originalVoucher.issue_type === 'replacement') {
+                creditAccountId = 15; // COGS account ID
+            }
+
+            // Make sure creditAccountId is valid
+            if (!creditAccountId) {
+                // Default to miscellaneous expense if not found
+                const defaultExpense = await Account.findOne({ where: { name: 'المصروفات' }, transaction });
+                creditAccountId = defaultExpense ? defaultExpense.id : 49;
+            }
+
+            lines.push({
+                account_id: creditAccountId,
+                debit: 0,
+                credit: Math.round(totalCreditAmount * 100) / 100,
+                description: `مردود منصرف رقم #${record.return_no} (عكس التكلفة)`
+            });
+
+            await createJournalEntry({
+                refCode: 'issue_voucher_return',
+                refId: record.id,
+                entryDate: record.return_date,
+                description: `قيد مردود منصرف رقم #${record.return_no}${originalVoucher.issue_type === 'replacement' ? ' (استبدال)' : ''}`,
+                lines,
+                entryTypeId: ENTRY_TYPES.ISSUE_VOUCHER
+            }, { transaction });
+        }
     }
 }
