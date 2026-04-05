@@ -10020,3 +10020,270 @@
 2026-03-31T18:48:36: 🚀 Server listening on http://localhost:5000
 2026-04-01T09:54:22: ✅ Database connected
 2026-04-01T09:54:22: 🚀 Server listening on http://localhost:5000
+2026-04-04T10:04:10: ✅ Database connected
+2026-04-04T10:04:10: 🚀 Server listening on http://localhost:5000
+2026-04-04T10:07:26: === Creating Sales Invoice ===
+2026-04-04T10:07:26: Request body: {
+  "invoice_number": "",
+  "party_id": 111,
+  "sales_order_id": null,
+  "warehouse_id": 10,
+  "employee_id": 8,
+  "distributor_employee_id": 8,
+  "invoice_date": "2026-04-04",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 4377.5,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 4377.5,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 3,
+      "price": 330,
+      "discount": 148.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 3,
+      "price": 430,
+      "discount": 193.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 3,
+      "price": 270,
+      "discount": 121.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 3,
+      "price": 520,
+      "discount": 234,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 250,
+      "discount": 75,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-04T10:07:26: Service: Starting invoice creation
+2026-04-04T10:07:26: Service: Transaction committed
+2026-04-04T10:19:07: Journal Entry created for Expense #156
+2026-04-04T10:26:58: Service: Invoice updated. ID: 299, Status: draft
+2026-04-04T10:27:26: Service: Invoice updated. ID: 300, Status: approved
+2026-04-04T10:27:26: Service: Status is approved, recreating side effects
+2026-04-04T10:27:27: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-04T10:27:27: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -2
+2026-04-04T10:27:27: Debug: Updated batch_inventory for batch 4
+2026-04-04T10:27:27: Service: Invoice Journal Entry Created
+2026-04-04T10:37:52: === Creating Sales Invoice ===
+2026-04-04T10:37:52: Request body: {
+  "invoice_number": "",
+  "party_id": 72,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": null,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-04-04",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 560,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 560,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 430,
+      "discount": 86,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 270,
+      "discount": 54,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-04T10:37:52: Service: Starting invoice creation
+2026-04-04T10:37:52: Service: Transaction committed
+2026-04-04T10:38:07: Service: Invoice updated. ID: 303, Status: draft
+2026-04-04T10:40:35: === Creating Sales Invoice ===
+2026-04-04T10:40:35: Request body: {
+  "invoice_number": "",
+  "party_id": 33,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": null,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-04-04",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 520,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 520,
+  "note": "ريهام اشرف",
+  "items": [
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 250,
+      "discount": 0,
+      "discount_percent": 0,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 270,
+      "discount": 0,
+      "discount_percent": 0,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-04T10:40:35: Service: Starting invoice creation
+2026-04-04T10:40:35: Service: Transaction committed
+2026-04-04T10:42:41: === Creating Sales Invoice ===
+2026-04-04T10:42:41: Request body: {
+  "invoice_number": "",
+  "party_id": 30,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": null,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-04-04",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 560,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 560,
+  "note": "منه ناصر",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 430,
+      "discount": 86,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 270,
+      "discount": 54,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-04T10:42:41: Service: Starting invoice creation
+2026-04-04T10:42:41: Service: Transaction committed
+2026-04-04T15:16:02: ✅ Database connected
+2026-04-04T15:16:02: 🚀 Server listening on http://localhost:5000
+2026-04-04T18:59:49: Journal Entry created for Expense #157
+2026-04-04T19:02:40: Journal Entry created for Expense #158
