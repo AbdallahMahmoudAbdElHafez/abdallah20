@@ -95,6 +95,12 @@ const ExpensesReportPage = () => {
             enableHiding: true
         },
         {
+            accessorKey: 'doctor.name',
+            header: 'الدكتور',
+            size: 150,
+            enableHiding: true
+        },
+        {
             accessorKey: 'notes',
             header: 'الملاحظات',
             enableHiding: true,

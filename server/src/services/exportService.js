@@ -133,7 +133,7 @@ const exportExpensesReport = async (expensesData, summary) => {
     worksheet.addRow([]);
 
     // Headers
-    const headers = ['التاريخ', 'الفئة', 'مدفوع لحساب', 'مدفوع من حساب', 'الوصف', 'المبلغ', 'الملاحظات'];
+    const headers = ['التاريخ', 'الفئة', 'الدكتور', 'الطرف', 'مدفوع لحساب', 'مدفوع من حساب', 'الوصف', 'المبلغ', 'الملاحظات'];
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true };
     headerRow.fill = {
@@ -147,6 +147,8 @@ const exportExpensesReport = async (expensesData, summary) => {
         worksheet.addRow([
             expense.expense_date || '',
             'غير مصنف',
+            expense.doctor?.name || '',
+            expense.party?.name || '',
             expense.debitAccount?.name || '',
             expense.creditAccount?.name || '',
             expense.description || '',

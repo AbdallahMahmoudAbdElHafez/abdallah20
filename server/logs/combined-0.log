@@ -36098,3 +36098,66 @@ Error: bind EADDRINUSE null:5000
 2026-04-05T14:01:57: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -1
 2026-04-05T14:01:57: Debug: Updated batch_inventory for batch 13
 2026-04-05T14:01:57: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1775390485014
+2026-04-06T09:58:15: ✅ Database connected
+2026-04-06T09:58:15: 🚀 Server listening on http://localhost:5000
+2026-04-06T09:59:25: Service: Invoice updated. ID: 304, Status: approved
+2026-04-06T09:59:25: Service: Status is approved, recreating side effects
+2026-04-06T09:59:25: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-04-06T09:59:25: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -1
+2026-04-06T09:59:25: Debug: Updated batch_inventory for batch 5
+2026-04-06T09:59:25: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-04-06T09:59:25: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -1
+2026-04-06T09:59:25: Debug: Updated batch_inventory for batch 6
+2026-04-06T09:59:25: Service: Invoice Journal Entry Created
+2026-04-06T10:01:42: Service: Invoice updated. ID: 305, Status: approved
+2026-04-06T10:01:42: Service: Status is approved, recreating side effects
+2026-04-06T10:01:42: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-06T10:01:42: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -1
+2026-04-06T10:01:42: Debug: Updated batch_inventory for batch 4
+2026-04-06T10:01:42: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-04-06T10:01:42: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -1
+2026-04-06T10:01:42: Debug: Updated batch_inventory for batch 6
+2026-04-06T10:01:42: Service: Invoice Journal Entry Created
+2026-04-06T10:09:09: Service: Invoice updated. ID: 303, Status: approved
+2026-04-06T10:09:09: Service: Status is approved, recreating side effects
+2026-04-06T10:09:09: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-06T10:09:09: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -1
+2026-04-06T10:09:09: Debug: Updated batch_inventory for batch 4
+2026-04-06T10:09:09: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-04-06T10:09:09: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -1
+2026-04-06T10:09:09: Debug: Updated batch_inventory for batch 6
+2026-04-06T10:09:09: Service: Invoice Journal Entry Created
+2026-04-06T10:11:46: Service: Invoice updated. ID: 297, Status: approved
+2026-04-06T10:11:46: Service: Status is approved, recreating side effects
+2026-04-06T10:11:46: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-04-06T10:11:46: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -1
+2026-04-06T10:11:46: Debug: Updated batch_inventory for batch 6
+2026-04-06T10:11:46: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-06T10:11:46: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -1
+2026-04-06T10:11:46: Debug: Updated batch_inventory for batch 4
+2026-04-06T10:11:46: Service: Invoice Journal Entry Created
+2026-04-06T10:15:59: Journal Entry created for Expense #161
+2026-04-06T10:17:11: Service: Invoice updated. ID: 298, Status: approved
+2026-04-06T10:17:11: Service: Status is approved, recreating side effects
+2026-04-06T10:17:11: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-04-06T10:17:11: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -2
+2026-04-06T10:17:11: Debug: Updated batch_inventory for batch 3
+2026-04-06T10:17:11: Service: Invoice Journal Entry Created
+2026-04-06T10:19:00: Service: Invoice updated. ID: 296, Status: approved
+2026-04-06T10:19:00: Service: Status is approved, recreating side effects
+2026-04-06T10:19:00: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-06T10:19:00: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -1
+2026-04-06T10:19:00: Debug: Updated batch_inventory for batch 4
+2026-04-06T10:19:00: Service: Invoice Journal Entry Created
+2026-04-06T10:41:40: Journal Entry created for Expense #162
+2026-04-06T10:44:51: Journal Entry created for Expense #163
+2026-04-06T10:45:59: Journal Entry created for Expense #164
+2026-04-06T10:48:17: Journal Entry created for Expense #165
+2026-04-06T10:49:24: Journal Entry created for Expense #166
+2026-04-06T10:52:36: Journal Entry created for Expense #167
+2026-04-06T10:53:35: Journal Entry created for Expense #168
+2026-04-06T10:55:29: Journal Entry created for Expense #169
+2026-04-06T10:57:54: Journal Entry created for Expense #170
+2026-04-06T10:59:34: Journal Entry created for Expense #171
+2026-04-06T11:03:10: Journal Entry created for Expense #172
+2026-04-06T11:06:57: Journal Entry created for Expense #173

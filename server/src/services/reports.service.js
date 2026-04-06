@@ -534,6 +534,11 @@ const getExpensesReport = async (startDate, endDate) => {
                 model: Party,
                 as: 'party',
                 attributes: ['id', 'name']
+            },
+            {
+                model: Doctor,
+                as: 'doctor',
+                attributes: ['id', 'name']
             }
         ],
         order: [['expense_date', 'DESC']]
