@@ -10933,3 +10933,55 @@
 2026-04-07T13:35:09: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
 2026-04-07T13:35:09: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 3 quantityChange: 10
 2026-04-07T13:35:09: Debug: Updated batch_inventory for batch 13
+2026-04-07T13:53:01: === Creating Sales Invoice ===
+2026-04-07T13:53:01: Request body: {
+  "invoice_number": "",
+  "party_id": 17,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-04-07",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 720,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 720,
+  "note": "",
+  "items": [
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 180,
+      "discount": 180,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-07T13:53:01: Service: Starting invoice creation
+2026-04-07T13:53:01: Service: Transaction committed
+2026-04-07T14:23:18: Service: Invoice updated. ID: 320, Status: draft
+2026-04-07T14:25:55: Service: Invoice updated. ID: 301, Status: approved
+2026-04-07T14:25:55: Service: Status is approved, recreating side effects
+2026-04-07T14:25:55: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-04-07T14:25:55: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 10 quantityChange: -1
+2026-04-07T14:25:55: Debug: Updated batch_inventory for batch 1
+2026-04-07T14:25:55: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-04-07T14:25:55: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 10 quantityChange: -1
+2026-04-07T14:25:55: Debug: Updated batch_inventory for batch 7
+2026-04-07T14:25:55: Service: Invoice Journal Entry Created
