@@ -11531,3 +11531,54 @@
 2026-04-08T11:59:44: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
 2026-04-08T11:59:44: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 3 quantityChange: 36
 2026-04-08T11:59:44: Debug: Updated batch_inventory for batch 4
+2026-04-09T12:57:50: ✅ Database connected
+2026-04-09T12:57:50: 🚀 Server listening on http://localhost:5000
+2026-04-09T12:59:41: Journal Entry created for Expense #178
+2026-04-09T13:25:22: Service: getDashboardSummary { startDate: undefined, endDate: undefined, dateFilter: {} }
+2026-04-09T13:25:22: Service: getDashboardSummary { startDate: undefined, endDate: undefined, dateFilter: {} }
+2026-04-09T13:43:33: Journal Entry created for Expense #179
+2026-04-09T15:28:21: === Creating Sales Invoice ===
+2026-04-09T15:28:21: Request body: {
+  "invoice_number": "",
+  "party_id": 113,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-04-09",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 1020,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1020,
+  "note": "",
+  "items": [
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 240,
+      "discount": 180,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-09T15:28:21: Service: Starting invoice creation
+2026-04-09T15:28:21: Service: Transaction committed
+2026-04-09T16:57:19: Journal Entry created for Expense #180
+2026-04-09T16:58:08: Journal Entry created for Expense #181
+2026-04-09T17:00:02: Journal Entry created for Expense #182
