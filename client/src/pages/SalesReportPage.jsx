@@ -15,7 +15,8 @@ import {
     Receipt as InvoiceIcon,
     AccountBalance as BankIcon,
     Map as MapIcon,
-    Inventory as ProductIcon
+    Inventory as ProductIcon,
+    LocalShipping as ShippingIcon
 } from '@mui/icons-material';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -35,7 +36,8 @@ const SalesReportPage = () => {
     const [salesByEmployeeProduct, setSalesByEmployeeProduct] = useState([]); // [NEW]
     const [salesByCustomerProduct, setSalesByCustomerProduct] = useState([]); // [NEW] Customer Product
     const [salesByRegion, setSalesByRegion] = useState([]);
-    const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot' | 'employee_product' | 'customer_product' | 'review'
+    const [cogsByRegionProduct, setCogsByRegionProduct] = useState([]); // [NEW] COGS by Region
+    const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot' | 'employee_product' | 'customer_product' | 'region_cogs' | 'review'
 
     const [data, setData] = useState([]);
     const [returns, setReturns] = useState([]); // [NEW]
@@ -63,6 +65,7 @@ const SalesReportPage = () => {
             setSalesByEmployeeProduct(res.data.salesByEmployeeProduct || []); // [NEW]
             setSalesByCustomerProduct(res.data.salesByCustomerProduct || []); // [NEW]
             setSalesByRegion(res.data.salesByRegion || []);
+            setCogsByRegionProduct(res.data.cogsByRegionProduct || []); // [NEW]
         } catch (error) {
             console.error('Error fetching sales report:', error);
         } finally {
@@ -138,6 +141,36 @@ const SalesReportPage = () => {
         { accessorKey: 'product', id: 'product', header: 'المنتج', size: 200 },
         { accessorKey: 'quantity', id: 'quantity', header: 'الكمية المباعة', size: 130 },
         { accessorKey: 'revenue', id: 'revenue', header: 'قيمة المبيعات', Cell: ({ cell }) => formatCurrency(cell.getValue()), size: 150 },
+    ], []);
+
+    // --- 2.3 COGS by Region Product Columns ---
+    const regionCogsColumns = useMemo(() => [
+        { accessorKey: 'region', id: 'region', header: 'المنطقة', size: 180 },
+        { accessorKey: 'product', id: 'product', header: 'الصنف', size: 200 },
+        { accessorKey: 'quantity', id: 'quantity', header: 'الكمية المباعة', size: 130,
+            aggregationFn: 'sum',
+            AggregatedCell: ({ cell }) => <Box fontWeight="bold">{cell.getValue()}</Box>
+        },
+        { accessorKey: 'revenue', id: 'revenue', header: 'إيراد المبيعات', size: 150,
+            Cell: ({ cell }) => formatCurrency(cell.getValue()),
+            aggregationFn: 'sum',
+            AggregatedCell: ({ cell }) => <Box fontWeight="bold" color="primary.main">{formatCurrency(cell.getValue())}</Box>
+        },
+        { accessorKey: 'cost', id: 'cost', header: 'تكلفة البضاعة المباعة', size: 180,
+            Cell: ({ cell }) => <Box color="error.main">{formatCurrency(cell.getValue())}</Box>,
+            aggregationFn: 'sum',
+            AggregatedCell: ({ cell }) => <Box fontWeight="bold" color="error.main">{formatCurrency(cell.getValue())}</Box>
+        },
+        { accessorKey: 'profit', id: 'profit', header: 'الربح', size: 150,
+            Cell: ({ cell }) => <Box color={cell.getValue() >= 0 ? 'success.main' : 'error.main'} fontWeight="bold">{formatCurrency(cell.getValue())}</Box>,
+            aggregationFn: 'sum',
+            AggregatedCell: ({ cell }) => <Box fontWeight="bold" color={cell.getValue() >= 0 ? 'success.main' : 'error.main'}>{formatCurrency(cell.getValue())}</Box>
+        },
+        { accessorKey: 'margin', id: 'margin', header: 'هامش الربح %', size: 120,
+            Cell: ({ cell }) => `${parseFloat(cell.getValue()).toFixed(2)}%`,
+            aggregationFn: 'mean',
+            AggregatedCell: ({ cell }) => <Box fontWeight="bold">{parseFloat(cell.getValue()).toFixed(2)}%</Box>
+        },
     ], []);
 
     // --- Invoice Review Columns ---
@@ -507,6 +540,7 @@ const SalesReportPage = () => {
                         <ToggleButton value="product_pivot" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <PivotIcon sx={{ mr: 1 }} /> تحليل المنتجات </ToggleButton>
                         <ToggleButton value="employee_product" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TrendIcon sx={{ mr: 1 }} /> تحليل المناديب </ToggleButton>
                         <ToggleButton value="customer_product" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <SaleIcon sx={{ mr: 1 }} /> تحليل عملاء ومنتجات </ToggleButton>
+                        <ToggleButton value="region_cogs" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <ShippingIcon sx={{ mr: 1 }} /> تكلفة المبيعات بالمنطقة </ToggleButton>
                         <ToggleButton value="invoice_pivot" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TableIcon sx={{ mr: 1 }} /> مصفوفة الفواتير </ToggleButton>
                     </ToggleButtonGroup>
                 </Paper>
@@ -610,6 +644,25 @@ const SalesReportPage = () => {
                                 renderTopToolbarCustomActions={({ table }) => (
                                     <Button variant="contained" color="success" startIcon={<DownloadIcon />}
                                         onClick={() => handleExport(table, 'Customer_Product_Performance')}>
+                                        تصدير التقرير
+                                    </Button>
+                                )}
+                            />
+                        </Paper>
+                    )}
+
+                    {viewMode === 'region_cogs' && (
+                        <Paper sx={{ borderRadius: 3, boxShadow: 2, overflow: 'hidden' }}>
+                            <MaterialReactTable
+                                columns={regionCogsColumns}
+                                {...defaultTableProps}
+                                data={cogsByRegionProduct}
+                                enableExporting
+                                enableGrouping
+                                initialState={{ grouping: ['region'] }}
+                                renderTopToolbarCustomActions={({ table }) => (
+                                    <Button variant="contained" color="success" startIcon={<DownloadIcon />}
+                                        onClick={() => handleExport(table, 'COGS_By_Region')}>
                                         تصدير التقرير
                                     </Button>
                                 )}

@@ -271,6 +271,7 @@ const getSalesReport = async (startDate, endDate) => {
     const customerProductStats = {}; // [NEW] Customer Product Stats
     const regionData = {};
     const productStats = {};
+    const regionProductStats = {}; // [NEW] COGS by Region and Product
 
     // Process Sales
     sales.forEach(sale => {
@@ -305,12 +306,36 @@ const getSalesReport = async (startDate, endDate) => {
                 productStats[productId].bonus += parseInt(item.bonus || 0);
                 productStats[productId].revenue += revenue;
 
-                // Cost logic (simplified for brevity, keeping existing logic structure)
+                // Cost logic - Use inventory_transaction_batches for accurate COGS
                 let itemCost = 0;
-                // ... (existing cost logic assumed to be here or we just use simple calc for now to save space in replacement)
-                const costRef = item.product?.cost_price || 0;
-                itemCost += qty * parseFloat(costRef);
+                if (item.inventory_transactions && item.inventory_transactions.length > 0) {
+                    item.inventory_transactions.forEach(trx => {
+                        if (trx.transaction_batches && trx.transaction_batches.length > 0) {
+                            trx.transaction_batches.forEach(batch => {
+                                itemCost += parseFloat(batch.quantity || 0) * parseFloat(batch.cost_per_unit || 0);
+                            });
+                        } else {
+                            // Fallback: transaction exists but no batches
+                            const fallbackQty = parseFloat(trx.quantity || 0);
+                            const costRef = item.product?.cost_price || 0;
+                            itemCost += fallbackQty * parseFloat(costRef);
+                        }
+                    });
+                } else {
+                    // Fallback: no inventory transactions found
+                    const costRef = item.product?.cost_price || 0;
+                    itemCost += qty * parseFloat(costRef);
+                }
                 productStats[productId].cost += itemCost;
+
+                // [NEW] COGS by Region and Product
+                const rpKey = `${regionName}_${productId}`;
+                if (!regionProductStats[rpKey]) {
+                    regionProductStats[rpKey] = { region: regionName, product: productName, quantity: 0, revenue: 0, cost: 0 };
+                }
+                regionProductStats[rpKey].quantity += qty;
+                regionProductStats[rpKey].revenue += revenue;
+                regionProductStats[rpKey].cost += itemCost;
 
                 const epKey = `${empName}_${productId}`;
                 if (!employeeProductStats[epKey]) {
@@ -365,10 +390,19 @@ const getSalesReport = async (startDate, endDate) => {
                 productStats[productId].quantity -= qty;
                 productStats[productId].revenue -= revenue;
 
-                // Cost deduction
-                const costRef = 0; // Need cost to reverse profit. 
-                // For now, let's assume we don't reverse cost in this simple view or use product master cost
-                // productStats[productId].cost -= ... 
+                // Cost deduction for returns - use product cost_price as fallback
+                const returnCostRef = item.product?.cost_price || 0;
+                const returnItemCost = qty * parseFloat(returnCostRef);
+                productStats[productId].cost -= returnItemCost;
+
+                // [NEW] Deduct from COGS by Region and Product
+                const rpKey = `${regionName}_${productId}`;
+                if (!regionProductStats[rpKey]) {
+                    regionProductStats[rpKey] = { region: regionName, product: productName, quantity: 0, revenue: 0, cost: 0 };
+                }
+                regionProductStats[rpKey].quantity -= qty;
+                regionProductStats[rpKey].revenue -= revenue;
+                regionProductStats[rpKey].cost -= returnItemCost;
 
                 const epKey = `${empName}_${productId}`;
                 if (!employeeProductStats[epKey]) {
@@ -417,6 +451,13 @@ const getSalesReport = async (startDate, endDate) => {
     const salesByCustomerProduct = Object.values(customerProductStats)
         .sort((a, b) => a.customer.localeCompare(b.customer) || b.revenue - a.revenue);
 
+    // [NEW] Convert and sort COGS by region product stats
+    const cogsByRegionProduct = Object.values(regionProductStats).map(stat => ({
+        ...stat,
+        profit: stat.revenue - stat.cost,
+        margin: stat.revenue > 0 ? ((stat.revenue - stat.cost) / stat.revenue) * 100 : 0
+    })).sort((a, b) => a.region.localeCompare(b.region) || b.cost - a.cost);
+
     return {
         data: sales,
         returns: returns, // [NEW] Send returns data too if needed for detailed list
@@ -426,7 +467,8 @@ const getSalesReport = async (startDate, endDate) => {
         salesByRegion,
         salesByProduct,
         salesByEmployeeProduct,
-        salesByCustomerProduct // [NEW]
+        salesByCustomerProduct, // [NEW]
+        cogsByRegionProduct // [NEW] COGS by Region and Product
     };
 };
 
