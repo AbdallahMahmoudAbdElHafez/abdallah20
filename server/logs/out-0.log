@@ -12118,3 +12118,5 @@
 ]
 2026-04-11T12:56:23: Journal Entry created for Expense #183
 2026-04-11T13:14:09: [DEBUG] Found 94 vouchers for summary between 2026-01-01 and 2026-04-29
+2026-04-12T10:05:04: ✅ Database connected
+2026-04-12T10:05:04: 🚀 Server listening on http://localhost:5000
