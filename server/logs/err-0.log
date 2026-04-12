@@ -25452,3 +25452,13 @@ Error: bind EADDRINUSE null:5000
     at Module.createPayment (file:///d:/db/server/src/services/salesInvoicePayments.service.js:33:19)
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
     at async createPayment (file:///d:/db/server/src/controllers/salesInvoicePayments.controller.js:11:25)
+You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+SequelizeValidationError: notNull Violation: sales_returns.warehouse_id cannot be null
+    at InstanceValidator._validate (d:\db\server\node_modules\sequelize\lib\instance-validator.js:50:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async InstanceValidator._validateAndRunHooks (d:\db\server\node_modules\sequelize\lib\instance-validator.js:60:7)
+    at async InstanceValidator.validate (d:\db\server\node_modules\sequelize\lib\instance-validator.js:54:12)
+    at async model.save (d:\db\server\node_modules\sequelize\lib\model.js:2426:7)
+    at async sales_returns.create (d:\db\server\node_modules\sequelize\lib\model.js:1362:12)
+    at async Object.create (file:///d:/db/server/src/services/salesReturns.service.js:296:33)
+    at async create (file:///d:/db/server/src/controllers/salesReturns.controller.js:16:25)
