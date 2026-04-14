@@ -37528,3 +37528,1697 @@ SequelizeValidationError: notNull Violation: sales_returns.warehouse_id cannot b
 2026-04-11T13:14:09: [DEBUG] Found 94 vouchers for summary between 2026-01-01 and 2026-04-29
 2026-04-12T10:05:04: ✅ Database connected
 2026-04-12T10:05:04: 🚀 Server listening on http://localhost:5000
+2026-04-12T10:21:03: Service: Invoice updated. ID: 335, Status: approved
+2026-04-12T10:21:03: Service: Status is approved, recreating side effects
+2026-04-12T10:21:03: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-04-12T10:21:03: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -10
+2026-04-12T10:21:03: Debug: Updated batch_inventory for batch 3
+2026-04-12T10:21:03: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-04-12T10:21:03: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -10
+2026-04-12T10:21:03: Debug: Updated batch_inventory for batch 6
+2026-04-12T10:21:03: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-12T10:21:03: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -5
+2026-04-12T10:21:03: Debug: Updated batch_inventory for batch 4
+2026-04-12T10:21:03: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-04-12T10:21:03: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: -5
+2026-04-12T10:21:03: Debug: Updated batch_inventory for batch 7
+2026-04-12T10:21:03: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-04-12T10:21:03: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -5
+2026-04-12T10:21:03: Debug: Updated batch_inventory for batch 2
+2026-04-12T10:21:03: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-04-12T10:21:03: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -5
+2026-04-12T10:21:03: Debug: Updated batch_inventory for batch 1
+2026-04-12T10:21:03: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-04-12T10:21:03: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -5
+2026-04-12T10:21:03: Debug: Updated batch_inventory for batch 13
+2026-04-12T10:21:03: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-04-12T10:21:03: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -5
+2026-04-12T10:21:03: Debug: Updated batch_inventory for batch 5
+2026-04-12T10:21:03: Service: Invoice Journal Entry Created
+2026-04-12T10:36:02: === Creating Sales Invoice ===
+2026-04-12T10:36:02: Request body: {
+  "invoice_number": "",
+  "party_id": 10,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 2,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-04-12",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 15696,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 15696,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 330,
+      "discount": 924,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 15,
+      "price": 520,
+      "discount": 2184,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 20,
+      "price": 430,
+      "discount": 2408,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 240,
+      "discount": 336,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 180,
+      "discount": 252,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-12T10:36:02: Service: Starting invoice creation
+2026-04-12T10:36:02: Service: Transaction committed
+2026-04-12T11:14:10: === Creating Sales Invoice ===
+2026-04-12T11:14:10: Request body: {
+  "invoice_number": "",
+  "party_id": 115,
+  "sales_order_id": null,
+  "warehouse_id": 10,
+  "employee_id": 8,
+  "distributor_employee_id": 8,
+  "invoice_date": "2026-04-12",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 3660,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 3660,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 330,
+      "discount": 165,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 430,
+      "discount": 215,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 250,
+      "discount": 125,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 270,
+      "discount": 135,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 240,
+      "discount": 120,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 520,
+      "discount": 260,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 220,
+      "discount": 110,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 180,
+      "discount": 90,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-12T11:14:10: Service: Starting invoice creation
+2026-04-12T11:14:11: Service: Transaction committed
+2026-04-12T12:07:28: Service: Invoice updated. ID: 336, Status: draft
+2026-04-12T12:33:08: === Creating Sales Invoice ===
+2026-04-12T12:33:08: Request body: {
+  "invoice_number": "",
+  "party_id": 53,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 5,
+  "distributor_employee_id": 2,
+  "invoice_date": "2026-04-12",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 1080,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1080,
+  "note": "",
+  "items": [
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 180,
+      "discount": 720,
+      "discount_percent": 40,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-12T12:33:08: Service: Starting invoice creation
+2026-04-12T12:33:08: Service: Transaction committed
+2026-04-12T22:06:57: ✅ Database connected
+2026-04-12T22:06:57: 🚀 Server listening on http://localhost:5000
+2026-04-12T22:07:59: Journal Entry created for Expense #184
+2026-04-13T20:56:24: ✅ Database connected
+2026-04-13T20:56:28: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:31: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:34: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:37: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:40: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:42: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:46: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:49: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:51: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:53: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:55: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:57: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:56:59: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:01: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:03: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:05: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:07: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:09: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:12: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:14: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:17: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:19: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:21: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:24: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:26: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:27: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:29: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:31: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:33: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:35: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:37: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:39: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:40: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:42: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:44: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:46: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:48: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:50: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:52: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:53: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:55: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:57: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:57:59: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:01: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:03: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:05: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:06: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:08: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:10: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:12: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:14: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:15: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:17: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:19: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:21: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:22: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:24: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:26: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:28: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:29: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:31: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:33: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:35: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:36: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:38: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:40: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:42: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:44: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:45: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:47: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:49: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:50: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:52: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:54: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:56: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:58:58: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:00: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:02: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:04: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:06: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:07: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:09: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:11: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:13: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:15: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:17: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:18: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:20: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:22: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:24: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:26: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:28: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:30: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:31: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:33: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:35: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:37: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:38: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:40: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:42: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:44: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:46: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:47: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:49: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:51: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:53: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:54: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:56: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T20:59:58: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:00: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:01: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:03: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:05: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:07: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:08: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:10: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:12: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:14: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:16: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:17: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:19: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:21: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:23: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:25: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:26: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:28: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:30: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:32: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:34: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:36: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:38: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:40: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:41: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:43: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:45: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:47: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:48: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:50: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:52: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:54: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:55: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:57: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:00:59: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:01: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:03: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:05: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:07: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:09: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:11: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:12: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:14: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:16: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:18: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:20: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:22: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-13T21:01:24: ✅ Database connected
+Error: bind EADDRINUSE null:5000
+    at listenOnPrimaryHandle (node:net:2021:18)
+    at shared (node:internal/cluster/child:157:3)
+    at Worker.<anonymous> (node:internal/cluster/child:110:7)
+    at process.onInternalMessage (node:internal/cluster/utils:49:5)
+    at process.emit (node:events:530:35)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
