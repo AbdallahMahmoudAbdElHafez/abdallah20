@@ -681,7 +681,7 @@ const exportIssueVouchersEmployeeReport = async (data, summary) => {
     worksheet.views = [{ rightToLeft: true }];
 
     // Title
-    worksheet.mergeCells('A1:D1');
+    worksheet.mergeCells('A1:H1');
     const titleCell = worksheet.getCell('A1');
     titleCell.value = 'تقرير إجمالي المنتجات المنصرفة لكل موظف';
     titleCell.font = { size: 16, bold: true };
@@ -694,7 +694,7 @@ const exportIssueVouchersEmployeeReport = async (data, summary) => {
     worksheet.addRow([]);
 
     // Headers
-    const headers = ['الموظف', 'الدكتور', 'المنتج', 'الكمية المنصرفة', 'إجمالي التكلفة'];
+    const headers = ['الموظف', 'الدكتور', 'الحساب', 'الجهة', 'نوع الجهة', 'المنتج', 'الكمية المنصرفة', 'إجمالي التكلفة'];
     const headerRow = worksheet.addRow(headers);
     headerRow.font = { bold: true };
     headerRow.fill = {
@@ -703,11 +703,16 @@ const exportIssueVouchersEmployeeReport = async (data, summary) => {
         fgColor: { argb: 'FFE8F5E9' }
     };
 
+    const partyTypeNames = { customer: 'عميل', supplier: 'مورد', both: 'مورد وعميل' };
+
     // Data
     data.forEach(row => {
         worksheet.addRow([
             row.employee_name || '',
             row.doctor_name || '',
+            row.account_name || '',
+            row.party_name || '',
+            partyTypeNames[row.party_type] || row.party_type || '',
             row.product_name || '',
             parseFloat(row.total_quantity || 0),
             parseFloat(row.total_cost || 0)
@@ -715,7 +720,7 @@ const exportIssueVouchersEmployeeReport = async (data, summary) => {
     });
 
     worksheet.columns.forEach(column => {
-        column.width = 25;
+        column.width = 22;
     });
 
     return await workbook.xlsx.writeBuffer();
