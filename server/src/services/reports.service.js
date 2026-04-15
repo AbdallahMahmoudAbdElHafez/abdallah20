@@ -19,6 +19,8 @@ import {
     Governate,
     IssueVoucher,
     IssueVoucherItem,
+    IssueVoucherReturn,
+    IssueVoucherReturnItem,
     Account,
     JournalEntry,
     JournalEntryLine,
@@ -855,10 +857,104 @@ const getIssueVouchersReport = async (startDate, endDate) => {
         };
     });
 
+    // --- Fetch Issue Voucher Returns ---
+    const returnDateFilter = {};
+    if (startDate && endDate) {
+        returnDateFilter.return_date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        returnDateFilter.return_date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        returnDateFilter.return_date = { [Op.lte]: endDate };
+    }
+    returnDateFilter.status = 'posted';
+
+    const returns = await IssueVoucherReturn.findAll({
+        where: returnDateFilter,
+        include: [
+            {
+                model: IssueVoucher,
+                as: 'issue_voucher',
+                attributes: ['id', 'doctor_id'],
+                include: [{ model: Doctor, as: 'doctor', attributes: ['id', 'name'] }]
+            },
+            {
+                model: Warehouse,
+                as: 'warehouse',
+                attributes: ['id', 'name']
+            },
+            {
+                model: Employee,
+                as: 'employee',
+                attributes: ['id', 'name']
+            },
+            {
+                model: IssueVoucherReturnItem,
+                as: 'items',
+                include: [
+                    {
+                        model: Product,
+                        as: 'product',
+                        attributes: ['id', 'name', 'cost_price']
+                    }
+                ]
+            }
+        ]
+    });
+
+    let totalReturnItems = 0;
+    let totalReturnCost = 0;
+
+    const enhancedReturns = returns.map(ret => {
+        let returnCost = 0;
+        let returnItemsQty = 0;
+
+        const enhancedItems = (ret.items || []).map(item => {
+            const itemQty = -parseFloat(item.quantity || 0); // negative
+            const costRef = item.cost_per_unit || item.product?.cost_price || 0;
+            const itemCost = itemQty * parseFloat(costRef);
+
+            returnCost += itemCost;
+            returnItemsQty += itemQty;
+
+            return {
+                ...item.toJSON(),
+                quantity: itemQty,
+                total_cost: itemCost
+            };
+        });
+
+        totalReturnItems += returnItemsQty;
+        totalReturnCost += returnCost;
+
+        // Chart Data (Warehouse)
+        const warehouseName = ret.warehouse?.name || 'Unknown';
+        if (!chartData[warehouseName]) {
+            chartData[warehouseName] = 0;
+        }
+        chartData[warehouseName] += returnCost;
+
+        return {
+            ...ret.toJSON(),
+            id: `return_${ret.id}`, // Make ID unique to avoid grid key collision
+            voucher_no: `مرتجع ${ret.return_no}`,
+            issue_date: ret.return_date, // Map so frontend shows in same column
+            warehouse: ret.warehouse,
+            responsible_employee: ret.employee,
+            doctor: ret.issue_voucher?.doctor || null,
+            items: enhancedItems,
+            total_cost: returnCost,
+            total_items: returnItemsQty,
+            status: ret.status,
+            is_return: true
+        };
+    });
+
+    const finalData = [...enhancedVouchers, ...enhancedReturns].sort((a, b) => new Date(b.issue_date) - new Date(a.issue_date));
+
     const summary = {
         total_vouchers: totalVouchers,
-        total_items: totalItems,
-        total_cost: totalCost
+        total_items: totalItems + totalReturnItems,
+        total_cost: totalCost + totalReturnCost
     };
 
     const chartArray = Object.keys(chartData).map(name => ({
@@ -867,7 +963,7 @@ const getIssueVouchersReport = async (startDate, endDate) => {
     })).sort((a, b) => b.value - a.value);
 
     return {
-        data: enhancedVouchers,
+        data: finalData,
         summary,
         chartData: chartArray
     };
@@ -982,6 +1078,81 @@ const getIssueVouchersEmployeeSummary = async (startDate, endDate) => {
                     account_name: accountName,
                     party_name: partyName,
                     party_type: partyType,
+                    product_id: productId,
+                    product_name: productName,
+                    total_quantity: 0,
+                    total_cost: 0
+                };
+            }
+
+            summaryMap[key].total_quantity += quantity;
+            summaryMap[key].total_cost += itemCost;
+        });
+    });
+
+    // --- Add IssueVoucherReturns ---
+    const returnDateFilter = {};
+    if (startDate && endDate) {
+        returnDateFilter.return_date = { [Op.between]: [startDate, endDate] };
+    } else if (startDate) {
+        returnDateFilter.return_date = { [Op.gte]: startDate };
+    } else if (endDate) {
+        returnDateFilter.return_date = { [Op.lte]: endDate };
+    }
+    returnDateFilter.status = 'posted';
+
+    const returns = await IssueVoucherReturn.findAll({
+        where: returnDateFilter,
+        include: [
+            {
+                model: Employee,
+                as: 'employee',
+                attributes: ['id', 'name']
+            },
+            {
+                model: IssueVoucher,
+                as: 'issue_voucher',
+                attributes: ['id'],
+                include: [{ model: Doctor, as: 'doctor', attributes: ['id', 'name'] }]
+            },
+            {
+                model: IssueVoucherReturnItem,
+                as: 'items',
+                include: [
+                    {
+                        model: Product,
+                        as: 'product',
+                        attributes: ['id', 'name', 'cost_price']
+                    }
+                ]
+            }
+        ]
+    });
+
+    console.log(`[DEBUG] Found ${returns.length} returns for summary between ${startDate} and ${endDate}`);
+
+    returns.forEach(ret => {
+        const employeeId = ret.employee?.id || 0;
+        const employeeName = ret.employee?.name || 'غير محدد';
+
+        if (!ret.items || ret.items.length === 0) {
+            console.log(`[DEBUG] Return ${ret.id} has no items`);
+        }
+
+        ret.items.forEach(item => {
+            const productId = item.product_id;
+            const productName = item.product?.name || 'منتج غير معروف';
+            const quantity = -(parseFloat(item.quantity || 0)); // negative
+            const itemCost = quantity * parseFloat(item.cost_per_unit || item.product?.cost_price || 0); // negative
+
+            const doctorName = ret.issue_voucher?.doctor?.name || '';
+
+            const key = `${employeeId}-${productId}`;
+            if (!summaryMap[key]) {
+                summaryMap[key] = {
+                    employee_id: employeeId,
+                    employee_name: employeeName,
+                    doctor_name: doctorName,
                     product_id: productId,
                     product_name: productName,
                     total_quantity: 0,

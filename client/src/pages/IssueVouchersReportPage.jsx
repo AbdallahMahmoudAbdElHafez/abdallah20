@@ -102,7 +102,7 @@ const IssueVouchersReportPage = () => {
         {
             accessorKey: 'total_cost',
             header: 'إجمالي التكلفة',
-            Cell: ({ cell }) => <Box fontWeight="bold" color="error.main">{formatCurrency(cell.getValue())}</Box>,
+            Cell: ({ cell }) => <Box fontWeight="bold" color={cell.getValue() < 0 ? "success.main" : "error.main"}>{formatCurrency(cell.getValue())}</Box>,
             size: 130
         },
         { accessorKey: 'note', header: 'ملاحظات', size: 200 },
@@ -133,7 +133,7 @@ const IssueVouchersReportPage = () => {
         {
             accessorKey: 'total_cost',
             header: 'إجمالي التكلفة',
-            Cell: ({ cell }) => <Box fontWeight="bold" color="error.main">{formatCurrency(cell.getValue())}</Box>,
+            Cell: ({ cell }) => <Box fontWeight="bold" color={cell.getValue() < 0 ? "success.main" : "error.main"}>{formatCurrency(cell.getValue())}</Box>,
             size: 150
         },
     ], []);
@@ -281,6 +281,11 @@ const IssueVouchersReportPage = () => {
                                 {...defaultTableProps}
                                 data={data}
                                 enableExporting
+                                muiTableBodyRowProps={({ row }) => ({
+                                    sx: {
+                                        backgroundColor: row.original.is_return ? 'rgba(76, 175, 80, 0.05)' : 'inherit',
+                                    },
+                                })}
                                 renderTopToolbarCustomActions={() => (
                                     <Box sx={{ display: 'flex', gap: 1 }}>
                                         <Button
