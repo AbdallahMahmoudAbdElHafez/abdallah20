@@ -40099,3 +40099,11 @@ Error: bind EADDRINUSE null:5000
 2026-04-15T16:08:20: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -11
 2026-04-15T16:08:20: Debug: Updated batch_inventory for batch 5
 2026-04-15T16:08:20: Service: Invoice Journal Entry Created
+2026-04-16T22:16:49: ✅ Database connected
+2026-04-16T22:16:49: 🚀 Server listening on http://localhost:5000
+2026-04-16T22:19:03: Journal Entry created for Expense #188
+2026-04-16T22:21:10: Journal Entry created for Expense #189
+2026-04-16T22:22:54: Journal Entry created for Expense #190
+2026-04-16T22:24:12: Journal Entry created for Expense #191
+2026-04-17T20:48:39: ✅ Database connected
+2026-04-17T20:48:39: 🚀 Server listening on http://localhost:5000
