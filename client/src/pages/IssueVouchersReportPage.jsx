@@ -109,10 +109,27 @@ const IssueVouchersReportPage = () => {
     ], []);
 
     const summaryColumns = useMemo(() => [
-        { accessorKey: 'employee_name', header: 'الموظف', size: 200 },
-        { accessorKey: 'doctor_name', header: 'الدكتور', size: 200 },
-        { accessorKey: 'product_name', header: 'المنتج', size: 250 },
-        { accessorKey: 'total_quantity', header: 'إجمالي الكمية', size: 150 },
+        { accessorKey: 'employee_name', header: 'الموظف', size: 180 },
+        { accessorKey: 'doctor_name', header: 'الدكتور', size: 180 },
+        { accessorKey: 'account_name', header: 'الحساب', size: 180 },
+        { accessorKey: 'party_name', header: 'الجهة', size: 180 },
+        {
+            accessorKey: 'party_type',
+            header: 'نوع الجهة',
+            size: 120,
+            Cell: ({ cell }) => {
+                const type = cell.getValue();
+                const typeMap = { customer: 'عميل', supplier: 'مورد', both: 'مورد وعميل' };
+                const colorMap = { customer: '#2196f3', supplier: '#ff9800', both: '#9c27b0' };
+                return type ? (
+                    <Box sx={{ display: 'inline-block', px: 1.5, py: 0.5, borderRadius: 2, bgcolor: colorMap[type] || '#999', color: '#fff', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                        {typeMap[type] || type}
+                    </Box>
+                ) : '-';
+            }
+        },
+        { accessorKey: 'product_name', header: 'المنتج', size: 220 },
+        { accessorKey: 'total_quantity', header: 'إجمالي الكمية', size: 130 },
         {
             accessorKey: 'total_cost',
             header: 'إجمالي التكلفة',

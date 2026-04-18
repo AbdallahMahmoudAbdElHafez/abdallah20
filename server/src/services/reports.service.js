@@ -971,6 +971,7 @@ const getIssueVouchersReport = async (startDate, endDate) => {
 
 /**
  * Issue Vouchers Employee Summary Report
+ * يشمل: الموظف، الدكتور، الحساب، الجهة (مورد/عميل)، المنتج، الكمية، التكلفة
  */
 const getIssueVouchersEmployeeSummary = async (startDate, endDate) => {
     const dateFilter = {};
@@ -994,6 +995,16 @@ const getIssueVouchersEmployeeSummary = async (startDate, endDate) => {
                 model: Doctor,
                 as: 'doctor',
                 attributes: ['id', 'name']
+            },
+            {
+                model: Account,
+                as: 'account',
+                attributes: ['id', 'name']
+            },
+            {
+                model: Party,
+                as: 'party',
+                attributes: ['id', 'name', 'party_type']
             },
             {
                 model: IssueVoucherItem,
@@ -1021,11 +1032,18 @@ const getIssueVouchersEmployeeSummary = async (startDate, endDate) => {
 
     console.log(`[DEBUG] Found ${vouchers.length} vouchers for summary between ${startDate} and ${endDate}`);
 
-    const summaryMap = {}; // Key: employeeId-productId
+    const summaryMap = {}; // Key: employeeId-productId-doctorId-accountId-partyId
 
     vouchers.forEach(voucher => {
         const employeeId = voucher.responsible_employee?.id || 0;
         const employeeName = voucher.responsible_employee?.name || 'غير محدد';
+        const doctorId = voucher.doctor?.id || 0;
+        const doctorName = voucher.doctor?.name || '';
+        const accountId = voucher.account?.id || 0;
+        const accountName = voucher.account?.name || '';
+        const partyId = voucher.party?.id || 0;
+        const partyName = voucher.party?.name || '';
+        const partyType = voucher.party?.party_type || '';
 
         if (!voucher.items || voucher.items.length === 0) {
             console.log(`[DEBUG] Voucher ${voucher.id} has no items`);
@@ -1051,14 +1069,15 @@ const getIssueVouchersEmployeeSummary = async (startDate, endDate) => {
                 itemCost += quantity * parseFloat(item.product?.cost_price || 0);
             }
 
-            const doctorName = voucher.doctor?.name || '';
-
-            const key = `${employeeId}-${productId}`;
+            const key = `${employeeId}-${productId}-${doctorId}-${accountId}-${partyId}`;
             if (!summaryMap[key]) {
                 summaryMap[key] = {
                     employee_id: employeeId,
                     employee_name: employeeName,
                     doctor_name: doctorName,
+                    account_name: accountName,
+                    party_name: partyName,
+                    party_type: partyType,
                     product_id: productId,
                     product_name: productName,
                     total_quantity: 0,
