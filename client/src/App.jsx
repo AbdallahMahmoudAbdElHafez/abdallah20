@@ -62,6 +62,7 @@ import ServiceTypesPage from "./pages/ServiceTypesPage";
 import GeneralLedgerReport from "./pages/GeneralLedgerReport";
 import DetailedCustomerStatementPage from "./pages/DetailedCustomerStatementPage";
 import SalesAnalysisPage from "./pages/SalesAnalysisPage";
+import UnbalancedJournalEntriesPage from "./pages/UnbalancedJournalEntriesPage";
 
 const drawerWidth = 240;
 
@@ -120,6 +121,7 @@ export default function App() {
           <Route path="/reports/purchases" element={<PurchasesReportPage />} />
           <Route path="/reports/expenses" element={<ExpensesReportPage />} />
           <Route path="/reports/journal-expenses" element={<JournalExpensesReportPage />} />
+          <Route path="/reports/unbalanced-journal-entries" element={<UnbalancedJournalEntriesPage />} />
           <Route path="/reports/job-orders" element={<JobOrdersReportPage />} />
           <Route path="/reports/warehouse" element={<WarehouseReportPage />} />
           <Route path="/reports/issue-vouchers" element={<IssueVouchersReportPage />} />

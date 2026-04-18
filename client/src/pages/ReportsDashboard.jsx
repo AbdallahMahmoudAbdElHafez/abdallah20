@@ -90,6 +90,13 @@ const ReportsDashboard = () => {
             color: '#fff3e0'
         },
         {
+            title: 'قيود يومية غير متوازنة',
+            description: 'عرض جميع القيود التي يكون فيها إجمالي المدين لا يساوي الدائن',
+            icon: <AssessmentIcon sx={{ fontSize: 60, color: '#d32f2f' }} />,
+            path: '/reports/unbalanced-journal-entries',
+            color: '#ffebee'
+        },
+        {
             title: 'تقرير مديونيات العملاء',
             description: 'عرض أرصدة العملاء والتحصيلات والمبيعات',
             icon: <SalesIcon sx={{ fontSize: 60, color: '#607d8b' }} />,

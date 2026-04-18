@@ -12,6 +12,7 @@ const reportsApi = {
     getPurchasesReport: (params) => axiosClient.get('/reports/purchases', { params }),
     getExpensesReport: (params) => axiosClient.get('/reports/expenses', { params }),
     getJournalExpensesReport: (params) => axiosClient.get('/reports/journal-expenses', { params }), // NEW
+    getUnbalancedJournalEntries: (params) => axiosClient.get('/journal-entries/unbalanced', { params }),
     getJobOrdersReport: (params) => axiosClient.get('/reports/job-orders', { params }),
     getWarehouseReport: (params) => axiosClient.get('/reports/warehouse', { params }),
     getIssueVouchersReport: (params) => axiosClient.get('/reports/issue-vouchers', { params }),
