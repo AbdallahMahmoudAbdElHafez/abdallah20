@@ -36574,3 +36574,181 @@ Error: bind EADDRINUSE null:5000
     at process.emit (node:events:530:35)
     at emit (node:internal/child_process:949:14)
     at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+2026-04-20T10:31:55: Error
+    at Query.run (d:\db\server\node_modules\sequelize\lib\dialects\mysql\query.js:52:25)
+    at d:\db\server\node_modules\sequelize\lib\sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getUnbalancedEntries (file:///d:/db/server/src/controllers/journalEntry.controller.js:33:25) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Unknown column 'rt.name' in 'field list'
+      at Packet.asError (d:\db\server\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (d:\db\server\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:475:34)
+      at PacketParser.onPacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (d:\db\server\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (d:\db\server\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    code: 'ER_BAD_FIELD_ERROR',
+    errno: 1054,
+    sqlState: '42S22',
+    sqlMessage: "Unknown column 'rt.name' in 'field list'",
+    sql: 'SELECT \n' +
+      '                je.id,\n' +
+      '                je.entry_date,\n' +
+      '                je.description,\n' +
+      '                rt.name as reference_type,\n' +
+      '                je.reference_id,\n' +
+      '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+      '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+      '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+      '            FROM journal_entries je\n' +
+      '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+      '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+      '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+      '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+      '            ORDER BY je.entry_date DESC',
+    parameters: undefined
+  },
+  original: Error: Unknown column 'rt.name' in 'field list'
+      at Packet.asError (d:\db\server\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (d:\db\server\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:475:34)
+      at PacketParser.onPacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (d:\db\server\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (d:\db\server\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    code: 'ER_BAD_FIELD_ERROR',
+    errno: 1054,
+    sqlState: '42S22',
+    sqlMessage: "Unknown column 'rt.name' in 'field list'",
+    sql: 'SELECT \n' +
+      '                je.id,\n' +
+      '                je.entry_date,\n' +
+      '                je.description,\n' +
+      '                rt.name as reference_type,\n' +
+      '                je.reference_id,\n' +
+      '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+      '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+      '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+      '            FROM journal_entries je\n' +
+      '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+      '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+      '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+      '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+      '            ORDER BY je.entry_date DESC',
+    parameters: undefined
+  },
+  sql: 'SELECT \n' +
+    '                je.id,\n' +
+    '                je.entry_date,\n' +
+    '                je.description,\n' +
+    '                rt.name as reference_type,\n' +
+    '                je.reference_id,\n' +
+    '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+    '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+    '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+    '            FROM journal_entries je\n' +
+    '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+    '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+    '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+    '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+    '            ORDER BY je.entry_date DESC',
+  parameters: {}
+}
+2026-04-20T10:31:55: Error
+    at Query.run (d:\db\server\node_modules\sequelize\lib\dialects\mysql\query.js:52:25)
+    at d:\db\server\node_modules\sequelize\lib\sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getUnbalancedEntries (file:///d:/db/server/src/controllers/journalEntry.controller.js:33:25) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Unknown column 'rt.name' in 'field list'
+      at Packet.asError (d:\db\server\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (d:\db\server\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:475:34)
+      at PacketParser.onPacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (d:\db\server\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (d:\db\server\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    code: 'ER_BAD_FIELD_ERROR',
+    errno: 1054,
+    sqlState: '42S22',
+    sqlMessage: "Unknown column 'rt.name' in 'field list'",
+    sql: 'SELECT \n' +
+      '                je.id,\n' +
+      '                je.entry_date,\n' +
+      '                je.description,\n' +
+      '                rt.name as reference_type,\n' +
+      '                je.reference_id,\n' +
+      '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+      '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+      '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+      '            FROM journal_entries je\n' +
+      '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+      '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+      '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+      '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+      '            ORDER BY je.entry_date DESC',
+    parameters: undefined
+  },
+  original: Error: Unknown column 'rt.name' in 'field list'
+      at Packet.asError (d:\db\server\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (d:\db\server\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:475:34)
+      at PacketParser.onPacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (d:\db\server\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (d:\db\server\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    code: 'ER_BAD_FIELD_ERROR',
+    errno: 1054,
+    sqlState: '42S22',
+    sqlMessage: "Unknown column 'rt.name' in 'field list'",
+    sql: 'SELECT \n' +
+      '                je.id,\n' +
+      '                je.entry_date,\n' +
+      '                je.description,\n' +
+      '                rt.name as reference_type,\n' +
+      '                je.reference_id,\n' +
+      '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+      '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+      '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+      '            FROM journal_entries je\n' +
+      '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+      '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+      '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+      '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+      '            ORDER BY je.entry_date DESC',
+    parameters: undefined
+  },
+  sql: 'SELECT \n' +
+    '                je.id,\n' +
+    '                je.entry_date,\n' +
+    '                je.description,\n' +
+    '                rt.name as reference_type,\n' +
+    '                je.reference_id,\n' +
+    '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+    '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+    '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+    '            FROM journal_entries je\n' +
+    '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+    '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+    '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+    '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+    '            ORDER BY je.entry_date DESC',
+  parameters: {}
+}

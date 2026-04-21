@@ -61,6 +61,7 @@ import externalJobOrderServicesRoutes from './routes/externalJobOrderServices.ro
 import externalServiceInvoicesRoutes from './routes/externalServiceInvoices.routes.js';
 import serviceTypesRoutes from './routes/serviceTypes.routes.js';
 import issueVoucherReturnsRoutes from './routes/issueVoucherReturns.routes.js';
+import leaveTypesRoutes from './routes/leaveTypes.routes.js';
 
 const app = express();
 app.use(cors());
@@ -129,6 +130,7 @@ app.use('/api/external-job-order-services', externalJobOrderServicesRoutes);
 app.use('/api/external-service-invoices', externalServiceInvoicesRoutes);
 app.use('/api/service-types', serviceTypesRoutes);
 app.use('/api/issue-voucher-returns', issueVoucherReturnsRoutes);
+app.use('/api/leave-types', leaveTypesRoutes);
 
 app.use(errorHandler);
 export default app;

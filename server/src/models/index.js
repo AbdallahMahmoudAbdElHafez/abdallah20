@@ -70,6 +70,7 @@ import ExternalServiceInvoiceItemTaxModel from './externalServiceInvoiceItemTax.
 import JobOrderCostTransactionModel from './jobOrderCostTransaction.model.js';
 import IssueVoucherReturnModel from './issueVoucherReturns.model.js';
 import IssueVoucherReturnItemModel from './issueVoucherReturnItems.model.js';
+import LeaveTypeModel from './leaveTypes.model.js';
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -140,6 +141,7 @@ const ExternalServiceInvoiceItemTax = ExternalServiceInvoiceItemTaxModel(sequeli
 const JobOrderCostTransaction = JobOrderCostTransactionModel(sequelize);
 const IssueVoucherReturn = IssueVoucherReturnModel(sequelize);
 const IssueVoucherReturnItem = IssueVoucherReturnItemModel(sequelize);
+const LeaveType = LeaveTypeModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -970,5 +972,6 @@ export {
   JobOrderCostTransaction,
   IssueVoucherReturn,
   IssueVoucherReturnItem,
+  LeaveType,
 
 };

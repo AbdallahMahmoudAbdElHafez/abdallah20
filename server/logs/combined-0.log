@@ -51844,3 +51844,567 @@ Error: bind EADDRINUSE null:5000
 2026-04-19T16:40:50: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 3 quantityChange: -10
 2026-04-19T16:40:50: Debug: Updated batch_inventory for batch 7
 2026-04-19T16:40:50: Service: Invoice Journal Entry Created
+2026-04-20T09:17:11: ✅ Database connected
+2026-04-20T09:17:11: 🚀 Server listening on http://localhost:5000
+2026-04-20T10:31:55: Error
+    at Query.run (d:\db\server\node_modules\sequelize\lib\dialects\mysql\query.js:52:25)
+    at d:\db\server\node_modules\sequelize\lib\sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getUnbalancedEntries (file:///d:/db/server/src/controllers/journalEntry.controller.js:33:25) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Unknown column 'rt.name' in 'field list'
+      at Packet.asError (d:\db\server\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (d:\db\server\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:475:34)
+      at PacketParser.onPacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (d:\db\server\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (d:\db\server\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    code: 'ER_BAD_FIELD_ERROR',
+    errno: 1054,
+    sqlState: '42S22',
+    sqlMessage: "Unknown column 'rt.name' in 'field list'",
+    sql: 'SELECT \n' +
+      '                je.id,\n' +
+      '                je.entry_date,\n' +
+      '                je.description,\n' +
+      '                rt.name as reference_type,\n' +
+      '                je.reference_id,\n' +
+      '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+      '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+      '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+      '            FROM journal_entries je\n' +
+      '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+      '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+      '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+      '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+      '            ORDER BY je.entry_date DESC',
+    parameters: undefined
+  },
+  original: Error: Unknown column 'rt.name' in 'field list'
+      at Packet.asError (d:\db\server\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (d:\db\server\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:475:34)
+      at PacketParser.onPacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (d:\db\server\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (d:\db\server\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    code: 'ER_BAD_FIELD_ERROR',
+    errno: 1054,
+    sqlState: '42S22',
+    sqlMessage: "Unknown column 'rt.name' in 'field list'",
+    sql: 'SELECT \n' +
+      '                je.id,\n' +
+      '                je.entry_date,\n' +
+      '                je.description,\n' +
+      '                rt.name as reference_type,\n' +
+      '                je.reference_id,\n' +
+      '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+      '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+      '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+      '            FROM journal_entries je\n' +
+      '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+      '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+      '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+      '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+      '            ORDER BY je.entry_date DESC',
+    parameters: undefined
+  },
+  sql: 'SELECT \n' +
+    '                je.id,\n' +
+    '                je.entry_date,\n' +
+    '                je.description,\n' +
+    '                rt.name as reference_type,\n' +
+    '                je.reference_id,\n' +
+    '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+    '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+    '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+    '            FROM journal_entries je\n' +
+    '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+    '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+    '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+    '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+    '            ORDER BY je.entry_date DESC',
+  parameters: {}
+}
+2026-04-20T10:31:55: Error
+    at Query.run (d:\db\server\node_modules\sequelize\lib\dialects\mysql\query.js:52:25)
+    at d:\db\server\node_modules\sequelize\lib\sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getUnbalancedEntries (file:///d:/db/server/src/controllers/journalEntry.controller.js:33:25) {
+  name: 'SequelizeDatabaseError',
+  parent: Error: Unknown column 'rt.name' in 'field list'
+      at Packet.asError (d:\db\server\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (d:\db\server\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:475:34)
+      at PacketParser.onPacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (d:\db\server\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (d:\db\server\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    code: 'ER_BAD_FIELD_ERROR',
+    errno: 1054,
+    sqlState: '42S22',
+    sqlMessage: "Unknown column 'rt.name' in 'field list'",
+    sql: 'SELECT \n' +
+      '                je.id,\n' +
+      '                je.entry_date,\n' +
+      '                je.description,\n' +
+      '                rt.name as reference_type,\n' +
+      '                je.reference_id,\n' +
+      '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+      '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+      '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+      '            FROM journal_entries je\n' +
+      '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+      '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+      '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+      '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+      '            ORDER BY je.entry_date DESC',
+    parameters: undefined
+  },
+  original: Error: Unknown column 'rt.name' in 'field list'
+      at Packet.asError (d:\db\server\node_modules\mysql2\lib\packets\packet.js:740:17)
+      at Query.execute (d:\db\server\node_modules\mysql2\lib\commands\command.js:29:26)
+      at Connection.handlePacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:475:34)
+      at PacketParser.onPacket (d:\db\server\node_modules\mysql2\lib\base\connection.js:93:12)
+      at PacketParser.executeStart (d:\db\server\node_modules\mysql2\lib\packet_parser.js:75:16)
+      at Socket.<anonymous> (d:\db\server\node_modules\mysql2\lib\base\connection.js:100:25)
+      at Socket.emit (node:events:518:28)
+      at addChunk (node:internal/streams/readable:561:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+      at Readable.push (node:internal/streams/readable:392:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    code: 'ER_BAD_FIELD_ERROR',
+    errno: 1054,
+    sqlState: '42S22',
+    sqlMessage: "Unknown column 'rt.name' in 'field list'",
+    sql: 'SELECT \n' +
+      '                je.id,\n' +
+      '                je.entry_date,\n' +
+      '                je.description,\n' +
+      '                rt.name as reference_type,\n' +
+      '                je.reference_id,\n' +
+      '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+      '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+      '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+      '            FROM journal_entries je\n' +
+      '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+      '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+      '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+      '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+      '            ORDER BY je.entry_date DESC',
+    parameters: undefined
+  },
+  sql: 'SELECT \n' +
+    '                je.id,\n' +
+    '                je.entry_date,\n' +
+    '                je.description,\n' +
+    '                rt.name as reference_type,\n' +
+    '                je.reference_id,\n' +
+    '                COALESCE(SUM(jel.debit), 0) as total_debit,\n' +
+    '                COALESCE(SUM(jel.credit), 0) as total_credit,\n' +
+    '                ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) as difference\n' +
+    '            FROM journal_entries je\n' +
+    '            LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id\n' +
+    '            LEFT JOIN reference_types rt ON je.reference_type_id = rt.id\n' +
+    '            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id\n' +
+    '            HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL\n' +
+    '            ORDER BY je.entry_date DESC',
+  parameters: {}
+}
+2026-04-20T12:48:51: === Creating Sales Invoice ===
+2026-04-20T12:48:51: Request body: {
+  "invoice_number": "",
+  "party_id": 26,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 5,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-04-20",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 23717.460000000006,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 3320.4444000000003,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 27037.904400000007,
+  "note": "",
+  "items": [
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 40,
+      "price": 250,
+      "discount": 2983,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 4,
+      "vat_rate": 14,
+      "vat_amount": 982.38
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 270,
+      "discount": 805.41,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 265.24260000000004
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 20,
+      "price": 520,
+      "discount": 3102.32,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 1021.6752
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 430,
+      "discount": 1282.6899999999998,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 422.4234
+    },
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 240,
+      "discount": 715.92,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 235.7712
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 220,
+      "discount": 656.26,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 216.1236
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 180,
+      "discount": 536.94,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 176.8284
+    }
+  ]
+}
+2026-04-20T12:48:51: Service: Starting invoice creation
+2026-04-20T12:48:52: Service: Transaction committed
+2026-04-20T12:51:29: Service: Invoice updated. ID: 363, Status: draft
+2026-04-20T13:02:55: === Creating Sales Invoice ===
+2026-04-20T13:02:55: Request body: {
+  "invoice_number": "",
+  "party_id": 90,
+  "sales_order_id": null,
+  "warehouse_id": 10,
+  "employee_id": 8,
+  "distributor_employee_id": 8,
+  "invoice_date": "2026-04-20",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "subtotal": 6637.5,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 6637.5,
+  "note": "",
+  "items": [
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 520,
+      "discount": 1300,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 330,
+      "discount": 412.5,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 220,
+      "discount": 275,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 180,
+      "discount": 225,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-04-20T13:02:55: Service: Starting invoice creation
+2026-04-20T13:02:56: Service: Transaction committed
+2026-04-20T15:32:13: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-04-20T15:32:13: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -5
+2026-04-20T15:32:13: Debug: Updated batch_inventory for batch 3
+2026-04-20T15:32:13: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-04-20T15:32:13: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 10 quantityChange: 5
+2026-04-20T15:32:13: Debug: Updated batch_inventory for batch 3
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-20T15:32:14: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -5
+2026-04-20T15:32:14: Debug: Updated batch_inventory for batch 4
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-20T15:32:14: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 10 quantityChange: 5
+2026-04-20T15:32:14: Debug: Updated batch_inventory for batch 4
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-04-20T15:32:14: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -5
+2026-04-20T15:32:14: Debug: Updated batch_inventory for batch 5
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-04-20T15:32:14: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 10 quantityChange: 5
+2026-04-20T15:32:14: Debug: Updated batch_inventory for batch 5
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-04-20T15:32:14: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -5
+2026-04-20T15:32:14: Debug: Updated batch_inventory for batch 6
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-04-20T15:32:14: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 10 quantityChange: 5
+2026-04-20T15:32:14: Debug: Updated batch_inventory for batch 6
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-04-20T15:32:14: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: -5
+2026-04-20T15:32:14: Debug: Updated batch_inventory for batch 7
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-04-20T15:32:14: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 10 quantityChange: 5
+2026-04-20T15:32:14: Debug: Updated batch_inventory for batch 7
+2026-04-20T15:32:14: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-04-20T15:32:15: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -5
+2026-04-20T15:32:15: Debug: Updated batch_inventory for batch 2
+2026-04-20T15:32:15: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-04-20T15:32:15: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 10 quantityChange: 5
+2026-04-20T15:32:15: Debug: Updated batch_inventory for batch 2
+2026-04-20T15:32:15: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-04-20T15:32:15: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -5
+2026-04-20T15:32:15: Debug: Updated batch_inventory for batch 1
+2026-04-20T15:32:15: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-04-20T15:32:15: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 10 quantityChange: 5
+2026-04-20T15:32:15: Debug: Updated batch_inventory for batch 1
+2026-04-20T15:32:15: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-04-20T15:32:15: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -5
+2026-04-20T15:32:15: Debug: Updated batch_inventory for batch 13
+2026-04-20T15:32:15: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-04-20T15:32:15: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 10 quantityChange: 5
+2026-04-20T15:32:15: Debug: Updated batch_inventory for batch 13
+2026-04-20T16:17:47: === Creating Sales Invoice ===
+2026-04-20T16:17:47: Request body: {
+  "invoice_number": "",
+  "party_id": 66,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-04-20",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 2862.9359999999997,
+  "additional_discount": "0.00",
+  "additional_discount_percent": "",
+  "vat_rate": 0,
+  "vat_amount": 400.81104,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 3263.7470399999997,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 6,
+      "price": 430,
+      "discount": 769.6139999999999,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 253.45404
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 6,
+      "price": 250,
+      "discount": 447.45,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 147.357
+    }
+  ]
+}
+2026-04-20T16:17:47: Service: Starting invoice creation
+2026-04-20T16:17:47: Service: Transaction committed
+2026-04-20T16:19:48: === Creating Sales Invoice ===
+2026-04-20T16:19:48: Request body: {
+  "invoice_number": "",
+  "party_id": 66,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-04-20",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "subtotal": 1431.4679999999998,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 200.40552,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1631.8735199999999,
+  "note": "فرع التجمع الخامس",
+  "items": [
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 270,
+      "discount": 161.082,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 53.048519999999996
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 6,
+      "price": 250,
+      "discount": 447.45,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 147.357
+    }
+  ]
+}
+2026-04-20T16:19:48: Service: Starting invoice creation
+2026-04-20T16:19:48: Service: Transaction committed
+2026-04-20T16:20:26: Service: Invoice updated. ID: 359, Status: approved
+2026-04-20T16:20:26: Service: Status is approved, recreating side effects
+2026-04-20T16:20:27: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-04-20T16:20:27: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -2
+2026-04-20T16:20:27: Debug: Updated batch_inventory for batch 6
+2026-04-20T16:20:27: Service: Invoice Journal Entry Created
+2026-04-21T10:10:03: ✅ Database connected
+2026-04-21T10:10:03: 🚀 Server listening on http://localhost:5000
+2026-04-21T10:24:38: Service: Invoice updated. ID: 360, Status: approved
+2026-04-21T10:24:38: Service: Status is approved, recreating side effects
+2026-04-21T10:24:38: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-04-21T10:24:38: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -2
+2026-04-21T10:24:38: Debug: Updated batch_inventory for batch 4
+2026-04-21T10:24:38: Service: Invoice Journal Entry Created
+2026-04-21T10:26:50: Service: Invoice updated. ID: 364, Status: approved
+2026-04-21T10:26:50: Service: Status is approved, recreating side effects
+2026-04-21T10:26:50: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-04-21T10:26:50: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 10 quantityChange: -10
+2026-04-21T10:26:50: Debug: Updated batch_inventory for batch 2
+2026-04-21T10:26:50: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-04-21T10:26:50: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 10 quantityChange: -5
+2026-04-21T10:26:50: Debug: Updated batch_inventory for batch 3
+2026-04-21T10:26:50: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-04-21T10:26:50: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 10 quantityChange: -5
+2026-04-21T10:26:50: Debug: Updated batch_inventory for batch 1
+2026-04-21T10:26:50: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-04-21T10:26:50: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 10 quantityChange: -5
+2026-04-21T10:26:50: Debug: Updated batch_inventory for batch 13
+2026-04-21T10:26:50: Service: Invoice Journal Entry Created
+2026-04-21T10:27:41: Service: Invoice updated. ID: 358, Status: approved
+2026-04-21T10:27:41: Service: Status is approved, recreating side effects
+2026-04-21T10:27:41: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-04-21T10:27:41: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -5
+2026-04-21T10:27:41: Debug: Updated batch_inventory for batch 13
+2026-04-21T10:27:41: Service: Invoice Journal Entry Created
