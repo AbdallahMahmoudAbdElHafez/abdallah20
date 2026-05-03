@@ -46,7 +46,8 @@ const getDashboardSummary = async (startDate, endDate) => {
     const totalSales = await SalesInvoice.sum('total_amount', {
         where: {
             ...(startDate || endDate ? { invoice_date: dateFilter.date } : {}),
-            invoice_type: 'normal'
+            invoice_type: 'normal',
+            invoice_status: { [Op.notIn]: ['cancelled', 'draft'] }
         }
     }) || 0;
 
@@ -89,7 +90,8 @@ const getTopSellingProducts = async (startDate, endDate, limit = 5) => {
                 attributes: [],
                 where: {
                     ...(startDate || endDate ? dateFilter : {}),
-                    invoice_type: 'normal'
+                    invoice_type: 'normal',
+                    invoice_status: { [Op.notIn]: ['cancelled', 'draft'] }
                 }
             },
             {
@@ -143,7 +145,7 @@ const getSalesReport = async (startDate, endDate) => {
         dateFilter.invoice_date = { [Op.lte]: endDate };
     }
     dateFilter.invoice_type = 'normal';
-    dateFilter.invoice_status = { [Op.ne]: 'cancelled' };
+    dateFilter.invoice_status = { [Op.notIn]: ['cancelled', 'draft'] };
 
     const sales = await SalesInvoice.findAll({
         where: dateFilter,

@@ -18,6 +18,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     where: {
       supplier_id: supplierId,
       ...(Object.keys(dateFilter).length ? { invoice_date: dateFilter } : {}),
+      status: { [Op.notIn]: ['draft', 'cancelled'] }
     },
     raw: true,
   });
@@ -174,7 +175,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
   let openingBalance = 0;
   if (from) {
     const prevInvoices = await PurchaseInvoice.sum("total_amount", {
-      where: { supplier_id: supplierId, invoice_date: { [Op.lt]: from } },
+      where: { supplier_id: supplierId, invoice_date: { [Op.lt]: from }, status: { [Op.notIn]: ['draft', 'cancelled'] } },
     });
 
     const prevPayments = await PurchaseInvoicePayment.sum("amount", {

@@ -18,6 +18,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
         where: {
             party_id: customerId,
             ...(Object.keys(dateFilter).length ? { invoice_date: dateFilter } : {}),
+            invoice_status: { [Op.notIn]: ['draft', 'cancelled'] }
         },
         raw: true,
     });
@@ -139,7 +140,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
     let openingBalance = 0;
     if (from) {
         const prevInvoices = await SalesInvoice.sum("total_amount", {
-            where: { party_id: customerId, invoice_date: { [Op.lt]: from } },
+            where: { party_id: customerId, invoice_date: { [Op.lt]: from }, invoice_status: { [Op.notIn]: ['draft', 'cancelled'] } },
         });
 
         const prevPayments = await SalesInvoicePayment.sum("amount", {
@@ -219,7 +220,7 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
         where: {
             party_id: customerId,
             ...(Object.keys(dateFilter).length ? { invoice_date: dateFilter } : {}),
-            invoice_status: { [Op.ne]: 'cancelled' } // ignore cancelled natively if needed, or handle them.
+            invoice_status: { [Op.notIn]: ['draft', 'cancelled'] }
         },
         include: [{
             model: SalesInvoiceItem,
@@ -383,7 +384,7 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
     let openingBalance = 0;
     if (from) {
         const prevInvoices = await SalesInvoice.sum("total_amount", {
-            where: { party_id: customerId, invoice_date: { [Op.lt]: from } },
+            where: { party_id: customerId, invoice_date: { [Op.lt]: from }, invoice_status: { [Op.notIn]: ['draft', 'cancelled'] } },
         });
 
         const prevPayments = await SalesInvoicePayment.sum("amount", {

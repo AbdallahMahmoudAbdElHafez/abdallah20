@@ -33342,3 +33342,43 @@
 2026-05-02T15:45:15: [DEBUG] Found 6 returns for summary between 2026-01-01 and 2026-05-30
 2026-05-02T15:46:56: [DEBUG] Found 112 vouchers for summary between 2026-01-01 and 2026-05-30
 2026-05-02T15:46:56: [DEBUG] Found 6 returns for summary between 2026-01-01 and 2026-05-30
+2026-05-02T19:03:15: ✅ Database connected
+2026-05-02T19:03:15: 🚀 Server listening on http://localhost:5000
+2026-05-02T19:09:32: Journal Entry created for Expense #211
+2026-05-02T19:11:02: Journal Entry created for Expense #212
+2026-05-02T19:12:31: Journal Entry created for Expense #213
+2026-05-02T19:15:25: Journal Entry created for Expense #214
+2026-05-02T19:16:43: Journal Entry created for Expense #215
+2026-05-02T19:18:08: Journal Entry created for Expense #216
+2026-05-02T19:19:20: Journal Entry created for Expense #217
+2026-05-02T21:19:02: Journal Entry created for Expense #218
+2026-05-02T21:19:53: Journal Entry created for Expense #219
+2026-05-02T21:22:01: Journal Entry created for Expense #220
+2026-05-02T21:24:06: Journal Entry created for Expense #221
+2026-05-02T21:28:17: Journal Entry created for Expense #222
+2026-05-02T22:20:39: ✅ Database connected
+2026-05-02T22:20:39: 🚀 Server listening on http://localhost:5000
+2026-05-03T09:17:37: ✅ Database connected
+2026-05-03T09:17:37: 🚀 Server listening on http://localhost:5000
+2026-05-03T09:18:52: Journal Entry created for Expense #223
+2026-05-03T09:56:00: Journal Entry created for Expense #224
+2026-05-03T09:57:26: Journal Entry created for Expense #225
+2026-05-03T09:59:14: Journal Entry created for Expense #226
+2026-05-03T10:34:50: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-05-03T10:34:50: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 1 quantityChange: -72
+2026-05-03T10:34:50: Debug: Updated batch_inventory for batch 13
+2026-05-03T10:34:50: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-05-03T10:34:50: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: 72
+2026-05-03T10:34:50: Debug: Updated batch_inventory for batch 13
+2026-05-03T10:34:50: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-05-03T10:34:50: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 1 quantityChange: -112
+2026-05-03T10:34:50: Debug: Updated batch_inventory for batch 3
+2026-05-03T10:34:50: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-05-03T10:34:50: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: 112
+2026-05-03T10:34:50: Debug: Updated batch_inventory for batch 3
+2026-05-03T10:34:50: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-05-03T10:34:50: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 1 quantityChange: -112
+2026-05-03T10:34:50: Debug: Updated batch_inventory for batch 4
+2026-05-03T10:34:50: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-05-03T10:34:50: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: 112
+2026-05-03T10:34:50: Debug: Updated batch_inventory for batch 4
