@@ -71,6 +71,8 @@ import JobOrderCostTransactionModel from './jobOrderCostTransaction.model.js';
 import IssueVoucherReturnModel from './issueVoucherReturns.model.js';
 import IssueVoucherReturnItemModel from './issueVoucherReturnItems.model.js';
 import LeaveTypeModel from './leaveTypes.model.js';
+import OfferKitModel from './offerKits.model.js';
+import OfferKitItemModel from './offerKitItems.model.js';
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -142,6 +144,8 @@ const JobOrderCostTransaction = JobOrderCostTransactionModel(sequelize);
 const IssueVoucherReturn = IssueVoucherReturnModel(sequelize);
 const IssueVoucherReturnItem = IssueVoucherReturnItemModel(sequelize);
 const LeaveType = LeaveTypeModel(sequelize);
+const OfferKit = OfferKitModel(sequelize);
+const OfferKitItem = OfferKitItemModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -909,6 +913,13 @@ IssueVoucherReturnItem.belongsTo(Product, {
   as: "product"
 });
 
+// === Offer Kit Associations ===
+OfferKit.hasMany(OfferKitItem, { foreignKey: 'offer_kit_id', as: 'items', onDelete: 'CASCADE' });
+OfferKitItem.belongsTo(OfferKit, { foreignKey: 'offer_kit_id', as: 'offer_kit' });
+
+OfferKitItem.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+Product.hasMany(OfferKitItem, { foreignKey: 'product_id', as: 'offer_kit_items' });
+
 export {
   sequelize,
   Company,
@@ -973,5 +984,7 @@ export {
   IssueVoucherReturn,
   IssueVoucherReturnItem,
   LeaveType,
+  OfferKit,
+  OfferKitItem,
 
 };

@@ -45,6 +45,7 @@ import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
 import { fetchAccounts } from "../features/accounts/accountsSlice";
 import ExcelExportDialog from "./ExcelExportDialog";
+import { offerKitsApi } from "../api/offerKitsApi";
 
 const statusConfig = {
     unpaid: { color: "default", label: "غير مدفوع" },
@@ -78,6 +79,13 @@ export default function SalesInvoiceDialog({
     const [showItemForm, setShowItemForm] = useState(false);
     const [exportDialogOpen, setExportDialogOpen] = useState(false);
     const [editingItemTempId, setEditingItemTempId] = useState(null);
+
+    const [offerKits, setOfferKits] = useState([]);
+    const [offerKitDialogOpen, setOfferKitDialogOpen] = useState(false);
+    const [selectedOfferKitId, setSelectedOfferKitId] = useState("");
+    const [offerKitDiscountPercent, setOfferKitDiscountPercent] = useState(0);
+    const [offerKitQuantity, setOfferKitQuantity] = useState(1);
+    const [offerKitVatRate, setOfferKitVatRate] = useState(0);
 
     const [invoiceHead, setInvoiceHead] = useState({
         invoice_number: "",
@@ -128,6 +136,7 @@ export default function SalesInvoiceDialog({
             dispatch(fetchWarehouses()),
             dispatch(fetchEmployees()),
             dispatch(fetchAccounts()),
+            offerKitsApi.getAll().then(setOfferKits).catch(console.error)
         ]).finally(() => setLoadingMeta(false));
     }, [dispatch]);
 
@@ -337,6 +346,45 @@ export default function SalesInvoiceDialog({
     const removeItemTemp = (tempId) => {
         if (editingItemTempId === tempId) cancelEdit();
         setItems((prev) => prev.filter((it) => it.tempId !== tempId));
+    };
+
+    const handleApplyOfferKit = () => {
+        if (!selectedOfferKitId) return;
+        const kit = offerKits.find((k) => k.id === selectedOfferKitId);
+        if (!kit || !kit.items) return;
+
+        const discountPercent = Number(offerKitDiscountPercent) || 0;
+        const kitQtyMulti = Number(offerKitQuantity) || 1;
+        const vatRate = Number(offerKitVatRate) || 0;
+
+        const newItems = kit.items.map((kitItem) => {
+            const qty = (Number(kitItem.quantity) || 1) * kitQtyMulti;
+            const price = Number(kitItem.special_price) || 0;
+            const discountValue = (qty * price * discountPercent) / 100;
+            const netAmount = qty * price - discountValue;
+            const vatAmount = (netAmount * vatRate) / 100;
+            
+            return {
+                product_id: kitItem.product_id,
+                warehouse_id: invoiceHead.warehouse_id || "",
+                quantity: qty,
+                price: price,
+                discount: discountValue,
+                discount_percent: discountPercent,
+                tax_percent: 0,
+                vat_rate: vatRate,
+                vat_amount: vatAmount,
+                bonus: 0,
+                tempId: Date.now() + Math.random(),
+            };
+        });
+
+        setItems((prev) => [...prev, ...newItems]);
+        setOfferKitDialogOpen(false);
+        setSelectedOfferKitId("");
+        setOfferKitDiscountPercent(0);
+        setOfferKitQuantity(1);
+        setOfferKitVatRate(0);
     };
 
     const handleSaveAll = async () => {
@@ -796,13 +844,25 @@ export default function SalesInvoiceDialog({
                                 <Typography variant="h6">
                                     <InventoryIcon /> أصناف الفاتورة ({items.length})
                                 </Typography>
-                                <Button
-                                    variant="outlined"
-                                    startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
-                                    onClick={() => setShowItemForm(!showItemForm)}
-                                >
-                                    {showItemForm ? "إخفاء النموذج" : "إضافة صنف"}
-                                </Button>
+                                <Box display="flex" gap={1}>
+                                    <Button
+                                        variant="outlined"
+                                        color="secondary"
+                                        startIcon={<AddIcon />}
+                                        onClick={() => setOfferKitDialogOpen(true)}
+                                        disabled={isReadOnly}
+                                    >
+                                        إدراج عرض ترويجي
+                                    </Button>
+                                    <Button
+                                        variant="outlined"
+                                        startIcon={showItemForm ? <ExpandLessIcon /> : <AddIcon />}
+                                        onClick={() => setShowItemForm(!showItemForm)}
+                                        disabled={isReadOnly}
+                                    >
+                                        {showItemForm ? "إخفاء النموذج" : "إضافة صنف"}
+                                    </Button>
+                                </Box>
                             </Box>
 
                             <Collapse in={showItemForm}>
@@ -1105,6 +1165,68 @@ export default function SalesInvoiceDialog({
                     </CardContent>
                 </Card>
             </DialogContent>
+
+            <Dialog open={offerKitDialogOpen} onClose={() => setOfferKitDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>إدراج عرض ترويجي</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        select
+                        fullWidth
+                        label="اختر العرض"
+                        value={selectedOfferKitId}
+                        onChange={(e) => setSelectedOfferKitId(e.target.value)}
+                        sx={{ mt: 2 }}
+                    >
+                        <MenuItem value="">-- اختر --</MenuItem>
+                        {offerKits.filter(k => k.active).map(kit => (
+                            <MenuItem key={kit.id} value={kit.id}>
+                                {kit.name} (الإجمالي: {kit.items?.reduce((sum, i) => sum + (Number(i.special_price) * Number(i.quantity)), 0).toFixed(2)})
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                    {selectedOfferKitId && (
+                        <Grid container spacing={2} sx={{ mt: 1 }}>
+                            <Grid item xs={12} sm={4}>
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    label="الكمية (عدد العروض)"
+                                    value={offerKitQuantity}
+                                    onChange={(e) => setOfferKitQuantity(e.target.value)}
+                                    inputProps={{ min: 1, step: 1 }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    label="نسبة الخصم الإضافي (%)"
+                                    value={offerKitDiscountPercent}
+                                    onChange={(e) => setOfferKitDiscountPercent(e.target.value)}
+                                    inputProps={{ min: 0, max: 100, step: 0.1 }}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    label="ضريبة القيمة المضافة (%)"
+                                    value={offerKitVatRate}
+                                    onChange={(e) => setOfferKitVatRate(e.target.value)}
+                                    inputProps={{ min: 0, max: 100, step: 0.1 }}
+                                />
+                            </Grid>
+                        </Grid>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOfferKitDialogOpen(false)}>إلغاء</Button>
+                    <Button onClick={handleApplyOfferKit} variant="contained" color="secondary" disabled={!selectedOfferKitId}>
+                        إدراج الأصناف
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             <DialogActions sx={{ p: 2 }}>
                 <Button onClick={onClose} color="inherit">
                     إلغاء

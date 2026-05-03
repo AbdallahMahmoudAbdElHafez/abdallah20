@@ -128,10 +128,15 @@ export default {
 
                         // Store FIFO batches for each item
                         for (const itemCost of itemCosts) {
-                            // Find corresponding created item
-                            const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
-                            if (createdItem) {
-                                fifoBatchesMap.set(createdItem.id, itemCost.batches);
+                            // Find corresponding created item by itemId (unique) to handle duplicate products
+                            if (itemCost.itemId) {
+                                fifoBatchesMap.set(itemCost.itemId, itemCost.batches);
+                            } else {
+                                // Fallback: match by product_id (legacy)
+                                const createdItem = createdItems.find(ci => ci.product_id === itemCost.product_id);
+                                if (createdItem) {
+                                    fifoBatchesMap.set(createdItem.id, itemCost.batches);
+                                }
                             }
                         }
                     } catch (error) {
@@ -605,16 +610,21 @@ export default {
                     const itemsForCost = processedItems.map(item => ({
                         product_id: item.product_id,
                         warehouse_id: item.warehouse_id || invoice.warehouse_id,
-                        quantity: Number(item.quantity) + Number(item.bonus || 0)
+                        quantity: Number(item.quantity) + Number(item.bonus || 0),
+                        itemId: item.id
                     }));
 
                     let fifoBatchesMap = new Map();
                     try {
                         const { itemCosts } = await FIFOCostService.calculateFIFOCostForItems(itemsForCost, transaction);
                         for (const itemCost of itemCosts) {
-                            const linkedItem = processedItems.find(pi => pi.product_id === itemCost.product_id);
-                            if (linkedItem) {
-                                fifoBatchesMap.set(linkedItem.id, itemCost.batches);
+                            if (itemCost.itemId) {
+                                fifoBatchesMap.set(itemCost.itemId, itemCost.batches);
+                            } else {
+                                const linkedItem = processedItems.find(pi => pi.product_id === itemCost.product_id);
+                                if (linkedItem) {
+                                    fifoBatchesMap.set(linkedItem.id, itemCost.batches);
+                                }
                             }
                         }
                     } catch (error) {

@@ -63,6 +63,7 @@ import GeneralLedgerReport from "./pages/GeneralLedgerReport";
 import DetailedCustomerStatementPage from "./pages/DetailedCustomerStatementPage";
 import SalesAnalysisPage from "./pages/SalesAnalysisPage";
 import UnbalancedJournalEntriesPage from "./pages/UnbalancedJournalEntriesPage";
+import OfferKitsPage from "./pages/OfferKitsPage";
 
 const drawerWidth = 240;
 
@@ -137,6 +138,7 @@ export default function App() {
           <Route path="/inventory-adjustment" element={<InventoryAdjustmentPage />} />
           <Route path="/external-service-invoices" element={<ExternalServiceInvoicesPage />} />
           <Route path="/service-types" element={<ServiceTypesPage />} />
+          <Route path="/offer-kits" element={<OfferKitsPage />} />
         </Routes>
       </Box>
     </BrowserRouter>

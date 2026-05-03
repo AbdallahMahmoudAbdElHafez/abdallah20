@@ -102,7 +102,8 @@ class FIFOCostService {
                     warehouse_id: item.warehouse_id,
                     quantity: item.quantity,
                     cost: itemCost,
-                    batches: batchesUsed
+                    batches: batchesUsed,
+                    itemId: item.itemId
                 });
 
                 totalCost += itemCost;

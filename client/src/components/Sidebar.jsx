@@ -64,6 +64,7 @@ const salesMenu = [
   { label: "فواتير البيع", path: "/sales-invoices" },
   { label: "المقبوضات", path: "/sales-invoice-payments" },
   { label: "مرتجعات", path: "/sales-returns" },
+  { label: "العروض الترويجية", path: "/offer-kits" },
 
 ];
 const warehousesMenu = [
