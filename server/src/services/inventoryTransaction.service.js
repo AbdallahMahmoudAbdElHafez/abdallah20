@@ -148,35 +148,87 @@ class InventoryTransactionService {
         }
       }
     } else {
-      // No batch data provided; allow for Production Requirement products
+      // No batch data provided; allow for Production Requirement products and adjustments
       const isProductionRequirement = product.type && product.type.name.includes("مستلزم");
-      if (isProductionRequirement) {
-        // Create a batch with null batch_number for Production Requirement products
-        const batch = await Batches.create({
-          product_id: data.product_id,
-          batch_number: null,
-          expiry_date: null
-        }, options);
+      const isAdjustmentOrOpening = data.source_type === 'adjustment' || data.source_type === 'opening';
 
-        await InventoryTransactionBatches.create({
-          inventory_transaction_id: trx.id,
-          batch_id: batch.id,
-          quantity: data.quantity,
-          cost_per_unit: data.cost_per_unit || 0
-        }, options);
+      if (isProductionRequirement || isAdjustmentOrOpening) {
+        if (data.transaction_type === "in") {
+          // Auto-create a batch for adjustment/opening or production requirement products
+          const batchNumber = isAdjustmentOrOpening ? `ADJ-${trx.id}` : null;
+          const batch = await Batches.create({
+            product_id: data.product_id,
+            batch_number: batchNumber,
+            expiry_date: null
+          }, options);
 
-        // Update batch_inventory
-        const batchQtyChange = data.transaction_type === "in"
-          ? Number(data.quantity)
-          : -Number(data.quantity);
-        await BatchInventoryService.createOrUpdate(
-          batch.id,
-          data.warehouse_id,
-          batchQtyChange,
-          options
-        );
+          await InventoryTransactionBatches.create({
+            inventory_transaction_id: trx.id,
+            batch_id: batch.id,
+            quantity: data.quantity,
+            cost_per_unit: data.cost_per_unit || 0
+          }, options);
 
-        console.log(`Debug: Created Batch (id: ${batch.id}) with null batch_number and updated batch_inventory for Production Requirement product`);
+          // Update batch_inventory
+          await BatchInventoryService.createOrUpdate(
+            batch.id,
+            data.warehouse_id,
+            Number(data.quantity),
+            { ...options, force: isAdjustmentOrOpening }
+          );
+          console.log(`Debug: Created Batch (id: ${batch.id}) for ${isAdjustmentOrOpening ? 'adjustment/opening' : 'Production Requirement'} product (IN)`);
+        } else {
+          // For outgoing, use FIFO to find existing batches
+          const fifoResult = await InventoryTransactionService.getBatchesFIFO(
+            data.product_id,
+            data.warehouse_id,
+            Number(data.quantity),
+            options.transaction
+          );
+
+          if (fifoResult.batches.length > 0) {
+            for (const b of fifoResult.batches) {
+              await InventoryTransactionBatches.create({
+                inventory_transaction_id: trx.id,
+                batch_id: b.batch_id,
+                quantity: b.quantity,
+                cost_per_unit: b.cost_per_unit || data.cost_per_unit || 0
+              }, options);
+
+              await BatchInventoryService.createOrUpdate(
+                b.batch_id,
+                data.warehouse_id,
+                -Number(b.quantity),
+                { ...options, force: isAdjustmentOrOpening }
+              );
+            }
+          }
+
+          if (fifoResult.remainingNeeded > 0) {
+            // If still needed (system batch records out of sync), create a remainder batch
+            const batchNumber = isAdjustmentOrOpening ? `ADJ-REM-${trx.id}` : null;
+            const batch = await Batches.create({
+              product_id: data.product_id,
+              batch_number: batchNumber,
+              expiry_date: null
+            }, options);
+
+            await InventoryTransactionBatches.create({
+              inventory_transaction_id: trx.id,
+              batch_id: batch.id,
+              quantity: fifoResult.remainingNeeded,
+              cost_per_unit: data.cost_per_unit || 0
+            }, options);
+
+            await BatchInventoryService.createOrUpdate(
+              batch.id,
+              data.warehouse_id,
+              -Number(fifoResult.remainingNeeded),
+              { ...options, force: isAdjustmentOrOpening }
+            );
+          }
+          console.log(`Debug: Processed FIFO for ${isAdjustmentOrOpening ? 'adjustment/opening' : 'Production Requirement'} product (OUT)`);
+        }
       } else {
         throw new Error("Batch information is required for this product type");
       }

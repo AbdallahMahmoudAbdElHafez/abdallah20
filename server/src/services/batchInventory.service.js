@@ -49,8 +49,8 @@ class BatchInventoryService {
 
         const newQuantity = Number(record.quantity) + Number(quantityChange);
 
-        // Prevent negative quantities
-        if (newQuantity < 0) {
+        // Prevent negative quantities unless forced
+        if (newQuantity < 0 && !options.force) {
             throw new Error(`Insufficient batch inventory. Available: ${record.quantity}, Requested: ${Math.abs(quantityChange)}`);
         }
 

@@ -135,6 +135,19 @@ const getLowStockItems = async (threshold = 10) => {
 /**
  * Sales Report - Detailed
  */
+/**
+ * Helper to get the top-most parent account name
+ */
+const getTopParentName = (account) => {
+    if (!account) return '-';
+    let current = account;
+    // Follow the chain as deep as we've fetched (4 levels)
+    while (current.parent) {
+        current = current.parent;
+    }
+    return current.name;
+};
+
 const getSalesReport = async (startDate, endDate) => {
     const dateFilter = {};
     if (startDate && endDate) {
@@ -218,7 +231,7 @@ const getSalesReport = async (startDate, endDate) => {
             {
                 model: SalesReturnItem,
                 as: 'items',
-                include: [{ model: Product, as: 'product', attributes: ['name'] }]
+                include: [{ model: Product, as: 'product', attributes: ['name', 'cost_price'] }]
             },
             {
                 model: Employee,
@@ -262,20 +275,19 @@ const getSalesReport = async (startDate, endDate) => {
         total_returns_cash: totalReturnsCash,
         total_returns_credit: totalReturnsCredit,
         net_sales: totalSales - totalReturns,
-        total_tax: totalTax - totalReturnsTax, // Net Tax
-        total_vat: totalVat, // VAT usually on sales, returns reverse it but let's keep sales VAT separate or net it? Usually Net.
-        // Let's keep total_tax as Net Tax for now.
+        total_tax: totalTax - totalReturnsTax,
+        total_vat: totalVat,
         total_discount: totalDiscount
     };
 
-    // Group by month for chart (Sales - Returns)
+    // Grouping stats
     const chartData = {};
     const employeeData = {};
     const employeeProductStats = {};
-    const customerProductStats = {}; // [NEW] Customer Product Stats
+    const customerProductStats = {};
     const regionData = {};
     const productStats = {};
-    const regionProductStats = {}; // [NEW] COGS by Region and Product
+    const regionProductStats = {};
 
     // Process Sales
     sales.forEach(sale => {
@@ -296,21 +308,31 @@ const getSalesReport = async (startDate, endDate) => {
         if (!regionData[regionName]) regionData[regionName] = 0;
         regionData[regionName] += total;
 
+        // Additional Discount Ratio
+        const invSubtotal = parseFloat(sale.subtotal || 0);
+        const invAddDisc = parseFloat(sale.additional_discount || 0);
+        const addDiscRatio = invSubtotal > 0 ? (invAddDisc / invSubtotal) : 0;
+
         if (sale.items && sale.items.length > 0) {
             sale.items.forEach(item => {
                 const productId = item.product_id;
                 const productName = item.product?.name || `Product ${productId}`;
                 const qty = parseFloat(item.quantity || 0);
-                const revenue = (qty * parseFloat(item.price || 0)) - parseFloat(item.discount || 0) + parseFloat(item.tax_amount || 0) + parseFloat(item.vat_amount || 0);
+                const bonus = parseInt(item.bonus || 0);
+                
+                // Net Revenue = (Qty * Price) - Item Discount - Prorated Invoice Discount
+                const itemBase = (qty * parseFloat(item.price || 0)) - parseFloat(item.discount || 0);
+                const proratedDisc = itemBase * addDiscRatio;
+                const netRevenue = itemBase - proratedDisc;
 
                 if (!productStats[productId]) {
                     productStats[productId] = { product: productName, quantity: 0, bonus: 0, revenue: 0, cost: 0 };
                 }
                 productStats[productId].quantity += qty;
-                productStats[productId].bonus += parseInt(item.bonus || 0);
-                productStats[productId].revenue += revenue;
+                productStats[productId].bonus += bonus;
+                productStats[productId].revenue += netRevenue;
 
-                // Cost logic - Use inventory_transaction_batches for accurate COGS
+                // Cost logic
                 let itemCost = 0;
                 if (item.inventory_transactions && item.inventory_transactions.length > 0) {
                     item.inventory_transactions.forEach(trx => {
@@ -319,58 +341,55 @@ const getSalesReport = async (startDate, endDate) => {
                                 itemCost += parseFloat(batch.quantity || 0) * parseFloat(batch.cost_per_unit || 0);
                             });
                         } else {
-                            // Fallback: transaction exists but no batches
-                            const fallbackQty = parseFloat(trx.quantity || 0);
-                            const costRef = item.product?.cost_price || 0;
-                            itemCost += fallbackQty * parseFloat(costRef);
+                            itemCost += parseFloat(trx.quantity || 0) * parseFloat(item.product?.cost_price || 0);
                         }
                     });
                 } else {
-                    // Fallback: no inventory transactions found
-                    const costRef = item.product?.cost_price || 0;
-                    itemCost += qty * parseFloat(costRef);
+                    itemCost += qty * parseFloat(item.product?.cost_price || 0);
                 }
                 productStats[productId].cost += itemCost;
 
-                // [NEW] COGS by Region and Product
+                // COGS by Region and Product
                 const rpKey = `${regionName}_${productId}`;
                 if (!regionProductStats[rpKey]) {
-                    regionProductStats[rpKey] = { region: regionName, product: productName, quantity: 0, revenue: 0, cost: 0 };
+                    regionProductStats[rpKey] = { region: regionName, product: productName, quantity: 0, bonus: 0, revenue: 0, cost: 0 };
                 }
                 regionProductStats[rpKey].quantity += qty;
-                regionProductStats[rpKey].revenue += revenue;
+                regionProductStats[rpKey].bonus += bonus;
+                regionProductStats[rpKey].revenue += netRevenue;
                 regionProductStats[rpKey].cost += itemCost;
 
+                // Salesman Analysis
                 const epKey = `${empName}_${productId}`;
                 if (!employeeProductStats[epKey]) {
                     employeeProductStats[epKey] = { employee: empName, product: productName, quantity: 0, revenue: 0 };
                 }
                 employeeProductStats[epKey].quantity += qty;
-                employeeProductStats[epKey].revenue += revenue;
+                employeeProductStats[epKey].revenue += netRevenue;
 
-                // [NEW] Customer Product Stats
+                // Customer Product Stats
                 const customerName = sale.party?.name || 'غير محدد';
                 const cpKey = `${customerName}_${productId}`;
                 if (!customerProductStats[cpKey]) {
                     customerProductStats[cpKey] = { customer: customerName, product: productName, quantity: 0, revenue: 0 };
                 }
                 customerProductStats[cpKey].quantity += qty;
-                customerProductStats[cpKey].revenue += revenue;
+                customerProductStats[cpKey].revenue += netRevenue;
             });
         }
     });
 
-    // Process Returns (Deduct from aggregations)
+    // Process Returns
     returns.forEach(ret => {
         const total = parseFloat(ret.total_amount || 0);
         const month = ret.return_date?.substring(0, 7) || 'Unknown';
 
         if (!chartData[month]) chartData[month] = 0;
-        chartData[month] -= total; // Deduct return
+        chartData[month] -= total;
 
         const empName = ret.employee?.name || 'غير محدد';
         if (!employeeData[empName]) employeeData[empName] = 0;
-        employeeData[empName] -= total; // Deduct return
+        employeeData[empName] -= total;
 
         let regionName = 'غير محدد';
         if (ret.customer?.city?.governate?.name) regionName = ret.customer.city.governate.name;
@@ -384,28 +403,34 @@ const getSalesReport = async (startDate, endDate) => {
                 const productId = item.product_id;
                 const productName = item.product?.name || `Product ${productId}`;
                 const qty = parseFloat(item.quantity || 0);
-                // Revenue deduction (approximate if tax/discount not per item in return model, but usually is)
-                // SalesReturnItem has price, quantity. 
-                const revenue = (qty * parseFloat(item.price || 0)); // Simplified, assuming gross return deduction
+                
+                // For returns, we'll assume net revenue is what was paid
+                // Since returns table has total_amount and tax_amount, we can estimate net ratio
+                const retTotal = parseFloat(ret.total_amount || 0);
+                const retTax = parseFloat(ret.tax_amount || 0);
+                const netRatio = retTotal > 0 ? ((retTotal - retTax) / retTotal) : 1;
+                
+                const itemGross = qty * parseFloat(item.price || 0);
+                const netRevenue = itemGross * netRatio;
 
                 if (!productStats[productId]) {
                     productStats[productId] = { product: productName, quantity: 0, bonus: 0, revenue: 0, cost: 0 };
                 }
                 productStats[productId].quantity -= qty;
-                productStats[productId].revenue -= revenue;
+                productStats[productId].revenue -= netRevenue;
 
-                // Cost deduction for returns - use product cost_price as fallback
+                // Cost deduction - using product cost_price
                 const returnCostRef = item.product?.cost_price || 0;
                 const returnItemCost = qty * parseFloat(returnCostRef);
                 productStats[productId].cost -= returnItemCost;
 
-                // [NEW] Deduct from COGS by Region and Product
+                // Deduct from COGS by Region and Product
                 const rpKey = `${regionName}_${productId}`;
                 if (!regionProductStats[rpKey]) {
-                    regionProductStats[rpKey] = { region: regionName, product: productName, quantity: 0, revenue: 0, cost: 0 };
+                    regionProductStats[rpKey] = { region: regionName, product: productName, quantity: 0, bonus: 0, revenue: 0, cost: 0 };
                 }
                 regionProductStats[rpKey].quantity -= qty;
-                regionProductStats[rpKey].revenue -= revenue;
+                regionProductStats[rpKey].revenue -= netRevenue;
                 regionProductStats[rpKey].cost -= returnItemCost;
 
                 const epKey = `${empName}_${productId}`;
@@ -413,16 +438,16 @@ const getSalesReport = async (startDate, endDate) => {
                     employeeProductStats[epKey] = { employee: empName, product: productName, quantity: 0, revenue: 0 };
                 }
                 employeeProductStats[epKey].quantity -= qty;
-                employeeProductStats[epKey].revenue -= revenue;
+                employeeProductStats[epKey].revenue -= netRevenue;
 
-                // [NEW] Deduct from Customer Product Stats
+                // Deduct from Customer Product Stats
                 const customerName = ret.customer?.name || 'غير محدد';
                 const cpKey = `${customerName}_${productId}`;
                 if (!customerProductStats[cpKey]) {
                     customerProductStats[cpKey] = { customer: customerName, product: productName, quantity: 0, revenue: 0 };
                 }
                 customerProductStats[cpKey].quantity -= qty;
-                customerProductStats[cpKey].revenue -= revenue;
+                customerProductStats[cpKey].revenue -= netRevenue;
             });
         }
     });
@@ -451,11 +476,9 @@ const getSalesReport = async (startDate, endDate) => {
     const salesByEmployeeProduct = Object.values(employeeProductStats)
         .sort((a, b) => a.employee.localeCompare(b.employee) || b.revenue - a.revenue);
 
-    // [NEW] Convert and sort customer product stats
     const salesByCustomerProduct = Object.values(customerProductStats)
         .sort((a, b) => a.customer.localeCompare(b.customer) || b.revenue - a.revenue);
 
-    // [NEW] Convert and sort COGS by region product stats
     const cogsByRegionProduct = Object.values(regionProductStats).map(stat => ({
         ...stat,
         profit: stat.revenue - stat.cost,
@@ -464,17 +487,18 @@ const getSalesReport = async (startDate, endDate) => {
 
     return {
         data: sales,
-        returns: returns, // [NEW] Send returns data too if needed for detailed list
+        returns: returns,
         summary,
         chartData: chartArray,
         salesByEmployee,
         salesByRegion,
         salesByProduct,
         salesByEmployeeProduct,
-        salesByCustomerProduct, // [NEW]
-        cogsByRegionProduct // [NEW] COGS by Region and Product
+        salesByCustomerProduct,
+        cogsByRegionProduct
     };
 };
+
 
 /**
  * Purchases Report - Detailed
@@ -559,12 +583,44 @@ const getExpensesReport = async (startDate, endDate) => {
             {
                 model: Account,
                 as: 'debitAccount',
-                attributes: ['id', 'name']
+                attributes: ['id', 'name'],
+                include: [{
+                    association: 'parent',
+                    attributes: ['id', 'name'],
+                    include: [{
+                        association: 'parent',
+                        attributes: ['id', 'name'],
+                        include: [{
+                            association: 'parent',
+                            attributes: ['id', 'name'],
+                            include: [{
+                                association: 'parent',
+                                attributes: ['id', 'name']
+                            }]
+                        }]
+                    }]
+                }]
             },
             {
                 model: Account,
                 as: 'creditAccount',
-                attributes: ['id', 'name']
+                attributes: ['id', 'name'],
+                include: [{
+                    association: 'parent',
+                    attributes: ['id', 'name'],
+                    include: [{
+                        association: 'parent',
+                        attributes: ['id', 'name'],
+                        include: [{
+                            association: 'parent',
+                            attributes: ['id', 'name'],
+                            include: [{
+                                association: 'parent',
+                                attributes: ['id', 'name']
+                            }]
+                        }]
+                    }]
+                }]
             },
             {
                 model: City,
@@ -595,6 +651,11 @@ const getExpensesReport = async (startDate, endDate) => {
         total_amount: expenses.reduce((sum, exp) => sum + parseFloat(exp.amount || 0), 0)
     };
 
+    const mappedExpenses = expenses.map(exp => ({
+        ...exp.toJSON(),
+        top_parent_name: getTopParentName(exp.debitAccount)
+    }));
+
     // Simplified summary since categories are removed
     const chartArray = [{
         category: 'مصروفات',
@@ -602,7 +663,7 @@ const getExpensesReport = async (startDate, endDate) => {
     }];
 
     return {
-        data: expenses,
+        data: mappedExpenses,
         summary,
         chartData: chartArray
     };
@@ -630,7 +691,23 @@ const getJournalExpensesReport = async (startDate, endDate) => {
             {
                 model: Account,
                 where: { account_type: 'expense' },
-                attributes: ['id', 'name']
+                attributes: ['id', 'name'],
+                include: [{
+                    association: 'parent',
+                    attributes: ['id', 'name'],
+                    include: [{
+                        association: 'parent',
+                        attributes: ['id', 'name'],
+                        include: [{
+                            association: 'parent',
+                            attributes: ['id', 'name'],
+                            include: [{
+                                association: 'parent',
+                                attributes: ['id', 'name']
+                            }]
+                        }]
+                    }]
+                }]
             },
             {
                 model: JournalEntry,
@@ -644,7 +721,23 @@ const getJournalExpensesReport = async (startDate, endDate) => {
                         attributes: ['account_id', 'credit'],
                         include: [{
                             model: Account,
-                            attributes: ['id', 'name']
+                            attributes: ['id', 'name'],
+                            include: [{
+                                association: 'parent',
+                                attributes: ['id', 'name'],
+                                include: [{
+                                    association: 'parent',
+                                    attributes: ['id', 'name'],
+                                    include: [{
+                                        association: 'parent',
+                                        attributes: ['id', 'name'],
+                                        include: [{
+                                            association: 'parent',
+                                            attributes: ['id', 'name']
+                                        }]
+                                    }]
+                                }]
+                            }]
                         }]
                     }
                 ],
@@ -665,6 +758,7 @@ const getJournalExpensesReport = async (startDate, endDate) => {
             description: journal.description,
             amount: line.debit,
             debit_account: line.Account?.name || 'Unknown Expense',
+            parent_account: getTopParentName(line.Account),
             credit_account: creditLine?.Account?.name || 'Multiple/Unknown Payment',
         };
     });

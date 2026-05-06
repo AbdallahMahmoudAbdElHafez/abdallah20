@@ -71,6 +71,13 @@ const ExpensesReportPage = () => {
             enableHiding: true
         },
         {
+            accessorKey: 'top_parent_name',
+            header: 'الحساب الرئيسي الأكبر',
+            size: 150,
+            enableHiding: true,
+            Cell: ({ cell }) => cell.getValue() || '-'
+        },
+        {
             accessorKey: 'creditAccount.name',
             header: 'مدفوع من حساب',
             size: 150,

@@ -60,6 +60,7 @@ const JournalExpensesReportPage = () => {
         { accessorKey: 'entry_date', id: 'entry_date', header: 'التاريخ', size: 110, Cell: ({ cell }) => cell.getValue() ? new Date(cell.getValue()).toLocaleDateString('ar-EG') : '-' },
         { accessorKey: 'description', id: 'description', header: 'الوصف', size: 250 },
         { accessorKey: 'debit_account', id: 'debit_account', header: 'حساب المصروف (مدين)', size: 180 },
+        { accessorKey: 'parent_account', id: 'parent_account', header: 'الحساب الرئيسي الأكبر', size: 180 },
         { accessorKey: 'credit_account', id: 'credit_account', header: 'طريقة الدفع (دائن)', size: 180 },
         {
             accessorKey: 'amount',

@@ -16,6 +16,7 @@ export default function IssueVoucherPaper({ voucher, company }) {
     const partyName = voucher.party?.name || "غير محدد";
     const employeeName = voucher.responsible_employee?.name || "غير محدد";
     const doctorName = voucher.doctor?.name || "غير محدد";
+    const warehouseName = voucher.warehouse?.name || "غير محدد";
 
     return (
         <div className="invoice-paper" dir="rtl">

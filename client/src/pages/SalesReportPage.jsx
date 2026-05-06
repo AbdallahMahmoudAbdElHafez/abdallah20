@@ -151,6 +151,10 @@ const SalesReportPage = () => {
             aggregationFn: 'sum',
             AggregatedCell: ({ cell }) => <Box fontWeight="bold">{cell.getValue()}</Box>
         },
+        { accessorKey: 'bonus', id: 'bonus', header: 'البونص', size: 100,
+            aggregationFn: 'sum',
+            AggregatedCell: ({ cell }) => <Box fontWeight="bold">{cell.getValue()}</Box>
+        },
         { accessorKey: 'revenue', id: 'revenue', header: 'إيراد المبيعات', size: 150,
             Cell: ({ cell }) => formatCurrency(cell.getValue()),
             aggregationFn: 'sum',
