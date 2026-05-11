@@ -85,7 +85,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
         })),
         ...replacements.map(iv => {
             const totalSaleValue = iv.items.reduce((sum, item) => {
-                const price = Number(item.product?.price) || 0;
+                const price = Number(item.price) || 0;
                 return sum + (Number(item.quantity) * price);
             }, 0);
             return {
@@ -184,7 +184,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
 
         const prevReplacementsValue = prevReplacements.reduce((total, iv) => {
             const voucherValue = iv.items.reduce((sum, item) => {
-                const price = Number(item.product?.price) || 0;
+                const price = Number(item.price) || 0;
                 return sum + (Number(item.quantity) * price);
             }, 0);
             return total + voucherValue;
@@ -315,7 +315,7 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
         ...replacements.map(iv => {
             const rawIv = iv.get({ plain: true });
             const totalSaleValue = rawIv.items.reduce((sum, item) => {
-                const price = Number(item.product?.price) || Number(item.price) || 0;
+                const price = Number(item.price) || 0;
                 return sum + (Number(item.quantity) * price);
             }, 0);
             return {
@@ -327,8 +327,8 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
                 items: rawIv.items.map(item => ({
                     product_name: item.product?.name || item.product_id,
                     quantity: item.quantity,
-                    price: Number(item.product?.price) || Number(item.price) || 0,
-                    total: Number(item.quantity) * (Number(item.product?.price) || Number(item.price) || 0)
+                    price: Number(item.price) || 0,
+                    total: Number(item.quantity) * (Number(item.price) || 0)
                 }))
             };
         })
@@ -428,7 +428,7 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
 
         const prevReplacementsValue = prevReplacements.reduce((total, iv) => {
             const voucherValue = iv.items.reduce((sum, item) => {
-                const price = Number(item.product?.price) || Number(item.price) || 0;
+                const price = Number(item.price) || 0;
                 return sum + (Number(item.quantity) * price);
             }, 0);
             return total + voucherValue;

@@ -9,7 +9,7 @@ import {
   Box,
   Divider,
 } from "@mui/material";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { ExpandLess, ExpandMore, Note as NoteIcon } from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 
@@ -87,7 +87,7 @@ const reportsMenu = [
   { label: "أرصدة البنوك والصناديق", path: "/reports/bank-cash" },
   { label: "كشف حركة الصندوق/البنك", path: "/reports/safe-movements" },
 ];
-function Sidebar() {
+function Sidebar({ onToggleNotes }) {
   const location = useLocation();
   const [openPurchases, setOpenPurchases] = useState(false);
   const [openWarehouses, setOpenWarehouses] = useState(false);
@@ -323,6 +323,11 @@ function Sidebar() {
             <ListItemText primary={item.label} />
           </ListItemButton>
         ))}
+        <Divider sx={{ my: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
+        <ListItemButton onClick={onToggleNotes} sx={{ "&:hover": { bgcolor: "rgba(255,255,255,0.2)" } }}>
+          <NoteIcon sx={{ ml: 1 }} />
+          <ListItemText primary="الملاحظات" />
+        </ListItemButton>
       </List>
     </Drawer>
   );

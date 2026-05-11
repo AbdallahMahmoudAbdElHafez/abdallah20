@@ -64,13 +64,17 @@ import DetailedCustomerStatementPage from "./pages/DetailedCustomerStatementPage
 import SalesAnalysisPage from "./pages/SalesAnalysisPage";
 import UnbalancedJournalEntriesPage from "./pages/UnbalancedJournalEntriesPage";
 import OfferKitsPage from "./pages/OfferKitsPage";
+import DraggableNotes from "./components/DraggableNotes";
+import { useState } from "react";
 
 const drawerWidth = 240;
 
 export default function App() {
+  const [showNotes, setShowNotes] = useState(true);
+
   return (
     <BrowserRouter>
-      <Sidebar />
+      <Sidebar onToggleNotes={() => setShowNotes(!showNotes)} />
       <Box sx={{ mr: `${drawerWidth}px` }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -141,6 +145,7 @@ export default function App() {
           <Route path="/offer-kits" element={<OfferKitsPage />} />
         </Routes>
       </Box>
+      {showNotes && <DraggableNotes onClose={() => setShowNotes(false)} />}
     </BrowserRouter>
   );
 }

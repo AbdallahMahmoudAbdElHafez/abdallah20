@@ -31,6 +31,11 @@ const IssueVoucherItemModel = (sequelize) => {
       type: DataTypes.DECIMAL(12, 2),
       defaultValue: 0.00
     },
+    price: {
+      type: DataTypes.DECIMAL(12, 2),
+      defaultValue: 0.00,
+      comment: 'Sale price for replacement issue vouchers'
+    },
     note: {
       type: DataTypes.TEXT,
       allowNull: true

@@ -73,6 +73,7 @@ import IssueVoucherReturnItemModel from './issueVoucherReturnItems.model.js';
 import LeaveTypeModel from './leaveTypes.model.js';
 import OfferKitModel from './offerKits.model.js';
 import OfferKitItemModel from './offerKitItems.model.js';
+import NoteModel from './note.model.js';
 
 const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
@@ -146,6 +147,7 @@ const IssueVoucherReturnItem = IssueVoucherReturnItemModel(sequelize);
 const LeaveType = LeaveTypeModel(sequelize);
 const OfferKit = OfferKitModel(sequelize);
 const OfferKitItem = OfferKitItemModel(sequelize);
+const Note = NoteModel(sequelize);
 
 purchaseOrderHooks(sequelize);
 purchaseInvoiceHooks(sequelize);
@@ -981,10 +983,13 @@ export {
   ExternalServiceInvoiceItem,
   ExternalServiceInvoiceItemTax,
   JobOrderCostTransaction,
+
+
+
   IssueVoucherReturn,
   IssueVoucherReturnItem,
   LeaveType,
   OfferKit,
   OfferKitItem,
-
+  Note,
 };

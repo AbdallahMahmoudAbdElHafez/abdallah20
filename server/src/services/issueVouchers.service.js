@@ -32,10 +32,23 @@ export class IssueVouchersService {
       const voucher = await IssueVoucher.create(voucherData, { transaction });
 
       if (itemsData.length > 0) {
-        const itemsWithVoucherId = itemsData.map(item => ({
-          ...item,
-          voucher_id: voucher.id
-        }));
+        // Fetch products to get current prices if not provided
+        const productIds = itemsData.map(i => i.product_id);
+        const products = await Product.findAll({
+          where: { id: { [Op.in]: productIds } },
+          attributes: ['id', 'price'],
+          transaction
+        });
+        const productMap = new Map(products.map(p => [p.id, p]));
+
+        const itemsWithVoucherId = itemsData.map(item => {
+          const product = productMap.get(Number(item.product_id));
+          return {
+            ...item,
+            voucher_id: voucher.id,
+            price: item.price || (voucher.issue_type === 'replacement' ? (product?.price || 0) : 0)
+          };
+        });
 
         const createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
 
@@ -321,10 +334,23 @@ export class IssueVouchersService {
       });
 
       if (itemsData.length > 0) {
-        const itemsWithVoucherId = itemsData.map(item => ({
-          ...item,
-          voucher_id: id
-        }));
+        // Fetch products to get current prices if not provided
+        const productIds = itemsData.map(i => i.product_id);
+        const products = await Product.findAll({
+          where: { id: { [Op.in]: productIds } },
+          attributes: ['id', 'price'],
+          transaction
+        });
+        const productMap = new Map(products.map(p => [p.id, p]));
+
+        const itemsWithVoucherId = itemsData.map(item => {
+          const product = productMap.get(Number(item.product_id));
+          return {
+            ...item,
+            voucher_id: id,
+            price: item.price || (voucher.issue_type === 'replacement' ? (product?.price || 0) : 0)
+          };
+        });
 
         await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
       }
@@ -616,8 +642,7 @@ export class IssueVouchersService {
         const ACC_EXCHANGE_CLEARING = 116;
 
         for (const item of itemsData) {
-          const product = productMap.get(Number(item.product_id));
-          const price = Number(product?.price) || 0;
+          const price = Number(item.price) || 0;
           totalSaleValue += Number(item.quantity) * price;
         }
 

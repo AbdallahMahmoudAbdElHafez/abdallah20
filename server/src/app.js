@@ -63,6 +63,7 @@ import serviceTypesRoutes from './routes/serviceTypes.routes.js';
 import issueVoucherReturnsRoutes from './routes/issueVoucherReturns.routes.js';
 import leaveTypesRoutes from './routes/leaveTypes.routes.js';
 import offerKitsRoutes from './routes/offerKits.routes.js';
+import notesRoutes from './routes/notes.routes.js';
 
 const app = express();
 app.use(cors());
@@ -133,6 +134,7 @@ app.use('/api/service-types', serviceTypesRoutes);
 app.use('/api/issue-voucher-returns', issueVoucherReturnsRoutes);
 app.use('/api/leave-types', leaveTypesRoutes);
 app.use('/api/offer-kits', offerKitsRoutes);
+app.use('/api/notes', notesRoutes);
 
 app.use(errorHandler);
 export default app;
