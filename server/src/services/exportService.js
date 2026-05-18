@@ -251,6 +251,29 @@ const exportCustomerStatement = async (statementData) => {
     worksheet.addRow(['الرصيد الختامي:', parseFloat(statementData.closing_balance || 0)]);
     worksheet.addRow([]);
 
+    // Payments Summary by Date
+    const paymentsByDate = (statementData.statement || [])
+        .filter(row => row.type === 'payment')
+        .reduce((acc, row) => {
+            const date = (row.date || '').slice(0, 10);
+            acc[date] = (acc[date] || 0) + parseFloat(row.credit || 0);
+            return acc;
+        }, {});
+
+    const paymentsSummary = Object.entries(paymentsByDate)
+        .map(([date, amount]) => ({ date, amount }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (paymentsSummary.length > 0) {
+        const paySummaryTitle = worksheet.addRow(['إجمالي السداد بالتاريخ']);
+        paySummaryTitle.font = { bold: true, color: { argb: 'FF2E7D32' } };
+        
+        paymentsSummary.forEach(item => {
+            worksheet.addRow([item.date, 'إجمالي سداد اليوم', '', item.amount]);
+        });
+        worksheet.addRow([]);
+    }
+
     // Table Headers
     const headers = ['التاريخ', 'الوصف', 'مدين', 'دائن', 'الرصيد'];
     const headerRow = worksheet.addRow(headers);
@@ -747,6 +770,29 @@ const exportDetailedCustomerStatement = async (statementData) => {
     worksheet.addRow(['التاريخ:', new Date().toLocaleDateString('ar-EG')]);
     worksheet.addRow(['الرصيد الافتتاحي:', parseFloat(statementData.opening_balance || 0)]);
     worksheet.addRow([]);
+
+    // Payments Summary by Date
+    const paymentsByDate = (statementData.statement || [])
+        .filter(row => row.type === 'payment')
+        .reduce((acc, row) => {
+            const date = (row.date || '').slice(0, 10);
+            acc[date] = (acc[date] || 0) + parseFloat(row.credit || 0);
+            return acc;
+        }, {});
+
+    const paymentsSummary = Object.entries(paymentsByDate)
+        .map(([date, amount]) => ({ date, amount }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (paymentsSummary.length > 0) {
+        const paySummaryTitle = worksheet.addRow(['إجمالي السداد بالتاريخ']);
+        paySummaryTitle.font = { bold: true, color: { argb: 'FF00695C' } };
+        
+        paymentsSummary.forEach(item => {
+            worksheet.addRow([item.date, 'إجمالي سداد اليوم', '', '', item.amount]);
+        });
+        worksheet.addRow([]);
+    }
 
     // Table Headers
     const headers = ['التاريخ', 'النوع', 'الوصف', 'مدين', 'دائن', 'الرصيد'];

@@ -129,9 +129,19 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
   }, [dispatch, formData.warehouse_id]);
 
   const handleFormChange = (field, value) => {
+    let updates = { [field]: value };
+
+    if (field === 'sales_return_id' && value) {
+      const selectedReturn = salesReturns.find(r => r.id === value);
+      if (selectedReturn) {
+        updates.party_id = selectedReturn.party_id || '';
+        updates.issue_type = 'replacement';
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      ...updates
     }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));

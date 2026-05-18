@@ -109,6 +109,19 @@ export default function CustomerStatement({ customerId, fromParam, toParam }) {
     const totalDebit = statementRows.reduce((sum, row) => sum + Number(row.debit || 0), 0);
     const totalCredit = statementRows.reduce((sum, row) => sum + Number(row.credit || 0), 0);
 
+    // Group payments by date
+    const paymentsByDate = statementRows
+        .filter(row => row.type === 'payment')
+        .reduce((acc, row) => {
+            const date = row.date;
+            acc[date] = (acc[date] || 0) + Number(row.credit);
+            return acc;
+        }, {});
+
+    const paymentsSummary = Object.entries(paymentsByDate)
+        .map(([date, amount]) => ({ date, amount }))
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
     const columns = [
         { accessorKey: "date", header: "التاريخ", size: 120 },
         { accessorKey: "description", header: "الوصف", size: 300 },
@@ -219,6 +232,31 @@ export default function CustomerStatement({ customerId, fromParam, toParam }) {
                     </Grid>
 
                     <Divider sx={{ mb: 4 }} />
+
+                    {/* Payments Summary by Date */}
+                    {paymentsSummary.length > 0 && (
+                        <Box sx={{ mb: 6 }}>
+                            <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold', color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box sx={{ width: 4, height: 24, bgcolor: 'secondary.main', borderRadius: 1 }} />
+                                إجمالي السداد بالتاريخ
+                            </Typography>
+                            <Grid container spacing={2}>
+                                {paymentsSummary.map((item) => (
+                                    <Grid item xs={12} sm={6} md={3} key={item.date}>
+                                        <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: 'success.50', borderColor: 'success.light' }}>
+                                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                                <Typography variant="body2" color="text.secondary">{item.date}</Typography>
+                                                <Typography variant="subtitle1" fontWeight="bold" color="success.dark">
+                                                    {item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                                </Typography>
+                                            </Stack>
+                                        </Paper>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                            <Divider sx={{ mt: 4 }} />
+                        </Box>
+                    )}
 
                     {/* Table */}
                     <MaterialReactTable

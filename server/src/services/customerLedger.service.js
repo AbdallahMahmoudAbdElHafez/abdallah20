@@ -51,7 +51,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
         where: {
             party_id: customerId,
             issue_type: 'replacement',
-            status: 'approved',
+            status: { [Op.notIn]: ['draft', 'cancelled'] },
             ...(Object.keys(dateFilter).length ? { issue_date: dateFilter } : {}),
         },
         include: [{
@@ -168,7 +168,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
             where: {
                 party_id: customerId,
                 issue_type: 'replacement',
-                status: 'approved',
+                status: { [Op.notIn]: ['draft', 'cancelled'] },
                 issue_date: { [Op.lt]: from }
             },
             include: [{
@@ -270,7 +270,7 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
         where: {
             party_id: customerId,
             issue_type: 'replacement',
-            status: 'approved',
+            status: { [Op.notIn]: ['draft', 'cancelled'] },
             ...(Object.keys(dateFilter).length ? { issue_date: dateFilter } : {}),
         },
         include: [{
@@ -412,7 +412,7 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
             where: {
                 party_id: customerId,
                 issue_type: 'replacement',
-                status: 'approved',
+                status: { [Op.notIn]: ['draft', 'cancelled'] },
                 issue_date: { [Op.lt]: from }
             },
             include: [{

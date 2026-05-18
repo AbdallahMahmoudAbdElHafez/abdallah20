@@ -65,12 +65,20 @@ import SalesAnalysisPage from "./pages/SalesAnalysisPage";
 import UnbalancedJournalEntriesPage from "./pages/UnbalancedJournalEntriesPage";
 import OfferKitsPage from "./pages/OfferKitsPage";
 import DraggableNotes from "./components/DraggableNotes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const drawerWidth = 240;
 
 export default function App() {
-  const [showNotes, setShowNotes] = useState(true);
+  const [showNotes, setShowNotes] = useState(false);
+
+  // Open notes after a short delay to avoid mount-time conflicts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNotes(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <BrowserRouter>
