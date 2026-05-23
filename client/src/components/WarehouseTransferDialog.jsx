@@ -159,7 +159,14 @@ export default function WarehouseTransferDialog({ open, onClose, initial, onSave
               disabled={!form.from_warehouse_id}
             >
               <MenuItem value="">اختر المنتج</MenuItem>
-              {products.map(p => <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>)}
+              {products.map(p => {
+                const totalQty = p.current_inventory?.reduce((sum, inv) => sum + inv.quantity, 0) || 0;
+                return (
+                  <MenuItem key={p.id} value={p.id}>
+                    {p.name} (المتاح: {totalQty})
+                  </MenuItem>
+                );
+              })}
             </TextField>
 
             <TextField

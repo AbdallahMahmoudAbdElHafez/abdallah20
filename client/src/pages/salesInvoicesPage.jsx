@@ -209,6 +209,11 @@ export default function SalesInvoicesPage() {
             size: 110,
         },
         {
+            accessorKey: "sales_channel",
+            header: "قناة البيع",
+            size: 110,
+        },
+        {
             accessorKey: "invoice_status",
             header: "حالة الفاتورة",
             size: 110,

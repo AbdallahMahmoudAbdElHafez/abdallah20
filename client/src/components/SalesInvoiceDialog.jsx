@@ -102,6 +102,7 @@ export default function SalesInvoiceDialog({
         account_id: "",
         shipping_amount: 0,
         shipping_by: "شركة شحن",
+        sales_channel: "توزيع محلي",
         subtotal: 0,
         additional_discount: 0,
         additional_discount_percent: 0,
@@ -166,6 +167,7 @@ export default function SalesInvoiceDialog({
                 account_id: invoice.account_id ?? "",
                 shipping_amount: Number(invoice.shipping_amount) || 0,
                 shipping_by: invoice.shipping_by || "شركة شحن",
+                sales_channel: invoice.sales_channel || "توزيع محلي",
                 subtotal: Number(invoice.subtotal) || 0,
                 additional_discount: Number(invoice.additional_discount) || 0,
                 additional_discount_percent: invoice.subtotal > 0 ? (Number(invoice.additional_discount) / Number(invoice.subtotal)) * 100 : 0,
@@ -195,6 +197,7 @@ export default function SalesInvoiceDialog({
                 account_id: "",
                 shipping_amount: 0,
                 shipping_by: "شركة شحن",
+                sales_channel: "توزيع محلي",
                 subtotal: 0,
                 additional_discount: 0,
                 additional_discount_percent: 0,
@@ -1124,6 +1127,22 @@ export default function SalesInvoiceDialog({
                                 >
                                     <MenuItem value="شركة شحن">شركة شحن</MenuItem>
                                     <MenuItem value="مندوب">مندوب</MenuItem>
+                                </TextField>
+                            </Grid>
+                            <Grid item xs={12} md={2}>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label="قناة البيع"
+                                    value={invoiceHead.sales_channel}
+                                    onChange={(e) =>
+                                        setInvoiceHead({ ...invoiceHead, sales_channel: e.target.value })
+                                    }
+                                    size="small"
+                                >
+                                    <MenuItem value="توزيع محلي">توزيع محلي</MenuItem>
+                                    <MenuItem value="سوشيال ميديا">سوشيال ميديا</MenuItem>
+                                    <MenuItem value="أخرى">أخرى</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={12}>

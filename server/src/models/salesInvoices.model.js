@@ -39,6 +39,11 @@ export default (sequelize) => {
                 allowNull: false,
                 defaultValue: 'شركة شحن'
             },
+            sales_channel: {
+                type: DataTypes.ENUM('توزيع محلي', 'سوشيال ميديا', 'أخرى'),
+                allowNull: false,
+                defaultValue: 'توزيع محلي'
+            },
             account_id: { type: DataTypes.INTEGER, allowNull: true },
             created_at: {
                 type: DataTypes.DATE,
