@@ -52204,3 +52204,15 @@
 2026-05-23T18:58:43: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
 2026-05-23T18:58:43: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 3 quantityChange: 24
 2026-05-23T18:58:43: Debug: Updated batch_inventory for batch 1
+2026-05-23T19:10:09: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-05-23T19:10:09: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -1
+2026-05-23T19:10:09: Debug: Updated batch_inventory for batch 3
+2026-05-23T19:10:09: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1779552573871
+2026-05-23T19:11:31: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-05-23T19:11:31: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -1
+2026-05-23T19:11:31: Debug: Updated batch_inventory for batch 5
+2026-05-23T19:11:31: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1779552613377
+2026-05-23T19:12:23: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-05-23T19:12:23: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -1
+2026-05-23T19:12:23: Debug: Updated batch_inventory for batch 3
+2026-05-23T19:12:23: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1779552701526
