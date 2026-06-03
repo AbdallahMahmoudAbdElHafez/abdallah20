@@ -31,6 +31,8 @@ export class IssueVouchersService {
     try {
       const voucher = await IssueVoucher.create(voucherData, { transaction });
 
+      let finalItemsData = itemsData;
+
       if (itemsData.length > 0) {
         // Fetch products to get current prices if not provided
         const productIds = itemsData.map(i => i.product_id);
@@ -49,6 +51,7 @@ export class IssueVouchersService {
             price: item.price || (voucher.issue_type === 'replacement' ? (product?.price || 0) : 0)
           };
         });
+        finalItemsData = itemsWithVoucherId;
 
         const createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
 
@@ -119,7 +122,7 @@ export class IssueVouchersService {
       }
 
       // --- Journal Entry Creation ---
-      await this._syncJournalEntry(voucher.id, itemsData, transaction);
+      await this._syncJournalEntry(voucher.id, finalItemsData, transaction);
 
       await transaction.commit();
       return await this.getIssueVoucherById(voucher.id, true);
@@ -333,6 +336,8 @@ export class IssueVouchersService {
         transaction
       });
 
+      let finalItemsData = itemsData;
+
       if (itemsData.length > 0) {
         // Fetch products to get current prices if not provided
         const productIds = itemsData.map(i => i.product_id);
@@ -351,12 +356,13 @@ export class IssueVouchersService {
             price: item.price || (voucher.issue_type === 'replacement' ? (product?.price || 0) : 0)
           };
         });
+        finalItemsData = itemsWithVoucherId;
 
         await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
       }
 
       // --- Journal Entry Update ---
-      await this._syncJournalEntry(id, itemsData, transaction);
+      await this._syncJournalEntry(id, finalItemsData, transaction);
 
       await transaction.commit();
       return await this.getIssueVoucherById(id, true);

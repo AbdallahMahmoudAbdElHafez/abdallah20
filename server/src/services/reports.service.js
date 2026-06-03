@@ -1347,13 +1347,16 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
         raw: true
     });
 
-    // Returns Totals
+    // Returns Totals (Only credit and exchange returns affect the customer balance)
     const returns = await SalesReturn.findAll({
         attributes: [
             'party_id',
             [sequelize.fn('SUM', sequelize.col('total_amount')), 'total_returns']
         ],
-        where: startDate || endDate ? { return_date: dateFilter.date } : {},
+        where: {
+            return_type: { [Op.in]: ['credit', 'exchange'] },
+            ...(startDate || endDate ? { return_date: dateFilter.date } : {})
+        },
         group: ['party_id'],
         raw: true
     });

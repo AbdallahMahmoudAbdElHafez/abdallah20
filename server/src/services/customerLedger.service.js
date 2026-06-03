@@ -133,6 +133,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
     let runningBalance = 0;
     const statement = movements.map(row => {
         runningBalance += row.debit - row.credit;
+        runningBalance = Number(runningBalance.toFixed(2));
         return { ...row, running_balance: runningBalance };
     });
 
@@ -191,9 +192,10 @@ export async function getCustomerStatement(customerId, { from, to }) {
         }, 0);
 
         openingBalance = (prevInvoices || 0) + prevReplacementsValue - ((prevPayments || 0) + (prevReturns || 0));
+        openingBalance = Number(openingBalance.toFixed(2));
     }
 
-    const closingBalance = openingBalance + runningBalance;
+    const closingBalance = Number((openingBalance + runningBalance).toFixed(2));
 
     return {
         customer,
@@ -377,6 +379,7 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
     let runningBalance = 0;
     const statement = movements.map(row => {
         runningBalance += row.debit - row.credit;
+        runningBalance = Number(runningBalance.toFixed(2));
         return { ...row, running_balance: runningBalance };
     });
 
@@ -435,9 +438,10 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
         }, 0);
 
         openingBalance = (prevInvoices || 0) + prevReplacementsValue - ((prevPayments || 0) + (prevReturns || 0));
+        openingBalance = Number(openingBalance.toFixed(2));
     }
 
-    const closingBalance = openingBalance + runningBalance;
+    const closingBalance = Number((openingBalance + runningBalance).toFixed(2));
 
     return {
         customer,

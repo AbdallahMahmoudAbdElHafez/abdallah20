@@ -53835,3 +53835,2258 @@
 ]
 2026-05-24T22:21:26: ✅ Database connected
 2026-05-24T22:21:26: 🚀 Server listening on http://localhost:5000
+2026-05-25T10:09:00: ✅ Database connected
+2026-05-25T10:09:00: 🚀 Server listening on http://localhost:5000
+2026-05-25T11:46:40: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-05-25T11:46:40: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: 1
+2026-05-25T11:46:40: Debug: Updated batch_inventory for batch 2
+2026-05-25T11:46:40: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-05-25T11:46:40: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: 2
+2026-05-25T11:46:40: Debug: Updated batch_inventory for batch 1
+2026-05-25T11:46:40: Attempting to create JE1 for Sales Return: 27
+2026-05-25T11:46:40: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 777.5999999999999,
+    "credit": 0,
+    "description": "Sales Return #27 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 777.5999999999999,
+    "description": "Refund/Credit - Return #27"
+  }
+]
+2026-05-25T11:46:40: Attempting to create JE2 (Cost Reversal) for Sales Return: 27
+2026-05-25T11:46:40: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 184.7,
+    "credit": 0,
+    "description": "Cost Reversal (Return #27)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 184.7,
+    "description": "COGS Reversal - Return #27"
+  }
+]
+2026-05-25T11:56:54: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-05-25T11:56:54: Service: Creating or updating batch inventory for batchId: 24 warehouseId: 2 quantityChange: 4
+2026-05-25T11:56:54: Debug: Updated batch_inventory for batch 24
+2026-05-25T11:56:54: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-05-25T11:56:54: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: 5
+2026-05-25T11:56:54: Debug: Updated batch_inventory for batch 7
+2026-05-25T11:56:54: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-05-25T11:56:54: Service: Creating or updating batch inventory for batchId: 8 warehouseId: 2 quantityChange: 3
+2026-05-25T11:56:54: Debug: Updated batch_inventory for batch 8
+2026-05-25T11:56:54: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-05-25T11:56:54: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: 3
+2026-05-25T11:56:54: Debug: Updated batch_inventory for batch 3
+2026-05-25T11:56:54: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-05-25T11:56:54: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: 3
+2026-05-25T11:56:54: Debug: Updated batch_inventory for batch 5
+2026-05-25T11:56:54: Attempting to create JE1 for Sales Return: 28
+2026-05-25T11:56:54: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 4003.5,
+    "credit": 0,
+    "description": "Sales Return #28 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 4003.5,
+    "description": "Refund/Credit - Return #28"
+  }
+]
+2026-05-25T11:56:54: Attempting to create JE2 (Cost Reversal) for Sales Return: 28
+2026-05-25T11:56:54: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 869.64,
+    "credit": 0,
+    "description": "Cost Reversal (Return #28)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 869.64,
+    "description": "COGS Reversal - Return #28"
+  }
+]
+2026-05-25T12:00:08: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-05-25T12:00:08: Service: Creating or updating batch inventory for batchId: 24 warehouseId: 2 quantityChange: 1
+2026-05-25T12:00:08: Debug: Updated batch_inventory for batch 24
+2026-05-25T12:00:08: Attempting to create JE1 for Sales Return: 29
+2026-05-25T12:00:08: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 204,
+    "credit": 0,
+    "description": "Sales Return #29 - Revenue Reversal"
+  },
+  {
+    "account_id": 43,
+    "debit": 0,
+    "credit": 204,
+    "description": "Refund/Credit - Return #29"
+  }
+]
+2026-05-25T12:00:08: Attempting to create JE2 (Cost Reversal) for Sales Return: 29
+2026-05-25T12:00:08: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 39.83,
+    "credit": 0,
+    "description": "Cost Reversal (Return #29)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 39.83,
+    "description": "COGS Reversal - Return #29"
+  }
+]
+2026-05-25T12:23:27: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-05-25T12:23:27: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: 1
+2026-05-25T12:23:27: Debug: Updated batch_inventory for batch 2
+2026-05-25T12:23:27: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-05-25T12:23:27: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: 2
+2026-05-25T12:23:27: Debug: Updated batch_inventory for batch 1
+2026-05-25T12:23:27: Attempting to create JE1 for Sales Return: 27
+2026-05-25T12:23:27: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 777.5999999999999,
+    "credit": 0,
+    "description": "Sales Return #27 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 777.5999999999999,
+    "description": "Refund/Credit - Return #27"
+  }
+]
+2026-05-25T12:23:27: Attempting to create JE2 (Cost Reversal) for Sales Return: 27
+2026-05-25T12:23:27: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 184.7,
+    "credit": 0,
+    "description": "Cost Reversal (Return #27)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 184.7,
+    "description": "COGS Reversal - Return #27"
+  }
+]
+2026-05-25T12:26:55: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-05-25T12:26:55: Service: Creating or updating batch inventory for batchId: 24 warehouseId: 2 quantityChange: 1
+2026-05-25T12:26:55: Debug: Updated batch_inventory for batch 24
+2026-05-25T12:26:55: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-05-25T12:26:55: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: 5
+2026-05-25T12:26:55: Debug: Updated batch_inventory for batch 7
+2026-05-25T12:26:55: Attempting to create JE1 for Sales Return: 28
+2026-05-25T12:26:55: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 918,
+    "credit": 0,
+    "description": "Sales Return #28 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 918,
+    "description": "Refund/Credit - Return #28"
+  }
+]
+2026-05-25T12:26:55: Attempting to create JE2 (Cost Reversal) for Sales Return: 28
+2026-05-25T12:26:55: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 153.32999999999998,
+    "credit": 0,
+    "description": "Cost Reversal (Return #28)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 153.32999999999998,
+    "description": "COGS Reversal - Return #28"
+  }
+]
+2026-05-25T12:29:19: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-05-25T12:29:19: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: 3
+2026-05-25T12:29:19: Debug: Updated batch_inventory for batch 3
+2026-05-25T12:29:19: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-05-25T12:29:19: Service: Creating or updating batch inventory for batchId: 8 warehouseId: 2 quantityChange: 3
+2026-05-25T12:29:19: Debug: Updated batch_inventory for batch 8
+2026-05-25T12:29:19: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-05-25T12:29:19: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: 3
+2026-05-25T12:29:19: Debug: Updated batch_inventory for batch 5
+2026-05-25T12:29:19: Attempting to create JE1 for Sales Return: 29
+2026-05-25T12:29:19: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 2295,
+    "credit": 0,
+    "description": "Sales Return #29 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 2295,
+    "description": "Refund/Credit - Return #29"
+  }
+]
+2026-05-25T12:29:19: Attempting to create JE2 (Cost Reversal) for Sales Return: 29
+2026-05-25T12:29:19: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 596.8199999999999,
+    "credit": 0,
+    "description": "Cost Reversal (Return #29)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 596.8199999999999,
+    "description": "COGS Reversal - Return #29"
+  }
+]
+2026-05-25T12:35:55: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-05-25T12:35:55: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: 1
+2026-05-25T12:35:55: Debug: Updated batch_inventory for batch 2
+2026-05-25T12:35:55: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-05-25T12:35:55: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: 2
+2026-05-25T12:35:55: Debug: Updated batch_inventory for batch 1
+2026-05-25T12:35:55: Attempting to create JE1 for Sales Return: 27
+2026-05-25T12:35:55: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 777.5999999999999,
+    "credit": 0,
+    "description": "Sales Return #27 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 777.5999999999999,
+    "description": "Refund/Credit - Return #27"
+  }
+]
+2026-05-25T12:35:55: Attempting to create JE2 (Cost Reversal) for Sales Return: 27
+2026-05-25T12:35:55: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 184.7,
+    "credit": 0,
+    "description": "Cost Reversal (Return #27)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 184.7,
+    "description": "COGS Reversal - Return #27"
+  }
+]
+2026-05-25T12:46:47: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-05-25T12:46:47: Service: Creating or updating batch inventory for batchId: 24 warehouseId: 2 quantityChange: 4
+2026-05-25T12:46:47: Debug: Updated batch_inventory for batch 24
+2026-05-25T12:46:47: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-05-25T12:46:47: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: 5
+2026-05-25T12:46:47: Debug: Updated batch_inventory for batch 7
+2026-05-25T12:46:47: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-05-25T12:46:47: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: 3
+2026-05-25T12:46:47: Debug: Updated batch_inventory for batch 3
+2026-05-25T12:46:47: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-05-25T12:46:47: Service: Creating or updating batch inventory for batchId: 8 warehouseId: 2 quantityChange: 3
+2026-05-25T12:46:47: Debug: Updated batch_inventory for batch 8
+2026-05-25T12:46:47: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-05-25T12:46:47: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: 3
+2026-05-25T12:46:47: Debug: Updated batch_inventory for batch 5
+2026-05-25T12:46:47: Attempting to create JE1 for Sales Return: 28
+2026-05-25T12:46:47: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 3825,
+    "credit": 0,
+    "description": "Sales Return #28 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 3825,
+    "description": "Refund/Credit - Return #28"
+  }
+]
+2026-05-25T12:46:47: Attempting to create JE2 (Cost Reversal) for Sales Return: 28
+2026-05-25T12:46:47: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 869.64,
+    "credit": 0,
+    "description": "Cost Reversal (Return #28)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 869.64,
+    "description": "COGS Reversal - Return #28"
+  }
+]
+2026-05-25T12:50:39: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-05-25T12:50:39: Service: Creating or updating batch inventory for batchId: 24 warehouseId: 2 quantityChange: 1
+2026-05-25T12:50:39: Debug: Updated batch_inventory for batch 24
+2026-05-25T12:50:39: Attempting to create JE1 for Sales Return: 29
+2026-05-25T12:50:39: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 204,
+    "credit": 0,
+    "description": "Sales Return #29 - Revenue Reversal"
+  },
+  {
+    "account_id": 43,
+    "debit": 0,
+    "credit": 204,
+    "description": "Refund/Credit - Return #29"
+  }
+]
+2026-05-25T12:50:39: Attempting to create JE2 (Cost Reversal) for Sales Return: 29
+2026-05-25T12:50:39: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 39.83,
+    "credit": 0,
+    "description": "Cost Reversal (Return #29)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 39.83,
+    "description": "COGS Reversal - Return #29"
+  }
+]
+2026-05-25T12:55:02: === Creating Sales Invoice ===
+2026-05-25T12:55:02: Request body: {
+  "invoice_number": "",
+  "party_id": 40,
+  "sales_order_id": null,
+  "warehouse_id": 10,
+  "employee_id": 8,
+  "distributor_employee_id": 8,
+  "invoice_date": "2026-05-25",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 10044,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 10044,
+  "note": "",
+  "items": [
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 4,
+      "price": 245,
+      "discount": 196,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 6,
+      "price": 350,
+      "discount": 420,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 285,
+      "discount": 285,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 4,
+      "price": 450,
+      "discount": 360,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 545,
+      "discount": 1090,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 4,
+      "price": 200,
+      "discount": 160,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-05-25T12:55:02: Service: Starting invoice creation
+2026-05-25T12:55:03: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-05-25T12:55:03: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 10 quantityChange: -4
+2026-05-25T12:55:03: Debug: Updated batch_inventory for batch 1
+2026-05-25T12:55:03: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-05-25T12:55:03: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 10 quantityChange: -6
+2026-05-25T12:55:03: Debug: Updated batch_inventory for batch 3
+2026-05-25T12:55:03: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-05-25T12:55:03: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 10 quantityChange: -5
+2026-05-25T12:55:03: Debug: Updated batch_inventory for batch 6
+2026-05-25T12:55:03: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-05-25T12:55:03: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 10 quantityChange: -4
+2026-05-25T12:55:03: Debug: Updated batch_inventory for batch 4
+2026-05-25T12:55:03: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-05-25T12:55:03: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 10 quantityChange: -10
+2026-05-25T12:55:03: Debug: Updated batch_inventory for batch 2
+2026-05-25T12:55:03: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-05-25T12:55:03: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 10 quantityChange: -4
+2026-05-25T12:55:03: Debug: Updated batch_inventory for batch 13
+2026-05-25T12:55:03: JE Success: SI Professional COGS Entry Created
+2026-05-25T12:55:03: Service: Transaction committed
+2026-05-25T12:58:07: Journal Entry created for Expense #244
+2026-05-25T13:00:33: Journal Entry created for Expense #245
+2026-05-29T14:40:24: ✅ Database connected
+2026-05-29T14:40:24: 🚀 Server listening on http://localhost:5000
+2026-06-01T10:24:58: ✅ Database connected
+2026-06-01T10:24:58: 🚀 Server listening on http://localhost:5000
+2026-06-01T10:33:59: ✅ Database connected
+2026-06-01T10:33:59: 🚀 Server listening on http://localhost:5000
+2026-06-01T10:41:44: === Creating Sales Invoice ===
+2026-06-01T10:41:44: Request body: {
+  "invoice_number": "",
+  "party_id": 94,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-05-20",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 1147.5,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1147.5,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 350,
+      "discount": 52.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 4,
+      "price": 250,
+      "discount": 150,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T10:41:44: Service: Starting invoice creation
+2026-06-01T10:41:44: Service: Transaction committed
+2026-06-01T10:47:40: Service: Invoice updated. ID: 502, Status: approved
+2026-06-01T10:47:40: Service: Status is approved, recreating side effects
+2026-06-01T10:47:40: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-01T10:47:40: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 3 quantityChange: -1
+2026-06-01T10:47:40: Debug: Updated batch_inventory for batch 3
+2026-06-01T10:47:40: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-01T10:47:40: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 3 quantityChange: -4
+2026-06-01T10:47:40: Debug: Updated batch_inventory for batch 7
+2026-06-01T10:47:40: Service: Invoice Journal Entry Created
+2026-06-01T10:58:06: === Creating Sales Invoice ===
+2026-06-01T10:58:06: Request body: {
+  "invoice_number": "",
+  "party_id": 77,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-01-20",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 3081.25,
+  "additional_discount": "92.25",
+  "additional_discount_percent": "2.99",
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 2989,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 450,
+      "discount": 135,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 545,
+      "discount": 408.75,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T10:58:06: Service: Starting invoice creation
+2026-06-01T10:58:06: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T10:58:06: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 3 quantityChange: -2
+2026-06-01T10:58:06: Debug: Updated batch_inventory for batch 4
+2026-06-01T10:58:06: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-01T10:58:06: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 3 quantityChange: -5
+2026-06-01T10:58:06: Debug: Updated batch_inventory for batch 2
+2026-06-01T10:58:06: Product ID: 2, Type ID: 1, Resolved Account ID: 110
+2026-06-01T10:58:06: Product ID: 6, Type ID: 1, Resolved Account ID: 110
+2026-06-01T10:58:06: JE Success: SI Professional COGS Entry Created
+2026-06-01T10:58:06: Service: Transaction committed
+2026-06-01T11:08:40: === Creating Sales Invoice ===
+2026-06-01T11:08:40: Request body: {
+  "invoice_number": "",
+  "party_id": 72,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-05-20",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 362.5,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 362.5,
+  "note": "",
+  "items": [
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 245,
+      "discount": 122.5,
+      "discount_percent": 50,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 200,
+      "discount": 100,
+      "discount_percent": 50,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 280,
+      "discount": 140,
+      "discount_percent": 50,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:08:40: Service: Starting invoice creation
+2026-06-01T11:08:40: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-01T11:08:40: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 3 quantityChange: -1
+2026-06-01T11:08:40: Debug: Updated batch_inventory for batch 1
+2026-06-01T11:08:40: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-01T11:08:40: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 3 quantityChange: -1
+2026-06-01T11:08:40: Debug: Updated batch_inventory for batch 13
+2026-06-01T11:08:40: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-01T11:08:40: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 3 quantityChange: -1
+2026-06-01T11:08:40: Debug: Updated batch_inventory for batch 5
+2026-06-01T11:08:40: Product ID: 10, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:08:40: Product ID: 15, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:08:40: Product ID: 3, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:08:40: JE Success: SI Professional COGS Entry Created
+2026-06-01T11:08:40: Service: Transaction committed
+2026-06-01T11:17:17: === Creating Sales Invoice ===
+2026-06-01T11:17:17: Request body: {
+  "invoice_number": "",
+  "party_id": 76,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-05-21",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 212.5,
+  "additional_discount": "6.5",
+  "additional_discount_percent": "3.06",
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 206,
+  "note": "",
+  "items": [
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 250,
+      "discount": 37.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:17:17: Service: Starting invoice creation
+2026-06-01T11:17:17: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-01T11:17:17: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 3 quantityChange: -1
+2026-06-01T11:17:17: Debug: Updated batch_inventory for batch 7
+2026-06-01T11:17:17: Product ID: 5, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:17:17: JE Success: SI Professional COGS Entry Created
+2026-06-01T11:17:17: Service: Transaction committed
+2026-06-01T11:21:14: === Creating Sales Invoice ===
+2026-06-01T11:21:14: Request body: {
+  "invoice_number": "",
+  "party_id": 72,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-05-22",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 395,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 395,
+  "note": "بيتر وجدي",
+  "items": [
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 545,
+      "discount": 272.5,
+      "discount_percent": 50,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 245,
+      "discount": 122.5,
+      "discount_percent": 50,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:21:14: Service: Starting invoice creation
+2026-06-01T11:21:14: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-01T11:21:14: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 3 quantityChange: -1
+2026-06-01T11:21:14: Debug: Updated batch_inventory for batch 2
+2026-06-01T11:21:14: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-01T11:21:14: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 3 quantityChange: -1
+2026-06-01T11:21:14: Debug: Updated batch_inventory for batch 1
+2026-06-01T11:21:14: Product ID: 6, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:21:14: Product ID: 10, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:21:14: JE Success: SI Professional COGS Entry Created
+2026-06-01T11:21:14: Service: Transaction committed
+2026-06-01T11:25:13: === Creating Sales Invoice ===
+2026-06-01T11:25:13: Request body: {
+  "invoice_number": "",
+  "party_id": 62,
+  "sales_order_id": null,
+  "warehouse_id": 3,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-05-24",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 1389.75,
+  "additional_discount": "41.75",
+  "additional_discount_percent": "3.00",
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1348,
+  "note": "",
+  "items": [
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 3,
+      "price": 545,
+      "discount": 245.25,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:25:13: Service: Starting invoice creation
+2026-06-01T11:25:13: Service: Transaction committed
+2026-06-01T11:25:33: Service: Invoice updated. ID: 507, Status: approved
+2026-06-01T11:25:33: Service: Status is approved, recreating side effects
+2026-06-01T11:25:33: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-01T11:25:33: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 3 quantityChange: -3
+2026-06-01T11:25:33: Debug: Updated batch_inventory for batch 2
+2026-06-01T11:25:33: Service: Invoice Journal Entry Created
+2026-06-01T11:27:55: Service: Invoice updated. ID: 500, Status: approved
+2026-06-01T11:27:55: Service: Status is approved, recreating side effects
+2026-06-01T11:27:55: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-01T11:27:55: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 3 quantityChange: -8
+2026-06-01T11:27:55: Debug: Updated batch_inventory for batch 3
+2026-06-01T11:27:55: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T11:27:55: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 3 quantityChange: -8
+2026-06-01T11:27:55: Debug: Updated batch_inventory for batch 4
+2026-06-01T11:27:55: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-01T11:27:55: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 3 quantityChange: -2
+2026-06-01T11:27:55: Debug: Updated batch_inventory for batch 6
+2026-06-01T11:27:55: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-01T11:27:55: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 3 quantityChange: -4
+2026-06-01T11:27:55: Debug: Updated batch_inventory for batch 7
+2026-06-01T11:27:55: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-01T11:27:55: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 3 quantityChange: -7
+2026-06-01T11:27:55: Debug: Updated batch_inventory for batch 5
+2026-06-01T11:27:55: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-01T11:27:55: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 3 quantityChange: -10
+2026-06-01T11:27:55: Debug: Updated batch_inventory for batch 2
+2026-06-01T11:27:55: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-01T11:27:55: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 3 quantityChange: -10
+2026-06-01T11:27:55: Debug: Updated batch_inventory for batch 1
+2026-06-01T11:27:55: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-01T11:27:55: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 3 quantityChange: -2
+2026-06-01T11:27:55: Debug: Updated batch_inventory for batch 13
+2026-06-01T11:27:55: Service: Invoice Journal Entry Created
+2026-06-01T11:37:38: === Creating Sales Invoice ===
+2026-06-01T11:37:38: Request body: {
+  "invoice_number": "",
+  "party_id": 6,
+  "sales_order_id": null,
+  "warehouse_id": 1,
+  "employee_id": 3,
+  "distributor_employee_id": 3,
+  "invoice_date": "2026-05-24",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 21178.01,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 2964.9213999999997,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 24142.931399999998,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 12,
+      "price": 450,
+      "discount": 1733.4,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 513.3240000000001
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 15,
+      "price": 245,
+      "discount": 1179.675,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 349.34549999999996
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 15,
+      "price": 285,
+      "discount": 1372.275,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 406.3815
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 12,
+      "price": 545,
+      "discount": 2099.34,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 621.6924
+    },
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 350,
+      "discount": 1123.5,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 332.71
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 3,
+      "price": 200,
+      "discount": 192.6,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 57.035999999999994
+    },
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 12,
+      "price": 250,
+      "discount": 963,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 285.18
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 15,
+      "price": 280,
+      "discount": 1348.2,
+      "discount_percent": 32.1,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 399.25200000000007
+    }
+  ]
+}
+2026-06-01T11:37:38: Service: Starting invoice creation
+2026-06-01T11:37:38: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T11:37:38: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 1 quantityChange: -12
+2026-06-01T11:37:38: Debug: Updated batch_inventory for batch 4
+2026-06-01T11:37:38: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-01T11:37:38: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 1 quantityChange: -15
+2026-06-01T11:37:38: Debug: Updated batch_inventory for batch 1
+2026-06-01T11:37:38: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-01T11:37:38: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 1 quantityChange: -15
+2026-06-01T11:37:38: Debug: Updated batch_inventory for batch 6
+2026-06-01T11:37:38: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-01T11:37:38: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 1 quantityChange: -12
+2026-06-01T11:37:38: Debug: Updated batch_inventory for batch 2
+2026-06-01T11:37:38: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-01T11:37:38: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 1 quantityChange: -10
+2026-06-01T11:37:38: Debug: Updated batch_inventory for batch 3
+2026-06-01T11:37:38: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-01T11:37:38: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 1 quantityChange: -3
+2026-06-01T11:37:38: Debug: Updated batch_inventory for batch 13
+2026-06-01T11:37:38: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-01T11:37:38: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 1 quantityChange: -12
+2026-06-01T11:37:38: Debug: Updated batch_inventory for batch 7
+2026-06-01T11:37:38: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-01T11:37:38: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 1 quantityChange: -15
+2026-06-01T11:37:38: Debug: Updated batch_inventory for batch 5
+2026-06-01T11:37:38: Product ID: 2, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:37:38: Product ID: 10, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:37:38: Product ID: 4, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:37:38: Product ID: 6, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:37:38: Product ID: 1, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:37:38: Product ID: 15, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:37:38: Product ID: 5, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:37:38: Product ID: 3, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:37:38: JE Success: SI Professional COGS Entry Created
+2026-06-01T11:37:38: Service: Transaction committed
+2026-06-01T11:41:38: === Creating Sales Invoice ===
+2026-06-01T11:41:38: Request body: {
+  "invoice_number": "",
+  "party_id": 69,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": null,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-05-27",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "سوشيال ميديا",
+  "subtotal": 888,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 888,
+  "note": "يوسف باز",
+  "items": [
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 280,
+      "discount": 56,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 285,
+      "discount": 57,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 545,
+      "discount": 109,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:41:38: Service: Starting invoice creation
+2026-06-01T11:41:38: Service: Transaction committed
+2026-06-01T11:41:56: Service: Invoice updated. ID: 509, Status: approved
+2026-06-01T11:41:56: Service: Status is approved, recreating side effects
+2026-06-01T11:41:56: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-01T11:41:56: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -1
+2026-06-01T11:41:56: Debug: Updated batch_inventory for batch 5
+2026-06-01T11:41:56: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-01T11:41:56: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -1
+2026-06-01T11:41:56: Debug: Updated batch_inventory for batch 6
+2026-06-01T11:41:56: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-01T11:41:56: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -1
+2026-06-01T11:41:56: Debug: Updated batch_inventory for batch 2
+2026-06-01T11:41:56: Service: Invoice Journal Entry Created
+2026-06-01T11:44:40: === Creating Sales Invoice ===
+2026-06-01T11:44:40: Request body: {
+  "invoice_number": "",
+  "party_id": 32,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": null,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-05-27",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "سوشيال ميديا",
+  "subtotal": 900,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 900,
+  "note": "يونس شتا",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 450,
+      "discount": 0,
+      "discount_percent": 0,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:44:40: Service: Starting invoice creation
+2026-06-01T11:44:40: Service: Transaction committed
+2026-06-01T11:44:51: Service: Invoice updated. ID: 510, Status: approved
+2026-06-01T11:44:51: Service: Status is approved, recreating side effects
+2026-06-01T11:44:51: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T11:44:51: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -3
+2026-06-01T11:44:51: Debug: Updated batch_inventory for batch 4
+2026-06-01T11:44:51: Service: Invoice Journal Entry Created
+2026-06-01T11:50:34: === Creating Sales Invoice ===
+2026-06-01T11:50:34: Request body: {
+  "invoice_number": "",
+  "party_id": 80,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": null,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-05-27",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "سوشيال ميديا",
+  "subtotal": 900,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 900,
+  "note": "مها محمود",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 450,
+      "discount": 0,
+      "discount_percent": 0,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:50:34: Service: Starting invoice creation
+2026-06-01T11:50:34: Service: Transaction committed
+2026-06-01T11:50:52: Service: Invoice updated. ID: 511, Status: approved
+2026-06-01T11:50:52: Service: Status is approved, recreating side effects
+2026-06-01T11:50:52: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T11:50:52: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -3
+2026-06-01T11:50:52: Debug: Updated batch_inventory for batch 4
+2026-06-01T11:50:52: Service: Invoice Journal Entry Created
+2026-06-01T11:53:27: === Creating Sales Invoice ===
+2026-06-01T11:53:27: Request body: {
+  "invoice_number": "",
+  "party_id": 32,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": null,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-05-27",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "سوشيال ميديا",
+  "subtotal": 1150,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1150,
+  "note": "امل سعفان",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 350,
+      "discount": 0,
+      "discount_percent": 0,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 1,
+      "price": 450,
+      "discount": 0,
+      "discount_percent": 0,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:53:27: Service: Starting invoice creation
+2026-06-01T11:53:27: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-01T11:53:27: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -3
+2026-06-01T11:53:27: Debug: Updated batch_inventory for batch 3
+2026-06-01T11:53:27: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T11:53:27: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -1
+2026-06-01T11:53:27: Debug: Updated batch_inventory for batch 4
+2026-06-01T11:53:27: Product ID: 1, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:53:27: Product ID: 2, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:53:27: JE Success: SI Professional COGS Entry Created
+2026-06-01T11:53:27: Service: Transaction committed
+2026-06-01T11:56:03: === Creating Sales Invoice ===
+2026-06-01T11:56:03: Request body: {
+  "invoice_number": "",
+  "party_id": 81,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": null,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-05-27",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "سوشيال ميديا",
+  "subtotal": 900,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 900,
+  "note": "نورهان وحيد",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 2,
+      "price": 450,
+      "discount": 0,
+      "discount_percent": 0,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T11:56:03: Service: Starting invoice creation
+2026-06-01T11:56:03: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T11:56:03: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -3
+2026-06-01T11:56:03: Debug: Updated batch_inventory for batch 4
+2026-06-01T11:56:03: Product ID: 2, Type ID: 1, Resolved Account ID: 110
+2026-06-01T11:56:03: JE Success: SI Professional COGS Entry Created
+2026-06-01T11:56:03: Service: Transaction committed
+2026-06-01T13:57:24: === Creating Sales Invoice ===
+2026-06-01T13:57:24: Request body: {
+  "invoice_number": "",
+  "party_id": 18,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-06-01",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 1800,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 1800,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 450,
+      "discount": 450,
+      "discount_percent": 20,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T13:57:24: Service: Starting invoice creation
+2026-06-01T13:57:24: Service: Transaction committed
+2026-06-01T14:01:22: === Creating Sales Invoice ===
+2026-06-01T14:01:22: Request body: {
+  "invoice_number": "",
+  "party_id": 8,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 3,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-06-01",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 2660.5,
+  "additional_discount": "79.5",
+  "additional_discount_percent": "2.99",
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 2581,
+  "note": "",
+  "items": [
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 3,
+      "price": 450,
+      "discount": 202.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 4,
+      "price": 200,
+      "discount": 120,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 4,
+      "price": 245,
+      "discount": 147,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T14:01:22: Service: Starting invoice creation
+2026-06-01T14:01:22: Service: Transaction committed
+2026-06-01T14:12:28: Service: Invoice updated. ID: 515, Status: approved
+2026-06-01T14:12:28: Service: Status is approved, recreating side effects
+2026-06-01T14:12:28: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T14:12:28: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -3
+2026-06-01T14:12:28: Debug: Updated batch_inventory for batch 4
+2026-06-01T14:12:28: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-01T14:12:28: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -4
+2026-06-01T14:12:28: Debug: Updated batch_inventory for batch 13
+2026-06-01T14:12:28: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-01T14:12:28: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -4
+2026-06-01T14:12:28: Debug: Updated batch_inventory for batch 1
+2026-06-01T14:12:28: Service: Invoice Journal Entry Created
+2026-06-01T14:12:49: Service: Invoice updated. ID: 514, Status: approved
+2026-06-01T14:12:49: Service: Status is approved, recreating side effects
+2026-06-01T14:12:49: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T14:12:49: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -5
+2026-06-01T14:12:49: Debug: Updated batch_inventory for batch 4
+2026-06-01T14:12:49: Service: Invoice Journal Entry Created
+2026-06-01T14:56:12: Journal Entry created for Expense #246
+2026-06-01T15:28:22: === Creating Sales Invoice ===
+2026-06-01T15:28:22: Request body: {
+  "invoice_number": "",
+  "party_id": 4,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 5,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-06-01",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 3375,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 3375,
+  "note": "",
+  "items": [
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 250,
+      "discount": 625,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 200,
+      "discount": 500,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T15:28:22: Service: Starting invoice creation
+2026-06-01T15:28:22: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-01T15:28:22: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: -11
+2026-06-01T15:28:22: Debug: Updated batch_inventory for batch 7
+2026-06-01T15:28:22: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-01T15:28:22: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -11
+2026-06-01T15:28:22: Debug: Updated batch_inventory for batch 13
+2026-06-01T15:28:22: Product ID: 5, Type ID: 1, Resolved Account ID: 110
+2026-06-01T15:28:22: Product ID: 15, Type ID: 1, Resolved Account ID: 110
+2026-06-01T15:28:22: JE Success: SI Professional COGS Entry Created
+2026-06-01T15:28:22: Service: Transaction committed
+2026-06-01T15:36:54: === Creating Sales Invoice ===
+2026-06-01T15:36:54: Request body: {
+  "invoice_number": "",
+  "party_id": 26,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 5,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-06-01",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 16735.545000000002,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 2342.9763000000003,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 19078.5213,
+  "note": "",
+  "items": [
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 20,
+      "price": 200,
+      "discount": 1193.2,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 2,
+      "vat_rate": 14,
+      "vat_amount": 392.95200000000006
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 30,
+      "price": 280,
+      "discount": 2505.72,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 3,
+      "vat_rate": 14,
+      "vat_amount": 825.1992000000001
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 545,
+      "discount": 1625.735,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 14,
+      "vat_amount": 535.3971
+    },
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 350,
+      "discount": 1044.05,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 14,
+      "vat_amount": 343.83299999999997
+    },
+    {
+      "product_id": 5,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 250,
+      "discount": 745.75,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 14,
+      "vat_amount": 245.595
+    }
+  ]
+}
+2026-06-01T15:36:54: Service: Starting invoice creation
+2026-06-01T15:36:54: Service: Transaction committed
+2026-06-01T15:45:24: === Creating Sales Invoice ===
+2026-06-01T15:45:24: Request body: {
+  "invoice_number": "",
+  "party_id": 84,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 5,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-06-01",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 15673.315,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 15673.315,
+  "note": "",
+  "items": [
+    {
+      "product_id": 4,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 285,
+      "discount": 777.195,
+      "discount_percent": 27.27,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 350,
+      "discount": 954.45,
+      "discount_percent": 27.27,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 545,
+      "discount": 1486.215,
+      "discount_percent": 27.27,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 450,
+      "discount": 1227.15,
+      "discount_percent": 27.27,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 245,
+      "discount": 668.115,
+      "discount_percent": 27.27,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 280,
+      "discount": 763.56,
+      "discount_percent": 27.27,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-01T15:45:24: Service: Starting invoice creation
+2026-06-01T15:45:24: Service: Transaction committed
+2026-06-01T16:17:14: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-01T16:17:14: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 1 quantityChange: -56
+2026-06-01T16:17:14: Debug: Updated batch_inventory for batch 5
+2026-06-01T16:17:14: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: 56
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 5
+2026-06-01T16:17:15: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 1 quantityChange: -88
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 7
+2026-06-01T16:17:15: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: 88
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 7
+2026-06-01T16:17:15: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 1 quantityChange: -101
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 3
+2026-06-01T16:17:15: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: 101
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 3
+2026-06-01T16:17:15: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 1 quantityChange: -99
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 4
+2026-06-01T16:17:15: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: 99
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 4
+2026-06-01T16:17:15: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 1 quantityChange: -67
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 1
+2026-06-01T16:17:15: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-01T16:17:15: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: 67
+2026-06-01T16:17:15: Debug: Updated batch_inventory for batch 1
+2026-06-02T11:40:55: ✅ Database connected
+2026-06-02T11:40:55: 🚀 Server listening on http://localhost:5000
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -20
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 1
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 10 quantityChange: 20
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 1
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -10
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 5
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 10 quantityChange: 10
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 5
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -25
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 3
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 10 quantityChange: 25
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 3
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -15
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 4
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 10 quantityChange: 15
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 4
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: -20
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 7
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 10 quantityChange: 20
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 7
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -10
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 6
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 10 quantityChange: 10
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 6
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -20
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 2
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 10 quantityChange: 20
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 2
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -20
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 13
+2026-06-02T11:45:07: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-02T11:45:07: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 10 quantityChange: 20
+2026-06-02T11:45:07: Debug: Updated batch_inventory for batch 13
+2026-06-02T11:48:03: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 180ml, Type: منتج تام
+2026-06-02T11:48:03: Service: Creating or updating batch inventory for batchId: 25 warehouseId: 11 quantityChange: 2
+2026-06-02T11:48:03: Debug: Updated batch_inventory for batch 25
+2026-06-02T11:48:03: Attempting to create JE1 for Sales Return: 30
+2026-06-02T11:48:03: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 570,
+    "credit": 0,
+    "description": "Sales Return #30 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 570,
+    "description": "Refund/Credit - Return #30"
+  }
+]
+2026-06-02T11:48:03: Attempting to create JE2 (Cost Reversal) for Sales Return: 30
+2026-06-02T11:48:03: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 79.4,
+    "credit": 0,
+    "description": "Cost Reversal (Return #30)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 79.4,
+    "description": "COGS Reversal - Return #30"
+  }
+]
+2026-06-02T11:50:08: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-02T11:50:08: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -2
+2026-06-02T11:50:08: Debug: Updated batch_inventory for batch 6
+2026-06-02T11:50:09: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1780390118203
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -20
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 1
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 10 quantityChange: 20
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 1
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -10
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 5
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 10 quantityChange: 10
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 5
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -25
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 3
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 10 quantityChange: 25
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 3
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -15
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 4
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 10 quantityChange: 15
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 4
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: -20
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 7
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 10 quantityChange: 20
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 7
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-02T12:02:17: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -10
+2026-06-02T12:02:17: Debug: Updated batch_inventory for batch 6
+2026-06-02T12:02:17: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-02T12:02:18: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 10 quantityChange: 10
+2026-06-02T12:02:18: Debug: Updated batch_inventory for batch 6
+2026-06-02T12:02:18: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-02T12:02:18: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -20
+2026-06-02T12:02:18: Debug: Updated batch_inventory for batch 2
+2026-06-02T12:02:18: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-02T12:02:18: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 10 quantityChange: 20
+2026-06-02T12:02:18: Debug: Updated batch_inventory for batch 2
+2026-06-02T12:02:18: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-02T12:02:18: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -20
+2026-06-02T12:02:18: Debug: Updated batch_inventory for batch 13
+2026-06-02T12:02:18: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-02T12:02:18: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 10 quantityChange: 20
+2026-06-02T12:02:18: Debug: Updated batch_inventory for batch 13
+2026-06-02T12:03:56: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 180ml, Type: منتج تام
+2026-06-02T12:03:56: Service: Creating or updating batch inventory for batchId: 25 warehouseId: 11 quantityChange: 2
+2026-06-02T12:03:56: Debug: Updated batch_inventory for batch 25
+2026-06-02T12:03:56: Attempting to create JE1 for Sales Return: 30
+2026-06-02T12:03:56: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 570,
+    "credit": 0,
+    "description": "Sales Return #30 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 570,
+    "description": "Refund/Credit - Return #30"
+  }
+]
+2026-06-02T12:03:56: Attempting to create JE2 (Cost Reversal) for Sales Return: 30
+2026-06-02T12:03:56: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 79.4,
+    "credit": 0,
+    "description": "Cost Reversal (Return #30)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 79.4,
+    "description": "COGS Reversal - Return #30"
+  }
+]
+2026-06-02T12:06:11: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-02T12:06:11: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -2
+2026-06-02T12:06:11: Debug: Updated batch_inventory for batch 6
+2026-06-02T12:06:11: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1780391056542
+2026-06-02T12:07:14: Service: getDashboardSummary { startDate: undefined, endDate: undefined, dateFilter: {} }
+2026-06-02T12:07:14: Service: getDashboardSummary { startDate: undefined, endDate: undefined, dateFilter: {} }
+2026-06-02T12:27:47: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 180ml, Type: منتج تام
+2026-06-02T12:27:47: Service: Creating or updating batch inventory for batchId: 25 warehouseId: 11 quantityChange: 2
+2026-06-02T12:27:47: Debug: Updated batch_inventory for batch 25
+2026-06-02T12:27:47: Attempting to create JE1 for Sales Return: 30
+2026-06-02T12:27:47: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 570,
+    "credit": 0,
+    "description": "Sales Return #30 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 570,
+    "description": "Refund/Credit - Return #30"
+  }
+]
+2026-06-02T12:27:47: Attempting to create JE2 (Cost Reversal) for Sales Return: 30
+2026-06-02T12:27:47: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 79.4,
+    "credit": 0,
+    "description": "Cost Reversal (Return #30)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 79.4,
+    "description": "COGS Reversal - Return #30"
+  }
+]
+2026-06-02T12:28:46: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-02T12:28:46: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -2
+2026-06-02T12:28:46: Debug: Updated batch_inventory for batch 6
+2026-06-02T12:28:46: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1780392477892
+2026-06-02T12:31:05: Service: Invoice updated. ID: 518, Status: approved
+2026-06-02T12:31:05: Service: Status is approved, recreating side effects
+2026-06-02T12:31:05: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-02T12:31:05: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -10
+2026-06-02T12:31:05: Debug: Updated batch_inventory for batch 6
+2026-06-02T12:31:05: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-02T12:31:05: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -10
+2026-06-02T12:31:05: Debug: Updated batch_inventory for batch 3
+2026-06-02T12:31:05: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-02T12:31:05: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -10
+2026-06-02T12:31:05: Debug: Updated batch_inventory for batch 2
+2026-06-02T12:31:05: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-02T12:31:05: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -10
+2026-06-02T12:31:05: Debug: Updated batch_inventory for batch 4
+2026-06-02T12:31:05: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-02T12:31:05: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -10
+2026-06-02T12:31:05: Debug: Updated batch_inventory for batch 1
+2026-06-02T12:31:05: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-02T12:31:05: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -10
+2026-06-02T12:31:05: Debug: Updated batch_inventory for batch 5
+2026-06-02T12:31:05: Service: Invoice Journal Entry Created
+2026-06-02T12:31:16: Service: Invoice updated. ID: 517, Status: approved
+2026-06-02T12:31:16: Service: Status is approved, recreating side effects
+2026-06-02T12:31:16: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-02T12:31:16: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -22
+2026-06-02T12:31:16: Debug: Updated batch_inventory for batch 13
+2026-06-02T12:31:16: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-02T12:31:16: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -33
+2026-06-02T12:31:16: Debug: Updated batch_inventory for batch 5
+2026-06-02T12:31:16: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-02T12:31:16: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -11
+2026-06-02T12:31:16: Debug: Updated batch_inventory for batch 2
+2026-06-02T12:31:16: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-02T12:31:16: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -11
+2026-06-02T12:31:16: Debug: Updated batch_inventory for batch 3
+2026-06-02T12:31:16: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-06-02T12:31:16: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: -11
+2026-06-02T12:31:16: Debug: Updated batch_inventory for batch 7
+2026-06-02T12:31:16: Service: Invoice Journal Entry Created
+2026-06-02T12:35:06: === Creating Sales Invoice ===
+2026-06-02T12:35:06: Request body: {
+  "invoice_number": "",
+  "party_id": 131,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 5,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-06-02",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 7837.5,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 7837.5,
+  "note": "",
+  "items": [
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 245,
+      "discount": 612.5,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 350,
+      "discount": 875,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 450,
+      "discount": 1125,
+      "discount_percent": 25,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-02T12:35:06: Service: Starting invoice creation
+2026-06-02T12:35:06: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-02T12:35:06: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -10
+2026-06-02T12:35:06: Debug: Updated batch_inventory for batch 1
+2026-06-02T12:35:06: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-02T12:35:06: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -10
+2026-06-02T12:35:06: Debug: Updated batch_inventory for batch 3
+2026-06-02T12:35:06: Debug: Product fetched: Nurivina Argan Oil Hair Serum 100ml, Type: منتج تام
+2026-06-02T12:35:06: Service: Creating or updating batch inventory for batchId: 4 warehouseId: 2 quantityChange: -10
+2026-06-02T12:35:06: Debug: Updated batch_inventory for batch 4
+2026-06-02T12:35:06: Product ID: 10, Type ID: 1, Resolved Account ID: 110
+2026-06-02T12:35:06: Product ID: 1, Type ID: 1, Resolved Account ID: 110
+2026-06-02T12:35:06: Product ID: 2, Type ID: 1, Resolved Account ID: 110
+2026-06-02T12:35:06: JE Success: SI Professional COGS Entry Created
+2026-06-02T12:35:06: Service: Transaction committed
+2026-06-02T20:50:35: ✅ Database connected
+2026-06-02T20:50:35: 🚀 Server listening on http://localhost:5000
+2026-06-02T20:54:15: Journal Entry created for Expense #247
+2026-06-02T20:55:11: Journal Entry created for Expense #248
+2026-06-02T20:56:46: Journal Entry created for Expense #249
+2026-06-02T20:57:22: Journal Entry created for Expense #250
+2026-06-02T20:58:56: Journal Entry created for Expense #251
+2026-06-02T21:00:43: Journal Entry created for Expense #252
+2026-06-03T10:10:58: ✅ Database connected
+2026-06-03T10:10:58: 🚀 Server listening on http://localhost:5000
+2026-06-03T10:14:31: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 180ml, Type: منتج تام
+2026-06-03T10:14:31: Service: Creating or updating batch inventory for batchId: 25 warehouseId: 11 quantityChange: 2
+2026-06-03T10:14:31: Debug: Updated batch_inventory for batch 25
+2026-06-03T10:14:31: Attempting to create JE1 for Sales Return: 30
+2026-06-03T10:14:31: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 570,
+    "credit": 0,
+    "description": "Sales Return #30 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 570,
+    "description": "Refund/Credit - Return #30"
+  }
+]
+2026-06-03T10:14:31: Attempting to create JE2 (Cost Reversal) for Sales Return: 30
+2026-06-03T10:14:31: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 79.4,
+    "credit": 0,
+    "description": "Cost Reversal (Return #30)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 79.4,
+    "description": "COGS Reversal - Return #30"
+  }
+]
+2026-06-03T10:15:31: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-06-03T10:15:31: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -2
+2026-06-03T10:15:31: Debug: Updated batch_inventory for batch 6
+2026-06-03T10:15:31: Issue Voucher: Journal Entry successfully synced for Voucher #IV-1780470885410
+2026-06-03T10:34:02: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-03T10:34:02: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: 3
+2026-06-03T10:34:02: Debug: Updated batch_inventory for batch 5
+2026-06-03T10:34:02: Attempting to create JE1 for Sales Return: 31
+2026-06-03T10:34:02: JE1 Lines: [
+  {
+    "account_id": 6,
+    "debit": 637.5,
+    "credit": 0,
+    "description": "Sales Return #31 - Revenue Reversal"
+  },
+  {
+    "account_id": 47,
+    "debit": 0,
+    "credit": 637.5,
+    "description": "Refund/Credit - Return #31"
+  }
+]
+2026-06-03T10:34:02: Attempting to create JE2 (Cost Reversal) for Sales Return: 31
+2026-06-03T10:34:02: JE2 Lines: [
+  {
+    "account_id": 110,
+    "debit": 134.25,
+    "credit": 0,
+    "description": "Cost Reversal (Return #31)"
+  },
+  {
+    "account_id": 15,
+    "debit": 0,
+    "credit": 134.25,
+    "description": "COGS Reversal - Return #31"
+  }
+]
+2026-06-03T10:49:40: === Creating Sales Invoice ===
+2026-06-03T10:49:40: Request body: {
+  "invoice_number": "",
+  "party_id": 10,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 2,
+  "distributor_employee_id": 4,
+  "invoice_date": "2026-06-03",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "approved",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "مندوب",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 17100,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 17100,
+  "note": "",
+  "items": [
+    {
+      "product_id": 1,
+      "warehouse_id": "",
+      "quantity": 20,
+      "price": 350,
+      "discount": 1960,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 545,
+      "discount": 763,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 280,
+      "discount": 784,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 10,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 245,
+      "discount": 343,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 50,
+      "price": 200,
+      "discount": 2800,
+      "discount_percent": 28,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-06-03T10:49:40: Service: Starting invoice creation
+2026-06-03T10:49:41: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-06-03T10:49:41: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -20
+2026-06-03T10:49:41: Debug: Updated batch_inventory for batch 3
+2026-06-03T10:49:41: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-06-03T10:49:41: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -5
+2026-06-03T10:49:41: Debug: Updated batch_inventory for batch 2
+2026-06-03T10:49:41: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-06-03T10:49:41: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -10
+2026-06-03T10:49:41: Debug: Updated batch_inventory for batch 5
+2026-06-03T10:49:41: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-06-03T10:49:41: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: -5
+2026-06-03T10:49:41: Debug: Updated batch_inventory for batch 1
+2026-06-03T10:49:41: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-06-03T10:49:41: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -50
+2026-06-03T10:49:41: Debug: Updated batch_inventory for batch 13
+2026-06-03T10:49:41: Product ID: 1, Type ID: 1, Resolved Account ID: 110
+2026-06-03T10:49:41: Product ID: 6, Type ID: 1, Resolved Account ID: 110
+2026-06-03T10:49:41: Product ID: 3, Type ID: 1, Resolved Account ID: 110
+2026-06-03T10:49:41: Product ID: 10, Type ID: 1, Resolved Account ID: 110
+2026-06-03T10:49:41: Product ID: 15, Type ID: 1, Resolved Account ID: 110
+2026-06-03T10:49:41: JE Success: SI Professional COGS Entry Created
+2026-06-03T10:49:41: Service: Transaction committed
