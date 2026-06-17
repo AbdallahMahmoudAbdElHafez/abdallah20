@@ -43,6 +43,7 @@ import {
 import { fetchParties } from "../features/parties/partiesSlice";
 import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
+import { fetchAccounts } from "../features/accounts/accountsSlice";
 import PaymentDialog from "./PaymentDialog";
 import ExcelExportDialog from "./ExcelExportDialog";
 
@@ -64,6 +65,7 @@ export default function PurchaseInvoiceDialog({
   const suppliers = useSelector((s) => s.parties?.items ?? []);
   const products = useSelector((s) => s.products?.items ?? []);
   const warehouses = useSelector((s) => s.warehouses?.items ?? []);
+  const accounts = useSelector((s) => s.accounts?.items ?? []);
   const [paymentOpen, setPaymentOpen] = useState(false);
 
   const [loadingMeta, setLoadingMeta] = useState(false);
@@ -240,6 +242,11 @@ export default function PurchaseInvoiceDialog({
     }
     if (!invoiceHead.invoice_date) {
       setError("يرجى اختيار تاريخ الفاتورة");
+      return;
+    }
+
+    if (Number(invoiceHead.transportation_cost) > 0 && !invoiceHead.transportation_account_id) {
+      setError("يرجى اختيار حساب دفع مصاريف النقل");
       return;
     }
 

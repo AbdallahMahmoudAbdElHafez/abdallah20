@@ -8,6 +8,7 @@ export default (sequelize) => {
             sales_return_id: { type: DataTypes.INTEGER, allowNull: false },
             product_id: { type: DataTypes.INTEGER, allowNull: false },
             quantity: { type: DataTypes.INTEGER, allowNull: false },
+            original_price: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.00 },
             price: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
             return_condition: {
                 type: DataTypes.ENUM('good', 'damaged', 'expired'),

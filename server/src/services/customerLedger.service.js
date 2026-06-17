@@ -256,15 +256,24 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
             party_id: customerId,
             ...(Object.keys(dateFilter).length ? { return_date: dateFilter } : {}),
         },
-        include: [{
-            model: SalesReturnItem,
-            as: "items",
-            include: [{
-                model: Product,
-                as: "product",
-                attributes: ["name"]
-            }]
-        }]
+        include: [
+            {
+                model: SalesReturnItem,
+                as: "items",
+                include: [{
+                    model: Product,
+                    as: "product",
+                    attributes: ["name"]
+                }]
+            },
+            {
+                association: "invoice",
+                include: [{
+                    model: SalesInvoiceItem,
+                    as: "items"
+                }]
+            }
+        ]
     });
 
     // 4️⃣ أذون صرف الاستبدال (Replacement Issue Vouchers)
@@ -352,12 +361,25 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
             description: `مرتجع مبيعات #${rawRet.id} (${returnTypeName})`,
             debit: 0,
             credit: Number(rawRet.total_amount || 0),
-            items: rawRet.items?.map(item => ({
-                product_name: item.product?.name || item.product_id,
-                quantity: item.quantity,
-                price: item.price,
-                total: (Number(item.quantity) * Number(item.price))
-            }))
+            items: rawRet.items?.map(item => {
+                let originalPrice = Number(item.original_price);
+                
+                // Fallback for older records where original_price might be 0 or null
+                if (!originalPrice) {
+                    originalPrice = Number(item.price);
+                }
+
+                const quantity = Number(item.quantity);
+                const finalPricePerUnit = Number(item.price); // This is the discounted price saved in return
+                const totalDiscount = (originalPrice - finalPricePerUnit) * quantity;
+
+                return {
+                    product_name: item.product?.name || item.product_id,
+                    quantity: quantity,
+                    price: originalPrice,
+                    total: (quantity * originalPrice) - totalDiscount
+                };
+            })
         });
 
         // If Cash Return, add Refund Transaction (Debit the customer back to zero effect)

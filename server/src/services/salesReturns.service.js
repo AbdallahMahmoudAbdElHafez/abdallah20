@@ -92,12 +92,14 @@ export default {
             for (const item of items) {
                 let unitPrice = 0;
                 let originalItem = null;
+                let originalPriceForDB = 0;
 
                 if (item.is_manual) {
                     // For manual items, use the price provided by frontend or product master
                     const product = await Product.findByPk(item.product_id, { transaction });
                     if (!product) throw new Error(`Product ${item.product_id} not found.`);
                     unitPrice = Number(item.price) || Number(product.price) || 0;
+                    originalPriceForDB = (item.original_price !== undefined && item.original_price !== null) ? Number(item.original_price) : (Number(product.price) || unitPrice);
                 } else {
                     // Find original invoice item
                     if (invoice) {
@@ -109,10 +111,12 @@ export default {
                         }
                         // Prioritize price from request if provided, otherwise fallback to original item price
                         unitPrice = (item.price !== undefined && item.price !== null) ? Number(item.price) : Number(originalItem.price);
+                        originalPriceForDB = (item.original_price !== undefined && item.original_price !== null) ? Number(item.original_price) : Number(originalItem.price);
                     } else {
                         // No invoice linked, must rely on manual price or product price
                         const product = await Product.findByPk(item.product_id, { transaction });
                         unitPrice = (item.price !== undefined && item.price !== null) ? Number(item.price) : (Number(product.price) || 0);
+                        originalPriceForDB = (item.original_price !== undefined && item.original_price !== null) ? Number(item.original_price) : (Number(product.price) || unitPrice);
                     }
 
                     // 2a. Cumulative Validation - Don't return more than sold across all returns (Only if invoice linked)
@@ -267,6 +271,7 @@ export default {
                     sales_invoice_id: invoice ? invoice.id : null,
                     product_id: item.product_id,
                     quantity: returnQty,
+                    original_price: originalPriceForDB,
                     price: unitPrice,
                     cost_price: originalCostPerUnit, // Store Cost Price for Inventory Transaction
                     return_condition: item.return_condition,
