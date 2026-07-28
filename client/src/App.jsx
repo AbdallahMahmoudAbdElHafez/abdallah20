@@ -54,6 +54,7 @@ import ServicePaymentsPage from "./pages/servicePaymentsPage";
 import DoctorsPage from "./pages/DoctorsPage";
 import InventoryAdjustmentPage from "./pages/InventoryAdjustmentPage";
 import CustomerReceivablesReportPage from "./pages/CustomerReceivablesReportPage";
+import BatchCustomerStatementsPage from "./pages/BatchCustomerStatementsPage";
 import ProfitReportPage from "./pages/ProfitReportPage";
 import BankAndCashBalancesPage from "./pages/BankAndCashBalancesPage";
 import SafeMovementsReportPage from "./pages/SafeMovementsReportPage";
@@ -141,6 +142,7 @@ export default function App() {
           <Route path="/reports/opening-sales" element={<OpeningSalesReportPage />} />
           <Route path="/reports/zakat" element={<ZakatReportPage />} />
           <Route path="/reports/customer-receivables" element={<CustomerReceivablesReportPage />} />
+            <Route path="/reports/batch-customer-statements" element={<BatchCustomerStatementsPage />} />
           <Route path="/reports/profit" element={<ProfitReportPage />} />
           <Route path="/reports/bank-cash" element={<BankAndCashBalancesPage />} />
           <Route path="/reports/safe-movements" element={<SafeMovementsReportPage />} />

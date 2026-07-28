@@ -130,6 +130,13 @@ const ReportsDashboard = () => {
             icon: <AssessmentIcon sx={{ fontSize: 60, color: '#00695c' }} />,
             path: '/customers/statement-detailed',
             color: '#e0f2f1'
+        },
+        {
+            title: 'كشوف حساب العملاء حسب المنطقة',
+            description: 'استعراض وتصدير كشوف حسابات جميع عملاء محافظة أو مدينة معينة دفعة واحدة',
+            icon: <AssessmentIcon sx={{ fontSize: 60, color: '#00796b' }} />,
+            path: '/reports/batch-customer-statements',
+            color: '#b2dfdb'
         }
     ];
 

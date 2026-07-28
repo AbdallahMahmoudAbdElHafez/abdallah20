@@ -366,7 +366,7 @@ export default function SalesInvoiceDialog({
             const discountValue = (qty * price * discountPercent) / 100;
             const netAmount = qty * price - discountValue;
             const vatAmount = (netAmount * vatRate) / 100;
-            
+
             return {
                 product_id: kitItem.product_id,
                 warehouse_id: invoiceHead.warehouse_id || "",
@@ -1127,6 +1127,7 @@ export default function SalesInvoiceDialog({
                                 >
                                     <MenuItem value="شركة شحن">شركة شحن</MenuItem>
                                     <MenuItem value="مندوب">مندوب</MenuItem>
+                                    <MenuItem value="أمازون">أمازون</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={12} md={2}>

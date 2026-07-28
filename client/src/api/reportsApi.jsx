@@ -24,6 +24,7 @@ const reportsApi = {
     getSafeMovementsReport: (params) => axiosClient.get('/reports/safe-movements', { params }),
     getGeneralLedgerReport: (params) => axiosClient.get('/reports/general-ledger', { params }), // NEW
     getCustomerReceivables: (params) => axiosClient.get('/reports/customer-receivables', { params }),
+    getBatchCustomerStatements: (params) => axiosClient.get('/reports/batch-customer-statements', { params }),
 
     // Export
     exportReport: (type, params) => {

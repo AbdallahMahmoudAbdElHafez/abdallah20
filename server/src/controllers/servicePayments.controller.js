@@ -2,14 +2,12 @@ import ServicePaymentsService from '../services/servicePayments.service.js';
 import Joi from 'joi';
 
 const schema = Joi.object({
-    party_id: Joi.number().integer().required(),
+    external_service_invoice_id: Joi.number().integer().required(),
     amount: Joi.number().positive().required(),
     payment_date: Joi.date().allow(null, ''),
     payment_method: Joi.string().valid('cash', 'bank', 'cheque', 'other').default('cash'),
     reference_number: Joi.string().allow(null, ''),
     account_id: Joi.number().integer().required(),
-    credit_account_id: Joi.number().integer().required(),
-    external_job_order_id: Joi.number().integer().allow(null, ''),
     employee_id: Joi.number().integer().allow(null, ''),
     note: Joi.string().allow(null, ''),
     cheque_number: Joi.string().allow(null, ''),
@@ -50,6 +48,9 @@ const ServicePaymentsController = {
     },
 
     update: async (req, res) => {
+        // For updates we might not need all fields to be strictly required if partial
+        // but let's just use the same schema or maybe external_service_invoice_id is read-only?
+        // We'll require it in the schema as well since the frontend usually sends full object.
         const { error, value } = schema.validate(req.body);
         if (error) return res.status(400).json({ message: error.message });
 

@@ -18,7 +18,7 @@ export const getUnbalancedEntries = async (req, res, next) => {
                 je.id,
                 je.entry_date,
                 je.description,
-                rt.name as reference_type,
+                rt.label as reference_type,
                 je.reference_id,
                 COALESCE(SUM(jel.debit), 0) as total_debit,
                 COALESCE(SUM(jel.credit), 0) as total_credit,
@@ -26,7 +26,7 @@ export const getUnbalancedEntries = async (req, res, next) => {
             FROM journal_entries je
             LEFT JOIN journal_entry_lines jel ON je.id = jel.journal_entry_id
             LEFT JOIN reference_types rt ON je.reference_type_id = rt.id
-            GROUP BY je.id, je.entry_date, je.description, rt.name, je.reference_id
+            GROUP BY je.id, je.entry_date, je.description, rt.label, je.reference_id
             HAVING ABS(COALESCE(SUM(jel.debit), 0) - COALESCE(SUM(jel.credit), 0)) > 0.01 OR SUM(jel.debit) IS NULL
             ORDER BY je.entry_date DESC
         `;

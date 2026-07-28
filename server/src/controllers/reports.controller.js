@@ -1,5 +1,6 @@
 import reportsService from '../services/reports.service.js';
 import exportService from '../services/exportService.js';
+import { getBatchCustomerStatements } from '../services/customerLedger.service.js';
 
 const reportsController = {
     getDashboardSummary: async (req, res) => {
@@ -158,6 +159,22 @@ const reportsController = {
         }
     },
 
+    getBatchCustomerStatements: async (req, res) => {
+        try {
+            const { governate_id, city_id, startDate, endDate } = req.query;
+            const data = await getBatchCustomerStatements({
+                governate_id: governate_id ? parseInt(governate_id) : null,
+                city_id: city_id ? parseInt(city_id) : null,
+                from: startDate,
+                to: endDate
+            });
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching batch customer statements:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     getProfitReport: async (req, res) => {
         try {
             const { startDate, endDate } = req.query;
@@ -295,6 +312,18 @@ const reportsController = {
                     const issueEmpData = await reportsService.getIssueVouchersEmployeeSummary(startDate, endDate);
                     buffer = await exportService.exportIssueVouchersEmployeeReport(issueEmpData.data, issueEmpData.summary);
                     filename = `Issue_Vouchers_Employee_${startDate}_${endDate}.xlsx`;
+                    break;
+
+                case 'batch-customer-statements':
+                    const { governate_id, city_id } = req.query;
+                    const batchData = await getBatchCustomerStatements({
+                        governate_id: governate_id ? parseInt(governate_id) : null,
+                        city_id: city_id ? parseInt(city_id) : null,
+                        from: startDate,
+                        to: endDate
+                    });
+                    buffer = await exportService.exportBatchCustomerStatements(batchData);
+                    filename = `Batch_Customer_Statements_${startDate || 'all'}_to_${endDate || 'all'}.xlsx`;
                     break;
 
                 default:

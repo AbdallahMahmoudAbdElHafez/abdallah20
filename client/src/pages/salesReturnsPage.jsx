@@ -121,28 +121,75 @@ export default function SalesReturnsPage() {
     const handleOpen = (returnItem = null) => {
         if (returnItem) {
             setEditingReturn(returnItem);
-            // Derive customer from invoice if possible, or leave it empty/disabled
-            // For editing, we load formatted data. 
-            // NOTE: The current API might not return nested customer in invoice object depending on 'include'.
-            // Assuming returnItem.invoice.party_id exists or similar.
 
-            const invoice = invoices.find(i => i.id === returnItem.sales_invoice_id);
-            setSelectedCustomerId(invoice?.party_id || "");
+            // Use party_id directly from the return record (preferred),
+            // fallback to invoice's party_id for older records that may not have it
+            const customerId = returnItem.party_id
+                || returnItem.invoice?.party_id
+                || invoices.find(i => i.id === returnItem.sales_invoice_id)?.party_id
+                || "";
+            setSelectedCustomerId(customerId);
 
             setFormData({
-                sales_invoice_id: returnItem.sales_invoice_id,
-                warehouse_id: returnItem.warehouse_id,
-                return_date: returnItem.return_date ? new Date(returnItem.return_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+                sales_invoice_id: returnItem.sales_invoice_id ?? "",
+                warehouse_id: returnItem.warehouse_id ?? "",
+                return_date: returnItem.return_date
+                    ? new Date(returnItem.return_date).toISOString().split('T')[0]
+                    : new Date().toISOString().split('T')[0],
                 notes: returnItem.notes || "",
                 return_type: returnItem.return_type || "cash",
-                account_id: returnItem.account_id || "",
-                employee_id: returnItem.employee_id || ""
+                account_id: returnItem.account_id ?? "",
+                employee_id: returnItem.employee_id ?? ""
             });
-            // Fetch items for this invoice to show in edit mode? 
-            // Editing returns is complex because we need to know what was returned vs what is available.
-            // For now, let's just allow editing metadata, or fetch items if we want to allow changing items.
-            // PurchaseReturnsPage didn't implement fully fetching existing items for edit ("TODO: Fetch existing return items if editing").
-            // So we will mimic that behavior.
+
+            // Pre-populate selectedItems from existing return items
+            if (returnItem.items && returnItem.items.length > 0) {
+                const preSelected = {};
+                returnItem.items.forEach((retItem) => {
+                    if (retItem.is_manual || !retItem.sales_invoice_id) {
+                        // Manual item — use a manual key
+                        const manualKey = `manual-${retItem.product_id}-${retItem.id}`;
+                        preSelected[manualKey] = {
+                            isSelected: true,
+                            isManual: true,
+                            product_id: retItem.product_id,
+                            product: retItem.product || { id: retItem.product_id, name: retItem.product?.name || retItem.product_id },
+                            quantity: Number(retItem.quantity),
+                            price: Number(retItem.price),
+                            public_price: Number(retItem.original_price || retItem.price),
+                            return_condition: retItem.return_condition || 'good',
+                            batch_number: retItem.batch_number || '',
+                            expiry_date: retItem.expiry_date ? new Date(retItem.expiry_date).toISOString().split('T')[0] : '',
+                            batch_status: retItem.batch_status || 'unknown',
+                        };
+                    } else {
+                        // Linked to invoice item — key by product_id to match against invoiceItems later
+                        // We store using product_id as temporary key; after fetchSalesInvoiceItems resolves
+                        // the table row loop uses item.id, so we use a sentinel key `byProduct-{product_id}`
+                        const key = `byProduct-${retItem.product_id}`;
+                        preSelected[key] = {
+                            isSelected: true,
+                            isPreloaded: true,    // flag to link with invoice item row
+                            product_id: retItem.product_id,
+                            quantity: Number(retItem.quantity),
+                            price: Number(retItem.price),
+                            public_price: Number(retItem.original_price || retItem.price),
+                            return_condition: retItem.return_condition || 'good',
+                            batch_number: retItem.batch_number || '',
+                            expiry_date: retItem.expiry_date ? new Date(retItem.expiry_date).toISOString().split('T')[0] : '',
+                            batch_status: retItem.batch_status || 'unknown',
+                        };
+                    }
+                });
+                setSelectedItems(preSelected);
+            } else {
+                setSelectedItems({});
+            }
+
+            // If the return is linked to an invoice, fetch its items to display
+            if (returnItem.sales_invoice_id) {
+                dispatch(fetchSalesInvoiceItems({ sales_invoice_id: returnItem.sales_invoice_id }));
+            }
         } else {
             setEditingReturn(null);
             setSelectedCustomerId("");
@@ -552,7 +599,7 @@ export default function SalesReturnsPage() {
                             >
                                 {customers.map((customer) => (
                                     <MenuItem key={customer.id} value={customer.id}>
-                                        {customer.name}
+                                        {customer.name} {customer.city?.name ? `(${customer.city.name})` : ""}
                                     </MenuItem>
                                 ))}
                             </TextField>
@@ -687,12 +734,19 @@ export default function SalesReturnsPage() {
                                         </TableHead>
                                         <TableBody>
                                             {/* Invoice Items */}
-                                            {(invoiceItems || []).map((item) => (
+                                            {(invoiceItems || []).map((item) => {
+                                                // Support both direct item.id key (new) and byProduct key (preloaded from existing return)
+                                                const preloadKey = `byProduct-${item.product_id}`;
+                                                const itemKey = selectedItems[item.id] !== undefined
+                                                    ? item.id
+                                                    : (selectedItems[preloadKey] !== undefined ? preloadKey : item.id);
+                                                const itemData = selectedItems[itemKey];
+                                                return (
                                                 <TableRow key={item.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                                     <TableCell padding="checkbox">
                                                         <Checkbox
-                                                            checked={!!selectedItems[item.id]?.isSelected}
-                                                            onChange={(e) => handleItemSelectionChange(item.id, e.target.checked)}
+                                                            checked={!!itemData?.isSelected}
+                                                            onChange={(e) => handleItemSelectionChange(itemKey, e.target.checked)}
                                                         />
                                                     </TableCell>
                                                     <TableCell>{item.product?.name || item.product_id}</TableCell>
@@ -701,9 +755,9 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             type="number"
                                                             size="small"
-                                                            value={selectedItems[item.id]?.public_price ?? ""}
-                                                            onChange={(e) => handleItemPublicPriceChange(item.id, e.target.value)}
-                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            value={itemData?.public_price ?? ""}
+                                                            onChange={(e) => handleItemPublicPriceChange(itemKey, e.target.value)}
+                                                            disabled={!itemData?.isSelected}
                                                             fullWidth
                                                         />
                                                     </TableCell>
@@ -711,9 +765,9 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             type="number"
                                                             size="small"
-                                                            value={selectedItems[item.id]?.discount_percentage ?? ""}
-                                                            onChange={(e) => handleItemDiscountChange(item.id, e.target.value)}
-                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            value={itemData?.discount_percentage ?? ""}
+                                                            onChange={(e) => handleItemDiscountChange(itemKey, e.target.value)}
+                                                            disabled={!itemData?.isSelected}
                                                             fullWidth
                                                         />
                                                     </TableCell>
@@ -721,9 +775,9 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             type="number"
                                                             size="small"
-                                                            value={selectedItems[item.id]?.price ?? item.price}
-                                                            onChange={(e) => handleItemPriceChange(item.id, e.target.value)}
-                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            value={itemData?.price ?? item.price}
+                                                            onChange={(e) => handleItemPriceChange(itemKey, e.target.value)}
+                                                            disabled={!itemData?.isSelected}
                                                             fullWidth
                                                         />
                                                     </TableCell>
@@ -731,9 +785,9 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             type="number"
                                                             size="small"
-                                                            value={selectedItems[item.id]?.quantity || ""}
-                                                            onChange={(e) => handleItemQuantityChange(item.id, e.target.value)}
-                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            value={itemData?.quantity || ""}
+                                                            onChange={(e) => handleItemQuantityChange(itemKey, e.target.value)}
+                                                            disabled={!itemData?.isSelected}
                                                             inputProps={{ max: item.quantity, min: 1 }}
                                                             fullWidth
                                                         />
@@ -742,9 +796,9 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             select
                                                             size="small"
-                                                            value={selectedItems[item.id]?.return_condition || "good"}
-                                                            onChange={(e) => handleItemConditionChange(item.id, e.target.value)}
-                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            value={itemData?.return_condition || "good"}
+                                                            onChange={(e) => handleItemConditionChange(itemKey, e.target.value)}
+                                                            disabled={!itemData?.isSelected}
                                                             fullWidth
                                                         >
                                                             <MenuItem value="good">سليم</MenuItem>
@@ -757,9 +811,9 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             size="small"
                                                             placeholder="اختياري"
-                                                            value={selectedItems[item.id]?.batch_number || ""}
-                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [item.id]: { ...prev[item.id], batch_number: e.target.value } }))}
-                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            value={itemData?.batch_number || ""}
+                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [itemKey]: { ...prev[itemKey], batch_number: e.target.value } }))}
+                                                            disabled={!itemData?.isSelected}
                                                             fullWidth
                                                         />
                                                     </TableCell>
@@ -767,9 +821,9 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             type="date"
                                                             size="small"
-                                                            value={selectedItems[item.id]?.expiry_date || ""}
-                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [item.id]: { ...prev[item.id], expiry_date: e.target.value } }))}
-                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            value={itemData?.expiry_date || ""}
+                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [itemKey]: { ...prev[itemKey], expiry_date: e.target.value } }))}
+                                                            disabled={!itemData?.isSelected}
                                                             fullWidth
                                                         />
                                                     </TableCell>
@@ -777,9 +831,9 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             select
                                                             size="small"
-                                                            value={selectedItems[item.id]?.batch_status || "unknown"}
-                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [item.id]: { ...prev[item.id], batch_status: e.target.value } }))}
-                                                            disabled={!selectedItems[item.id]?.isSelected}
+                                                            value={itemData?.batch_status || "unknown"}
+                                                            onChange={(e) => setSelectedItems(prev => ({ ...prev, [itemKey]: { ...prev[itemKey], batch_status: e.target.value } }))}
+                                                            disabled={!itemData?.isSelected}
                                                             fullWidth
                                                         >
                                                             <MenuItem value="known">معروف</MenuItem>
@@ -789,7 +843,9 @@ export default function SalesReturnsPage() {
                                                     </TableCell>
                                                     <TableCell></TableCell>
                                                 </TableRow>
-                                            ))}
+                                                );
+                                            })}
+
                                             {/* Manual Items */}
                                             {Object.entries(selectedItems)
                                                 .filter(([_, data]) => data.isManual)

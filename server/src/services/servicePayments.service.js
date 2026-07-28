@@ -1,158 +1,242 @@
-import { ServicePayment, JournalEntry, JournalEntryLine, Party, Account, Cheque, sequelize, ReferenceType, Employee, ExternalJobOrder } from '../models/index.js';
+import { sequelize, ServicePayment, ExternalServiceInvoice, Party, Cheque, Account, ReferenceType, Employee } from "../models/index.js";
+import { createJournalEntry } from "./journal.service.js";
+import { Op } from "sequelize";
 
 const ServicePaymentsService = {
-    getAll: async (filters = {}) => {
-        const where = {};
-        if (filters.external_job_order_id) where.external_job_order_id = filters.external_job_order_id;
-        if (filters.external_service_invoice_id) where.external_service_invoice_id = filters.external_service_invoice_id;
-        if (filters.party_id) where.party_id = filters.party_id;
+  getAll: async (filters = {}) => {
+    const where = {};
+    if (filters.external_service_invoice_id) where.external_service_invoice_id = filters.external_service_invoice_id;
 
-        // Date range filtering
-        if (filters.startDate && filters.endDate) {
-            where.payment_date = {
-                [sequelize.Sequelize.Op.between]: [filters.startDate, filters.endDate]
-            };
-        } else if (filters.startDate) {
-            where.payment_date = {
-                [sequelize.Sequelize.Op.gte]: filters.startDate
-            };
-        } else if (filters.endDate) {
-            where.payment_date = {
-                [sequelize.Sequelize.Op.lte]: filters.endDate
-            };
-        }
-
-        return await ServicePayment.findAll({
-            where,
-            include: [
-                { model: Party, as: 'party' },
-                { model: Account, as: 'account' },
-                { model: Account, as: 'credit_account' },
-                { model: Employee, as: 'employee' }
-            ],
-            order: [['payment_date', 'DESC']]
-        });
-    },
-
-    getById: async (id) => {
-        return await ServicePayment.findByPk(id, {
-            include: [
-                { model: Party, as: 'party' },
-                { model: Account, as: 'account' },
-                { model: Account, as: 'credit_account' },
-                { model: Employee, as: 'employee' }
-            ]
-        });
-    },
-
-    create: async (data) => {
-        const t = await sequelize.transaction();
-        try {
-            if (data.payment_date === '') data.payment_date = new Date();
-            if (data.external_service_id === '') data.external_service_id = null;
-            if (data.external_service_invoice_id === '') data.external_service_invoice_id = null;
-            if (data.employee_id === '') data.employee_id = null;
-
-            const supplier = await Party.findByPk(data.party_id, { transaction: t });
-            if (!supplier) throw new Error("Party not found");
-
-            // --- STRICT ACCOUNTING LOGIC ---
-            const debitAccount = await Account.findByPk(data.account_id, { transaction: t });
-            if (!debitAccount) throw new Error("Debit Account not found");
-
-            // 1. Prohibit direct WIP inflation (Parent 109 and Sub-accounts 127, 128)
-            const blockedWipAccounts = [109, 127, 128];
-            if (blockedWipAccounts.includes(debitAccount.id)) {
-                throw new Error(`Accounting Rule: Service Payments cannot debit WIP accounts (${debitAccount.name}) directly. Please record a 'Service Invoice' first to recognize the cost, then use this screen to record the cash payment against the Supplier.`);
-            }
-
-            // 2. Enforce Liability Debit (Settlement)
-            if (debitAccount.account_type !== 'liability') {
-                throw new Error("Invalid Account: Service payments must debit a Liability account (e.g., Suppliers) to settle an existing debt.");
-            }
-            // ------------------------------------
-
-            const payment = await ServicePayment.create(data, { transaction: t });
-
-            let refType = await ReferenceType.findOne({ where: { code: 'service_payment' }, transaction: t });
-            if (!refType) {
-                refType = await ReferenceType.create({
-                    code: 'service_payment',
-                    label: 'سداد خدمات',
-                    name: 'سداد خدمات',
-                    description: 'Journal Entry for Service Payment (Settlement)'
-                }, { transaction: t });
-            }
-
-            const je = await JournalEntry.create({
-                entry_type_id: 1, // Default type
-                reference_type_id: refType.id,
-                reference_id: payment.id,
-                date: data.payment_date,
-                description: `سداد مديونية (خدمات) - ${supplier.name} - ${data.note || ''}`,
-                status: 'posted'
-            }, { transaction: t });
-
-            await JournalEntryLine.bulkCreate([
-                {
-                    journal_entry_id: je.id,
-                    account_id: data.account_id, // Debit Supplier (Reduction of liability)
-                    debit: data.amount,
-                    credit: 0,
-                    description: `سداد مستحقات للمورد ${supplier.name}`
-                },
-                {
-                    journal_entry_id: je.id,
-                    account_id: data.credit_account_id, // Credit Bank/Cash
-                    debit: 0,
-                    credit: data.amount,
-                    description: `سداد مديونية (خدمات) - ${supplier.name}`
-                }
-            ], { transaction: t });
-
-            // Handle Cheque Creation
-            if (data.payment_method === 'cheque') {
-                if (!data.cheque_number || !data.due_date) {
-                    throw new Error("Cheque number and Due Date are required for cheque payments");
-                }
-
-                await Cheque.create({
-                    cheque_number: data.cheque_number,
-                    cheque_type: 'outgoing', // Service payment is outgoing
-                    account_id: data.credit_account_id, // Source account (Bank)
-                    issue_date: data.issue_date || data.payment_date,
-                    due_date: data.due_date,
-                    amount: data.amount,
-                    status: 'issued',
-                    service_payment_id: payment.id
-                }, { transaction: t });
-            }
-
-            await t.commit();
-
-            return payment;
-        } catch (error) {
-            await t.rollback();
-            throw error;
-        }
-    },
-
-    update: async (id, data) => {
-        if (data.external_job_order_id === '') data.external_job_order_id = null;
-        if (data.external_service_invoice_id === '') data.external_service_invoice_id = null;
-        if (data.employee_id === '') data.employee_id = null;
-
-        const item = await ServicePayment.findByPk(id);
-        if (!item) return null;
-        return await item.update(data);
-    },
-
-    remove: async (id) => {
-        const item = await ServicePayment.findByPk(id);
-        if (!item) return null;
-        await item.destroy();
-        return { message: 'Deleted successfully' };
+    if (filters.startDate && filters.endDate) {
+      where.payment_date = {
+        [Op.between]: [filters.startDate, filters.endDate]
+      };
+    } else if (filters.startDate) {
+      where.payment_date = {
+        [Op.gte]: filters.startDate
+      };
+    } else if (filters.endDate) {
+      where.payment_date = {
+        [Op.lte]: filters.endDate
+      };
     }
+
+    return await ServicePayment.findAll({
+      where,
+      include: [
+        { 
+            model: ExternalServiceInvoice, 
+            as: 'invoice',
+            include: [{ model: Party, as: 'party' }]
+        },
+        { model: Account, as: 'account' },
+        { model: Employee, as: 'employee' }
+      ],
+      order: [['payment_date', 'DESC']]
+    });
+  },
+
+  getById: async (id) => {
+    return await ServicePayment.findByPk(id, {
+      include: [
+        { model: Account, as: 'account' },
+        { model: Employee, as: 'employee' }
+      ]
+    });
+  },
+
+  create: async (data) => {
+    if (data.employee_id === '') data.employee_id = null;
+    if (data.account_id === '') delete data.account_id;
+
+    const t = await sequelize.transaction();
+    try {
+      const invoice = await ExternalServiceInvoice.findByPk(data.external_service_invoice_id, {
+        include: [{ model: Party, as: "party" }],
+        transaction: t,
+      });
+
+      if (!invoice) throw new Error("Invoice not found");
+      if (invoice.status === 'Draft' || invoice.status === 'Cancelled') {
+          throw new Error("Cannot add payment to Draft or Cancelled invoice");
+      }
+
+      if (!data.amount || isNaN(Number(data.amount)) || Number(data.amount) <= 0) {
+        throw new Error("Invalid payment amount");
+      }
+
+      const totalPaid = await ServicePayment.sum("amount", {
+        where: { external_service_invoice_id: invoice.id },
+        transaction: t,
+      });
+
+      const remaining = Number(invoice.total_amount) - Number(totalPaid || 0);
+      if (Number(data.amount) > remaining) {
+        throw new Error(`Payment exceeds remaining amount. Remaining: ${remaining}`);
+      }
+
+      const payment = await ServicePayment.create(data, { transaction: t });
+
+      if (!invoice.party?.account_id) {
+        throw new Error("Supplier does not have a linked account_id");
+      }
+
+      if (data.payment_method === 'cheque') {
+          if (!data.cheque_number || !data.due_date) {
+              throw new Error("Cheque number and Due Date are required for cheque payments");
+          }
+          await Cheque.create({
+              cheque_number: data.cheque_number,
+              cheque_type: 'outgoing',
+              amount: data.amount,
+              service_payment_id: payment.id,
+              account_id: data.account_id,
+              issue_date: data.issue_date || data.payment_date,
+              due_date: data.due_date,
+              status: 'issued'
+          }, { transaction: t });
+      }
+
+      let refType = await ReferenceType.findOne({ where: { code: 'service_payment' }, transaction: t });
+      if (!refType) {
+        refType = await ReferenceType.create({
+          code: 'service_payment',
+          label: 'سداد خدمات',
+          name: 'سداد خدمات',
+          description: 'Journal Entry for Service Payment (Settlement)'
+        }, { transaction: t });
+      }
+
+      await createJournalEntry(
+        {
+          refCode: "service_payment",
+          refId: payment.id,
+          entryDate: payment.payment_date,
+          description: `سداد فاتورة خدمة #${invoice.invoice_no || invoice.id} - ${data.payment_method}`,
+          lines: [
+            {
+              account_id: invoice.party.account_id,
+              debit: Number(data.amount),
+              credit: 0,
+              description: "تخفيض التزامات المورد (خدمات)",
+            },
+            {
+              account_id: data.account_id,
+              debit: 0,
+              credit: Number(data.amount),
+              description: `خروج - ${data.payment_method}`,
+            },
+          ],
+          entryTypeId: 1 // Default type or a specific one if needed
+        },
+        { transaction: t }
+      );
+
+      const newPaid = Number(totalPaid || 0) + Number(data.amount);
+      const newStatus =
+        newPaid >= Number(invoice.total_amount)
+          ? "Paid"
+          : newPaid > 0
+            ? "Partially Paid"
+            : invoice.status;
+
+      if (newStatus !== invoice.status) {
+        await invoice.update({ status: newStatus }, { transaction: t });
+      }
+
+      await t.commit();
+      return payment;
+    } catch (err) {
+      await t.rollback();
+      throw err;
+    }
+  },
+
+  update: async (id, data) => {
+    if (data.employee_id === '') data.employee_id = null;
+    if (data.account_id === '') delete data.account_id;
+
+    const t = await sequelize.transaction();
+    try {
+      const payment = await ServicePayment.findByPk(id, { transaction: t });
+      if (!payment) throw new Error("Payment not found");
+
+      if (data.amount !== undefined) {
+        const invoice = await ExternalServiceInvoice.findByPk(payment.external_service_invoice_id, {
+          transaction: t,
+        });
+        const totalPaid = await ServicePayment.sum("amount", {
+          where: {
+            external_service_invoice_id: invoice.id,
+            id: { [Op.ne]: id },
+          },
+          transaction: t,
+        });
+        const remaining = Number(invoice.total_amount) - Number(totalPaid || 0);
+        if (Number(data.amount) > remaining) {
+          throw new Error(`Payment exceeds remaining amount. Remaining: ${remaining}`);
+        }
+      }
+
+      await payment.update(data, { transaction: t });
+
+      const totalAfter = await ServicePayment.sum("amount", {
+        where: { external_service_invoice_id: payment.external_service_invoice_id },
+        transaction: t,
+      });
+      const invoice = await ExternalServiceInvoice.findByPk(payment.external_service_invoice_id, { transaction: t });
+      const newStatus =
+        totalAfter >= invoice.total_amount
+          ? "Paid"
+          : totalAfter > 0
+            ? "Partially Paid"
+            : invoice.status;
+      if (newStatus !== invoice.status) {
+        await invoice.update({ status: newStatus }, { transaction: t });
+      }
+
+      await t.commit();
+      return payment;
+    } catch (err) {
+      await t.rollback();
+      throw err;
+    }
+  },
+
+  remove: async (id) => {
+    const t = await sequelize.transaction();
+    try {
+        const payment = await ServicePayment.findByPk(id, { transaction: t });
+        if (!payment) return null;
+        
+        const invoiceId = payment.external_service_invoice_id;
+        
+        await payment.destroy({ transaction: t });
+        
+        // Update Invoice status
+        const totalAfter = await ServicePayment.sum("amount", {
+            where: { external_service_invoice_id: invoiceId },
+            transaction: t,
+        });
+        const invoice = await ExternalServiceInvoice.findByPk(invoiceId, { transaction: t });
+        const newStatus =
+            totalAfter >= invoice.total_amount
+            ? "Paid"
+            : totalAfter > 0
+                ? "Partially Paid"
+                : "Posted"; // Default to Posted since Drafts can't have payments
+
+        if (newStatus !== invoice.status) {
+            await invoice.update({ status: newStatus }, { transaction: t });
+        }
+
+        await t.commit();
+        return { message: 'Deleted successfully' };
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+  }
 };
 
 export default ServicePaymentsService;

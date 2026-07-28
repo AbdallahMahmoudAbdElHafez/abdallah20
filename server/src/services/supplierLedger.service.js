@@ -53,13 +53,15 @@ export async function getSupplierStatement(supplierId, { from, to }) {
   // Note: We need 'credit_account_id' to determine if it's Cash or Accrual,
   // and 'account_id' to determine if it's a Settlement (Payment).
   const servicePayments = await ServicePayment.findAll({
-    where: {
-      party_id: supplierId,
-      ...(Object.keys(dateFilter).length ? { payment_date: dateFilter } : {}),
-    },
+    where: Object.keys(dateFilter).length ? { payment_date: dateFilter } : {},
     include: [
-      { model: Account, as: 'account', attributes: ['id', 'account_type'] },
-      { model: Account, as: 'credit_account', attributes: ['id', 'account_type'] }
+      { 
+        model: ExternalServiceInvoice, 
+        as: 'invoice', 
+        where: { party_id: supplierId },
+        attributes: ['invoice_no']
+      },
+      { model: Account, as: 'account', attributes: ['id', 'account_type'] }
     ],
     raw: true,
     nest: true
@@ -78,7 +80,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
   const serviceInvoicesNew = await ExternalServiceInvoice.findAll({
     where: {
       party_id: supplierId,
-      status: 'Posted',
+      status: { [Op.notIn]: ['Draft', 'Cancelled'] },
       ...(Object.keys(dateFilter).length ? { invoice_date: dateFilter } : {}),
     },
     raw: true
@@ -125,21 +127,15 @@ export async function getSupplierStatement(supplierId, { from, to }) {
       credit: Number(si.total_amount)
     })),
 
-    // Service Payments (Only Settlements now)
+    // Service Payments (All are Settlements now)
     ...servicePayments.map(sp => {
-      const debitAccountType = sp.account?.account_type;
-
-      if (debitAccountType === 'liability') {
-        // Settlement: Debit Supplier (Liability Decrease / Payment)
         return {
           type: "service_settlement",
           date: sp.payment_date,
-          description: sp.note || `سداد مديونية (خدمات)`,
+          description: sp.note || `سداد فاتورة خدمات #${sp.invoice?.invoice_no || sp.external_service_invoice_id}`,
           debit: Number(sp.amount),
           credit: 0
         };
-      }
-      return null;
     }).filter(Boolean)
 
   ];
@@ -191,21 +187,20 @@ export async function getSupplierStatement(supplierId, { from, to }) {
 
     // Service Payments (Accruals & Settlements)
     const prevServicePayments = await ServicePayment.findAll({
-      where: {
-        party_id: supplierId,
-        payment_date: { [Op.lt]: from }
-      },
+      where: { payment_date: { [Op.lt]: from } },
       include: [
-        { model: Account, as: 'account', attributes: ['account_type'] },
-        { model: Account, as: 'credit_account', attributes: ['account_type'] }
+        { 
+          model: ExternalServiceInvoice, 
+          as: 'invoice', 
+          where: { party_id: supplierId },
+          attributes: []
+        }
       ]
     });
 
     const prevServiceTotalMovement = prevServicePayments.reduce((sum, sp) => {
-      if (sp.account?.account_type === 'liability') {
-        return sum - Number(sp.amount || 0); // Debit (-)
-      }
-      return sum;
+      // All Service Payments are Debits (-)
+      return sum - Number(sp.amount || 0); 
     }, 0);
 
     const prevServiceInvoicesOld = await ExternalJobOrderService.sum("amount", {
@@ -218,7 +213,7 @@ export async function getSupplierStatement(supplierId, { from, to }) {
     const prevServiceInvoicesNew = await ExternalServiceInvoice.sum("total_amount", {
       where: {
         party_id: supplierId,
-        status: 'Posted',
+        status: { [Op.notIn]: ['Draft', 'Cancelled'] },
         invoice_date: { [Op.lt]: from }
       }
     });

@@ -225,13 +225,27 @@ const getSalesReport = async (startDate, endDate) => {
         returnDateFilter.return_date = { [Op.lte]: endDate };
     }
 
+    returnDateFilter.status = { [Op.ne]: 'cancelled' };
+    
     const returns = await SalesReturn.findAll({
         where: returnDateFilter,
         include: [
             {
                 model: SalesReturnItem,
                 as: 'items',
-                include: [{ model: Product, as: 'product', attributes: ['name', 'cost_price'] }]
+                include: [
+                    { model: Product, as: 'product', attributes: ['name', 'cost_price'] },
+                    {
+                        model: InventoryTransaction,
+                        as: 'inventory_transactions',
+                        required: false,
+                        include: [{
+                            model: InventoryTransactionBatches,
+                            as: 'transaction_batches',
+                            required: false
+                        }]
+                    }
+                ]
             },
             {
                 model: Employee,
@@ -334,18 +348,19 @@ const getSalesReport = async (startDate, endDate) => {
 
                 // Cost logic
                 let itemCost = 0;
+                let hasBatches = false;
                 if (item.inventory_transactions && item.inventory_transactions.length > 0) {
                     item.inventory_transactions.forEach(trx => {
                         if (trx.transaction_batches && trx.transaction_batches.length > 0) {
+                            hasBatches = true;
                             trx.transaction_batches.forEach(batch => {
                                 itemCost += parseFloat(batch.quantity || 0) * parseFloat(batch.cost_per_unit || 0);
                             });
-                        } else {
-                            itemCost += parseFloat(trx.quantity || 0) * parseFloat(item.product?.cost_price || 0);
                         }
                     });
-                } else {
-                    itemCost += qty * parseFloat(item.product?.cost_price || 0);
+                }
+                if (!hasBatches) {
+                    itemCost = qty * parseFloat(item.product?.cost_price || 0);
                 }
                 productStats[productId].cost += itemCost;
 
@@ -419,9 +434,22 @@ const getSalesReport = async (startDate, endDate) => {
                 productStats[productId].quantity -= qty;
                 productStats[productId].revenue -= netRevenue;
 
-                // Cost deduction - using product cost_price
-                const returnCostRef = item.product?.cost_price || 0;
-                const returnItemCost = qty * parseFloat(returnCostRef);
+                // Cost deduction logic
+                let returnItemCost = 0;
+                let hasBatches = false;
+                if (item.inventory_transactions && item.inventory_transactions.length > 0) {
+                    item.inventory_transactions.forEach(trx => {
+                        if (trx.transaction_batches && trx.transaction_batches.length > 0) {
+                            hasBatches = true;
+                            trx.transaction_batches.forEach(batch => {
+                                returnItemCost += parseFloat(batch.quantity || 0) * parseFloat(batch.cost_per_unit || 0);
+                            });
+                        }
+                    });
+                }
+                if (!hasBatches) {
+                    returnItemCost = qty * parseFloat(item.product?.cost_price || 0);
+                }
                 productStats[productId].cost -= returnItemCost;
 
                 // Deduct from COGS by Region and Product
@@ -1355,7 +1383,8 @@ const getCustomerReceivablesReport = async (startDate, endDate) => {
         ],
         where: {
             return_type: { [Op.in]: ['credit', 'exchange'] },
-            ...(startDate || endDate ? { return_date: dateFilter.date } : {})
+            ...(startDate || endDate ? { return_date: dateFilter.date } : {}),
+            status: { [Op.ne]: 'cancelled' }
         },
         group: ['party_id'],
         raw: true
@@ -2051,7 +2080,13 @@ const getSafeMovementsReport = async (accountId, startDate, endDate) => {
                 model: JournalEntry,
                 as: 'journal_entry',
                 where: {
-                    entry_date: { [Op.between]: [startDate, endDate] }
+                    entry_date: { [Op.between]: [startDate, endDate] },
+                    description: {
+                        [Op.and]: [
+                            { [Op.notLike]: '%(تم العكس للحذف)%' },
+                            { [Op.notLike]: 'قيد عكسي لحذف المرتجع %' }
+                        ]
+                    }
                 },
                 include: [{
                     model: JournalEntryLine,
@@ -2201,7 +2236,13 @@ const getConsolidatedSafeMovementsReport = async (startDate, endDate) => {
                 model: JournalEntry,
                 as: 'journal_entry',
                 where: {
-                    entry_date: { [Op.between]: [startDate, endDate] }
+                    entry_date: { [Op.between]: [startDate, endDate] },
+                    description: {
+                        [Op.and]: [
+                            { [Op.notLike]: '%(تم العكس للحذف)%' },
+                            { [Op.notLike]: 'قيد عكسي لحذف المرتجع %' }
+                        ]
+                    }
                 },
                 include: [{
                     model: JournalEntryLine,
@@ -2440,7 +2481,13 @@ export default {
                     model: JournalEntry,
                     as: 'journal_entry',
                     where: {
-                        entry_date: { [Op.between]: [startDate, endDate] }
+                        entry_date: { [Op.between]: [startDate, endDate] },
+                        description: {
+                            [Op.and]: [
+                                { [Op.notLike]: '%(تم العكس للحذف)%' },
+                                { [Op.notLike]: 'قيد عكسي لحذف المرتجع %' }
+                            ]
+                        }
                     },
                     include: [{
                         model: JournalEntryLine,

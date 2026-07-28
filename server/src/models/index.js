@@ -160,9 +160,20 @@ expensesHooks(sequelize);
 
 
 // العلاقات
-// ServicePayment ↔ ExternalJobOrder relationship
-ServicePayment.belongsTo(ExternalJobOrder, { foreignKey: "external_job_order_id", as: "job_order" });
-ExternalJobOrder.hasMany(ServicePayment, { foreignKey: "external_job_order_id", as: "service_payments" });
+// ServicePayment ↔ ExternalServiceInvoice relationship
+ServicePayment.belongsTo(ExternalServiceInvoice, { foreignKey: "external_service_invoice_id", as: "invoice" });
+ExternalServiceInvoice.hasMany(ServicePayment, { foreignKey: "external_service_invoice_id", as: "service_payments" });
+
+// ServicePayment ↔ Account relationship
+ServicePayment.belongsTo(Account, { foreignKey: "account_id", as: "account" });
+
+// ServicePayment ↔ Employee relationship
+ServicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
+
+// ServicePayment ↔ SupplierCheque (optional, if using SupplierCheque model for service payments as well or Cheque model)
+// If there's a Cheque model, we can associate it here.
+ServicePayment.hasMany(Cheque, { foreignKey: "service_payment_id", as: "cheques" });
+Cheque.belongsTo(ServicePayment, { foreignKey: "service_payment_id", as: "service_payment" });
 
 // Product - Unit relationship
 Unit.hasMany(Product, { foreignKey: 'unit_id', as: 'products' });
@@ -659,6 +670,21 @@ SalesReturnItem.belongsTo(Product, {
   as: "product"
 });
 
+// SalesReturnItem ↔ InventoryTransaction (for batch info)
+SalesReturnItem.hasMany(InventoryTransaction, {
+  foreignKey: "source_id",
+  constraints: false,
+  scope: {
+    source_type: "sales_return"
+  },
+  as: "inventory_transactions"
+});
+InventoryTransaction.belongsTo(SalesReturnItem, {
+  foreignKey: "source_id",
+  constraints: false,
+  as: "sales_return_item"
+});
+
 
 // === Sales Order Associations ===
 SalesOrder.belongsTo(Party, { foreignKey: "party_id", as: "party" });
@@ -789,22 +815,7 @@ Cheque.belongsTo(PurchaseInvoicePayment, { foreignKey: "purchase_payment_id", as
 SalesInvoicePayment.hasOne(Cheque, { foreignKey: "sales_payment_id", as: "cheque" });
 PurchaseInvoicePayment.hasOne(Cheque, { foreignKey: "purchase_payment_id", as: "cheque" });
 
-// Service Payment Associations
-ServicePayment.belongsTo(Party, { foreignKey: "party_id", as: "party" });
-Party.hasMany(ServicePayment, { foreignKey: "party_id", as: "service_payments" });
-
-ServicePayment.belongsTo(Account, { foreignKey: "account_id", as: "account" });
-Account.hasMany(ServicePayment, { foreignKey: "account_id", as: "service_payments" });
-ServicePayment.belongsTo(Account, { foreignKey: "credit_account_id", as: "credit_account" });
-Account.hasMany(ServicePayment, { foreignKey: "credit_account_id", as: "credit_service_payments" });
-ServicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
-Employee.hasMany(ServicePayment, { foreignKey: "employee_id", as: "service_payments" });
-
-ServicePayment.belongsTo(ExternalServiceInvoice, { foreignKey: "external_service_invoice_id", as: "external_service_invoice" });
-ExternalServiceInvoice.hasMany(ServicePayment, { foreignKey: "external_service_invoice_id", as: "service_payments" });
-
-ServicePayment.belongsTo(ExternalJobOrderService, { foreignKey: "external_service_id", as: "external_service" });
-ExternalJobOrderService.hasMany(ServicePayment, { foreignKey: "external_service_id", as: "service_payments" });
+// Service Payment Associations (moved to top of file, lines ~163-176)
 
 // External Job Order Service Associations
 ExternalJobOrderService.belongsTo(ExternalJobOrder, { foreignKey: "job_order_id", as: "job_order" });

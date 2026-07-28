@@ -204,17 +204,105 @@ export class IssueVoucherReturnsService {
 
     // حذف مرتجع
     async deleteReturn(id) {
-        const record = await IssueVoucherReturn.findByPk(id);
-        if (!record) {
-            throw new Error('Issue voucher return not found');
-        }
+        const transaction = await sequelize.transaction();
+        try {
+            const record = await IssueVoucherReturn.findByPk(id, { transaction });
+            if (!record) {
+                await transaction.rollback();
+                throw new Error('Issue voucher return not found');
+            }
 
-        if (record.status !== 'draft') {
-            throw new Error('Only draft returns can be deleted');
-        }
+            if (record.status === 'draft') {
+                // للحالة المسودة يتم الحذف نهائياً
+                await IssueVoucherReturnItem.destroy({ where: { return_id: id }, transaction });
+                await record.destroy({ transaction });
+                await transaction.commit();
+                return { message: 'Issue voucher return deleted successfully' };
+            }
 
-        await record.destroy();
-        return { message: 'Issue voucher return deleted successfully' };
+            // للحالات الأخرى (معتمد، مرحل) يتم عمل قيد عكسي وحركة مخزون عكسية
+            const oldItems = await IssueVoucherReturnItem.findAll({ where: { return_id: id }, transaction });
+            const oldItemIds = oldItems.map(i => i.id);
+
+            // 1. عمل حركات مخزون عكسية
+            const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;
+            const { InventoryTransaction, InventoryTransactionBatches, Batches } = await import('../models/index.js');
+            
+            if (oldItemIds.length > 0) {
+                const oldTrxs = await InventoryTransaction.findAll({
+                    where: { source_type: 'issue_voucher_return', source_id: { [Op.in]: oldItemIds } },
+                    include: [{
+                        model: InventoryTransactionBatches,
+                        as: 'transaction_batches',
+                        include: [{ model: Batches, as: 'batch' }]
+                    }],
+                    transaction
+                });
+
+                for (const oldTrx of oldTrxs) {
+                    const batchesPayload = oldTrx.transaction_batches ? oldTrx.transaction_batches.map(tb => ({
+                        batch_number: tb.batch ? tb.batch.batch_number : null,
+                        expiry_date: tb.batch ? tb.batch.expiry_date : null,
+                        quantity: tb.quantity,
+                        cost_per_unit: tb.cost_per_unit,
+                        status: tb.batch ? tb.batch.status : 'active'
+                    })) : [];
+
+                    await InventoryTransactionService.create({
+                        product_id: oldTrx.product_id,
+                        warehouse_id: oldTrx.warehouse_id,
+                        transaction_type: oldTrx.transaction_type === 'in' ? 'out' : 'in',
+                        transaction_date: new Date(),
+                        note: `عكس الحركة #${oldTrx.id} لإلغاء/حذف المرتجع #${record.return_no}`,
+                        source_type: 'issue_voucher_return',
+                        source_id: oldTrx.source_id,
+                        batches: batchesPayload.length > 0 ? batchesPayload : [{ quantity: oldTrx.quantity, cost_per_unit: 0 }]
+                    }, { transaction });
+                }
+            }
+
+            // 2. عمل قيود عكسية
+            const { JournalEntry, ReferenceType } = await import('../models/index.js');
+            const { createReverseJournalEntry } = await import('./journal.service.js');
+
+            const refTypes = await ReferenceType.findAll({
+                where: { code: 'issue_voucher_return' },
+                transaction
+            });
+
+            for (const refType of refTypes) {
+                const existingJEs = await JournalEntry.findAll({
+                    where: { reference_type_id: refType.id, reference_id: id },
+                    transaction
+                });
+
+                for (const je of existingJEs) {
+                    await createReverseJournalEntry({
+                        originalRefCode: refType.code,
+                        originalRefId: id,
+                        newRefCode: `${refType.code}_rev`,
+                        newRefId: je.id,
+                        newDescription: `قيد عكسي لحذف المرتجع #${record.return_no}`,
+                        entryDate: new Date()
+                    }, { transaction });
+
+                    // فك الارتباط بالقيد القديم
+                    await je.update({ reference_id: null, description: je.description + ' (تم العكس للحذف)' }, { transaction });
+                }
+            }
+
+            // 3. تحديث الحالة إلى ملغي
+            await record.update({ 
+                status: 'cancelled',
+                note: (record.note || '') + ' (ملغية)' 
+            }, { transaction });
+
+            await transaction.commit();
+            return { message: 'Issue voucher return cancelled successfully with reverse entries' };
+        } catch (error) {
+            await transaction.rollback();
+            throw error;
+        }
     }
 
     // تحديث الحالة

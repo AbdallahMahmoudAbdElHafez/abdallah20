@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { SalesInvoice, SalesInvoicePayment, Party, SalesReturn, IssueVoucher, IssueVoucherItem, Product, SalesInvoiceItem, SalesReturnItem } from "../models/index.js";
+import { SalesInvoice, SalesInvoicePayment, Party, SalesReturn, IssueVoucher, IssueVoucherItem, Product, SalesInvoiceItem, SalesReturnItem, City, Governate } from "../models/index.js";
 
 export async function getCustomerStatement(customerId, { from, to }) {
     const customer = await Party.findByPk(customerId, {
@@ -42,6 +42,7 @@ export async function getCustomerStatement(customerId, { from, to }) {
         where: {
             party_id: customerId,
             ...(Object.keys(dateFilter).length ? { return_date: dateFilter } : {}),
+            status: { [Op.ne]: 'cancelled' }
         },
         raw: true
     });
@@ -161,7 +162,8 @@ export async function getCustomerStatement(customerId, { from, to }) {
             where: {
                 party_id: customerId,
                 return_date: { [Op.lt]: from },
-                return_type: { [Op.in]: ['credit', 'exchange'] } // Both affect balance
+                return_type: { [Op.in]: ['credit', 'exchange'] },
+                status: { [Op.ne]: 'cancelled' }
             }
         });
 
@@ -255,6 +257,7 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
         where: {
             party_id: customerId,
             ...(Object.keys(dateFilter).length ? { return_date: dateFilter } : {}),
+            status: { [Op.ne]: 'cancelled' }
         },
         include: [
             {
@@ -429,7 +432,8 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
             where: {
                 party_id: customerId,
                 return_date: { [Op.lt]: from },
-                return_type: { [Op.in]: ['credit', 'exchange'] }
+                return_type: { [Op.in]: ['credit', 'exchange'] },
+                status: { [Op.ne]: 'cancelled' }
             }
         });
 
@@ -471,4 +475,40 @@ export async function getDetailedCustomerStatement(customerId, { from, to }) {
         closing_balance: closingBalance,
         statement,
     };
+}
+
+export async function getBatchCustomerStatements({ governate_id, city_id, from, to }) {
+    const where = { party_type: ['customer', 'both'] };
+    if (city_id) {
+        where.city_id = city_id;
+    }
+
+    const include = [];
+    if (governate_id && !city_id) {
+        include.push({
+            model: City,
+            as: 'city',
+            where: { governate_id: governate_id },
+            attributes: [] // we only join to filter
+        });
+    }
+
+    const customers = await Party.findAll({
+        where,
+        include,
+        attributes: ['id', 'name'],
+        order: [['name', 'ASC']]
+    });
+
+    const batchStatements = [];
+    for (const customer of customers) {
+        try {
+            const statement = await getCustomerStatement(customer.id, { from, to });
+            batchStatements.push(statement);
+        } catch (error) {
+            console.error(`Error fetching statement for customer ${customer.id}:`, error);
+        }
+    }
+
+    return batchStatements;
 }

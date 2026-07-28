@@ -15,6 +15,7 @@ export default (sequelize) => {
             account_id: { type: DataTypes.INTEGER, allowNull: true },
             total_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.0 }, // Net + Tax
             tax_amount: { type: DataTypes.DECIMAL(10, 2), allowNull: false, defaultValue: 0.0 },
+            status: { type: DataTypes.ENUM('approved', 'cancelled'), allowNull: false, defaultValue: 'approved' },
             created_at: { type: DataTypes.DATE, defaultValue: sequelize.literal("CURRENT_TIMESTAMP") }
         },
         {

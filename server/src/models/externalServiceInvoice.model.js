@@ -19,7 +19,7 @@ export default (sequelize) => {
             invoice_no: { type: DataTypes.STRING(50), allowNull: true },
             invoice_date: { type: DataTypes.DATEONLY, allowNull: false },
             status: {
-                type: DataTypes.ENUM('Draft', 'Posted', 'Cancelled'),
+                type: DataTypes.ENUM('Draft', 'Posted', 'Partially Paid', 'Paid', 'Cancelled'),
                 defaultValue: 'Draft'
             },
             sub_total: { type: DataTypes.DECIMAL(14, 2), defaultValue: 0.00 },

@@ -29,6 +29,7 @@ import {
 } from "@mui/icons-material";
 import axiosClient from "../api/axiosClient";
 import { defaultTableProps } from "../config/tableConfig";
+import ServicePaymentsManager from "../components/ServicePaymentsManager";
 
 export default function ExternalServiceInvoicesPage() {
     const [invoices, setInvoices] = useState([]);
@@ -53,23 +54,7 @@ export default function ExternalServiceInvoicesPage() {
     const [serviceTypes, setServiceTypes] = useState([]);
     const [accounts, setAccounts] = useState([]);
 
-    // Payment State
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-    const [paymentData, setPaymentData] = useState({
-        party_id: "",
-        amount: "",
-        payment_date: new Date().toISOString().split("T")[0],
-        payment_method: "cash",
-        account_id: "",
-        credit_account_id: "",
-        reference_number: "",
-        note: "",
-        external_service_invoice_id: null,
-        external_job_order_id: null,
-        cheque_number: "",
-        issue_date: "",
-        due_date: ""
-    });
 
     useEffect(() => {
         fetchInvoices();
@@ -240,6 +225,10 @@ export default function ExternalServiceInvoicesPage() {
                 return <Chip label="مسودة" color="default" size="small" />;
             case "Posted":
                 return <Chip label="مرحّلة" color="success" size="small" />;
+            case "Partially Paid":
+                return <Chip label="مدفوعة جزئياً" color="warning" size="small" />;
+            case "Paid":
+                return <Chip label="مدفوعة" color="primary" size="small" />;
             case "Cancelled":
                 return <Chip label="ملغاة" color="error" size="small" />;
             default:
@@ -249,33 +238,7 @@ export default function ExternalServiceInvoicesPage() {
 
     const handleOpenPayment = (invoice) => {
         setSelectedInvoice(invoice);
-        setPaymentData({
-            party_id: invoice.party_id,
-            amount: invoice.balance || 0, // Pre-fill with remaining amount
-            payment_date: new Date().toISOString().split("T")[0],
-            payment_method: "cash",
-            account_id: "",
-            credit_account_id: "",
-            reference_number: "",
-            note: `سداد فاتورة خدمة #${invoice.invoice_no || invoice.id}`,
-            external_service_invoice_id: invoice.id,
-            external_job_order_id: invoice.job_order_id,
-            cheque_number: "",
-            issue_date: "",
-            due_date: ""
-        });
         setPaymentDialogOpen(true);
-    };
-
-    const handlePaymentSubmit = async () => {
-        try {
-            await axiosClient.post("/service-payments", paymentData);
-            setPaymentDialogOpen(false);
-            alert("تم تسجيل الدفعة بنجاح");
-            fetchInvoices();
-        } catch (err) {
-            alert("Error saving payment: " + (err.response?.data?.message || err.message));
-        }
     };
 
     const columns = [
@@ -338,15 +301,22 @@ export default function ExternalServiceInvoicesPage() {
                             </Button>
                         </>
                     )}
-                    {row.original.status === "Posted" && (
+                    {(row.original.status === "Posted" || row.original.status === "Partially Paid") && (
                         <>
                             <Button variant="contained" size="small" color="info" onClick={() => handleOpenPayment(row.original)}>
-                                سداد
+                                المدفوعات
                             </Button>
-                            <Button variant="outlined" size="small" color="error" startIcon={<CancelIcon />} onClick={() => handleCancel(row.original.id)}>
-                                إلغاء
-                            </Button>
+                            {row.original.status === "Posted" && (
+                                <Button variant="outlined" size="small" color="error" startIcon={<CancelIcon />} onClick={() => handleCancel(row.original.id)}>
+                                    إلغاء
+                                </Button>
+                            )}
                         </>
+                    )}
+                    {row.original.status === "Paid" && (
+                        <Button variant="outlined" size="small" color="info" onClick={() => handleOpenPayment(row.original)}>
+                            عرض المدفوعات
+                        </Button>
                     )}
                 </Box>
             ),
@@ -367,122 +337,11 @@ export default function ExternalServiceInvoicesPage() {
             <MaterialReactTable {...defaultTableProps} columns={columns} data={invoices} state={{ isLoading: loading }} />
 
             {/* Payment Dialog */}
-            <Dialog open={paymentDialogOpen} onClose={() => setPaymentDialogOpen(false)} fullWidth maxWidth="md">
-                <DialogTitle>تسجيل سداد لفاتورة {selectedInvoice?.invoice_no ? `رقم ${selectedInvoice.invoice_no}` : `رقم ${selectedInvoice?.id}`}</DialogTitle>
+            <Dialog open={paymentDialogOpen} onClose={() => { setPaymentDialogOpen(false); fetchInvoices(); }} fullWidth maxWidth="md">
+                <DialogTitle>مدفوعات الفاتورة {selectedInvoice?.invoice_no ? `رقم ${selectedInvoice.invoice_no}` : `رقم ${selectedInvoice?.id}`}</DialogTitle>
                 <DialogContent>
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
-                        <Grid item xs={6}>
-                            <TextField
-                                label="المبلغ"
-                                type="number"
-                                fullWidth
-                                value={paymentData.amount}
-                                onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                label="التاريخ"
-                                type="date"
-                                fullWidth
-                                value={paymentData.payment_date}
-                                onChange={(e) => setPaymentData({ ...paymentData, payment_date: e.target.value })}
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                select
-                                label="حساب المورد (المدين)"
-                                fullWidth
-                                value={paymentData.account_id}
-                                onChange={(e) => setPaymentData({ ...paymentData, account_id: e.target.value })}
-                            >
-                                {accounts.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
-                            </TextField>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                select
-                                label="حساب الدفع (الدائن)"
-                                fullWidth
-                                value={paymentData.credit_account_id}
-                                onChange={(e) => setPaymentData({ ...paymentData, credit_account_id: e.target.value })}
-                            >
-                                {accounts.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
-                            </TextField>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                select
-                                label="طريقة الدفع"
-                                fullWidth
-                                value={paymentData.payment_method}
-                                onChange={(e) => setPaymentData({ ...paymentData, payment_method: e.target.value })}
-                            >
-                                <MenuItem value="cash">نقدي</MenuItem>
-                                <MenuItem value="bank">تحويل بنكي</MenuItem>
-                                <MenuItem value="cheque">شيك</MenuItem>
-                                <MenuItem value="other">أخرى</MenuItem>
-                            </TextField>
-                        </Grid>
-
-                        {/* Cheque Fields */}
-                        {paymentData.payment_method === 'cheque' && (
-                            <>
-                                <Grid item xs={12}>
-                                    <Box sx={{ p: 1, bgcolor: '#f5f5f5', borderRadius: 1, mb: 1 }}>
-                                        <strong>بيانات الشيك</strong>
-                                    </Box>
-                                </Grid>
-                                <Grid item xs={4}>
-                                    <TextField
-                                        label="رقم الشيك"
-                                        fullWidth
-                                        required
-                                        value={paymentData.cheque_number || ''}
-                                        onChange={(e) => setPaymentData({ ...paymentData, cheque_number: e.target.value })}
-                                    />
-                                </Grid>
-                                <Grid item xs={4}>
-                                    <TextField
-                                        label="تاريخ الإصدار"
-                                        type="date"
-                                        fullWidth
-                                        InputLabelProps={{ shrink: true }}
-                                        value={paymentData.issue_date || paymentData.payment_date}
-                                        onChange={(e) => setPaymentData({ ...paymentData, issue_date: e.target.value })}
-                                    />
-                                </Grid>
-                                <Grid item xs={4}>
-                                    <TextField
-                                        label="تاريخ الاستحقاق"
-                                        type="date"
-                                        fullWidth
-                                        required
-                                        InputLabelProps={{ shrink: true }}
-                                        value={paymentData.due_date || ''}
-                                        onChange={(e) => setPaymentData({ ...paymentData, due_date: e.target.value })}
-                                    />
-                                </Grid>
-                            </>
-                        )}
-
-                        <Grid item xs={12}>
-                            <TextField
-                                label="ملاحظات"
-                                fullWidth
-                                multiline
-                                rows={2}
-                                value={paymentData.note}
-                                onChange={(e) => setPaymentData({ ...paymentData, note: e.target.value })}
-                            />
-                        </Grid>
-                    </Grid>
+                    {selectedInvoice && <ServicePaymentsManager invoiceId={selectedInvoice.id} />}
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setPaymentDialogOpen(false)}>إلغاء</Button>
-                    <Button variant="contained" onClick={handlePaymentSubmit}>حفظ الدفعة</Button>
-                </DialogActions>
             </Dialog>
 
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth maxWidth="md">

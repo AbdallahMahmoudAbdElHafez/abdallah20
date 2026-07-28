@@ -35,7 +35,7 @@ export default (sequelize) => {
                 defaultValue: 0.00
             },
             shipping_by: {
-                type: DataTypes.ENUM('شركة شحن', 'مندوب'),
+                type: DataTypes.ENUM('شركة شحن', 'مندوب', 'أمازون'),
                 allowNull: false,
                 defaultValue: 'شركة شحن'
             },

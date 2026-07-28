@@ -21,6 +21,7 @@ router.get('/issue-vouchers-employee', reportsController.getIssueVouchersEmploye
 router.get('/opening-sales', reportsController.getOpeningSalesInvoicesReport);
 router.get('/zakat', reportsController.getZakatReport);
 router.get('/customer-receivables', reportsController.getCustomerReceivables);
+router.get('/batch-customer-statements', reportsController.getBatchCustomerStatements);
 router.get('/profit', reportsController.getProfitReport);
 router.get('/bank-cash', reportsController.getBankAndCashReport);
 router.get('/safe-movements', reportsController.getSafeMovementsReport);

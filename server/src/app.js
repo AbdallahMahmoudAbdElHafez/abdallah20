@@ -138,3 +138,9 @@ app.use('/api/notes', notesRoutes);
 
 app.use(errorHandler);
 export default app;
+
+// trigger restart
+
+// trigger restart 2
+
+// force-restart 07/07/2026 10:37:12
