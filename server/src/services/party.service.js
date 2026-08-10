@@ -1,5 +1,5 @@
 // server/src/services/party.service.js
-import { Account, City, Party, PartyCategory } from "../models/index.js";
+import { Account, City, Governate, Party, PartyCategory } from "../models/index.js";
 
 
 class PartyService {
@@ -8,7 +8,7 @@ class PartyService {
       where: {
         party_type: ["supplier", "both"],
       },
-      include: [{ model: City, as: "city" }],
+      include: [{ model: City, as: "city", include: [{ model: Governate, as: "governate" }] }],
     });
   }
 
@@ -17,15 +17,15 @@ class PartyService {
       where: {
         party_type: ["customer", "both"],
       },
-      include: [{ model: City, as: "city" }],
+      include: [{ model: City, as: "city", include: [{ model: Governate, as: "governate" }] }],
     });
   }
   static async getAll() {
-    return await Party.findAll({ include: [PartyCategory, Account, { model: City, as: "city" }] });
+    return await Party.findAll({ include: [PartyCategory, Account, { model: City, as: "city", include: [{ model: Governate, as: "governate" }] }] });
   }
 
   static async getById(id) {
-    return await Party.findByPk(id, { include: [PartyCategory, Account, { model: City, as: "city" }] });
+    return await Party.findByPk(id, { include: [PartyCategory, Account, { model: City, as: "city", include: [{ model: Governate, as: "governate" }] }] });
   }
 
   static async create(data) {

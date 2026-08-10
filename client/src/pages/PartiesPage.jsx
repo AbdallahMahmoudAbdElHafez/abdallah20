@@ -7,11 +7,13 @@ import {
   removeParty,
 } from "../features/parties/partiesSlice";
 import { fetchCities } from "../features/cities/citiesSlice";
+import { fetchGovernates } from "../features/governates/governatesSlice";
 import { fetchAccounts } from "../features/accounts/accountsSlice";
 import { fetchPartyCategories } from "../features/partyCategories/partyCategoriesSlice";
 
 import { MaterialReactTable } from "material-react-table";
 import { defaultTableProps } from "../config/tableConfig";
+import { exportToExcel } from "../utils/exportUtils";
 import {
   Button,
   Dialog,
@@ -26,6 +28,7 @@ import {
   Box,
   Autocomplete,
 } from "@mui/material";
+import DownloadIcon from "@mui/icons-material/Download";
 
 const partyTypes = [
   { value: "customer", label: "عميل" },
@@ -37,6 +40,7 @@ const PartiesPage = () => {
   const dispatch = useDispatch();
   const { items: parties, loading } = useSelector((state) => state.parties);
   const { items: cities } = useSelector((state) => state.cities);
+  const { items: governates } = useSelector((state) => state.governates);
   const { items: accounts } = useSelector((state) => state.accounts);
   const { items: categories } = useSelector((state) => state.partyCategories);
 
@@ -57,6 +61,7 @@ const PartiesPage = () => {
   useEffect(() => {
     dispatch(fetchParties());
     dispatch(fetchCities());
+    dispatch(fetchGovernates());
     dispatch(fetchAccounts());
     dispatch(fetchPartyCategories());
   }, [dispatch]);
@@ -96,48 +101,71 @@ const PartiesPage = () => {
     }
   };
 
+  const handleExport = async (table) => {
+    try {
+      await exportToExcel(
+        table.getFilteredRowModel().rows,
+        table.getVisibleLeafColumns(),
+        "العملاء_والموردين"
+      );
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("حدث خطأ أثناء محاولة تصدير الملف.");
+    }
+  };
+
   const columns = [
     { accessorKey: "name", header: "العملاء/المورديين" },
     {
-      accessorKey: "party_type",
+      id: "party_type",
       header: "النوع",
-      Cell: ({ cell }) => {
-        const type = partyTypes.find((t) => t.value === cell.getValue());
-        return (
-          <Chip
-            label={type?.label || cell.getValue()}
-            color={
-              cell.getValue() === "customer"
-                ? "primary"
-                : cell.getValue() === "supplier"
-                  ? "secondary"
-                  : "success"
-            }
-          />
-        );
+      accessorFn: (row) => {
+        const type = partyTypes.find((t) => t.value === row.party_type);
+        return type ? type.label : row.party_type;
       },
+      Cell: ({ cell, row }) => (
+        <Chip
+          label={cell.getValue()}
+          color={
+            row.original.party_type === "customer"
+              ? "primary"
+              : row.original.party_type === "supplier"
+                ? "secondary"
+                : "success"
+          }
+        />
+      ),
     },
     {
-      accessorKey: "city_id",
+      id: "city",
       header: "المدينة",
-      Cell: ({ cell }) => {
-        const city = cities.find((c) => c.id === cell.getValue());
+      accessorFn: (row) => {
+        const city = cities.find((c) => c.id === row.city_id);
         return city ? city.name : "-";
       },
     },
     {
-      accessorKey: "account_id",
+      id: "governate",
+      header: "المحافظة",
+      accessorFn: (row) => {
+        const city = cities.find((c) => c.id === row.city_id);
+        const governate = governates?.find((g) => g.id === city?.governate_id);
+        return governate ? governate.name : "-";
+      },
+    },
+    {
+      id: "account",
       header: "الحساب",
-      Cell: ({ cell }) => {
-        const account = accounts.find((a) => a.id === cell.getValue());
+      accessorFn: (row) => {
+        const account = accounts.find((a) => a.id === row.account_id);
         return account ? account.name : "-";
       },
     },
     {
-      accessorKey: "category_id",
+      id: "category",
       header: "التصنيف",
-      Cell: ({ cell }) => {
-        const cat = categories.find((c) => c.id === cell.getValue());
+      accessorFn: (row) => {
+        const cat = categories.find((c) => c.id === row.category_id);
         return cat ? cat.name : "-";
       },
     },
@@ -183,6 +211,17 @@ const PartiesPage = () => {
         {...defaultTableProps}
         data={parties}
         state={{ isLoading: loading }}
+        enableExporting
+        renderTopToolbarCustomActions={({ table }) => (
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<DownloadIcon />}
+            onClick={() => handleExport(table)}
+          >
+            تصدير إلى Excel
+          </Button>
+        )}
       />
 
       {/* Add/Edit Dialog */}
@@ -230,7 +269,6 @@ const PartiesPage = () => {
               />
             )}
           />
-
 
 
           <TextField
