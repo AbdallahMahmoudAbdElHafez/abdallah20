@@ -49,7 +49,7 @@ class WarehouseTransfersService {
         await WarehouseTransferItem.bulkCreate(prepared, { transaction: t });
 
         for (const item of prepared) {
-          const batches = [];
+          let batches = [];
           if (item.batch_number && item.expiry_date) {
             batches.push({
               batch_number: item.batch_number,
@@ -58,11 +58,29 @@ class WarehouseTransfersService {
               cost_per_unit: item.cost_per_unit
             });
           } else {
-            batches.push({
-              batch_id: null,
-              quantity: item.quantity,
-              cost_per_unit: item.cost_per_unit
-            });
+            // Resolve batches using FIFO from the source warehouse
+            const fifoResult = await InventoryTransactionService.getBatchesFIFO(
+              item.product_id,
+              transfer.from_warehouse_id,
+              Number(item.quantity),
+              t
+            );
+
+            if (fifoResult.batches.length > 0) {
+              batches = fifoResult.batches.map(b => ({
+                batch_id: b.batch_id,
+                quantity: b.quantity,
+                cost_per_unit: b.cost_per_unit || item.cost_per_unit
+              }));
+            }
+
+            if (fifoResult.remainingNeeded > 0) {
+              batches.push({
+                batch_id: null,
+                quantity: fifoResult.remainingNeeded,
+                cost_per_unit: item.cost_per_unit
+              });
+            }
           }
 
           // OUT from source
@@ -129,7 +147,7 @@ class WarehouseTransfersService {
       ]);
 
       for (const item of prepared) {
-        const batches = [];
+        let batches = [];
         if (item.batch_number && item.expiry_date) {
           batches.push({
             batch_number: item.batch_number,
@@ -138,11 +156,28 @@ class WarehouseTransfersService {
             cost_per_unit: item.cost_per_unit
           });
         } else {
-          batches.push({
-            batch_id: null,
-            quantity: item.quantity,
-            cost_per_unit: item.cost_per_unit
-          });
+          // Resolve batches using FIFO from the source warehouse
+          const fifoResult = await InventoryTransactionService.getBatchesFIFO(
+            item.product_id,
+            transfer.from_warehouse_id,
+            Number(item.quantity)
+          );
+
+          if (fifoResult.batches.length > 0) {
+            batches = fifoResult.batches.map(b => ({
+              batch_id: b.batch_id,
+              quantity: b.quantity,
+              cost_per_unit: b.cost_per_unit || item.cost_per_unit
+            }));
+          }
+
+          if (fifoResult.remainingNeeded > 0) {
+            batches.push({
+              batch_id: null,
+              quantity: fifoResult.remainingNeeded,
+              cost_per_unit: item.cost_per_unit
+            });
+          }
         }
 
         // OUT from source

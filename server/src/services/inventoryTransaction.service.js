@@ -111,18 +111,10 @@ class InventoryTransactionService {
               batchId = batch.id;
               console.log(`Debug: Created Batch (id: ${batchId}) with null batch_number for Production Requirement product (IN)`);
             } else {
-              // For outgoing, use FIFO to find existing batches
-              const fifoResult = await InventoryTransactionService.getBatchesFIFO(
-                data.product_id,
-                data.warehouse_id,
-                Number(batchData.quantity),
-                options.transaction
-              );
-              if (fifoResult.batches.length > 0) {
-                batchId = fifoResult.batches[0].batch_id;
-                console.log(`Debug: Using existing Batch (id: ${batchId}) for Production Requirement product (OUT)`);
-              }
-              // If no batch found, batchId remains null - transaction will proceed without batch_inventory update
+              // For outgoing where batch_id is explicitly null (e.g. remainder after FIFO),
+              // leave batchId as null. The caller (e.g. warehouse transfer) already handled FIFO.
+              batchId = null;
+              console.log(`Debug: Keeping batch_id null for unbatched remainder of Production Requirement product (OUT)`);
             }
           }
         }
@@ -689,19 +681,17 @@ class InventoryTransactionService {
    */
   static async getBatchesFIFO(productId, warehouseId, requiredQty, transaction) {
     const batches = await InventoryTransactionBatches.findAll({
+      where: {
+        '$transaction.warehouse_id$': warehouseId,
+        '$transaction.transaction_type$': 'in'
+      },
       include: [
         {
           model: Batches,
           as: 'batch',
           required: true,
           where: { product_id: productId }
-        }
-      ],
-      where: {
-        '$transaction.warehouse_id$': warehouseId,
-        '$transaction.transaction_type$': 'in'
-      },
-      include: [
+        },
         {
           association: 'transaction',
           required: true
