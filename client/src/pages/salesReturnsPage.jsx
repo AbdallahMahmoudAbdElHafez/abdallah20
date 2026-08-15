@@ -433,6 +433,7 @@ export default function SalesReturnsPage() {
             accessorKey: "warehouse.name",
             header: "المخزن",
             size: 150,
+            Cell: ({ row }) => row.original.warehouse?.name || "—",
         },
         {
             accessorKey: "employee.name",

@@ -1,6 +1,7 @@
 import reportsService from '../services/reports.service.js';
 import exportService from '../services/exportService.js';
 import { getBatchCustomerStatements } from '../services/customerLedger.service.js';
+import crossRegionReportService from '../services/crossRegionReport.service.js';
 
 const reportsController = {
     getDashboardSummary: async (req, res) => {
@@ -246,6 +247,21 @@ const reportsController = {
         }
     },
 
+    getCrossRegionReport: async (req, res) => {
+        try {
+            const { warehouseId, startDate, endDate } = req.query;
+            const data = await crossRegionReportService.getCrossRegionReport(
+                warehouseId ? parseInt(warehouseId) : null,
+                startDate,
+                endDate
+            );
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching cross region report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     // ============ EXPORT CONTROLLERS ============
 
     exportReport: async (req, res) => {
@@ -324,6 +340,17 @@ const reportsController = {
                     });
                     buffer = await exportService.exportBatchCustomerStatements(batchData);
                     filename = `Batch_Customer_Statements_${startDate || 'all'}_to_${endDate || 'all'}.xlsx`;
+                    break;
+
+                case 'cross-region':
+                    const { warehouseId: wrId } = req.query;
+                    const crossRegionData = await crossRegionReportService.getCrossRegionReport(
+                        wrId ? parseInt(wrId) : null,
+                        startDate,
+                        endDate
+                    );
+                    buffer = await exportService.exportCrossRegionReport(crossRegionData);
+                    filename = `Cross_Region_Warehouse_Report_${crossRegionData.warehouse.name}_${startDate || 'all'}_to_${endDate || 'all'}.xlsx`;
                     break;
 
                 default:

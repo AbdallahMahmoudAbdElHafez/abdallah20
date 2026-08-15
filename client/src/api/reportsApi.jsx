@@ -25,6 +25,7 @@ const reportsApi = {
     getGeneralLedgerReport: (params) => axiosClient.get('/reports/general-ledger', { params }), // NEW
     getCustomerReceivables: (params) => axiosClient.get('/reports/customer-receivables', { params }),
     getBatchCustomerStatements: (params) => axiosClient.get('/reports/batch-customer-statements', { params }),
+    getCrossRegionReport: (params) => axiosClient.get('/reports/cross-region', { params }),
 
     // Export
     exportReport: (type, params) => {

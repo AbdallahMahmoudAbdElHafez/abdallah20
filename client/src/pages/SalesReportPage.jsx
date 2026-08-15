@@ -112,6 +112,7 @@ const SalesReportPage = () => {
         { accessorKey: 'invoice_number', id: 'invoice_number', header: 'رقم الفاتورة', size: 150 },
         { accessorKey: 'invoice_type', id: 'invoice_type', header: 'النوع', size: 100, Cell: ({ cell }) => cell.getValue() === 'cash' ? 'نقدي' : 'آجل' },
         { accessorKey: 'party.name', id: 'customer_name', header: 'العميل', size: 180 },
+        { accessorKey: 'warehouse.name', id: 'warehouse_name', header: 'المخزن', size: 150, Cell: ({ row }) => row.original.warehouse?.name || '-' },
         { accessorKey: 'invoice_date', id: 'invoice_date', header: 'تاريخ الإصدار', Cell: ({ cell }) => cell.getValue()?.slice(0, 10), size: 120 },
         { accessorKey: 'status', id: 'status', header: 'الحالة', size: 100 },
         { accessorKey: 'total_amount', id: 'total_amount', header: 'الإجمالي', Cell: ({ cell }) => <Box fontWeight="bold" color="primary.main">{formatCurrency(cell.getValue())}</Box>, size: 130 },

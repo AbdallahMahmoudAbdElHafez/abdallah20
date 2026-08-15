@@ -26,6 +26,7 @@ router.get('/profit', reportsController.getProfitReport);
 router.get('/bank-cash', reportsController.getBankAndCashReport);
 router.get('/safe-movements', reportsController.getSafeMovementsReport);
 router.get('/general-ledger', reportsController.getGeneralLedgerReport);
+router.get('/cross-region', reportsController.getCrossRegionReport);
 
 // Export
 router.get('/export/:type', reportsController.exportReport);

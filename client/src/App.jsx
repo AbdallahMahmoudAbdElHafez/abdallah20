@@ -61,6 +61,7 @@ import SafeMovementsReportPage from "./pages/SafeMovementsReportPage";
 import ExternalServiceInvoicesPage from "./pages/ExternalServiceInvoicesPage";
 import ServiceTypesPage from "./pages/ServiceTypesPage";
 import GeneralLedgerReport from "./pages/GeneralLedgerReport";
+import CrossRegionReportPage from "./pages/CrossRegionReportPage";
 import DetailedCustomerStatementPage from "./pages/DetailedCustomerStatementPage";
 import SalesAnalysisPage from "./pages/SalesAnalysisPage";
 import UnbalancedJournalEntriesPage from "./pages/UnbalancedJournalEntriesPage";
@@ -147,6 +148,7 @@ export default function App() {
           <Route path="/reports/bank-cash" element={<BankAndCashBalancesPage />} />
           <Route path="/reports/safe-movements" element={<SafeMovementsReportPage />} />
           <Route path="/reports/general-ledger" element={<GeneralLedgerReport />} />
+          <Route path="/reports/cross-region" element={<CrossRegionReportPage />} />
           <Route path="/service-payments" element={<ServicePaymentsPage />} />
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/inventory-adjustment" element={<InventoryAdjustmentPage />} />

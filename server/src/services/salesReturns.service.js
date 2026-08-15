@@ -11,7 +11,8 @@ export default {
                     include: ["party"]
                 },
                 { association: "items", include: ["product"] },
-                { association: "employee" }
+                { association: "employee" },
+                { association: "warehouse" }
             ]
         });
     },
@@ -24,7 +25,8 @@ export default {
                     include: ["party"]
                 },
                 { association: "items", include: ["product"] },
-                { association: "employee" }
+                { association: "employee" },
+                { association: "warehouse" }
             ]
         });
     },

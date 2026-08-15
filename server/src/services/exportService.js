@@ -1096,6 +1096,89 @@ const exportBatchCustomerStatements = async (batchStatementsData) => {
     return await workbook.xlsx.writeBuffer();
 };
 
+/**
+ * Export Cross Region Report to Excel
+ */
+const exportCrossRegionReport = async (reportData) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('المخالفات الجغرافية للمخازن');
+
+    worksheet.views = [{ rightToLeft: true }];
+
+    // Title
+    worksheet.mergeCells('A1:I1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = `تقرير المخالفات الجغرافية للمخازن - مخزن: ${reportData.warehouse?.name || ''}`;
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Info
+    worksheet.addRow([]);
+    worksheet.addRow(['اسم المخزن:', reportData.warehouse?.name || '']);
+    worksheet.addRow(['منطقة المخزن:', reportData.warehouse?.region || '']);
+    worksheet.addRow(['تاريخ التصدير:', new Date().toLocaleDateString('ar-EG')]);
+    worksheet.addRow([]);
+
+    // Headers
+    const headers = [
+        'نوع الحركة',
+        'رقم السند',
+        'التاريخ',
+        'العميل/الجهة',
+        'منطقة العميل',
+        'اسم المخزن',
+        'منطقة المخزن',
+        'القيمة',
+        'ملاحظات'
+    ];
+    const headerRow = worksheet.addRow(headers);
+    headerRow.font = { bold: true };
+    headerRow.eachCell(cell => {
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFECEB' }
+        };
+        cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+        };
+        cell.alignment = { horizontal: 'center' };
+    });
+
+    // Data
+    (reportData.transactions || []).forEach(tr => {
+        const row = worksheet.addRow([
+            tr.typeLabel || '',
+            tr.referenceNo || '',
+            tr.date || '',
+            tr.partyName || '',
+            tr.partyRegion || '',
+            tr.warehouseName || '',
+            tr.warehouseRegion || '',
+            tr.amount !== null ? parseFloat(tr.amount || 0) : '-',
+            tr.notes || ''
+        ]);
+        row.eachCell(cell => {
+            cell.border = {
+                top: { style: 'thin' },
+                left: { style: 'thin' },
+                bottom: { style: 'thin' },
+                right: { style: 'thin' }
+            };
+            cell.alignment = { horizontal: 'center' };
+        });
+    });
+
+    worksheet.columns.forEach(column => {
+        column.width = 18;
+    });
+
+    return await workbook.xlsx.writeBuffer();
+};
+
 export default {
     exportSalesReport,
     exportPurchasesReport,
@@ -1109,5 +1192,6 @@ export default {
     exportIssueVouchersEmployeeReport,
     exportIssueVouchersListReport,
     exportSupplierStatement,
-    exportBatchCustomerStatements
+    exportBatchCustomerStatements,
+    exportCrossRegionReport
 };

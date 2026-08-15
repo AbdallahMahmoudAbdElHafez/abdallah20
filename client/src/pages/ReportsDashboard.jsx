@@ -11,7 +11,8 @@ import {
     AccountBalanceWallet as OpenBalanceIcon,
     Calculate as ZakatIcon,
     AccountBalance as ProfitIcon,
-    Payment as PaymentIcon
+    Payment as PaymentIcon,
+    GppBad as GppBadIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -137,6 +138,13 @@ const ReportsDashboard = () => {
             icon: <AssessmentIcon sx={{ fontSize: 60, color: '#00796b' }} />,
             path: '/reports/batch-customer-statements',
             color: '#b2dfdb'
+        },
+        {
+            title: 'تقرير المخالفات الجغرافية للمخازن',
+            description: 'رصد العمليات التي تمت مع عملاء خارج النطاق الجغرافي للمخزن (مبيعات، مرتجعات، أذونات صرف)',
+            icon: <GppBadIcon sx={{ fontSize: 60, color: '#b71c1c' }} />,
+            path: '/reports/cross-region',
+            color: '#ffebee'
         }
     ];
 

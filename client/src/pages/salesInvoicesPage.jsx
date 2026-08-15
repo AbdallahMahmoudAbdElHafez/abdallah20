@@ -192,6 +192,12 @@ export default function SalesInvoicesPage() {
         },
         { accessorKey: "party.name", header: "العميل", size: 180 },
         {
+            accessorKey: "warehouse.name",
+            header: "المخزن",
+            size: 150,
+            Cell: ({ cell }) => cell.getValue() || "غير محدد"
+        },
+        {
             accessorKey: "invoice_type",
             header: "نوع الفاتورة",
             size: 120,

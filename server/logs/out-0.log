@@ -148607,3 +148607,900 @@
 2026-08-11T15:35:38: ✅ Database connected
 2026-08-11T15:35:40: ✅ Database connected
 2026-08-11T15:35:40: 🚀 Server listening on http://localhost:5000
+2026-08-12T10:14:06: ✅ Database connected
+2026-08-12T10:14:06: 🚀 Server listening on http://localhost:5000
+2026-08-12T10:19:51: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-08-12T10:19:51: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 2 quantityChange: -56
+2026-08-12T10:19:51: Debug: Updated batch_inventory for batch 5
+2026-08-12T10:19:51: Debug: Product fetched: Nurivina Omega Anti-Hair Loss Shampoo 220ml, Type: منتج تام
+2026-08-12T10:19:51: Service: Creating or updating batch inventory for batchId: 5 warehouseId: 3 quantityChange: 56
+2026-08-12T10:19:51: Debug: Updated batch_inventory for batch 5
+2026-08-13T12:06:54: ✅ Database connected
+2026-08-13T12:06:56: ✅ Database connected
+2026-08-13T12:06:58: ✅ Database connected
+2026-08-13T12:07:00: ✅ Database connected
+2026-08-13T12:07:02: ✅ Database connected
+2026-08-13T12:07:04: ✅ Database connected
+2026-08-13T12:07:06: ✅ Database connected
+2026-08-13T12:07:08: ✅ Database connected
+2026-08-13T12:07:10: ✅ Database connected
+2026-08-13T12:07:12: ✅ Database connected
+2026-08-13T12:07:14: ✅ Database connected
+2026-08-13T12:07:16: ✅ Database connected
+2026-08-13T12:07:17: ✅ Database connected
+2026-08-13T12:07:19: ✅ Database connected
+2026-08-13T12:07:21: ✅ Database connected
+2026-08-13T12:07:23: ✅ Database connected
+2026-08-13T12:07:25: ✅ Database connected
+2026-08-13T12:07:27: ✅ Database connected
+2026-08-13T12:07:29: ✅ Database connected
+2026-08-13T12:07:31: ✅ Database connected
+2026-08-13T12:07:33: ✅ Database connected
+2026-08-13T12:07:35: ✅ Database connected
+2026-08-13T12:07:36: ✅ Database connected
+2026-08-13T12:07:38: ✅ Database connected
+2026-08-13T12:07:40: ✅ Database connected
+2026-08-13T12:07:42: ✅ Database connected
+2026-08-13T12:07:44: ✅ Database connected
+2026-08-13T12:07:46: ✅ Database connected
+2026-08-13T12:07:48: ✅ Database connected
+2026-08-13T12:07:50: ✅ Database connected
+2026-08-13T12:07:51: ✅ Database connected
+2026-08-13T12:07:53: ✅ Database connected
+2026-08-13T12:07:55: ✅ Database connected
+2026-08-13T12:07:57: ✅ Database connected
+2026-08-13T12:07:59: ✅ Database connected
+2026-08-13T12:08:01: ✅ Database connected
+2026-08-13T12:08:03: ✅ Database connected
+2026-08-13T12:08:05: ✅ Database connected
+2026-08-13T12:08:06: ✅ Database connected
+2026-08-13T12:08:08: ✅ Database connected
+2026-08-13T12:08:10: ✅ Database connected
+2026-08-13T12:08:12: ✅ Database connected
+2026-08-13T12:08:14: ✅ Database connected
+2026-08-13T12:08:16: ✅ Database connected
+2026-08-13T12:08:17: ✅ Database connected
+2026-08-13T12:08:19: ✅ Database connected
+2026-08-13T12:08:21: ✅ Database connected
+2026-08-13T12:08:23: ✅ Database connected
+2026-08-13T12:08:25: ✅ Database connected
+2026-08-13T12:08:27: ✅ Database connected
+2026-08-13T12:08:28: ✅ Database connected
+2026-08-13T12:08:30: ✅ Database connected
+2026-08-13T12:08:32: ✅ Database connected
+2026-08-13T12:08:34: ✅ Database connected
+2026-08-13T12:08:35: ✅ Database connected
+2026-08-13T12:08:37: ✅ Database connected
+2026-08-13T12:08:39: ✅ Database connected
+2026-08-13T12:08:41: ✅ Database connected
+2026-08-13T12:08:43: ✅ Database connected
+2026-08-13T12:08:44: ✅ Database connected
+2026-08-13T12:08:46: ✅ Database connected
+2026-08-13T12:08:48: ✅ Database connected
+2026-08-13T12:08:50: ✅ Database connected
+2026-08-13T12:08:52: ✅ Database connected
+2026-08-13T12:08:54: ✅ Database connected
+2026-08-13T12:08:56: ✅ Database connected
+2026-08-13T12:08:58: ✅ Database connected
+2026-08-13T12:09:00: ✅ Database connected
+2026-08-13T12:09:01: ✅ Database connected
+2026-08-13T12:09:03: ✅ Database connected
+2026-08-13T12:09:05: ✅ Database connected
+2026-08-13T12:09:07: ✅ Database connected
+2026-08-13T12:09:09: ✅ Database connected
+2026-08-13T12:09:11: ✅ Database connected
+2026-08-13T12:09:13: ✅ Database connected
+2026-08-13T12:09:15: ✅ Database connected
+2026-08-13T12:09:17: ✅ Database connected
+2026-08-13T12:09:18: ✅ Database connected
+2026-08-13T12:09:20: ✅ Database connected
+2026-08-13T12:09:22: ✅ Database connected
+2026-08-13T12:09:24: ✅ Database connected
+2026-08-13T12:09:26: ✅ Database connected
+2026-08-13T12:09:28: ✅ Database connected
+2026-08-13T12:09:30: ✅ Database connected
+2026-08-13T12:09:32: ✅ Database connected
+2026-08-13T12:09:33: ✅ Database connected
+2026-08-13T12:09:35: ✅ Database connected
+2026-08-13T12:09:37: ✅ Database connected
+2026-08-13T12:09:39: ✅ Database connected
+2026-08-13T12:09:41: ✅ Database connected
+2026-08-13T12:09:43: ✅ Database connected
+2026-08-13T12:09:44: ✅ Database connected
+2026-08-13T12:09:46: ✅ Database connected
+2026-08-13T12:09:48: ✅ Database connected
+2026-08-13T12:09:50: ✅ Database connected
+2026-08-13T12:09:52: ✅ Database connected
+2026-08-13T12:09:53: ✅ Database connected
+2026-08-13T12:09:55: ✅ Database connected
+2026-08-13T12:09:57: ✅ Database connected
+2026-08-13T12:09:59: ✅ Database connected
+2026-08-13T12:10:01: ✅ Database connected
+2026-08-13T12:10:02: ✅ Database connected
+2026-08-13T12:10:04: ✅ Database connected
+2026-08-13T12:10:06: ✅ Database connected
+2026-08-13T12:10:08: ✅ Database connected
+2026-08-13T12:10:10: ✅ Database connected
+2026-08-13T12:10:11: ✅ Database connected
+2026-08-13T12:10:13: ✅ Database connected
+2026-08-13T12:10:15: ✅ Database connected
+2026-08-13T12:10:17: ✅ Database connected
+2026-08-13T12:10:19: ✅ Database connected
+2026-08-13T12:10:20: ✅ Database connected
+2026-08-13T12:10:22: ✅ Database connected
+2026-08-13T12:10:24: ✅ Database connected
+2026-08-13T12:10:26: ✅ Database connected
+2026-08-13T12:10:27: ✅ Database connected
+2026-08-13T12:10:29: ✅ Database connected
+2026-08-13T12:10:31: ✅ Database connected
+2026-08-13T12:10:33: ✅ Database connected
+2026-08-13T12:10:35: ✅ Database connected
+2026-08-13T12:10:37: ✅ Database connected
+2026-08-13T12:10:38: ✅ Database connected
+2026-08-13T12:10:40: ✅ Database connected
+2026-08-13T12:10:42: ✅ Database connected
+2026-08-13T12:10:44: ✅ Database connected
+2026-08-13T12:10:46: ✅ Database connected
+2026-08-13T12:10:47: ✅ Database connected
+2026-08-13T12:10:49: ✅ Database connected
+2026-08-13T12:10:51: ✅ Database connected
+2026-08-13T12:10:53: ✅ Database connected
+2026-08-13T12:10:55: ✅ Database connected
+2026-08-13T12:10:57: ✅ Database connected
+2026-08-13T12:10:59: ✅ Database connected
+2026-08-13T12:11:01: ✅ Database connected
+2026-08-13T12:11:03: ✅ Database connected
+2026-08-13T12:11:04: ✅ Database connected
+2026-08-13T12:11:06: ✅ Database connected
+2026-08-13T12:11:08: ✅ Database connected
+2026-08-13T12:11:10: ✅ Database connected
+2026-08-13T12:11:12: ✅ Database connected
+2026-08-13T12:11:13: ✅ Database connected
+2026-08-13T12:11:15: ✅ Database connected
+2026-08-13T12:11:17: ✅ Database connected
+2026-08-13T12:11:19: ✅ Database connected
+2026-08-13T12:11:21: ✅ Database connected
+2026-08-13T12:11:22: ✅ Database connected
+2026-08-13T12:11:24: ✅ Database connected
+2026-08-13T12:11:26: ✅ Database connected
+2026-08-13T12:11:28: ✅ Database connected
+2026-08-13T12:11:29: ✅ Database connected
+2026-08-13T12:11:31: ✅ Database connected
+2026-08-13T12:11:33: ✅ Database connected
+2026-08-13T12:11:35: ✅ Database connected
+2026-08-13T12:11:37: ✅ Database connected
+2026-08-13T12:11:38: ✅ Database connected
+2026-08-13T12:11:40: ✅ Database connected
+2026-08-13T12:11:42: ✅ Database connected
+2026-08-13T12:11:44: ✅ Database connected
+2026-08-13T12:11:46: ✅ Database connected
+2026-08-13T12:11:47: ✅ Database connected
+2026-08-13T12:11:49: ✅ Database connected
+2026-08-13T12:11:51: ✅ Database connected
+2026-08-13T12:11:53: ✅ Database connected
+2026-08-13T12:11:55: ✅ Database connected
+2026-08-13T12:11:56: ✅ Database connected
+2026-08-13T12:11:58: ✅ Database connected
+2026-08-13T12:12:00: ✅ Database connected
+2026-08-13T12:12:02: ✅ Database connected
+2026-08-13T12:12:03: ✅ Database connected
+2026-08-13T12:12:05: ✅ Database connected
+2026-08-13T12:12:07: ✅ Database connected
+2026-08-13T12:12:09: ✅ Database connected
+2026-08-13T12:12:11: ✅ Database connected
+2026-08-13T12:12:12: ✅ Database connected
+2026-08-13T12:12:14: ✅ Database connected
+2026-08-13T12:12:16: ✅ Database connected
+2026-08-13T12:12:18: ✅ Database connected
+2026-08-13T12:12:20: ✅ Database connected
+2026-08-13T12:12:21: ✅ Database connected
+2026-08-13T12:12:23: ✅ Database connected
+2026-08-13T12:12:25: ✅ Database connected
+2026-08-13T12:12:27: ✅ Database connected
+2026-08-13T12:12:28: ✅ Database connected
+2026-08-13T12:12:30: ✅ Database connected
+2026-08-13T12:12:32: ✅ Database connected
+2026-08-13T12:12:34: ✅ Database connected
+2026-08-13T12:12:36: ✅ Database connected
+2026-08-13T12:12:37: ✅ Database connected
+2026-08-13T12:12:39: ✅ Database connected
+2026-08-13T12:12:41: ✅ Database connected
+2026-08-13T12:12:43: ✅ Database connected
+2026-08-13T12:12:45: ✅ Database connected
+2026-08-13T12:12:46: ✅ Database connected
+2026-08-13T12:12:48: ✅ Database connected
+2026-08-13T12:12:50: ✅ Database connected
+2026-08-13T12:12:52: ✅ Database connected
+2026-08-13T12:12:53: ✅ Database connected
+2026-08-13T12:12:55: ✅ Database connected
+2026-08-13T12:12:57: ✅ Database connected
+2026-08-13T12:12:59: ✅ Database connected
+2026-08-13T12:13:01: ✅ Database connected
+2026-08-13T12:13:02: ✅ Database connected
+2026-08-13T12:13:04: ✅ Database connected
+2026-08-13T12:13:06: ✅ Database connected
+2026-08-13T12:13:08: ✅ Database connected
+2026-08-13T12:13:10: ✅ Database connected
+2026-08-13T12:13:11: ✅ Database connected
+2026-08-13T12:13:13: ✅ Database connected
+2026-08-13T12:13:15: ✅ Database connected
+2026-08-13T12:13:17: ✅ Database connected
+2026-08-13T12:13:18: ✅ Database connected
+2026-08-13T12:13:20: ✅ Database connected
+2026-08-13T12:13:22: ✅ Database connected
+2026-08-13T12:13:24: ✅ Database connected
+2026-08-13T12:13:26: ✅ Database connected
+2026-08-13T12:13:27: ✅ Database connected
+2026-08-13T12:13:29: ✅ Database connected
+2026-08-13T12:13:31: ✅ Database connected
+2026-08-13T12:13:33: ✅ Database connected
+2026-08-13T12:13:35: ✅ Database connected
+2026-08-13T12:13:36: ✅ Database connected
+2026-08-13T12:13:38: ✅ Database connected
+2026-08-13T12:13:40: ✅ Database connected
+2026-08-13T12:13:42: ✅ Database connected
+2026-08-13T12:13:44: ✅ Database connected
+2026-08-13T12:13:45: ✅ Database connected
+2026-08-13T12:13:47: ✅ Database connected
+2026-08-13T12:13:49: ✅ Database connected
+2026-08-13T12:13:51: ✅ Database connected
+2026-08-13T12:13:52: ✅ Database connected
+2026-08-13T12:13:54: ✅ Database connected
+2026-08-13T12:13:56: ✅ Database connected
+2026-08-13T12:13:58: ✅ Database connected
+2026-08-13T12:14:00: ✅ Database connected
+2026-08-13T12:14:01: ✅ Database connected
+2026-08-13T12:14:03: ✅ Database connected
+2026-08-13T12:14:05: ✅ Database connected
+2026-08-13T12:14:07: ✅ Database connected
+2026-08-13T12:14:09: ✅ Database connected
+2026-08-13T12:14:10: ✅ Database connected
+2026-08-13T12:14:12: ✅ Database connected
+2026-08-13T12:14:14: ✅ Database connected
+2026-08-13T12:14:16: ✅ Database connected
+2026-08-13T12:14:18: ✅ Database connected
+2026-08-13T12:14:19: ✅ Database connected
+2026-08-13T12:14:21: ✅ Database connected
+2026-08-13T12:14:23: ✅ Database connected
+2026-08-13T12:14:25: ✅ Database connected
+2026-08-13T12:14:26: ✅ Database connected
+2026-08-13T12:14:28: ✅ Database connected
+2026-08-13T12:14:30: ✅ Database connected
+2026-08-13T12:14:32: ✅ Database connected
+2026-08-13T12:14:34: ✅ Database connected
+2026-08-13T12:14:35: ✅ Database connected
+2026-08-13T12:14:37: ✅ Database connected
+2026-08-13T12:14:39: ✅ Database connected
+2026-08-13T12:14:41: ✅ Database connected
+2026-08-13T12:14:43: ✅ Database connected
+2026-08-13T12:14:44: ✅ Database connected
+2026-08-13T12:14:46: ✅ Database connected
+2026-08-13T12:14:48: ✅ Database connected
+2026-08-13T12:14:50: ✅ Database connected
+2026-08-13T12:14:51: ✅ Database connected
+2026-08-13T12:14:53: ✅ Database connected
+2026-08-13T12:14:55: ✅ Database connected
+2026-08-13T12:14:57: ✅ Database connected
+2026-08-13T12:14:59: ✅ Database connected
+2026-08-13T12:15:00: ✅ Database connected
+2026-08-13T12:15:02: ✅ Database connected
+2026-08-13T12:15:04: ✅ Database connected
+2026-08-13T12:15:06: ✅ Database connected
+2026-08-13T12:15:08: ✅ Database connected
+2026-08-13T12:15:09: ✅ Database connected
+2026-08-13T12:15:11: ✅ Database connected
+2026-08-13T12:15:13: ✅ Database connected
+2026-08-13T12:15:15: ✅ Database connected
+2026-08-13T12:15:16: ✅ Database connected
+2026-08-13T12:15:18: ✅ Database connected
+2026-08-13T12:15:20: ✅ Database connected
+2026-08-13T12:15:22: ✅ Database connected
+2026-08-13T12:15:24: ✅ Database connected
+2026-08-13T12:15:25: ✅ Database connected
+2026-08-13T12:15:27: ✅ Database connected
+2026-08-13T12:15:29: ✅ Database connected
+2026-08-13T12:15:31: ✅ Database connected
+2026-08-13T12:15:33: ✅ Database connected
+2026-08-13T12:15:34: ✅ Database connected
+2026-08-13T12:15:36: ✅ Database connected
+2026-08-13T12:15:38: ✅ Database connected
+2026-08-13T12:15:40: ✅ Database connected
+2026-08-13T12:15:41: ✅ Database connected
+2026-08-13T12:15:43: ✅ Database connected
+2026-08-13T12:15:45: ✅ Database connected
+2026-08-13T12:15:47: ✅ Database connected
+2026-08-13T12:15:49: ✅ Database connected
+2026-08-13T12:15:51: ✅ Database connected
+2026-08-13T12:15:53: ✅ Database connected
+2026-08-13T12:15:55: ✅ Database connected
+2026-08-13T12:15:56: ✅ Database connected
+2026-08-13T12:15:58: ✅ Database connected
+2026-08-13T12:16:00: ✅ Database connected
+2026-08-13T12:16:02: ✅ Database connected
+2026-08-13T12:16:04: ✅ Database connected
+2026-08-13T12:16:05: ✅ Database connected
+2026-08-13T12:16:07: ✅ Database connected
+2026-08-13T12:16:09: ✅ Database connected
+2026-08-13T12:16:11: ✅ Database connected
+2026-08-13T12:16:13: ✅ Database connected
+2026-08-13T12:16:15: ✅ Database connected
+2026-08-13T12:16:17: ✅ Database connected
+2026-08-13T12:16:19: ✅ Database connected
+2026-08-13T12:16:21: ✅ Database connected
+2026-08-13T12:16:22: ✅ Database connected
+2026-08-13T12:16:24: ✅ Database connected
+2026-08-13T12:16:26: ✅ Database connected
+2026-08-13T12:16:28: ✅ Database connected
+2026-08-13T12:16:30: ✅ Database connected
+2026-08-13T12:16:32: ✅ Database connected
+2026-08-13T12:16:34: ✅ Database connected
+2026-08-13T12:16:36: ✅ Database connected
+2026-08-13T12:16:38: ✅ Database connected
+2026-08-13T12:16:40: ✅ Database connected
+2026-08-13T12:16:41: ✅ Database connected
+2026-08-13T12:16:43: ✅ Database connected
+2026-08-13T12:16:45: ✅ Database connected
+2026-08-13T12:16:47: ✅ Database connected
+2026-08-13T12:16:49: ✅ Database connected
+2026-08-13T12:16:50: ✅ Database connected
+2026-08-13T12:16:52: ✅ Database connected
+2026-08-13T12:16:54: ✅ Database connected
+2026-08-13T12:16:56: ✅ Database connected
+2026-08-13T12:16:58: ✅ Database connected
+2026-08-13T12:17:00: ✅ Database connected
+2026-08-13T12:17:01: ✅ Database connected
+2026-08-13T12:17:03: ✅ Database connected
+2026-08-13T12:17:05: ✅ Database connected
+2026-08-13T12:17:07: ✅ Database connected
+2026-08-13T12:17:08: ✅ Database connected
+2026-08-13T12:17:10: ✅ Database connected
+2026-08-13T12:17:12: ✅ Database connected
+2026-08-13T12:17:14: ✅ Database connected
+2026-08-13T12:17:16: ✅ Database connected
+2026-08-13T12:17:18: ✅ Database connected
+2026-08-13T12:17:19: ✅ Database connected
+2026-08-13T12:17:21: ✅ Database connected
+2026-08-13T12:17:23: ✅ Database connected
+2026-08-13T12:17:25: ✅ Database connected
+2026-08-13T12:17:27: ✅ Database connected
+2026-08-13T12:17:29: ✅ Database connected
+2026-08-13T12:17:31: ✅ Database connected
+2026-08-13T12:17:33: ✅ Database connected
+2026-08-13T12:17:35: ✅ Database connected
+2026-08-13T12:17:37: ✅ Database connected
+2026-08-13T12:17:39: ✅ Database connected
+2026-08-13T12:17:41: ✅ Database connected
+2026-08-13T12:17:43: ✅ Database connected
+2026-08-13T12:17:44: ✅ Database connected
+2026-08-13T12:17:46: ✅ Database connected
+2026-08-13T12:17:48: ✅ Database connected
+2026-08-13T12:17:50: ✅ Database connected
+2026-08-13T12:17:52: ✅ Database connected
+2026-08-13T12:17:54: ✅ Database connected
+2026-08-13T12:17:56: ✅ Database connected
+2026-08-13T12:17:58: ✅ Database connected
+2026-08-13T12:17:59: ✅ Database connected
+2026-08-13T12:18:01: ✅ Database connected
+2026-08-13T12:18:04: ✅ Database connected
+2026-08-13T12:18:05: ✅ Database connected
+2026-08-13T12:18:07: ✅ Database connected
+2026-08-13T12:18:09: ✅ Database connected
+2026-08-13T12:18:11: ✅ Database connected
+2026-08-13T12:18:13: ✅ Database connected
+2026-08-13T12:18:15: ✅ Database connected
+2026-08-13T12:18:16: ✅ Database connected
+2026-08-13T12:18:18: ✅ Database connected
+2026-08-13T12:18:20: ✅ Database connected
+2026-08-13T12:18:22: ✅ Database connected
+2026-08-13T12:18:24: ✅ Database connected
+2026-08-13T12:18:26: ✅ Database connected
+2026-08-13T12:18:28: ✅ Database connected
+2026-08-13T12:18:30: ✅ Database connected
+2026-08-13T12:18:32: ✅ Database connected
+2026-08-13T12:18:34: ✅ Database connected
+2026-08-13T12:18:35: ✅ Database connected
+2026-08-13T12:18:37: ✅ Database connected
+2026-08-13T12:18:39: ✅ Database connected
+2026-08-13T12:18:41: ✅ Database connected
+2026-08-13T12:18:43: ✅ Database connected
+2026-08-13T12:18:45: ✅ Database connected
+2026-08-13T12:18:47: ✅ Database connected
+2026-08-13T12:18:49: ✅ Database connected
+2026-08-13T12:18:51: ✅ Database connected
+2026-08-13T12:18:53: ✅ Database connected
+2026-08-13T12:18:55: ✅ Database connected
+2026-08-13T12:18:56: ✅ Database connected
+2026-08-13T12:18:58: ✅ Database connected
+2026-08-13T12:19:00: ✅ Database connected
+2026-08-13T12:19:02: ✅ Database connected
+2026-08-13T12:19:04: ✅ Database connected
+2026-08-13T12:19:06: ✅ Database connected
+2026-08-13T12:19:08: ✅ Database connected
+2026-08-13T12:19:10: ✅ Database connected
+2026-08-13T12:19:12: ✅ Database connected
+2026-08-13T12:19:14: ✅ Database connected
+2026-08-13T12:19:16: ✅ Database connected
+2026-08-13T12:19:18: ✅ Database connected
+2026-08-13T12:19:20: ✅ Database connected
+2026-08-13T12:19:21: ✅ Database connected
+2026-08-13T12:19:23: ✅ Database connected
+2026-08-13T12:19:25: ✅ Database connected
+2026-08-13T12:19:27: ✅ Database connected
+2026-08-13T12:19:29: ✅ Database connected
+2026-08-13T12:19:31: ✅ Database connected
+2026-08-13T12:19:33: ✅ Database connected
+2026-08-13T12:19:35: ✅ Database connected
+2026-08-13T12:19:36: ✅ Database connected
+2026-08-13T12:19:38: ✅ Database connected
+2026-08-13T12:19:40: ✅ Database connected
+2026-08-13T12:19:42: ✅ Database connected
+2026-08-13T12:19:44: ✅ Database connected
+2026-08-13T12:19:46: ✅ Database connected
+2026-08-13T12:19:47: ✅ Database connected
+2026-08-13T12:19:49: ✅ Database connected
+2026-08-13T12:19:51: ✅ Database connected
+2026-08-13T12:19:53: ✅ Database connected
+2026-08-13T12:19:55: ✅ Database connected
+2026-08-13T12:19:56: ✅ Database connected
+2026-08-13T12:19:58: ✅ Database connected
+2026-08-13T12:20:00: ✅ Database connected
+2026-08-13T12:20:02: ✅ Database connected
+2026-08-13T12:20:04: ✅ Database connected
+2026-08-13T12:20:06: ✅ Database connected
+2026-08-13T12:20:08: ✅ Database connected
+2026-08-13T12:20:10: ✅ Database connected
+2026-08-13T12:20:12: ✅ Database connected
+2026-08-13T12:20:13: ✅ Database connected
+2026-08-13T12:20:15: ✅ Database connected
+2026-08-13T12:20:17: ✅ Database connected
+2026-08-13T12:20:19: ✅ Database connected
+2026-08-13T12:20:21: ✅ Database connected
+2026-08-13T12:20:23: ✅ Database connected
+2026-08-13T12:20:25: ✅ Database connected
+2026-08-13T12:20:27: ✅ Database connected
+2026-08-13T12:20:29: ✅ Database connected
+2026-08-13T12:20:30: ✅ Database connected
+2026-08-13T12:20:32: ✅ Database connected
+2026-08-13T12:20:34: ✅ Database connected
+2026-08-13T12:20:36: ✅ Database connected
+2026-08-13T12:20:38: ✅ Database connected
+2026-08-13T12:20:40: ✅ Database connected
+2026-08-13T12:20:42: ✅ Database connected
+2026-08-13T12:20:44: ✅ Database connected
+2026-08-13T12:20:46: ✅ Database connected
+2026-08-13T12:20:48: ✅ Database connected
+2026-08-13T12:20:50: ✅ Database connected
+2026-08-13T12:20:52: ✅ Database connected
+2026-08-13T12:20:53: ✅ Database connected
+2026-08-13T12:20:55: ✅ Database connected
+2026-08-13T12:20:57: ✅ Database connected
+2026-08-13T12:21:00: ✅ Database connected
+2026-08-13T12:21:02: ✅ Database connected
+2026-08-13T12:21:04: ✅ Database connected
+2026-08-13T12:21:06: ✅ Database connected
+2026-08-13T12:21:07: ✅ Database connected
+2026-08-13T12:21:09: ✅ Database connected
+2026-08-13T12:21:11: ✅ Database connected
+2026-08-13T12:21:13: ✅ Database connected
+2026-08-13T12:21:15: ✅ Database connected
+2026-08-13T12:21:17: ✅ Database connected
+2026-08-13T12:21:19: ✅ Database connected
+2026-08-13T12:21:21: ✅ Database connected
+2026-08-13T12:21:23: ✅ Database connected
+2026-08-13T12:21:24: ✅ Database connected
+2026-08-13T12:21:26: ✅ Database connected
+2026-08-13T12:21:28: ✅ Database connected
+2026-08-13T12:21:30: ✅ Database connected
+2026-08-13T12:21:32: ✅ Database connected
+2026-08-13T12:21:34: ✅ Database connected
+2026-08-13T12:21:35: ✅ Database connected
+2026-08-13T12:21:37: ✅ Database connected
+2026-08-13T12:21:39: ✅ Database connected
+2026-08-13T12:21:41: ✅ Database connected
+2026-08-13T12:21:43: ✅ Database connected
+2026-08-13T12:21:45: ✅ Database connected
+2026-08-13T12:21:47: ✅ Database connected
+2026-08-13T12:21:49: ✅ Database connected
+2026-08-13T12:21:51: ✅ Database connected
+2026-08-13T12:21:52: ✅ Database connected
+2026-08-13T12:21:54: ✅ Database connected
+2026-08-13T12:21:56: ✅ Database connected
+2026-08-13T12:21:58: ✅ Database connected
+2026-08-13T12:22:00: ✅ Database connected
+2026-08-13T12:22:02: ✅ Database connected
+2026-08-13T12:22:04: ✅ Database connected
+2026-08-13T12:22:06: ✅ Database connected
+2026-08-13T12:22:08: ✅ Database connected
+2026-08-13T12:22:10: ✅ Database connected
+2026-08-13T12:22:12: ✅ Database connected
+2026-08-13T12:22:14: ✅ Database connected
+2026-08-13T12:22:17: ✅ Database connected
+2026-08-13T12:22:19: ✅ Database connected
+2026-08-13T12:22:21: ✅ Database connected
+2026-08-13T12:22:23: ✅ Database connected
+2026-08-13T12:22:25: ✅ Database connected
+2026-08-13T12:22:26: ✅ Database connected
+2026-08-13T12:22:28: ✅ Database connected
+2026-08-13T12:22:30: ✅ Database connected
+2026-08-13T12:22:32: ✅ Database connected
+2026-08-13T12:22:34: ✅ Database connected
+2026-08-13T12:22:38: ✅ Database connected
+2026-08-13T12:22:40: ✅ Database connected
+2026-08-13T12:22:42: ✅ Database connected
+2026-08-13T12:22:44: ✅ Database connected
+2026-08-13T12:22:46: ✅ Database connected
+2026-08-13T12:22:48: ✅ Database connected
+2026-08-13T12:22:51: ✅ Database connected
+2026-08-13T12:22:53: ✅ Database connected
+2026-08-13T12:22:56: ✅ Database connected
+2026-08-13T12:22:58: ✅ Database connected
+2026-08-13T12:23:02: ✅ Database connected
+2026-08-13T12:23:05: ✅ Database connected
+2026-08-13T12:23:07: ✅ Database connected
+2026-08-13T12:23:10: ✅ Database connected
+2026-08-13T12:23:12: ✅ Database connected
+2026-08-13T12:23:16: ✅ Database connected
+2026-08-13T12:23:19: ✅ Database connected
+2026-08-13T12:23:21: ✅ Database connected
+2026-08-13T12:23:26: ✅ Database connected
+2026-08-13T12:23:28: ✅ Database connected
+2026-08-13T12:23:30: ✅ Database connected
+2026-08-13T12:23:32: ✅ Database connected
+2026-08-13T12:23:34: ✅ Database connected
+2026-08-13T12:23:36: ✅ Database connected
+2026-08-13T12:23:38: ✅ Database connected
+2026-08-13T12:23:40: ✅ Database connected
+2026-08-13T12:23:42: ✅ Database connected
+2026-08-13T12:23:44: ✅ Database connected
+2026-08-13T12:23:46: ✅ Database connected
+2026-08-13T12:23:48: ✅ Database connected
+2026-08-13T12:23:51: ✅ Database connected
+2026-08-13T12:23:54: ✅ Database connected
+2026-08-13T12:23:56: ✅ Database connected
+2026-08-13T12:23:58: ✅ Database connected
+2026-08-13T12:24:00: ✅ Database connected
+2026-08-13T12:24:02: ✅ Database connected
+2026-08-13T12:24:03: ✅ Database connected
+2026-08-13T12:24:05: ✅ Database connected
+2026-08-13T12:24:07: ✅ Database connected
+2026-08-13T12:24:09: ✅ Database connected
+2026-08-13T12:24:10: ✅ Database connected
+2026-08-13T12:24:12: ✅ Database connected
+2026-08-13T12:24:14: ✅ Database connected
+2026-08-13T12:24:16: ✅ Database connected
+2026-08-13T12:24:18: ✅ Database connected
+2026-08-13T12:24:19: ✅ Database connected
+2026-08-13T12:24:21: ✅ Database connected
+2026-08-13T12:24:23: ✅ Database connected
+2026-08-13T12:24:25: ✅ Database connected
+2026-08-13T12:24:27: ✅ Database connected
+2026-08-13T12:24:28: ✅ Database connected
+2026-08-13T12:24:30: ✅ Database connected
+2026-08-13T12:24:32: ✅ Database connected
+2026-08-13T12:24:34: ✅ Database connected
+2026-08-13T12:24:35: ✅ Database connected
+2026-08-13T12:24:37: ✅ Database connected
+2026-08-13T12:24:39: ✅ Database connected
+2026-08-13T12:24:41: ✅ Database connected
+2026-08-13T12:24:43: ✅ Database connected
+2026-08-13T12:24:44: ✅ Database connected
+2026-08-13T12:24:46: ✅ Database connected
+2026-08-13T12:24:48: ✅ Database connected
+2026-08-13T12:24:50: ✅ Database connected
+2026-08-13T12:24:52: ✅ Database connected
+2026-08-13T12:24:53: ✅ Database connected
+2026-08-13T12:24:55: ✅ Database connected
+2026-08-13T12:24:57: ✅ Database connected
+2026-08-13T12:24:59: ✅ Database connected
+2026-08-13T12:25:01: ✅ Database connected
+2026-08-13T12:25:02: ✅ Database connected
+2026-08-13T12:25:04: ✅ Database connected
+2026-08-13T12:25:06: ✅ Database connected
+2026-08-13T12:25:08: ✅ Database connected
+2026-08-13T12:25:09: ✅ Database connected
+2026-08-13T12:25:11: ✅ Database connected
+2026-08-13T12:25:13: ✅ Database connected
+2026-08-13T12:25:15: ✅ Database connected
+2026-08-13T12:25:17: ✅ Database connected
+2026-08-13T12:25:18: ✅ Database connected
+2026-08-13T12:25:20: ✅ Database connected
+2026-08-13T12:25:22: ✅ Database connected
+2026-08-13T12:25:24: ✅ Database connected
+2026-08-13T12:25:26: ✅ Database connected
+2026-08-13T12:25:27: ✅ Database connected
+2026-08-13T12:25:29: ✅ Database connected
+2026-08-13T12:25:31: ✅ Database connected
+2026-08-13T12:25:33: ✅ Database connected
+2026-08-13T12:25:35: ✅ Database connected
+2026-08-13T12:25:36: ✅ Database connected
+2026-08-13T12:25:38: ✅ Database connected
+2026-08-13T12:25:40: ✅ Database connected
+2026-08-13T12:25:42: ✅ Database connected
+2026-08-13T12:25:43: ✅ Database connected
+2026-08-13T12:25:45: ✅ Database connected
+2026-08-13T12:25:47: ✅ Database connected
+2026-08-13T12:25:49: ✅ Database connected
+2026-08-13T12:25:51: ✅ Database connected
+2026-08-13T12:25:52: ✅ Database connected
+2026-08-13T12:25:54: ✅ Database connected
+2026-08-13T12:25:56: ✅ Database connected
+2026-08-13T12:25:58: ✅ Database connected
+2026-08-13T12:25:59: ✅ Database connected
+2026-08-13T12:26:01: ✅ Database connected
+2026-08-13T12:26:03: ✅ Database connected
+2026-08-13T12:26:05: ✅ Database connected
+2026-08-13T12:26:07: ✅ Database connected
+2026-08-13T12:26:08: ✅ Database connected
+2026-08-13T12:26:10: ✅ Database connected
+2026-08-13T12:26:12: ✅ Database connected
+2026-08-13T12:26:14: ✅ Database connected
+2026-08-13T12:26:16: ✅ Database connected
+2026-08-13T12:26:17: ✅ Database connected
+2026-08-13T12:26:19: ✅ Database connected
+2026-08-13T12:26:21: ✅ Database connected
+2026-08-13T12:26:23: ✅ Database connected
+2026-08-13T12:26:25: ✅ Database connected
+2026-08-13T12:26:26: ✅ Database connected
+2026-08-13T12:26:28: ✅ Database connected
+2026-08-13T12:26:30: ✅ Database connected
+2026-08-13T12:26:32: ✅ Database connected
+2026-08-13T12:26:33: ✅ Database connected
+2026-08-13T12:26:35: ✅ Database connected
+2026-08-13T12:26:37: ✅ Database connected
+2026-08-13T12:26:39: ✅ Database connected
+2026-08-13T12:26:41: ✅ Database connected
+2026-08-13T12:26:42: ✅ Database connected
+2026-08-13T12:26:44: ✅ Database connected
+2026-08-13T12:26:46: ✅ Database connected
+2026-08-13T12:26:48: ✅ Database connected
+2026-08-13T12:26:49: ✅ Database connected
+2026-08-13T12:26:51: ✅ Database connected
+2026-08-13T12:26:53: ✅ Database connected
+2026-08-13T12:26:55: ✅ Database connected
+2026-08-13T12:26:57: ✅ Database connected
+2026-08-13T12:26:58: ✅ Database connected
+2026-08-13T12:27:00: ✅ Database connected
+2026-08-13T12:27:02: ✅ Database connected
+2026-08-13T12:27:04: ✅ Database connected
+2026-08-13T12:27:06: ✅ Database connected
+2026-08-13T12:27:08: ✅ Database connected
+2026-08-13T12:27:10: ✅ Database connected
+2026-08-13T12:27:12: ✅ Database connected
+2026-08-13T12:27:14: ✅ Database connected
+2026-08-13T12:27:15: ✅ Database connected
+2026-08-13T12:27:17: ✅ Database connected
+2026-08-13T12:27:19: ✅ Database connected
+2026-08-13T12:27:21: ✅ Database connected
+2026-08-13T12:27:23: ✅ Database connected
+2026-08-13T12:27:25: ✅ Database connected
+2026-08-13T12:27:27: ✅ Database connected
+2026-08-13T12:27:29: ✅ Database connected
+2026-08-13T12:27:31: ✅ Database connected
+2026-08-13T12:27:33: ✅ Database connected
+2026-08-13T12:27:34: ✅ Database connected
+2026-08-13T12:27:36: ✅ Database connected
+2026-08-13T12:27:38: ✅ Database connected
+2026-08-13T12:27:40: ✅ Database connected
+2026-08-13T12:27:42: ✅ Database connected
+2026-08-13T12:27:44: ✅ Database connected
+2026-08-13T12:27:46: ✅ Database connected
+2026-08-13T12:27:48: ✅ Database connected
+2026-08-13T12:27:49: ✅ Database connected
+2026-08-13T12:27:51: ✅ Database connected
+2026-08-13T12:27:53: ✅ Database connected
+2026-08-13T12:27:55: ✅ Database connected
+2026-08-13T12:27:57: ✅ Database connected
+2026-08-13T12:27:59: ✅ Database connected
+2026-08-13T12:28:01: ✅ Database connected
+2026-08-13T12:28:02: ✅ Database connected
+2026-08-13T12:28:04: ✅ Database connected
+2026-08-13T12:28:06: ✅ Database connected
+2026-08-13T12:28:08: ✅ Database connected
+2026-08-13T12:28:11: ✅ Database connected
+2026-08-13T12:28:13: ✅ Database connected
+2026-08-13T12:28:15: ✅ Database connected
+2026-08-13T12:28:17: ✅ Database connected
+2026-08-13T12:28:19: ✅ Database connected
+2026-08-13T12:28:21: ✅ Database connected
+2026-08-13T12:28:23: ✅ Database connected
+2026-08-13T12:28:24: ✅ Database connected
+2026-08-13T12:28:26: ✅ Database connected
+2026-08-13T12:28:28: ✅ Database connected
+2026-08-13T12:28:30: ✅ Database connected
+2026-08-13T12:28:32: ✅ Database connected
+2026-08-13T12:28:33: ✅ Database connected
+2026-08-13T12:28:35: ✅ Database connected
+2026-08-13T12:28:37: ✅ Database connected
+2026-08-13T12:28:39: ✅ Database connected
+2026-08-13T12:28:41: ✅ Database connected
+2026-08-13T12:28:43: ✅ Database connected
+2026-08-13T12:28:45: ✅ Database connected
+2026-08-13T12:28:48: ✅ Database connected
+2026-08-13T12:28:50: ✅ Database connected
+2026-08-13T12:28:52: ✅ Database connected
+2026-08-13T12:28:53: ✅ Database connected
+2026-08-13T12:28:55: ✅ Database connected
+2026-08-13T12:28:57: ✅ Database connected
+2026-08-13T12:28:59: ✅ Database connected
+2026-08-13T12:29:01: ✅ Database connected
+2026-08-13T12:29:02: ✅ Database connected
+2026-08-13T12:29:05: ✅ Database connected
+2026-08-13T12:29:07: ✅ Database connected
+2026-08-13T12:29:10: ✅ Database connected
+2026-08-13T12:29:12: ✅ Database connected
+2026-08-13T12:29:14: ✅ Database connected
+2026-08-13T12:29:17: ✅ Database connected
+2026-08-13T12:29:20: ✅ Database connected
+2026-08-13T12:29:22: ✅ Database connected
+2026-08-13T12:29:25: ✅ Database connected
+2026-08-13T12:29:28: ✅ Database connected
+2026-08-13T12:29:31: ✅ Database connected
+2026-08-13T12:29:33: ✅ Database connected
+2026-08-13T12:29:36: ✅ Database connected
+2026-08-13T12:29:39: ✅ Database connected
+2026-08-13T12:29:42: ✅ Database connected
+2026-08-13T12:29:45: ✅ Database connected
+2026-08-13T12:29:47: ✅ Database connected
+2026-08-13T12:29:50: ✅ Database connected
+2026-08-13T12:29:52: ✅ Database connected
+2026-08-13T12:29:54: ✅ Database connected
+2026-08-13T12:29:56: ✅ Database connected
+2026-08-13T12:29:58: ✅ Database connected
+2026-08-13T12:30:00: ✅ Database connected
+2026-08-13T12:30:02: ✅ Database connected
+2026-08-15T10:19:19: ✅ Database connected
+2026-08-15T10:19:19: 🚀 Server listening on http://localhost:5000
+2026-08-15T10:29:29: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-08-15T10:29:29: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 2 quantityChange: -20
+2026-08-15T10:29:29: Debug: Updated batch_inventory for batch 6
+2026-08-15T10:29:29: Debug: Product fetched: Nurivina Argan oil Leave in Conditioner 220ml, Type: منتج تام
+2026-08-15T10:29:29: Service: Creating or updating batch inventory for batchId: 6 warehouseId: 3 quantityChange: 20
+2026-08-15T10:29:29: Debug: Updated batch_inventory for batch 6
+2026-08-15T10:29:29: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-08-15T10:29:29: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: -20
+2026-08-15T10:29:29: Debug: Updated batch_inventory for batch 13
+2026-08-15T10:29:30: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-08-15T10:29:30: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 3 quantityChange: 20
+2026-08-15T10:29:30: Debug: Updated batch_inventory for batch 13
+2026-08-15T10:29:30: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-08-15T10:29:30: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 2 quantityChange: -15
+2026-08-15T10:29:30: Debug: Updated batch_inventory for batch 3
+2026-08-15T10:29:30: Debug: Product fetched: Nurivina Argan Oil 100ml, Type: منتج تام
+2026-08-15T10:29:30: Service: Creating or updating batch inventory for batchId: 3 warehouseId: 3 quantityChange: 15
+2026-08-15T10:29:30: Debug: Updated batch_inventory for batch 3
+2026-08-15T10:29:30: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-08-15T10:29:30: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 2 quantityChange: -15
+2026-08-15T10:29:30: Debug: Updated batch_inventory for batch 2
+2026-08-15T10:29:30: Debug: Product fetched: Nurivina Anti-Hair Loss Spray 100ml, Type: منتج تام
+2026-08-15T10:29:30: Service: Creating or updating batch inventory for batchId: 2 warehouseId: 3 quantityChange: 15
+2026-08-15T10:29:30: Debug: Updated batch_inventory for batch 2
+2026-08-15T10:48:38: Service: Invoice updated. ID: 809, Status: cancelled
+2026-08-15T10:49:05: Service: Invoice updated. ID: 815, Status: draft
+2026-08-15T10:56:38: === Creating Sales Invoice ===
+2026-08-15T10:56:38: Request body: {
+  "invoice_number": "",
+  "party_id": 31,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 2,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-08-15",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 11687.5,
+  "additional_discount": "350.5",
+  "additional_discount_percent": "3.00",
+  "vat_rate": 0,
+  "vat_amount": 0,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 11337,
+  "note": "",
+  "items": [
+    {
+      "product_id": 6,
+      "warehouse_id": "",
+      "quantity": 20,
+      "price": 545,
+      "discount": 1635,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 1,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 15,
+      "warehouse_id": "",
+      "quantity": 3,
+      "price": 200,
+      "discount": 90,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    },
+    {
+      "product_id": 2,
+      "warehouse_id": "",
+      "quantity": 5,
+      "price": 450,
+      "discount": 337.5,
+      "discount_percent": 15,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 0,
+      "vat_amount": 0
+    }
+  ]
+}
+2026-08-15T10:56:38: Service: Starting invoice creation
+2026-08-15T10:56:38: Service: Transaction committed
+2026-08-15T11:01:27: === Creating Sales Invoice ===
+2026-08-15T11:01:27: Request body: {
+  "invoice_number": "",
+  "party_id": 66,
+  "sales_order_id": null,
+  "warehouse_id": 2,
+  "employee_id": 1,
+  "distributor_employee_id": null,
+  "invoice_date": "2026-08-15",
+  "due_date": null,
+  "invoice_type": "normal",
+  "invoice_status": "draft",
+  "status": "unpaid",
+  "account_id": null,
+  "shipping_amount": 0,
+  "shipping_by": "شركة شحن",
+  "sales_channel": "توزيع محلي",
+  "subtotal": 1964.76,
+  "additional_discount": 0,
+  "additional_discount_percent": 0,
+  "vat_rate": 0,
+  "vat_amount": 275.0664,
+  "tax_rate": 0,
+  "tax_amount": 0,
+  "total_amount": 2239.8264,
+  "note": "",
+  "items": [
+    {
+      "product_id": 3,
+      "warehouse_id": "",
+      "quantity": 10,
+      "price": 280,
+      "discount": 835.24,
+      "discount_percent": 29.83,
+      "tax_percent": 0,
+      "bonus": 0,
+      "vat_rate": 14,
+      "vat_amount": 275.0664
+    }
+  ]
+}
+2026-08-15T11:01:27: Service: Starting invoice creation
+2026-08-15T11:01:27: Service: Transaction committed
+2026-08-15T11:11:47: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-08-15T11:11:47: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 1 quantityChange: -79
+2026-08-15T11:11:47: Debug: Updated batch_inventory for batch 13
+2026-08-15T11:11:47: Debug: Product fetched: Nurivina Face Glow Cleasing Gel 150ML, Type: منتج تام
+2026-08-15T11:11:47: Service: Creating or updating batch inventory for batchId: 13 warehouseId: 2 quantityChange: 79
+2026-08-15T11:11:47: Debug: Updated batch_inventory for batch 13
+2026-08-15T11:11:47: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-08-15T11:11:47: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 1 quantityChange: -72
+2026-08-15T11:11:47: Debug: Updated batch_inventory for batch 1
+2026-08-15T11:11:47: Debug: Product fetched: Nurivina Anti-Dandruff Shampoo 150ml, Type: منتج تام
+2026-08-15T11:11:47: Service: Creating or updating batch inventory for batchId: 1 warehouseId: 2 quantityChange: 72
+2026-08-15T11:11:47: Debug: Updated batch_inventory for batch 1
+2026-08-15T11:11:47: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-08-15T11:11:47: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 1 quantityChange: -100
+2026-08-15T11:11:47: Debug: Updated batch_inventory for batch 7
+2026-08-15T11:11:47: Debug: Product fetched: Nurivina whitening Cream 50gm, Type: منتج تام
+2026-08-15T11:11:47: Service: Creating or updating batch inventory for batchId: 7 warehouseId: 2 quantityChange: 100
+2026-08-15T11:11:47: Debug: Updated batch_inventory for batch 7
