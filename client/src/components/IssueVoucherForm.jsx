@@ -380,7 +380,7 @@ const IssueVoucherForm = ({ open, onClose, voucher, editMode, onSuccess }) => {
                 <MenuItem value="">None</MenuItem>
                 {parties.map(party => (
                   <MenuItem key={party.id} value={party.id}>
-                    {party.name}
+                    {party.name} {party.city?.name ? `(${party.city.name})` : ""}
                   </MenuItem>
                 ))}
               </Select>

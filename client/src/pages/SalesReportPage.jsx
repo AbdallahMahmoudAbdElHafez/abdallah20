@@ -34,10 +34,11 @@ const SalesReportPage = () => {
     const navigate = useNavigate();
     const [salesByProduct, setSalesByProduct] = useState([]);
     const [salesByEmployeeProduct, setSalesByEmployeeProduct] = useState([]); // [NEW]
+    const [salesByDistributorProduct, setSalesByDistributorProduct] = useState([]); // [NEW] Distributor Product
     const [salesByCustomerProduct, setSalesByCustomerProduct] = useState([]); // [NEW] Customer Product
     const [salesByRegion, setSalesByRegion] = useState([]);
     const [cogsByRegionProduct, setCogsByRegionProduct] = useState([]); // [NEW] COGS by Region
-    const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot' | 'employee_product' | 'customer_product' | 'region_cogs' | 'review'
+    const [viewMode, setViewMode] = useState('list'); // 'list' | 'product_pivot' | 'invoice_pivot' | 'employee_product' | 'distributor_product' | 'customer_product' | 'region_cogs' | 'review'
 
     const [data, setData] = useState([]);
     const [returns, setReturns] = useState([]); // [NEW]
@@ -63,6 +64,7 @@ const SalesReportPage = () => {
             setChartData(res.data.chartData);
             setSalesByProduct(res.data.salesByProduct || []);
             setSalesByEmployeeProduct(res.data.salesByEmployeeProduct || []); // [NEW]
+            setSalesByDistributorProduct(res.data.salesByDistributorProduct || []); // [NEW]
             setSalesByCustomerProduct(res.data.salesByCustomerProduct || []); // [NEW]
             setSalesByRegion(res.data.salesByRegion || []);
             setCogsByRegionProduct(res.data.cogsByRegionProduct || []); // [NEW]
@@ -131,6 +133,14 @@ const SalesReportPage = () => {
     // --- 2.1 Salesman Analysis Columns ---
     const employeeProductColumns = useMemo(() => [
         { accessorKey: 'employee', id: 'employee', header: 'اسم الموظف', size: 200 },
+        { accessorKey: 'product', id: 'product', header: 'المنتج', size: 200 },
+        { accessorKey: 'quantity', id: 'quantity', header: 'الكمية المباعة', size: 130 },
+        { accessorKey: 'revenue', id: 'revenue', header: 'قيمة المبيعات', Cell: ({ cell }) => formatCurrency(cell.getValue()), size: 150 },
+    ], []);
+
+    // --- 2.1.1 Distributor Analysis Columns ---
+    const distributorProductColumns = useMemo(() => [
+        { accessorKey: 'distributor', id: 'distributor', header: 'مندوب التوزيع', size: 200 },
         { accessorKey: 'product', id: 'product', header: 'المنتج', size: 200 },
         { accessorKey: 'quantity', id: 'quantity', header: 'الكمية المباعة', size: 130 },
         { accessorKey: 'revenue', id: 'revenue', header: 'قيمة المبيعات', Cell: ({ cell }) => formatCurrency(cell.getValue()), size: 150 },
@@ -210,6 +220,13 @@ const SalesReportPage = () => {
             Cell: ({ row }) => row.original.employee?.name || '-'
         },
         {
+            accessorKey: 'distributor_employee.name',
+            id: 'distributor_employee_name',
+            header: 'مندوب التوزيع',
+            size: 150,
+            Cell: ({ row }) => row.original.distributor_employee?.name || '-'
+        },
+        {
             accessorKey: 'party.name',
             id: 'customer_name',
             header: 'العميل',
@@ -219,8 +236,9 @@ const SalesReportPage = () => {
         {
             id: 'city_name',
             header: 'المدينة',
+            accessorFn: (row) => row.party?.city?.name || '-',
             size: 140,
-            Cell: ({ row }) => row.original.party?.city?.name || '-'
+            Cell: ({ cell }) => cell.getValue()
         },
         {
             accessorKey: 'shipping_by',
@@ -242,19 +260,31 @@ const SalesReportPage = () => {
             Cell: ({ cell }) => formatCurrency(cell.getValue())
         },
         {
-            accessorKey: 'status',
             id: 'payment_status',
             header: 'حالة السداد',
-            size: 120,
-            Cell: ({ row }) => {
-                const status = row.original.status;
-                const invoiceStatus = row.original.invoice_status;
-
+            accessorFn: (row) => {
+                const status = row.status;
+                const invoiceStatus = row.invoice_status;
                 let displayStatus = status;
                 if (invoiceStatus === 'cancelled') {
                     displayStatus = 'cancelled';
                 }
-
+                const statusMap = {
+                    'paid': 'مسددة',
+                    'partial': 'جزئي',
+                    'unpaid': 'غير مسددة',
+                    'cancelled': 'ملغاة'
+                };
+                return statusMap[displayStatus] || displayStatus;
+            },
+            size: 120,
+            Cell: ({ cell, row }) => {
+                const status = row.original.status;
+                const invoiceStatus = row.original.invoice_status;
+                let displayStatus = status;
+                if (invoiceStatus === 'cancelled') {
+                    displayStatus = 'cancelled';
+                }
                 const statusMap = {
                     'paid': { label: 'مسددة', color: 'success.main', bg: '#e8f5e9' },
                     'partial': { label: 'جزئي', color: 'warning.main', bg: '#fff3e0' },
@@ -296,6 +326,7 @@ const SalesReportPage = () => {
             { accessorKey: 'date', id: 'date', header: 'التاريخ', size: 100, enablePinning: true, Cell: ({ cell }) => cell.getValue() },
             { accessorKey: 'customer_name', id: 'customer_name', header: 'العميل', size: 180, enablePinning: true },
             { accessorKey: 'employee_name', id: 'employee_name', header: 'اسم الموظف', size: 150 },
+            { accessorKey: 'distributor_name', id: 'distributor_name', header: 'مندوب التوزيع', size: 150 },
             { accessorKey: 'shipping_by', id: 'shipping_by', header: 'مشحون بواسطة', size: 120 },
             { accessorKey: 'sales_channel', id: 'sales_channel', header: 'قناة البيع', size: 120 },
             { accessorKey: 'governate', id: 'governate', header: 'المحافظة', size: 120 },
@@ -337,6 +368,7 @@ const SalesReportPage = () => {
                 date: invoice.invoice_date?.slice(0, 10), // Corrected to invoice_date
                 customer_name: invoice.party?.name || '-',
                 employee_name: invoice.employee?.name || '-',
+                distributor_name: invoice.distributor_employee?.name || '-',
                 shipping_by: invoice.shipping_by || '-',
                 sales_channel: invoice.sales_channel || '-',
                 governate: invoice.party?.city?.governate?.name || '-',
@@ -390,6 +422,7 @@ const SalesReportPage = () => {
                 date: ret.return_date?.slice(0, 10),
                 customer_name: ret.customer?.name || '-',
                 employee_name: ret.employee?.name || '-',
+                distributor_name: ret.invoice?.distributor_employee?.name || '-',
                 shipping_by: ret.shipping_by || '-',
                 sales_channel: ret.invoice?.sales_channel || '-',
                 governate: ret.customer?.city?.governate?.name || '-',
@@ -429,6 +462,7 @@ const SalesReportPage = () => {
                 date: '',
                 customer_name: '',
                 employee_name: '',
+                distributor_name: '',
                 shipping_by: '',
                 sales_channel: '',
                 governate: '',
@@ -558,6 +592,7 @@ const SalesReportPage = () => {
                         <ToggleButton value="review" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <InvoiceIcon sx={{ mr: 1 }} /> مراجعة الفواتير </ToggleButton>
                         <ToggleButton value="product_pivot" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <PivotIcon sx={{ mr: 1 }} /> تحليل المنتجات </ToggleButton>
                         <ToggleButton value="employee_product" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TrendIcon sx={{ mr: 1 }} /> تحليل المناديب </ToggleButton>
+                        <ToggleButton value="distributor_product" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <ShippingIcon sx={{ mr: 1 }} /> تحليل مناديب التوزيع </ToggleButton>
                         <ToggleButton value="customer_product" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <SaleIcon sx={{ mr: 1 }} /> تحليل عملاء ومنتجات </ToggleButton>
                         <ToggleButton value="region_cogs" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <ShippingIcon sx={{ mr: 1 }} /> تكلفة المبيعات بالمنطقة </ToggleButton>
                         <ToggleButton value="invoice_pivot" sx={{ px: 3, borderRadius: 2.5, border: 'none', '&.Mui-selected': { bgcolor: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' } }}> <TableIcon sx={{ mr: 1 }} /> مصفوفة الفواتير </ToggleButton>
@@ -644,6 +679,23 @@ const SalesReportPage = () => {
                                 renderTopToolbarCustomActions={({ table }) => (
                                     <Button variant="contained" color="success" startIcon={<DownloadIcon />}
                                         onClick={() => handleExport(table, 'Salesman_Product_Performance')}>
+                                        تصدير التقرير
+                                    </Button>
+                                )}
+                            />
+                        </Paper>
+                    )}
+
+                    {viewMode === 'distributor_product' && (
+                        <Paper sx={{ borderRadius: 3, boxShadow: 2, overflow: 'hidden' }}>
+                            <MaterialReactTable
+                                columns={distributorProductColumns}
+                                {...defaultTableProps}
+                                data={salesByDistributorProduct}
+                                enableExporting
+                                renderTopToolbarCustomActions={({ table }) => (
+                                    <Button variant="contained" color="success" startIcon={<DownloadIcon />}
+                                        onClick={() => handleExport(table, 'Distributor_Product_Performance')}>
                                         تصدير التقرير
                                     </Button>
                                 )}

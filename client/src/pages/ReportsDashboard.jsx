@@ -126,6 +126,13 @@ const ReportsDashboard = () => {
             color: '#e0f2f1'
         },
         {
+            title: 'تقرير أرصدة وحركات الأصول',
+            description: 'تقرير تفصيلي يعرض حركات وأرصدة جميع حسابات الأصول (الثابتة والمتداولة)',
+            icon: <OpenBalanceIcon sx={{ fontSize: 60, color: '#3f51b5' }} />,
+            path: '/reports/assets',
+            color: '#e8eaf6'
+        },
+        {
             title: 'كشف حساب عميل تفصيلي',
             description: 'كشف حساب تفصيلي للعميل مع عرض تفاصيل الأصناف في كل فاتورة ومرتجع',
             icon: <AssessmentIcon sx={{ fontSize: 60, color: '#00695c' }} />,

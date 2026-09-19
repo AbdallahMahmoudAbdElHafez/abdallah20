@@ -137,6 +137,16 @@ export const exportToExcel = async (data, columns, fileName = 'Report', options 
                         }
                         val = temp;
                     }
+                    // Fallback for column accessorKey containing dots (e.g. 'party.name')
+                    const accessorKey = col.columnDef?.accessorKey;
+                    if (val === undefined && typeof accessorKey === 'string' && accessorKey.includes('.') && row.original) {
+                        const parts = accessorKey.split('.');
+                        let temp = row.original;
+                        for (const part of parts) {
+                            temp = temp?.[part];
+                        }
+                        val = temp;
+                    }
                     // Final fallback
                     if (val === undefined && row.original) {
                         val = row.original[id];

@@ -24,6 +24,7 @@ router.get('/customer-receivables', reportsController.getCustomerReceivables);
 router.get('/batch-customer-statements', reportsController.getBatchCustomerStatements);
 router.get('/profit', reportsController.getProfitReport);
 router.get('/bank-cash', reportsController.getBankAndCashReport);
+router.get('/assets', reportsController.getAssetsReport);
 router.get('/safe-movements', reportsController.getSafeMovementsReport);
 router.get('/general-ledger', reportsController.getGeneralLedgerReport);
 router.get('/cross-region', reportsController.getCrossRegionReport);

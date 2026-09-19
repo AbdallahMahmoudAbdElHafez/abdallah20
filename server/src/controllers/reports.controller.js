@@ -247,6 +247,23 @@ const reportsController = {
         }
     },
 
+    getAssetsReport: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.query;
+            const today = new Date().toISOString().split('T')[0];
+            const startOfYear = `${new Date().getFullYear()}-01-01`;
+            
+            const start = startDate || startOfYear;
+            const end = endDate || today;
+
+            const data = await reportsService.getAssetsReport(start, end);
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching assets report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     getCrossRegionReport: async (req, res) => {
         try {
             const { warehouseId, startDate, endDate } = req.query;
@@ -273,6 +290,19 @@ const reportsController = {
             let filename;
 
             switch (type) {
+                case 'assets':
+                    {
+                        const todayVal = new Date().toISOString().split('T')[0];
+                        const startOfYearVal = `${new Date().getFullYear()}-01-01`;
+                        const startVal = startDate || startOfYearVal;
+                        const endVal = endDate || todayVal;
+                        
+                        const assetsData = await reportsService.getAssetsReport(startVal, endVal);
+                        buffer = await exportService.exportAssetsReport(assetsData.data, assetsData.summary);
+                        filename = `Assets_Report_${startVal}_${endVal}.xlsx`;
+                    }
+                    break;
+
                 case 'sales':
                     const salesData = await reportsService.getSalesReport(startDate, endDate);
                     buffer = await exportService.exportSalesReport(salesData.data, salesData.summary);

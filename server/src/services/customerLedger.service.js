@@ -503,7 +503,7 @@ export async function getBatchCustomerStatements({ governate_id, city_id, from, 
     const batchStatements = [];
     for (const customer of customers) {
         try {
-            const statement = await getCustomerStatement(customer.id, { from, to });
+            const statement = await getDetailedCustomerStatement(customer.id, { from, to });
             batchStatements.push(statement);
         } catch (error) {
             console.error(`Error fetching statement for customer ${customer.id}:`, error);

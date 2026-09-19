@@ -62,6 +62,7 @@ import ExternalServiceInvoicesPage from "./pages/ExternalServiceInvoicesPage";
 import ServiceTypesPage from "./pages/ServiceTypesPage";
 import GeneralLedgerReport from "./pages/GeneralLedgerReport";
 import CrossRegionReportPage from "./pages/CrossRegionReportPage";
+import AssetsReportPage from "./pages/AssetsReportPage";
 import DetailedCustomerStatementPage from "./pages/DetailedCustomerStatementPage";
 import SalesAnalysisPage from "./pages/SalesAnalysisPage";
 import UnbalancedJournalEntriesPage from "./pages/UnbalancedJournalEntriesPage";
@@ -146,6 +147,7 @@ export default function App() {
             <Route path="/reports/batch-customer-statements" element={<BatchCustomerStatementsPage />} />
           <Route path="/reports/profit" element={<ProfitReportPage />} />
           <Route path="/reports/bank-cash" element={<BankAndCashBalancesPage />} />
+          <Route path="/reports/assets" element={<AssetsReportPage />} />
           <Route path="/reports/safe-movements" element={<SafeMovementsReportPage />} />
           <Route path="/reports/general-ledger" element={<GeneralLedgerReport />} />
           <Route path="/reports/cross-region" element={<CrossRegionReportPage />} />

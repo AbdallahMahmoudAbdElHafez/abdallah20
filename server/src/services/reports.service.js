@@ -185,6 +185,12 @@ const getSalesReport = async (startDate, endDate) => {
                 required: false
             },
             {
+                model: Employee,
+                as: 'distributor_employee',
+                attributes: ['id', 'name'],
+                required: false
+            },
+            {
                 model: Warehouse,
                 as: 'warehouse',
                 attributes: ['id', 'name'],
@@ -266,6 +272,16 @@ const getSalesReport = async (startDate, endDate) => {
                         attributes: ['name']
                     }]
                 }]
+            },
+            {
+                model: SalesInvoice,
+                as: 'invoice',
+                attributes: ['id', 'invoice_number', 'distributor_employee_id'],
+                include: [{
+                    model: Employee,
+                    as: 'distributor_employee',
+                    attributes: ['id', 'name']
+                }]
             }
         ]
     });
@@ -298,6 +314,8 @@ const getSalesReport = async (startDate, endDate) => {
     const chartData = {};
     const employeeData = {};
     const employeeProductStats = {};
+    const distributorData = {};
+    const distributorProductStats = {};
     const customerProductStats = {};
     const regionData = {};
     const productStats = {};
@@ -314,6 +332,10 @@ const getSalesReport = async (startDate, endDate) => {
         const empName = sale.employee?.name || 'غير محدد';
         if (!employeeData[empName]) employeeData[empName] = 0;
         employeeData[empName] += total;
+
+        const distName = sale.distributor_employee?.name || 'غير محدد';
+        if (!distributorData[distName]) distributorData[distName] = 0;
+        distributorData[distName] += total;
 
         let regionName = 'غير محدد';
         if (sale.party?.city?.governate?.name) regionName = sale.party.city.governate.name;
@@ -382,6 +404,14 @@ const getSalesReport = async (startDate, endDate) => {
                 employeeProductStats[epKey].quantity += qty;
                 employeeProductStats[epKey].revenue += netRevenue;
 
+                // Distributor Analysis
+                const dpKey = `${distName}_${productId}`;
+                if (!distributorProductStats[dpKey]) {
+                    distributorProductStats[dpKey] = { distributor: distName, product: productName, quantity: 0, revenue: 0 };
+                }
+                distributorProductStats[dpKey].quantity += qty;
+                distributorProductStats[dpKey].revenue += netRevenue;
+
                 // Customer Product Stats
                 const customerName = sale.party?.name || 'غير محدد';
                 const cpKey = `${customerName}_${productId}`;
@@ -405,6 +435,10 @@ const getSalesReport = async (startDate, endDate) => {
         const empName = ret.employee?.name || 'غير محدد';
         if (!employeeData[empName]) employeeData[empName] = 0;
         employeeData[empName] -= total;
+
+        const distName = ret.invoice?.distributor_employee?.name || 'غير محدد';
+        if (!distributorData[distName]) distributorData[distName] = 0;
+        distributorData[distName] -= total;
 
         let regionName = 'غير محدد';
         if (ret.customer?.city?.governate?.name) regionName = ret.customer.city.governate.name;
@@ -468,6 +502,13 @@ const getSalesReport = async (startDate, endDate) => {
                 employeeProductStats[epKey].quantity -= qty;
                 employeeProductStats[epKey].revenue -= netRevenue;
 
+                const dpKey = `${distName}_${productId}`;
+                if (!distributorProductStats[dpKey]) {
+                    distributorProductStats[dpKey] = { distributor: distName, product: productName, quantity: 0, revenue: 0 };
+                }
+                distributorProductStats[dpKey].quantity -= qty;
+                distributorProductStats[dpKey].revenue -= netRevenue;
+
                 // Deduct from Customer Product Stats
                 const customerName = ret.customer?.name || 'غير محدد';
                 const cpKey = `${customerName}_${productId}`;
@@ -504,6 +545,14 @@ const getSalesReport = async (startDate, endDate) => {
     const salesByEmployeeProduct = Object.values(employeeProductStats)
         .sort((a, b) => a.employee.localeCompare(b.employee) || b.revenue - a.revenue);
 
+    const salesByDistributorProduct = Object.values(distributorProductStats)
+        .sort((a, b) => a.distributor.localeCompare(b.distributor) || b.revenue - a.revenue);
+
+    const salesByDistributor = Object.keys(distributorData).map(name => ({
+        name,
+        value: distributorData[name]
+    })).sort((a, b) => b.value - a.value);
+
     const salesByCustomerProduct = Object.values(customerProductStats)
         .sort((a, b) => a.customer.localeCompare(b.customer) || b.revenue - a.revenue);
 
@@ -519,9 +568,11 @@ const getSalesReport = async (startDate, endDate) => {
         summary,
         chartData: chartArray,
         salesByEmployee,
+        salesByDistributor,
         salesByRegion,
         salesByProduct,
         salesByEmployeeProduct,
+        salesByDistributorProduct,
         salesByCustomerProduct,
         cogsByRegionProduct
     };
@@ -2404,7 +2455,140 @@ const getSalesAnalysisReport = async (startDate, endDate) => {
     };
 };
 
+const getAssetsReport = async (startDate, endDate) => {
+    const allAssets = await Account.findAll({
+        where: { account_type: 'asset' },
+        raw: true
+    });
+
+    const accountsMap = {};
+    allAssets.forEach(acc => {
+        accountsMap[acc.id] = acc;
+    });
+
+    const getDescendants = (accountId) => {
+        let ids = [accountId];
+        const children = allAssets.filter(acc => acc.parent_account_id === accountId);
+        for (const child of children) {
+            ids = ids.concat(getDescendants(child.id));
+        }
+        return ids;
+    };
+
+    const isDescendantOf = (accountId, targetParentId) => {
+        let current = accountsMap[accountId];
+        while (current) {
+            if (current.parent_account_id === targetParentId) {
+                return true;
+            }
+            current = accountsMap[current.parent_account_id];
+        }
+        return false;
+    };
+
+    const reportData = [];
+
+    for (const acc of allAssets) {
+        const childIds = getDescendants(acc.id);
+
+        const openingResult = await JournalEntryLine.findOne({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+                [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+            ],
+            where: { account_id: { [Op.in]: childIds } },
+            include: [{
+                model: JournalEntry,
+                as: 'journal_entry',
+                attributes: [],
+                where: {
+                    entry_date: { [Op.lt]: startDate }
+                }
+            }],
+            raw: true
+        });
+
+        const openingDebit = parseFloat(openingResult?.total_debit || 0);
+        const openingCredit = parseFloat(openingResult?.total_credit || 0);
+        const openingBalance = openingDebit - openingCredit;
+
+        const periodResult = await JournalEntryLine.findOne({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+                [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+            ],
+            where: { account_id: { [Op.in]: childIds } },
+            include: [{
+                model: JournalEntry,
+                as: 'journal_entry',
+                attributes: [],
+                where: {
+                    entry_date: { [Op.between]: [startDate, endDate] }
+                }
+            }],
+            raw: true
+        });
+
+        const debit = parseFloat(periodResult?.total_debit || 0);
+        const credit = parseFloat(periodResult?.total_credit || 0);
+        const netMovement = debit - credit;
+        const closingBalance = openingBalance + netMovement;
+
+        const hasChildren = allAssets.some(a => a.parent_account_id === acc.id);
+
+        let classification = 'أخرى';
+        if (acc.id === 8 || isDescendantOf(acc.id, 8)) {
+            classification = 'أصول ثابتة';
+        } else if (acc.id === 9 || isDescendantOf(acc.id, 9)) {
+            classification = 'أصول متداولة';
+        } else if (acc.id === 1) {
+            classification = 'إجمالي الأصول';
+        }
+
+        const parentName = acc.parent_account_id ? (accountsMap[acc.parent_account_id]?.name || '-') : '-';
+
+        reportData.push({
+            id: acc.id,
+            name: acc.name,
+            parent_id: acc.parent_account_id,
+            parent_name: parentName,
+            classification,
+            is_parent: hasChildren,
+            opening_balance: openingBalance,
+            debit,
+            credit,
+            net_movement: netMovement,
+            closing_balance: closingBalance
+        });
+    }
+
+    const activeReport = reportData.filter(acc => 
+        [1, 8, 9, 40].includes(acc.id) ||
+        Math.abs(acc.opening_balance) > 0.01 || 
+        Math.abs(acc.debit) > 0.01 || 
+        Math.abs(acc.credit) > 0.01 || 
+        Math.abs(acc.closing_balance) > 0.01
+    );
+
+    activeReport.sort((a, b) => a.id - b.id);
+
+    const fixedAssetsTotal = reportData.find(a => a.id === 8)?.closing_balance || 0;
+    const currentAssetsTotal = reportData.find(a => a.id === 9)?.closing_balance || 0;
+    const totalAssets = reportData.find(a => a.id === 1)?.closing_balance || 0;
+
+    return {
+        period: { startDate, endDate },
+        data: activeReport,
+        summary: {
+            total_fixed: fixedAssetsTotal,
+            total_current: currentAssetsTotal,
+            total_assets: totalAssets
+        }
+    };
+};
+
 export default {
+    getAssetsReport,
     getDashboardSummary,
     getTopSellingProducts,
     getLowStockItems,
