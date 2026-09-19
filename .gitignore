@@ -10,6 +10,7 @@ yarn-error.log*
 server/backups/
 backups/
 *.sql
+!nurivina_erp_backup.sql
 
 # Dependencies
 node_modules/
