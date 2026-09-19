@@ -25,6 +25,7 @@ import {
 import { fetchProducts } from "../features/products/productsSlice";
 import { fetchWarehouses } from "../features/warehouses/warehousesSlice";
 import { fetchBatches } from "../features/batches/batchesSlice";
+import { fetchAccounts } from "../features/accounts/accountsSlice";
 import { AddCircle as AddCircleIcon, RemoveCircle as RemoveCircleIcon, Download as DownloadIcon } from "@mui/icons-material";
 import { IconButton, Grid } from "@mui/material";
 import { exportToExcel } from "../utils/exportUtils";
@@ -37,6 +38,7 @@ const InventoryTransactionsPage = () => {
   const { items: products } = useSelector((s) => s.products);
   const { items: warehouses } = useSelector((s) => s.warehouses);
   const { items: batchesList } = useSelector((s) => s.batches);
+  const { items: accounts } = useSelector((s) => s.accounts);
 
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState(null);
@@ -48,6 +50,7 @@ const InventoryTransactionsPage = () => {
     note: "",
     source_type: "adjustment",
     source_id: "",
+    account_id: "",
     batches: [],
   });
 
@@ -56,6 +59,7 @@ const InventoryTransactionsPage = () => {
     dispatch(fetchProducts());
     dispatch(fetchWarehouses());
     dispatch(fetchBatches());
+    dispatch(fetchAccounts());
   }, [dispatch]);
 
   const handleOpen = (row = null) => {
@@ -70,6 +74,7 @@ const InventoryTransactionsPage = () => {
           note: row.note || "",
           source_type: row.source_type || "adjustment",
           source_id: row.source_id || "",
+          account_id: row.account_id || (row.source_type === "manufacturing_waste" ? 23 : ""),
           batches: row.transaction_batches || [],
         }
         : {
@@ -80,6 +85,7 @@ const InventoryTransactionsPage = () => {
           note: "",
           source_type: "adjustment",
           source_id: "",
+          account_id: "",
           batches: [],
         }
     );
@@ -95,6 +101,7 @@ const InventoryTransactionsPage = () => {
     const dataToSave = {
       ...form,
       source_id: form.source_id === "" ? null : form.source_id,
+      account_id: form.account_id ? Number(form.account_id) : (form.source_type === 'manufacturing_waste' ? 23 : null),
     };
 
     if (editRow) {
@@ -157,9 +164,24 @@ const InventoryTransactionsPage = () => {
           purchase: "مشتريات",
           manufacturing: "تصنيع",
           transfer: "تحويل",
-          adjustment: "تسوية"
+          adjustment: "تسوية",
+          manufacturing_waste: "هالك تصنيع"
         };
         return types[row.source_type] || row.source_type;
+      }
+    },
+    {
+      id: "account_name",
+      header: "الحساب المقابل",
+      accessorFn: (row) => {
+        if (row.account?.name) return row.account.name;
+        if (row.account_id) {
+          const acc = accounts?.find((a) => a.id === row.account_id);
+          return acc ? acc.name : row.account_id;
+        }
+        if (row.source_type === 'manufacturing_waste') return 'جرد تالف تصنيع';
+        if (row.source_type === 'adjustment') return 'فروقات جرد مخزون';
+        return "—";
       }
     },
     { accessorKey: "source_id", header: "رقم المصدر" },
@@ -280,14 +302,40 @@ const InventoryTransactionsPage = () => {
             select
             label="نوع المصدر"
             value={form.source_type}
-            onChange={(e) => setForm({ ...form, source_type: e.target.value })}
+            onChange={(e) => {
+              const newSource = e.target.value;
+              setForm({
+                ...form,
+                source_type: newSource,
+                transaction_type: newSource === "manufacturing_waste" ? "out" : form.transaction_type,
+                account_id: newSource === "manufacturing_waste" ? (form.account_id || 23) : form.account_id
+              });
+            }}
           >
             <MenuItem value="opening">رصيد افتتاحي</MenuItem>
             <MenuItem value="purchase">مشتريات</MenuItem>
             <MenuItem value="manufacturing">تصنيع</MenuItem>
             <MenuItem value="transfer">تحويل</MenuItem>
             <MenuItem value="adjustment">تسوية</MenuItem>
+            <MenuItem value="manufacturing_waste">هالك تصنيع</MenuItem>
           </TextField>
+
+          {form.source_type === "manufacturing_waste" && (
+            <TextField
+              select
+              label="حساب الهالك / المصروف المقابل"
+              value={form.account_id || 23}
+              onChange={(e) => setForm({ ...form, account_id: e.target.value })}
+              fullWidth
+              helperText="الحساب المدين الذي سيتم تحميل قيمة الهالك عليه (الافتراضي: 23 - جرد تالف تصنيع)"
+            >
+              {accounts && accounts.map((acc) => (
+                <MenuItem key={acc.id} value={acc.id}>
+                  {acc.id} - {acc.name} {acc.account_type ? `(${acc.account_type === 'expense' ? 'مصروف' : acc.account_type})` : ''}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
 
           <TextField
             label="رقم المصدر"

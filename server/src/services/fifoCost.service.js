@@ -12,23 +12,37 @@ class FIFOCostService {
      */
     static async calculateFIFOCost(productId, warehouseId, quantity, transaction = null) {
         // Get available batches with their costs using FIFO order
+        // Each batch appears exactly once with its earliest IN transaction cost (true FIFO)
         const availableBatches = await sequelize.query(`
       SELECT 
         bi.batch_id,
         bi.quantity as available_quantity,
         b.batch_number,
         b.expiry_date,
-        itb.cost_per_unit,
-        it.transaction_date
+        (
+          SELECT itb2.cost_per_unit
+          FROM inventory_transaction_batches itb2
+          INNER JOIN inventory_transactions it2 ON itb2.inventory_transaction_id = it2.id
+          WHERE itb2.batch_id = b.id
+            AND it2.transaction_type = 'in'
+            AND it2.warehouse_id = :warehouseId
+          ORDER BY it2.transaction_date ASC, itb2.id ASC
+          LIMIT 1
+        ) as cost_per_unit,
+        (
+          SELECT MIN(it3.transaction_date)
+          FROM inventory_transaction_batches itb3
+          INNER JOIN inventory_transactions it3 ON itb3.inventory_transaction_id = it3.id
+          WHERE itb3.batch_id = b.id
+            AND it3.transaction_type = 'in'
+            AND it3.warehouse_id = :warehouseId
+        ) as transaction_date
       FROM batch_inventory bi
       INNER JOIN batches b ON bi.batch_id = b.id
-      INNER JOIN inventory_transaction_batches itb ON itb.batch_id = b.id
-      INNER JOIN inventory_transactions it ON itb.inventory_transaction_id = it.id
       WHERE b.product_id = :productId
         AND bi.warehouse_id = :warehouseId
         AND bi.quantity > 0
-        AND it.transaction_type = 'in'
-      ORDER BY it.transaction_date ASC, itb.id ASC
+      ORDER BY transaction_date ASC, bi.batch_id ASC
     `, {
             replacements: { productId, warehouseId },
             type: sequelize.QueryTypes.SELECT,
@@ -145,18 +159,30 @@ class FIFOCostService {
         bi.quantity as available_quantity,
         b.batch_number,
         b.expiry_date,
-        itb.cost_per_unit,
-        it.transaction_date,
-        it.note
+        (
+          SELECT itb2.cost_per_unit
+          FROM inventory_transaction_batches itb2
+          INNER JOIN inventory_transactions it2 ON itb2.inventory_transaction_id = it2.id
+          WHERE itb2.batch_id = b.id
+            AND it2.transaction_type = 'in'
+            AND it2.warehouse_id = :warehouseId
+          ORDER BY it2.transaction_date ASC, itb2.id ASC
+          LIMIT 1
+        ) as cost_per_unit,
+        (
+          SELECT MIN(it3.transaction_date)
+          FROM inventory_transaction_batches itb3
+          INNER JOIN inventory_transactions it3 ON itb3.inventory_transaction_id = it3.id
+          WHERE itb3.batch_id = b.id
+            AND it3.transaction_type = 'in'
+            AND it3.warehouse_id = :warehouseId
+        ) as transaction_date
       FROM batch_inventory bi
       INNER JOIN batches b ON bi.batch_id = b.id
-      LEFT JOIN inventory_transaction_batches itb ON itb.batch_id = b.id
-      LEFT JOIN inventory_transactions it ON itb.inventory_transaction_id = it.id
       WHERE b.product_id = :productId
         AND bi.warehouse_id = :warehouseId
         AND bi.quantity > 0
-        AND it.transaction_type = 'in'
-      ORDER BY it.transaction_date ASC, itb.id ASC
+      ORDER BY transaction_date ASC, bi.batch_id ASC
     `, {
             replacements: { productId, warehouseId },
             type: sequelize.QueryTypes.SELECT,

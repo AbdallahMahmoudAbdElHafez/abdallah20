@@ -11,10 +11,11 @@ export default (sequelize) => {
         transaction_date: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
         note: { type: DataTypes.TEXT, allowNull: true },
         source_type: {
-            type: DataTypes.ENUM('purchase', 'manufacturing', 'transfer', 'adjustment', 'sales_invoice', 'sales_return', 'purchase_return', 'external_job_order', 'issue_voucher', 'issue_voucher_return', 'opening'),
+            type: DataTypes.ENUM('purchase', 'manufacturing', 'transfer', 'adjustment', 'sales_invoice', 'sales_return', 'purchase_return', 'external_job_order', 'issue_voucher', 'issue_voucher_return', 'opening', 'manufacturing_waste'),
             defaultValue: 'adjustment'
         },
         source_id: { type: DataTypes.INTEGER, allowNull: true },
+        account_id: { type: DataTypes.INTEGER, allowNull: true },
     }, {
         tableName: 'inventory_transactions',
         timestamps: false,

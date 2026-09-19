@@ -155,6 +155,7 @@ export default function SalesReturnsPage() {
                             product_id: retItem.product_id,
                             product: retItem.product || { id: retItem.product_id, name: retItem.product?.name || retItem.product_id },
                             quantity: Number(retItem.quantity),
+                            bonus: Number(retItem.bonus || 0),
                             price: Number(retItem.price),
                             public_price: Number(retItem.original_price || retItem.price),
                             return_condition: retItem.return_condition || 'good',
@@ -172,6 +173,7 @@ export default function SalesReturnsPage() {
                             isPreloaded: true,    // flag to link with invoice item row
                             product_id: retItem.product_id,
                             quantity: Number(retItem.quantity),
+                            bonus: Number(retItem.bonus || 0),
                             price: Number(retItem.price),
                             public_price: Number(retItem.original_price || retItem.price),
                             return_condition: retItem.return_condition || 'good',
@@ -256,13 +258,20 @@ export default function SalesReturnsPage() {
     };
 
     const handleItemSelectionChange = (itemId, isSelected) => {
+        const item = invoiceItems.find(i => i.id === Number(itemId) || `byProduct-${i.product_id}` === itemId);
+        const invQty = item ? Number(item.quantity || 0) : 0;
+        const invBonus = item ? Number(item.bonus || 0) : 0;
+        const itemPrice = item ? Number(item.price || 0) : 0;
+
         setSelectedItems(prev => ({
             ...prev,
             [itemId]: {
                 ...prev[itemId],
                 isSelected,
-                isSelected,
-                quantity: isSelected ? (prev[itemId]?.quantity || 1) : 0,
+                quantity: isSelected ? (prev[itemId]?.quantity !== undefined ? prev[itemId].quantity : invQty) : 0,
+                bonus: isSelected ? (prev[itemId]?.bonus !== undefined ? prev[itemId].bonus : invBonus) : 0,
+                price: prev[itemId]?.price !== undefined ? prev[itemId].price : itemPrice,
+                public_price: prev[itemId]?.public_price !== undefined ? prev[itemId].public_price : itemPrice,
                 return_condition: isSelected ? (prev[itemId]?.return_condition || 'good') : 'good'
             }
         }));
@@ -274,6 +283,16 @@ export default function SalesReturnsPage() {
             [itemId]: {
                 ...prev[itemId],
                 quantity: Number(quantity)
+            }
+        }));
+    };
+
+    const handleItemBonusChange = (itemId, bonus) => {
+        setSelectedItems(prev => ({
+            ...prev,
+            [itemId]: {
+                ...prev[itemId],
+                bonus: Number(bonus)
             }
         }));
     };
@@ -297,9 +316,6 @@ export default function SalesReturnsPage() {
                 [itemId]: {
                     ...currentItem,
                     price: val,
-                    // Clear discount/public balance if price is manually edited to stay consistent?
-                    // Or just leave them and let user decide. 
-                    // Usually, manual price override is fine.
                 }
             };
         });
@@ -342,14 +358,17 @@ export default function SalesReturnsPage() {
     const handleSave = async () => {
         // Prepare items array from selected items
         const itemsArray = Object.entries(selectedItems)
-            .filter(([_, data]) => !data.isManual && data.isSelected && data.quantity > 0)
+            .filter(([_, data]) => !data.isManual && data.isSelected && (Number(data.quantity || 0) > 0 || Number(data.bonus || 0) > 0))
             .map(([itemId, data]) => {
-                const item = invoiceItems.find(i => i.id === Number(itemId));
+                const item = invoiceItems.find(i => i.id === Number(itemId) || `byProduct-${i.product_id}` === itemId);
+                const defaultPrice = item ? Number(item.price) : 0;
+
                 return {
-                    product_id: item.product_id,
-                    quantity: data.quantity,
-                    price: data.price !== undefined ? data.price : item.price,
-                    original_price: data.public_price !== undefined ? data.public_price : item.price,
+                    product_id: item ? item.product_id : data.product_id,
+                    quantity: Number(data.quantity || 0),
+                    bonus: Number(data.bonus || 0),
+                    price: data.price !== undefined ? data.price : defaultPrice,
+                    original_price: data.public_price !== undefined ? data.public_price : (item ? item.price : data.price),
                     return_condition: data.return_condition || 'good',
                     batch_number: data.batch_number,
                     expiry_date: data.expiry_date,
@@ -359,10 +378,11 @@ export default function SalesReturnsPage() {
 
         // Add manual items
         const manualItemsArray = Object.entries(selectedItems)
-            .filter(([_, data]) => data.isManual && data.isSelected && data.quantity > 0)
+            .filter(([_, data]) => data.isManual && data.isSelected && (Number(data.quantity || 0) > 0 || Number(data.bonus || 0) > 0))
             .map(([_, data]) => ({
                 product_id: data.product_id,
-                quantity: data.quantity,
+                quantity: Number(data.quantity || 0),
+                bonus: Number(data.bonus || 0),
                 price: data.price,
                 original_price: data.public_price !== undefined ? data.public_price : data.price,
                 return_condition: data.return_condition || 'good',
@@ -726,6 +746,7 @@ export default function SalesReturnsPage() {
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 100, bgcolor: '#f5f5f5' }}>الخصم %</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>السعر النهائي</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>الكمية المرتجعة</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold', minWidth: 120, bgcolor: '#f5f5f5' }}>البونص المرتجع</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 150, bgcolor: '#f5f5f5' }}>حالة المرتجع</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 150, bgcolor: '#f5f5f5' }}>رقم الباتش</TableCell>
                                                 <TableCell sx={{ fontWeight: 'bold', minWidth: 150, bgcolor: '#f5f5f5' }}>تاريخ الصلاحية</TableCell>
@@ -736,6 +757,9 @@ export default function SalesReturnsPage() {
                                         <TableBody>
                                             {/* Invoice Items */}
                                             {(invoiceItems || []).map((item) => {
+                                                const totalInvoicedQty = Number(item.quantity || 0) + Number(item.bonus || 0);
+                                                const effectivePrice = Number(item.price);
+
                                                 // Support both direct item.id key (new) and byProduct key (preloaded from existing return)
                                                 const preloadKey = `byProduct-${item.product_id}`;
                                                 const itemKey = selectedItems[item.id] !== undefined
@@ -751,7 +775,20 @@ export default function SalesReturnsPage() {
                                                         />
                                                     </TableCell>
                                                     <TableCell>{item.product?.name || item.product_id}</TableCell>
-                                                    <TableCell>{item.quantity}</TableCell>
+                                                    <TableCell>
+                                                        {item.bonus > 0 ? (
+                                                            <Box component="span">
+                                                                <Typography variant="body2" component="span" sx={{ fontWeight: 'bold' }}>
+                                                                    {totalInvoicedQty}
+                                                                </Typography>
+                                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.75rem' }}>
+                                                                    ({item.quantity} + {item.bonus} بونص)
+                                                                </Typography>
+                                                            </Box>
+                                                        ) : (
+                                                            item.quantity
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell>
                                                         <TextField
                                                             type="number"
@@ -776,7 +813,7 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             type="number"
                                                             size="small"
-                                                            value={itemData?.price ?? item.price}
+                                                            value={itemData?.price ?? effectivePrice}
                                                             onChange={(e) => handleItemPriceChange(itemKey, e.target.value)}
                                                             disabled={!itemData?.isSelected}
                                                             fullWidth
@@ -786,10 +823,21 @@ export default function SalesReturnsPage() {
                                                         <TextField
                                                             type="number"
                                                             size="small"
-                                                            value={itemData?.quantity || ""}
+                                                            value={itemData?.quantity ?? ""}
                                                             onChange={(e) => handleItemQuantityChange(itemKey, e.target.value)}
                                                             disabled={!itemData?.isSelected}
-                                                            inputProps={{ max: item.quantity, min: 1 }}
+                                                            inputProps={{ max: Number(item.quantity || 0), min: 0 }}
+                                                            fullWidth
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <TextField
+                                                            type="number"
+                                                            size="small"
+                                                            value={itemData?.bonus ?? ""}
+                                                            onChange={(e) => handleItemBonusChange(itemKey, e.target.value)}
+                                                            disabled={!itemData?.isSelected}
+                                                            inputProps={{ max: Number(item.bonus || 0), min: 0 }}
                                                             fullWidth
                                                         />
                                                     </TableCell>
@@ -896,10 +944,21 @@ export default function SalesReturnsPage() {
                                                             <TextField
                                                                 type="number"
                                                                 size="small"
-                                                                value={data.quantity}
+                                                                value={data.quantity ?? ""}
                                                                 onChange={(e) => handleItemQuantityChange(id, e.target.value)}
                                                                 disabled={!data.isSelected}
-                                                                inputProps={{ min: 1 }}
+                                                                inputProps={{ min: 0 }}
+                                                                fullWidth
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <TextField
+                                                                type="number"
+                                                                size="small"
+                                                                value={data.bonus ?? ""}
+                                                                onChange={(e) => handleItemBonusChange(id, e.target.value)}
+                                                                disabled={!data.isSelected}
+                                                                inputProps={{ min: 0 }}
                                                                 fullWidth
                                                             />
                                                         </TableCell>

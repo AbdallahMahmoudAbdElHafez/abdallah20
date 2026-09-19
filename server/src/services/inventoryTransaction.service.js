@@ -1,4 +1,4 @@
-import { InventoryTransaction, Product, Warehouse, InventoryTransactionBatches, Batches, ReferenceType } from "../models/index.js";
+import { InventoryTransaction, Product, Warehouse, InventoryTransactionBatches, Batches, BatchInventory, ReferenceType, Account, sequelize } from "../models/index.js";
 import CurrentInventoryService from "./currentInventory.service.js";
 import BatchInventoryService from "./batchInventory.service.js";
 import { ENTRY_TYPES } from "../constants/entryTypes.js";
@@ -9,6 +9,7 @@ class InventoryTransactionService {
       include: [
         { model: Product, as: "product" },
         { model: Warehouse, as: "warehouse" },
+        { model: Account, as: "account" },
         {
           model: InventoryTransactionBatches,
           as: "transaction_batches",
@@ -24,6 +25,7 @@ class InventoryTransactionService {
       include: [
         { model: Product, as: "product" },
         { model: Warehouse, as: "warehouse" },
+        { model: Account, as: "account" },
         {
           model: InventoryTransactionBatches,
           as: "transaction_batches",
@@ -130,24 +132,26 @@ class InventoryTransactionService {
           const batchQtyChange = data.transaction_type === "in"
             ? Number(batchData.quantity)
             : -Number(batchData.quantity);
+          const isAdjustmentOrWaste = data.source_type === 'adjustment' || data.source_type === 'opening' || data.source_type === 'manufacturing_waste';
           await BatchInventoryService.createOrUpdate(
             batchId,
             data.warehouse_id,
             batchQtyChange,
-            options
+            { ...options, force: options.force || isAdjustmentOrWaste }
           );
           console.log(`Debug: Updated batch_inventory for batch ${batchId}`);
         }
       }
     } else {
-      // No batch data provided; allow for Production Requirement products and adjustments
+      // No batch data provided; allow for Production Requirement products, adjustments, and manufacturing waste
       const isProductionRequirement = product.type && product.type.name.includes("مستلزم");
-      const isAdjustmentOrOpening = data.source_type === 'adjustment' || data.source_type === 'opening';
+      const isAdjustmentOrOpening = data.source_type === 'adjustment' || data.source_type === 'opening' || data.source_type === 'manufacturing_waste';
 
       if (isProductionRequirement || isAdjustmentOrOpening) {
         if (data.transaction_type === "in") {
           // Auto-create a batch for adjustment/opening or production requirement products
-          const batchNumber = isAdjustmentOrOpening ? `ADJ-${trx.id}` : null;
+          const batchPrefix = data.source_type === 'manufacturing_waste' ? 'WASTE' : 'ADJ';
+          const batchNumber = isAdjustmentOrOpening ? `${batchPrefix}-${trx.id}` : null;
           const batch = await Batches.create({
             product_id: data.product_id,
             batch_number: batchNumber,
@@ -168,7 +172,7 @@ class InventoryTransactionService {
             Number(data.quantity),
             { ...options, force: isAdjustmentOrOpening }
           );
-          console.log(`Debug: Created Batch (id: ${batch.id}) for ${isAdjustmentOrOpening ? 'adjustment/opening' : 'Production Requirement'} product (IN)`);
+          console.log(`Debug: Created Batch (id: ${batch.id}) for ${isAdjustmentOrOpening ? (data.source_type === 'manufacturing_waste' ? 'manufacturing waste' : 'adjustment/opening') : 'Production Requirement'} product (IN)`);
         } else {
           // For outgoing, use FIFO to find existing batches
           const fifoResult = await InventoryTransactionService.getBatchesFIFO(
@@ -198,7 +202,8 @@ class InventoryTransactionService {
 
           if (fifoResult.remainingNeeded > 0) {
             // If still needed (system batch records out of sync), create a remainder batch
-            const batchNumber = isAdjustmentOrOpening ? `ADJ-REM-${trx.id}` : null;
+            const batchPrefix = data.source_type === 'manufacturing_waste' ? 'WASTE-REM' : 'ADJ-REM';
+            const batchNumber = isAdjustmentOrOpening ? `${batchPrefix}-${trx.id}` : null;
             const batch = await Batches.create({
               product_id: data.product_id,
               batch_number: batchNumber,
@@ -219,7 +224,7 @@ class InventoryTransactionService {
               { ...options, force: isAdjustmentOrOpening }
             );
           }
-          console.log(`Debug: Processed FIFO for ${isAdjustmentOrOpening ? 'adjustment/opening' : 'Production Requirement'} product (OUT)`);
+          console.log(`Debug: Processed FIFO for ${isAdjustmentOrOpening ? (data.source_type === 'manufacturing_waste' ? 'manufacturing waste' : 'adjustment/opening') : 'Production Requirement'} product (OUT)`);
         }
       } else {
         throw new Error("Batch information is required for this product type");
@@ -253,6 +258,13 @@ class InventoryTransactionService {
         await InventoryTransactionService.syncOpeningJournalEntry(trx, options);
       } catch (err) {
         console.error("Failed to sync journal entry for inventory opening balance:", err);
+      }
+    } else if (data.source_type === 'manufacturing_waste' && totalQuantity > 0) {
+      // 7. Create Journal Entry for Manufacturing Waste
+      try {
+        await InventoryTransactionService.syncManufacturingWasteJournalEntry(trx, options);
+      } catch (err) {
+        console.error("Failed to sync journal entry for manufacturing waste:", err);
       }
     }
 
@@ -313,11 +325,12 @@ class InventoryTransactionService {
           const reverseQtyChange = oldType === "in"
             ? -Number(oldBatch.quantity)
             : Number(oldBatch.quantity);
+          const isAdjustmentOrWaste = trx.source_type === 'adjustment' || trx.source_type === 'opening' || trx.source_type === 'manufacturing_waste';
           await BatchInventoryService.createOrUpdate(
             oldBatch.batch_id,
             trx.warehouse_id,
             reverseQtyChange,
-            options
+            { ...options, force: options.force || isAdjustmentOrWaste }
           );
         }
       }
@@ -357,11 +370,12 @@ class InventoryTransactionService {
           const batchQtyChange = (data.transaction_type || trx.transaction_type) === "in"
             ? Number(batchData.quantity)
             : -Number(batchData.quantity);
+          const isAdjustmentOrWaste = (data.source_type || trx.source_type) === 'adjustment' || (data.source_type || trx.source_type) === 'opening' || (data.source_type || trx.source_type) === 'manufacturing_waste';
           await BatchInventoryService.createOrUpdate(
             batchId,
             data.warehouse_id || trx.warehouse_id,
             batchQtyChange,
-            options
+            { ...options, force: options.force || isAdjustmentOrWaste }
           );
         }
       }
@@ -398,6 +412,12 @@ class InventoryTransactionService {
       } catch (err) {
         console.error("Failed to sync journal entry for inventory opening update:", err);
       }
+    } else if ((data.source_type || trx.source_type) === 'manufacturing_waste') {
+      try {
+        await InventoryTransactionService.syncManufacturingWasteJournalEntry(trx, options);
+      } catch (err) {
+        console.error("Failed to sync journal entry for inventory manufacturing waste update:", err);
+      }
     }
 
     return trx;
@@ -422,11 +442,12 @@ class InventoryTransactionService {
           const reverseQtyChange = trx.transaction_type === "in"
             ? -Number(batch.quantity)
             : Number(batch.quantity);
+          const isAdjustmentOrWaste = trx.source_type === 'adjustment' || trx.source_type === 'opening' || trx.source_type === 'manufacturing_waste';
           await BatchInventoryService.createOrUpdate(
             batch.batch_id,
             trx.warehouse_id,
             reverseQtyChange,
-            options
+            { ...options, force: options.force || isAdjustmentOrWaste }
           );
         }
       }
@@ -448,29 +469,123 @@ class InventoryTransactionService {
     // Delete associated batches first
     await InventoryTransactionBatches.destroy({ where: { inventory_transaction_id: id }, ...options });
 
-    // Delete associated Journal Entry for Adjustments
-    if (trx.source_type === 'adjustment') {
-      try {
-        const { JournalEntry } = await import("../models/index.js");
-        const refType = await ReferenceType.findOne({ where: { code: 'inventory_adjustment' }, ...options });
-        if (refType) {
-          await JournalEntry.destroy({ where: { reference_type_id: refType.id, reference_id: id }, ...options });
-        }
-      } catch (err) {
-        console.error("Failed to delete journal entry for inventory adjustment:", err);
-      }
-    } else if (trx.source_type === 'opening') {
-      try {
-        const { JournalEntry } = await import("../models/index.js");
-        // Using ID 73 as requested for opening inventory
-        await JournalEntry.destroy({ where: { reference_type_id: 73, reference_id: id }, ...options });
-      } catch (err) {
-        console.error("Failed to delete journal entry for inventory opening:", err);
-      }
-    }
+    // No journal entries are destroyed on deletion - strictly prohibited to delete any journal entry
 
     await trx.destroy(options);
     return true;
+  }
+
+  static async syncManufacturingWasteJournalEntry(trx, options = {}) {
+    const { createJournalEntry } = await import('./journal.service.js');
+    const { JournalEntry, JournalEntryLine, Product: ProductModel } = await import('../models/index.js');
+
+    // 1. Ensure ReferenceType exists
+    let refType = await ReferenceType.findOne({ where: { code: 'manufacturing_scrap' }, ...options });
+    if (!refType) {
+      refType = await ReferenceType.create({
+        code: 'manufacturing_scrap',
+        label: 'هالك تصنيع',
+        description: 'Manufacturing Waste / Scrap'
+      }, options);
+    }
+
+    // 2. Check for existing entry (never delete journal entry)
+    const existingEntry = await JournalEntry.findOne({
+      where: { reference_type_id: refType.id, reference_id: trx.id },
+      ...options
+    });
+
+    // 3. Prepare Account Mapping
+    const INVENTORY_ACCOUNTS = {
+      FINISHED_GOODS: 110,    // مخزون تام الصنع
+      RAW_MATERIALS: 111,     // مخزون أولي
+      DEFAULT: 49             // المخزون
+    };
+
+    const product = await ProductModel.findByPk(trx.product_id, options);
+    const inventoryAccountId = product?.type_id === 1 ? INVENTORY_ACCOUNTS.FINISHED_GOODS :
+      (product?.type_id === 2 ? INVENTORY_ACCOUNTS.RAW_MATERIALS : INVENTORY_ACCOUNTS.DEFAULT);
+
+    // Contra account selected by user, or fallback to 23 (جرد تالف تصنيع)
+    const CONTRA_ACCOUNT = trx.account_id || 23;
+
+    // 4. Calculate total cost
+    const trxBatches = await InventoryTransactionBatches.findAll({
+      where: { inventory_transaction_id: trx.id },
+      ...options
+    });
+
+    let totalCost = 0;
+    if (trxBatches.length > 0) {
+      totalCost = trxBatches.reduce((sum, b) => sum + (Number(b.quantity) * Number(b.cost_per_unit || product?.cost_price || 0)), 0);
+    } else {
+      totalCost = Number(trx.quantity) * Number(product?.cost_price || 0);
+    }
+
+    if (totalCost <= 0) return;
+
+    // 5. Create Lines
+    const lines = [];
+    if (trx.transaction_type === 'out') {
+      // Dr Contra (Expense / Loss), Cr Inventory
+      lines.push({
+        account_id: CONTRA_ACCOUNT,
+        debit: totalCost,
+        credit: 0,
+        description: `هالك تصنيع - ${product?.name || ''} - ${trx.note || ''}`
+      });
+      lines.push({
+        account_id: inventoryAccountId,
+        debit: 0,
+        credit: totalCost,
+        description: `صرف مخزون هالك تصنيع - ${product?.name || ''} - ${trx.note || ''}`
+      });
+    } else {
+      // Dr Inventory, Cr Contra
+      lines.push({
+        account_id: inventoryAccountId,
+        debit: totalCost,
+        credit: 0,
+        description: `إعادة إثبات مخزون من هالك تصنيع - ${product?.name || ''} - ${trx.note || ''}`
+      });
+      lines.push({
+        account_id: CONTRA_ACCOUNT,
+        debit: 0,
+        credit: totalCost,
+        description: `تسوية عكسية هالك تصنيع - ${product?.name || ''} - ${trx.note || ''}`
+      });
+    }
+
+    // 6. Create or Update Journal Entry without deleting
+    if (existingEntry) {
+      await existingEntry.update({
+        entry_date: trx.transaction_date,
+        description: `قيد هالك تصنيع #${trx.id} - ${product?.name || ''} - ${trx.note || ''}`,
+        entry_type_id: ENTRY_TYPES.MANUFACTURING
+      }, options);
+
+      await JournalEntryLine.destroy({
+        where: { journal_entry_id: existingEntry.id },
+        ...options
+      });
+      const linesData = lines.map(l => ({
+        journal_entry_id: existingEntry.id,
+        account_id: l.account_id,
+        debit: l.debit || 0,
+        credit: l.credit || 0,
+        description: l.description || null
+      }));
+      await JournalEntryLine.bulkCreate(linesData, options);
+    } else {
+      await createJournalEntry({
+        refCode: 'manufacturing_scrap',
+        refId: trx.id,
+        entryDate: trx.transaction_date,
+        description: `قيد هالك تصنيع #${trx.id} - ${product?.name || ''} - ${trx.note || ''}`,
+        lines: lines,
+        entryTypeId: ENTRY_TYPES.MANUFACTURING // 13
+      }, options);
+    }
   }
 
   static async syncJournalEntry(trx, options = {}) {
@@ -680,73 +795,72 @@ class InventoryTransactionService {
    * @param {object} transaction 
    */
   static async getBatchesFIFO(productId, warehouseId, requiredQty, transaction) {
-    const batches = await InventoryTransactionBatches.findAll({
-      where: {
-        '$transaction.warehouse_id$': warehouseId,
-        '$transaction.transaction_type$': 'in'
-      },
-      include: [
-        {
-          model: Batches,
-          as: 'batch',
-          required: true,
-          where: { product_id: productId }
-        },
-        {
-          association: 'transaction',
-          required: true
-        }
-      ],
-      order: [['transaction', 'transaction_date', 'ASC'], ['id', 'ASC']],
+    const availableBatches = await sequelize.query(`
+      SELECT 
+        bi.batch_id,
+        bi.quantity as available_quantity,
+        b.batch_number,
+        b.expiry_date,
+        COALESCE(
+          (
+            SELECT itb2.cost_per_unit
+            FROM inventory_transaction_batches itb2
+            INNER JOIN inventory_transactions it2 ON itb2.inventory_transaction_id = it2.id
+            WHERE itb2.batch_id = b.id
+              AND it2.transaction_type = 'in'
+              AND it2.warehouse_id = :warehouseId
+            ORDER BY it2.transaction_date ASC, itb2.id ASC
+            LIMIT 1
+          ),
+          (
+            SELECT itb2.cost_per_unit
+            FROM inventory_transaction_batches itb2
+            WHERE itb2.batch_id = b.id
+            ORDER BY itb2.id ASC
+            LIMIT 1
+          ),
+          0
+        ) as cost_per_unit,
+        (
+          SELECT MIN(it3.transaction_date)
+          FROM inventory_transaction_batches itb3
+          INNER JOIN inventory_transactions it3 ON itb3.inventory_transaction_id = it3.id
+          WHERE itb3.batch_id = b.id
+            AND it3.transaction_type = 'in'
+            AND it3.warehouse_id = :warehouseId
+        ) as transaction_date
+      FROM batch_inventory bi
+      INNER JOIN batches b ON bi.batch_id = b.id
+      WHERE b.product_id = :productId
+        AND bi.warehouse_id = :warehouseId
+        AND bi.quantity > 0
+      ORDER BY transaction_date ASC, bi.batch_id ASC
+    `, {
+      replacements: { productId, warehouseId },
+      type: sequelize.QueryTypes.SELECT,
       transaction
     });
 
-    // Calculate available quantity per batch
     const result = [];
-    let remaining = requiredQty;
+    let remaining = parseFloat(requiredQty);
 
-    for (const txBatch of batches) {
+    for (const b of availableBatches) {
       if (remaining <= 0) break;
+      const availableQty = parseFloat(b.available_quantity);
+      const qtyToUse = Math.min(availableQty, remaining);
 
-      // Get all transactions for this batch
-      const allTransactions = await InventoryTransactionBatches.findAll({
-        where: { batch_id: txBatch.batch_id },
-        include: [{
-          association: 'transaction',
-          where: { warehouse_id: warehouseId }
-        }],
-        transaction
+      result.push({
+        batch_id: b.batch_id,
+        batch_number: b.batch_number,
+        quantity: qtyToUse,
+        cost_per_unit: parseFloat(b.cost_per_unit || 0)
       });
-
-      // Calculate net quantity for this batch
-      let netQty = 0;
-      allTransactions.forEach(tx => {
-        const qty = parseFloat(tx.quantity);
-        if (tx.transaction.transaction_type === 'in') {
-          netQty += qty;
-        } else {
-          netQty -= qty;
-        }
-      });
-
-      if (netQty > 0) {
-        const qtyToUse = Math.min(netQty, remaining);
-
-        // Find batch info to return complete data if needed
-        // txBatch.batch is available from the first query
-
-        result.push({
-          batch_id: txBatch.batch_id,
-          quantity: qtyToUse,
-          cost_per_unit: parseFloat(txBatch.cost_per_unit)
-        });
-        remaining -= qtyToUse;
-      }
+      remaining -= qtyToUse;
     }
 
     return {
       batches: result,
-      remainingNeeded: remaining
+      remainingNeeded: Math.max(0, remaining)
     };
   }
 }

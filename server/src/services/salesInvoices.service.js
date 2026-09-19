@@ -1,4 +1,4 @@
-import { SalesInvoice, SalesInvoiceItem, sequelize, InventoryTransaction, Account, Product, ReferenceType } from "../models/index.js";
+import { SalesInvoice, SalesInvoiceItem, sequelize, InventoryTransaction, Account, Product, ReferenceType, SalesReturn, SalesReturnItem } from "../models/index.js";
 import { Op } from "sequelize";
 import InventoryTransactionService from './inventoryTransaction.service.js';
 
@@ -21,7 +21,7 @@ export default {
             };
         }
 
-        return await SalesInvoice.findAll({
+        const invoices = await SalesInvoice.findAll({
             where: whereClause,
             include: [
                 { association: "party" },
@@ -29,14 +29,73 @@ export default {
                 { association: "employee" },
                 { association: "distributor_employee" },
                 { association: "sales_order" },
-                { association: "account" }
+                { association: "account" },
+                { association: "items" },
+                {
+                    association: "returns",
+                    where: { status: 'approved' },
+                    required: false,
+                    include: [{ association: "items" }]
+                },
+                {
+                    association: "payments",
+                    attributes: ["id", "amount", "withholding_tax_amount"]
+                }
             ],
             order: [['invoice_date', 'DESC'], ['id', 'DESC']]
+        });
+
+        // Calculate return_status and payment balance for each invoice
+        return invoices.map(inv => {
+            const plain = inv.toJSON();
+            const invoiceItems = plain.items || [];
+            const returns = plain.returns || [];
+            const payments = plain.payments || [];
+
+            const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+            plain.paid_amount = totalPaid;
+            plain.remaining_amount = Math.max(0, Number(plain.total_amount || 0) - totalPaid);
+
+            if (returns.length === 0) {
+                plain.return_status = 'none';
+            } else {
+                // Sum total invoiced quantity per product
+                const invoicedQty = {};
+                for (const item of invoiceItems) {
+                    const pid = item.product_id;
+                    invoicedQty[pid] = (invoicedQty[pid] || 0) + Number(item.quantity || 0) + Number(item.bonus || 0);
+                }
+
+                // Sum total returned quantity per product
+                const returnedQty = {};
+                for (const ret of returns) {
+                    for (const rItem of (ret.items || [])) {
+                        const pid = rItem.product_id;
+                        returnedQty[pid] = (returnedQty[pid] || 0) + Number(rItem.quantity || 0) + Number(rItem.bonus || 0);
+                    }
+                }
+
+                // Compare: check if all products fully returned
+                const allProductIds = Object.keys(invoicedQty);
+                if (allProductIds.length === 0) {
+                    plain.return_status = 'none';
+                } else {
+                    const allFullyReturned = allProductIds.every(pid => (returnedQty[pid] || 0) >= invoicedQty[pid]);
+                    plain.return_status = allFullyReturned ? 'full' : 'partial';
+                }
+            }
+
+            // Remove items, returns and payments from response to keep it lean
+            delete plain.items;
+            delete plain.returns;
+            delete plain.payments;
+
+            return plain;
         });
     },
 
     getById: async (id) => {
-        return await SalesInvoice.findByPk(id, {
+        const invoice = await SalesInvoice.findByPk(id, {
             include: [
                 { association: "party" },
                 { association: "warehouse" },
@@ -44,9 +103,17 @@ export default {
                 { association: "distributor_employee" },
                 { association: "sales_order" },
                 { association: "account" },
-                { association: "items", include: ["product"] }
+                { association: "items", include: ["product"] },
+                { association: "payments", attributes: ["id", "amount", "withholding_tax_amount"] }
             ]
         });
+        if (!invoice) return null;
+        const plain = invoice.toJSON();
+        const payments = plain.payments || [];
+        const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        plain.paid_amount = totalPaid;
+        plain.remaining_amount = Math.max(0, Number(plain.total_amount || 0) - totalPaid);
+        return plain;
     },
 
     create: async (data, options = {}) => {

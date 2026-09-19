@@ -68,6 +68,12 @@ const invoiceStatusConfig = {
     cancelled: { color: "error", label: "ملغي" },
 };
 
+const returnStatusConfig = {
+    none: { color: "success", label: "لم يتم ارتجاع" },
+    partial: { color: "warning", label: "ارتجاع جزئي" },
+    full: { color: "error", label: "ارتجاع كامل" },
+};
+
 export default function SalesInvoicesPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -97,19 +103,23 @@ export default function SalesInvoicesPage() {
     const [previewItems, setPreviewItems] = useState([]);
 
     const handlePreview = async (invoice) => {
-        const res = await dispatch(
-            fetchSalesInvoiceItems({ sales_invoice_id: invoice.id })
-        ).unwrap();
+        try {
+            const res = await dispatch(
+                fetchSalesInvoiceItems({ sales_invoice_id: invoice.id })
+            ).unwrap();
 
-        // Map items to include product names
-        const mappedItems = res.map(item => ({
-            ...item,
-            product_name: item.product?.name || products.find(p => p.id === item.product_id)?.name || "Unknown Product"
-        }));
+            // Map items to include product names
+            const mappedItems = (res || []).map(item => ({
+                ...item,
+                product_name: item.product?.name || products.find(p => p.id === item.product_id)?.name || "Unknown Product"
+            }));
 
-        setPreviewInvoice(invoice);
-        setPreviewItems(mappedItems);
-        setPreviewOpen(true);
+            setPreviewInvoice(invoice);
+            setPreviewItems(mappedItems);
+            setPreviewOpen(true);
+        } catch (error) {
+            console.error("Failed to load invoice items for preview:", error);
+        }
     };
 
     // Filter State
@@ -256,6 +266,24 @@ export default function SalesInvoicesPage() {
             }
         },
         {
+            accessorKey: "return_status",
+            header: "حالة الارتجاع",
+            size: 130,
+            Cell: ({ cell }) => {
+                const status = cell.getValue();
+                const cfg = returnStatusConfig[status] || { color: "default", label: status || "غير محدد" };
+                return (
+                    <Chip
+                        label={cfg.label}
+                        color={cfg.color}
+                        size="small"
+                        variant="filled"
+                        sx={{ fontWeight: 600 }}
+                    />
+                );
+            }
+        },
+        {
             accessorKey: "total_amount",
             header: "الإجمالي",
             size: 120,
@@ -264,6 +292,33 @@ export default function SalesInvoicesPage() {
                     {Number(cell.getValue()).toLocaleString()} ج.م
                 </Typography>
             )
+        },
+        {
+            accessorKey: "paid_amount",
+            header: "المدفوع",
+            size: 110,
+            Cell: ({ cell }) => (
+                <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>
+                    {Number(cell.getValue() || 0).toLocaleString()} ج.م
+                </Typography>
+            )
+        },
+        {
+            accessorKey: "remaining_amount",
+            header: "المتبقي",
+            size: 110,
+            Cell: ({ cell }) => {
+                const val = Number(cell.getValue() || 0);
+                return (
+                    <Typography
+                        variant="body2"
+                        color={val > 0 ? "error.main" : "text.secondary"}
+                        sx={{ fontWeight: 700 }}
+                    >
+                        {val.toLocaleString()} ج.م
+                    </Typography>
+                );
+            }
         },
         {
             accessorKey: "note",
@@ -466,7 +521,7 @@ export default function SalesInvoicesPage() {
                 </DialogTitle>
                 <Divider />
                 <DialogContent sx={{ py: 4 }}>
-                    {selectedInvoice && <SalesInvoicePaymentsManager invoiceId={selectedInvoice.id} />}
+                    {selectedInvoice && <SalesInvoicePaymentsManager invoiceId={selectedInvoice.id} invoice={selectedInvoice} />}
                 </DialogContent>
                 <DialogActions sx={{ p: 3 }}>
                     <Button onClick={() => setPaymentsOpen(false)} variant="outlined" sx={{ borderRadius: 10 }}>إغلاق</Button>

@@ -285,6 +285,15 @@ InventoryTransaction.belongsTo(Warehouse, {
   as: "warehouse",
 });
 
+InventoryTransaction.belongsTo(Account, {
+  foreignKey: "account_id",
+  as: "account",
+});
+Account.hasMany(InventoryTransaction, {
+  foreignKey: "account_id",
+  as: "inventory_transactions",
+});
+
 
 JournalEntry.belongsTo(ReferenceType, {
   foreignKey: 'reference_type_id'

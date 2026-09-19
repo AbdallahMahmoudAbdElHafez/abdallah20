@@ -329,15 +329,9 @@ const ExternalJobOrdersService = {
       // Total Cost to capitalize
       const producedQty = Number(data.produced_quantity);
       const wasteQty = Number(data.waste_quantity || 0);
-      const orderQty = Number(order.order_quantity || (producedQty + wasteQty));
 
-      // Calculate Service Cost to Capitalize vs to Deduct from Supplier
-      // Factor: Produced / Total Order
-      const serviceCostToCapitalize = orderQty > 0 ? (totalServiceCost / orderQty) * producedQty : totalServiceCost;
-      const serviceCostToDeduct = totalServiceCost - serviceCostToCapitalize;
-
-      // Final Cost for Finished Goods: full material cost (waste materials distributed) + only produced units service cost
-      const totalCost = totalMaterialCost + serviceCostToCapitalize;
+      // Final Cost for Finished Goods: full material cost (waste materials distributed) + total service cost
+      const totalCost = totalMaterialCost + totalServiceCost;
 
       const unitCost = producedQty > 0 ? totalCost / producedQty : 0;
 
@@ -416,17 +410,6 @@ const ExternalJobOrdersService = {
           credit: totalServiceCost,
           description: `إقفال خدمات تحت التشغيل - أمر #${jobOrderId}`
         });
-
-        // Debit Supplier for waste service cost (Deduction)
-        if (serviceCostToDeduct > 0.005 && order.party?.account_id) {
-          jeLines.push({
-            journal_entry_id: je.id,
-            account_id: order.party.account_id,
-            debit: serviceCostToDeduct,
-            credit: 0,
-            description: `خصم تكلفة تصنيع هالك (${wasteQty} وحدة) - أمر #${jobOrderId}`
-          });
-        }
       }
 
       await JournalEntryLine.bulkCreate(jeLines, { transaction: t });
@@ -437,7 +420,7 @@ const ExternalJobOrdersService = {
         produced_quantity: producedQty,
         waste_quantity: wasteQty,
         // Calculate actual per-unit costs based on total accumulated figures
-        actual_processing_cost_per_unit: producedQty > 0 ? serviceCostToCapitalize / producedQty : 0,
+        actual_processing_cost_per_unit: producedQty > 0 ? totalServiceCost / producedQty : 0,
         actual_raw_material_cost_per_unit: producedQty > 0 ? totalMaterialCost / producedQty : 0,
         total_actual_cost: totalCost
       }, {

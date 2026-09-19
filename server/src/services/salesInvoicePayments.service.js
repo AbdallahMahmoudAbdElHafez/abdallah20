@@ -189,7 +189,10 @@ export async function updatePayment(id, data) {
 export async function listPayments(invoiceId) {
     return await SalesInvoicePayment.findAll({
         where: { sales_invoice_id: invoiceId },
-        include: [{ model: Account, as: 'account' }]
+        include: [
+            { model: Account, as: 'account' },
+            { model: Employee, as: 'employee' }
+        ]
     });
 }
 

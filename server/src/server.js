@@ -1,6 +1,7 @@
 import { env } from './config/env.js';
 import { testConnection, sequelize } from './config/db.js';
 import './models/index.js';
+// App
 import app from './app.js';
 
 

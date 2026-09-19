@@ -9,6 +9,10 @@ import {
     DialogActions,
     TextField,
     MenuItem,
+    Paper,
+    Typography,
+    Grid,
+    Alert,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,13 +24,16 @@ import {
 } from "../features/salesInvoicePayments/salesInvoicePaymentsSlice";
 import { fetchAccounts } from "../features/accounts/accountsSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
+import salesInvoicesApi from "../api/salesInvoicesApi";
 import ChequeDetailsForm from "./ChequeDetailsForm";
 
-export default function SalesInvoicePaymentsManager({ invoiceId }) {
+export default function SalesInvoicePaymentsManager({ invoiceId, invoice }) {
     const dispatch = useDispatch();
     const { byInvoice, status } = useSelector((s) => s.salesInvoicePayments);
     const { items: accounts } = useSelector((s) => s.accounts);
     const { list: employees } = useSelector((s) => s.employees);
+
+    const [invoiceData, setInvoiceData] = useState(invoice || null);
 
     // ====== state for editing/adding ======
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -48,6 +55,18 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
     });
 
     useEffect(() => {
+        if (invoice) {
+            setInvoiceData(invoice);
+        } else if (invoiceId) {
+            salesInvoicesApi.getById(invoiceId).then((res) => {
+                setInvoiceData(res.data);
+            }).catch((err) => {
+                console.error("Failed to fetch invoice details:", err);
+            });
+        }
+    }, [invoiceId, invoice]);
+
+    useEffect(() => {
         if (invoiceId) {
             dispatch(fetchPaymentsByInvoice(invoiceId));
         }
@@ -56,6 +75,11 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
     }, [dispatch, invoiceId]);
 
     const payments = byInvoice[invoiceId] || [];
+
+    // Calculate totals
+    const totalAmount = Number(invoiceData?.total_amount || 0);
+    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+    const remainingAmount = Math.max(0, totalAmount - totalPaid);
 
     const handleDelete = (id) => {
         if (window.confirm("هل أنت متأكد من حذف هذا السند؟")) {
@@ -83,7 +107,7 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
             setFormData({
                 id: "",
                 sales_invoice_id: invoiceId,
-                amount: "",
+                amount: remainingAmount > 0 ? remainingAmount : "",
                 payment_date: new Date().toISOString().split("T")[0],
                 payment_method: "cash",
                 account_id: "", // Should be selected by user
@@ -112,7 +136,15 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
 
     const columns = [
         { accessorKey: "id", header: "المعرف" },
-        { accessorKey: "amount", header: "المبلغ المحصل" },
+        {
+            accessorKey: "amount",
+            header: "المبلغ المحصل",
+            Cell: ({ cell }) => (
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "success.main" }}>
+                    {Number(cell.getValue() || 0).toLocaleString()} ج.م
+                </Typography>
+            )
+        },
         { accessorKey: "withholding_tax_rate", header: "نسبة خصم المنبع %" },
         { accessorKey: "withholding_tax_amount", header: "قيمة خصم المنبع" },
         { accessorKey: "payment_date", header: "التاريخ" },
@@ -156,6 +188,72 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
 
     return (
         <Box>
+            {/* Summary Cards */}
+            {totalAmount > 0 && (
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                    <Grid item xs={12} sm={4}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                textAlign: "center",
+                                borderRadius: 2,
+                                bgcolor: "grey.50",
+                                border: "1px solid",
+                                borderColor: "grey.200"
+                            }}
+                        >
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                إجمالي الفاتورة
+                            </Typography>
+                            <Typography variant="h6" fontWeight={800} color="primary.main">
+                                {totalAmount.toLocaleString()} ج.م
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                textAlign: "center",
+                                borderRadius: 2,
+                                bgcolor: "success.50",
+                                border: "1px solid",
+                                borderColor: "success.200"
+                            }}
+                        >
+                            <Typography variant="caption" color="success.dark" fontWeight={600}>
+                                إجمالي المسدد
+                            </Typography>
+                            <Typography variant="h6" fontWeight={800} color="success.main">
+                                {totalPaid.toLocaleString()} ج.م
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                textAlign: "center",
+                                borderRadius: 2,
+                                bgcolor: remainingAmount > 0 ? "error.50" : "grey.50",
+                                border: "1px solid",
+                                borderColor: remainingAmount > 0 ? "error.200" : "grey.200"
+                            }}
+                        >
+                            <Typography variant="caption" color={remainingAmount > 0 ? "error.dark" : "text.secondary"} fontWeight={600}>
+                                المتبقي
+                            </Typography>
+                            <Typography variant="h6" fontWeight={800} color={remainingAmount > 0 ? "error.main" : "text.secondary"}>
+                                {remainingAmount.toLocaleString()} ج.م
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                </Grid>
+            )}
+
             <Button variant="contained" onClick={() => handleOpenDialog()} sx={{ mb: 2 }}>
                 إضافة دفعة
             </Button>
@@ -170,6 +268,11 @@ export default function SalesInvoicePaymentsManager({ invoiceId }) {
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} fullWidth>
                 <DialogTitle>{isEditing ? "تعديل دفعة" : "إضافة دفعة"}</DialogTitle>
                 <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+                    {totalAmount > 0 && !isEditing && (
+                        <Alert severity={remainingAmount > 0 ? "info" : "success"}>
+                            المتبقي من الفاتورة حالياً: <strong>{remainingAmount.toLocaleString()} ج.م</strong>
+                        </Alert>
+                    )}
                     <TextField
                         label="المبلغ المحصل"
                         type="number"

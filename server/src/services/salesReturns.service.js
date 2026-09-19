@@ -136,11 +136,23 @@ export default {
                             },
                             transaction
                         });
-                        const alreadyReturned = previousReturns.reduce((sum, r) => sum + Number(r.quantity), 0);
-                        const totalAttempted = alreadyReturned + Number(item.quantity);
+                        const alreadyReturnedQty = previousReturns.reduce((sum, r) => sum + Number(r.quantity), 0);
+                        const alreadyReturnedBonus = previousReturns.reduce((sum, r) => sum + Number(r.bonus || 0), 0);
 
-                        if (totalAttempted > Number(originalItem.quantity)) {
-                            throw new Error(`Total returned/attempted quantity (${totalAttempted}) for product ${item.product_id} exceeds invoiced quantity (${originalItem.quantity}). Previously returned: ${alreadyReturned}.`);
+                        const returnQty = Number(item.quantity || 0);
+                        const returnBonus = Number(item.bonus || 0);
+
+                        const totalAttemptedQty = alreadyReturnedQty + returnQty;
+                        const totalAttemptedBonus = alreadyReturnedBonus + returnBonus;
+
+                        const originalQty = Number(originalItem.quantity);
+                        const originalBonus = Number(originalItem.bonus || 0);
+
+                        if (totalAttemptedQty > originalQty) {
+                            throw new Error(`Total returned/attempted quantity (${totalAttemptedQty}) for product ${item.product_id} exceeds invoiced base quantity (${originalQty}). Previously returned: ${alreadyReturnedQty}.`);
+                        }
+                        if (totalAttemptedBonus > originalBonus) {
+                            throw new Error(`Total returned/attempted bonus (${totalAttemptedBonus}) for product ${item.product_id} exceeds invoiced bonus (${originalBonus}). Previously returned: ${alreadyReturnedBonus}.`);
                         }
                     }
                 }
@@ -150,7 +162,8 @@ export default {
                 }
 
                 // 3. Financial Calculation (Pro-rated)
-                const returnQty = Number(item.quantity);
+                const returnQty = Number(item.quantity || 0);
+                const returnBonus = Number(item.bonus || 0);
                 const lineGross = unitPrice * returnQty;
 
                 let invoiceSubtotal = 0;
@@ -182,7 +195,7 @@ export default {
 
                 if (!item.is_manual && originalItem) {
                     // Find original Inventory Transaction (OUT) for this Invoice Item
-                    const invTrx = await InventoryTransaction.findOne({
+                    const invTrxs = await InventoryTransaction.findAll({
                         where: {
                             source_type: 'sales_invoice',
                             source_id: originalItem.id
@@ -194,16 +207,19 @@ export default {
                         transaction
                     });
 
-                    if (invTrx && invTrx.transaction_batches && invTrx.transaction_batches.length > 0) {
+                    if (invTrxs && invTrxs.length > 0) {
                         // Calculate Weighted Average Cost from the batches used in the sale
                         let totalBatchCost = 0;
                         let totalBatchQty = 0;
 
-                        for (const b of invTrx.transaction_batches) {
+                        for (const invTrx of invTrxs) {
+                            if (!invTrx || !invTrx.transaction_batches) continue;
+                            for (const b of invTrx.transaction_batches) {
                             const qty = Number(b.quantity);
                             const cost = Number(b.cost_per_unit);
                             totalBatchCost += (qty * cost);
                             totalBatchQty += qty;
+                            }
                         }
 
                         if (totalBatchQty > 0) {
@@ -276,6 +292,7 @@ export default {
                     sales_invoice_id: invoice ? invoice.id : null,
                     product_id: item.product_id,
                     quantity: returnQty,
+                    bonus: returnBonus,
                     original_price: originalPriceForDB,
                     price: unitPrice,
                     cost_price: originalCostPerUnit, // Store Cost Price for Inventory Transaction
@@ -287,12 +304,13 @@ export default {
                 });
 
                 const productForType = await Product.findByPk(item.product_id, { attributes: ['type_id'], transaction });
+                const totalPhysicalQty = returnQty + returnBonus;
 
                 costReversalItems.push({
                     product_id: item.product_id,
                     condition: item.return_condition || 'good',
-                    quantity: returnQty,
-                    totalCost: originalCostPerUnit * returnQty,
+                    quantity: totalPhysicalQty,
+                    totalCost: originalCostPerUnit * totalPhysicalQty,
                     type_id: productForType.type_id
                 });
             }
@@ -325,11 +343,12 @@ export default {
                 if (['good', 'damaged', 'expired'].includes(newItem.return_condition)) {
 
                     let batchesPayload = [];
+                    const itemTotalPhysical = Number(newItem.quantity) + Number(newItem.bonus || 0);
                     if (newItem.batch_number) {
                         batchesPayload.push({
                             batch_number: newItem.batch_number,
                             expiry_date: newItem.expiry_date,
-                            quantity: newItem.quantity,
+                            quantity: itemTotalPhysical,
                             cost_per_unit: pItem.cost_price, // Use pItem to ensure we get the calculated cost
                             status: newItem.batch_status || 'active'
                         });
@@ -679,23 +698,38 @@ export default {
                         originalPriceForDB = (item.original_price !== undefined && item.original_price !== null) ? Number(item.original_price) : (Number(product.price) || unitPrice);
                     }
 
+                    const returnQty = Number(item.quantity || 0);
+                    const returnBonus = Number(item.bonus || 0);
+
                     // 2a. Cumulative Validation - Don't return more than sold across all returns (Only if invoice linked)
                     if (invoice && originalItem) {
                         const previousReturns = await SalesReturnItem.findAll({
                             include: [{
                                 association: "sales_return",
-                                where: { sales_invoice_id: invoice.id }
+                                where: {
+                                    sales_invoice_id: invoice.id,
+                                    id: { [Op.ne]: id }
+                                }
                             }],
                             where: {
                                 product_id: item.product_id
                             },
                             transaction
                         });
-                        const alreadyReturned = previousReturns.reduce((sum, r) => sum + Number(r.quantity), 0);
-                        const totalAttempted = alreadyReturned + Number(item.quantity);
+                        const alreadyReturnedQty = previousReturns.reduce((sum, r) => sum + Number(r.quantity), 0);
+                        const alreadyReturnedBonus = previousReturns.reduce((sum, r) => sum + Number(r.bonus || 0), 0);
 
-                        if (totalAttempted > Number(originalItem.quantity)) {
-                            throw new Error(`Total returned/attempted quantity (${totalAttempted}) for product ${item.product_id} exceeds invoiced quantity (${originalItem.quantity}). Previously returned: ${alreadyReturned}.`);
+                        const totalAttemptedQty = alreadyReturnedQty + returnQty;
+                        const totalAttemptedBonus = alreadyReturnedBonus + returnBonus;
+
+                        const originalQty = Number(originalItem.quantity);
+                        const originalBonus = Number(originalItem.bonus || 0);
+
+                        if (totalAttemptedQty > originalQty) {
+                            throw new Error(`Total returned/attempted quantity (${totalAttemptedQty}) for product ${item.product_id} exceeds invoiced base quantity (${originalQty}). Previously returned: ${alreadyReturnedQty}.`);
+                        }
+                        if (totalAttemptedBonus > originalBonus) {
+                            throw new Error(`Total returned/attempted bonus (${totalAttemptedBonus}) for product ${item.product_id} exceeds invoiced bonus (${originalBonus}). Previously returned: ${alreadyReturnedBonus}.`);
                         }
                     }
                 }
@@ -705,7 +739,8 @@ export default {
                 }
 
                 // 3. Financial Calculation (Pro-rated)
-                const returnQty = Number(item.quantity);
+                const returnQty = Number(item.quantity || 0);
+                const returnBonus = Number(item.bonus || 0);
                 const lineGross = unitPrice * returnQty;
 
                 let invoiceSubtotal = 0;
@@ -737,7 +772,7 @@ export default {
 
                 if (!item.is_manual && originalItem) {
                     // Find original Inventory Transaction (OUT) for this Invoice Item
-                    const invTrx = await InventoryTransaction.findOne({
+                    const invTrxs = await InventoryTransaction.findAll({
                         where: {
                             source_type: 'sales_invoice',
                             source_id: originalItem.id
@@ -749,16 +784,19 @@ export default {
                         transaction
                     });
 
-                    if (invTrx && invTrx.transaction_batches && invTrx.transaction_batches.length > 0) {
+                    if (invTrxs && invTrxs.length > 0) {
                         // Calculate Weighted Average Cost from the batches used in the sale
                         let totalBatchCost = 0;
                         let totalBatchQty = 0;
 
-                        for (const b of invTrx.transaction_batches) {
+                        for (const invTrx of invTrxs) {
+                            if (!invTrx || !invTrx.transaction_batches) continue;
+                            for (const b of invTrx.transaction_batches) {
                             const qty = Number(b.quantity);
                             const cost = Number(b.cost_per_unit);
                             totalBatchCost += (qty * cost);
                             totalBatchQty += qty;
+                            }
                         }
 
                         if (totalBatchQty > 0) {
@@ -831,6 +869,7 @@ export default {
                     sales_invoice_id: invoice ? invoice.id : null,
                     product_id: item.product_id,
                     quantity: returnQty,
+                    bonus: returnBonus,
                     original_price: originalPriceForDB,
                     price: unitPrice,
                     cost_price: originalCostPerUnit, // Store Cost Price for Inventory Transaction
@@ -842,12 +881,13 @@ export default {
                 });
 
                 const productForType = await Product.findByPk(item.product_id, { attributes: ['type_id'], transaction });
+                const totalPhysicalQty = returnQty + returnBonus;
 
                 costReversalItems.push({
                     product_id: item.product_id,
                     condition: item.return_condition || 'good',
-                    quantity: returnQty,
-                    totalCost: originalCostPerUnit * returnQty,
+                    quantity: totalPhysicalQty,
+                    totalCost: originalCostPerUnit * totalPhysicalQty,
                     type_id: productForType.type_id
                 });
             }
@@ -880,11 +920,12 @@ export default {
                 if (['good', 'damaged', 'expired'].includes(newItem.return_condition)) {
 
                     let batchesPayload = [];
+                    const itemTotalPhysical = Number(newItem.quantity) + Number(newItem.bonus || 0);
                     if (newItem.batch_number) {
                         batchesPayload.push({
                             batch_number: newItem.batch_number,
                             expiry_date: newItem.expiry_date,
-                            quantity: newItem.quantity,
+                            quantity: itemTotalPhysical,
                             cost_per_unit: pItem.cost_price, // Use pItem to ensure we get the calculated cost
                             status: newItem.batch_status || 'active'
                         });

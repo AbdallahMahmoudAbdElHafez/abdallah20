@@ -277,11 +277,17 @@ const getSalesReport = async (startDate, endDate) => {
                 model: SalesInvoice,
                 as: 'invoice',
                 attributes: ['id', 'invoice_number', 'distributor_employee_id'],
-                include: [{
-                    model: Employee,
-                    as: 'distributor_employee',
-                    attributes: ['id', 'name']
-                }]
+                include: [
+                    {
+                        model: Employee,
+                        as: 'distributor_employee',
+                        attributes: ['id', 'name']
+                    },
+                    {
+                        model: SalesInvoiceItem,
+                        as: 'items'
+                    }
+                ]
             }
         ]
     });
@@ -451,7 +457,21 @@ const getSalesReport = async (startDate, endDate) => {
             ret.items.forEach(item => {
                 const productId = item.product_id;
                 const productName = item.product?.name || `Product ${productId}`;
-                const qty = parseFloat(item.quantity || 0);
+                let retQty = parseFloat(item.quantity || 0);
+                let retBonus = parseFloat(item.bonus || 0);
+
+                if (retBonus === 0 && ret.invoice && ret.invoice.items) {
+                    const origItem = ret.invoice.items.find(i => i.product_id === productId);
+                    if (origItem) {
+                        const origQty = parseFloat(origItem.quantity || 0);
+                        const origBonus = parseFloat(origItem.bonus || 0);
+                        const origTotal = origQty + origBonus;
+                        if (origTotal > 0 && origBonus > 0 && retQty === origTotal) {
+                            retBonus = (retQty * origBonus) / origTotal;
+                            retQty = retQty - retBonus;
+                        }
+                    }
+                }
                 
                 // For returns, we'll assume net revenue is what was paid
                 // Since returns table has total_amount and tax_amount, we can estimate net ratio
@@ -459,13 +479,14 @@ const getSalesReport = async (startDate, endDate) => {
                 const retTax = parseFloat(ret.tax_amount || 0);
                 const netRatio = retTotal > 0 ? ((retTotal - retTax) / retTotal) : 1;
                 
-                const itemGross = qty * parseFloat(item.price || 0);
+                const itemGross = retQty * parseFloat(item.price || 0);
                 const netRevenue = itemGross * netRatio;
 
                 if (!productStats[productId]) {
                     productStats[productId] = { product: productName, quantity: 0, bonus: 0, revenue: 0, cost: 0 };
                 }
-                productStats[productId].quantity -= qty;
+                productStats[productId].quantity -= retQty;
+                productStats[productId].bonus -= retBonus;
                 productStats[productId].revenue -= netRevenue;
 
                 // Cost deduction logic
@@ -482,7 +503,7 @@ const getSalesReport = async (startDate, endDate) => {
                     });
                 }
                 if (!hasBatches) {
-                    returnItemCost = qty * parseFloat(item.product?.cost_price || 0);
+                    returnItemCost = totalRetQty * parseFloat(item.product?.cost_price || 0);
                 }
                 productStats[productId].cost -= returnItemCost;
 
@@ -491,7 +512,8 @@ const getSalesReport = async (startDate, endDate) => {
                 if (!regionProductStats[rpKey]) {
                     regionProductStats[rpKey] = { region: regionName, product: productName, quantity: 0, bonus: 0, revenue: 0, cost: 0 };
                 }
-                regionProductStats[rpKey].quantity -= qty;
+                regionProductStats[rpKey].quantity -= retQty;
+                regionProductStats[rpKey].bonus -= retBonus;
                 regionProductStats[rpKey].revenue -= netRevenue;
                 regionProductStats[rpKey].cost -= returnItemCost;
 
@@ -499,14 +521,14 @@ const getSalesReport = async (startDate, endDate) => {
                 if (!employeeProductStats[epKey]) {
                     employeeProductStats[epKey] = { employee: empName, product: productName, quantity: 0, revenue: 0 };
                 }
-                employeeProductStats[epKey].quantity -= qty;
+                employeeProductStats[epKey].quantity -= retQty;
                 employeeProductStats[epKey].revenue -= netRevenue;
 
                 const dpKey = `${distName}_${productId}`;
                 if (!distributorProductStats[dpKey]) {
                     distributorProductStats[dpKey] = { distributor: distName, product: productName, quantity: 0, revenue: 0 };
                 }
-                distributorProductStats[dpKey].quantity -= qty;
+                distributorProductStats[dpKey].quantity -= retQty;
                 distributorProductStats[dpKey].revenue -= netRevenue;
 
                 // Deduct from Customer Product Stats
@@ -515,7 +537,7 @@ const getSalesReport = async (startDate, endDate) => {
                 if (!customerProductStats[cpKey]) {
                     customerProductStats[cpKey] = { customer: customerName, product: productName, quantity: 0, revenue: 0 };
                 }
-                customerProductStats[cpKey].quantity -= qty;
+                customerProductStats[cpKey].quantity -= retQty;
                 customerProductStats[cpKey].revenue -= netRevenue;
             });
         }

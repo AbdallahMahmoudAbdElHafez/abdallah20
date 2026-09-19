@@ -442,12 +442,28 @@ const SalesReportPage = () => {
 
             ret.items?.forEach(item => {
                 const p = item.product?.name || 'Unknown';
-                const qty = parseFloat(item.quantity || 0);
+                let retQty = parseFloat(item.quantity || 0);
+                let retBonus = parseFloat(item.bonus || 0);
                 const price = parseFloat(item.price || 0);
-                // For returns, we treat the value as negative
-                row[`${p}_qty`] -= qty;
+
+                if (retBonus === 0 && ret.invoice && ret.invoice.items) {
+                    const origItem = ret.invoice.items.find(i => i.product_id === item.product_id);
+                    if (origItem) {
+                        const origQty = parseFloat(origItem.quantity || 0);
+                        const origBonus = parseFloat(origItem.bonus || 0);
+                        const origTotal = origQty + origBonus;
+                        if (origTotal > 0 && origBonus > 0 && retQty === origTotal) {
+                            retBonus = (retQty * origBonus) / origTotal;
+                            retQty = retQty - retBonus;
+                        }
+                    }
+                }
+
+                // For returns, we treat the values as negative
+                row[`${p}_qty`] -= retQty;
+                row[`${p}_bonus`] -= retBonus;
                 row[`${p}_add_disc_val`] -= 0; // Assuming returns don't have prorated additional discount or it's negligible here
-                row[`${p}_val`] -= (qty * price);
+                row[`${p}_val`] -= (retQty * price);
             });
 
             return row;
@@ -487,6 +503,7 @@ const SalesReportPage = () => {
                     totalsRow.total_invoice += r.total_invoice;
                     sortedProducts.forEach(p => {
                         totalsRow[`${p}_qty`] += r[`${p}_qty`];
+                        totalsRow[`${p}_bonus`] += r[`${p}_bonus`];
                         totalsRow[`${p}_val`] += r[`${p}_val`];
                         totalsRow[`${p}_add_disc_val`] += r[`${p}_add_disc_val`] || 0;
                     });

@@ -104,7 +104,44 @@ export default function SalesInvoicePaymentsPage() {
         { accessorKey: "sales_invoice.party.name", header: "اسم العميل" },
         { accessorKey: "sales_invoice.party.city.name", header: "المدينة" },
         { accessorKey: "employee.name", header: "الموظف" },
-        { accessorKey: "amount", header: "المبلغ" },
+        {
+            accessorKey: "sales_invoice.total_amount",
+            header: "إجمالي الفاتورة",
+            Cell: ({ cell }) => (
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {cell.getValue() != null ? `${Number(cell.getValue()).toLocaleString()} ج.م` : "-"}
+                </Typography>
+            )
+        },
+        {
+            accessorKey: "amount",
+            header: "المبلغ المحصل",
+            Cell: ({ cell }) => (
+                <Typography variant="body2" color="success.main" sx={{ fontWeight: 700 }}>
+                    {Number(cell.getValue() || 0).toLocaleString()} ج.م
+                </Typography>
+            )
+        },
+        {
+            accessorKey: "sales_invoice.remaining_amount",
+            header: "المتبقي من الفاتورة",
+            Cell: ({ row }) => {
+                const remaining = row.original.sales_invoice?.remaining_amount !== undefined
+                    ? Number(row.original.sales_invoice.remaining_amount)
+                    : (row.original.sales_invoice?.total_amount != null
+                        ? Math.max(0, Number(row.original.sales_invoice.total_amount) - Number(row.original.sales_invoice.total_paid || row.original.amount || 0))
+                        : null);
+                return (
+                    <Typography
+                        variant="body2"
+                        color={remaining > 0 ? "error.main" : "text.secondary"}
+                        sx={{ fontWeight: 700 }}
+                    >
+                        {remaining != null ? `${remaining.toLocaleString()} ج.م` : "-"}
+                    </Typography>
+                );
+            }
+        },
         { accessorKey: "payment_date", header: "تاريخ السداد" },
         { accessorKey: "payment_method", header: "طريقة السداد" },
         { accessorKey: "note", header: "ملاحظات" },

@@ -31,6 +31,11 @@ router.get("/all", async (req, res, next) => {
                                 as: "city",
                                 attributes: ["id", "name"]
                             }]
+                        },
+                        {
+                            model: SalesInvoicePayment,
+                            as: "payments",
+                            attributes: ["id", "amount", "withholding_tax_amount"]
                         }
                     ]
                 },
@@ -42,7 +47,20 @@ router.get("/all", async (req, res, next) => {
             ],
             order: [["payment_date", "DESC"]],
         });
-        res.json(payments);
+
+        const result = payments.map(p => {
+            const plain = p.toJSON();
+            if (plain.sales_invoice) {
+                const invoicePayments = plain.sales_invoice.payments || [];
+                const totalPaid = invoicePayments.reduce((sum, pay) => sum + Number(pay.amount || 0), 0);
+                const totalAmount = Number(plain.sales_invoice.total_amount || 0);
+                plain.sales_invoice.total_paid = totalPaid;
+                plain.sales_invoice.remaining_amount = Math.max(0, totalAmount - totalPaid);
+            }
+            return plain;
+        });
+
+        res.json(result);
     } catch (err) {
         next(err);
     }
