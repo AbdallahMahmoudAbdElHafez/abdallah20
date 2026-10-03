@@ -170,9 +170,9 @@ export default function PurchaseInvoicesPage() {
 
       {/* Payments Dialog */}
       <Dialog open={paymentsOpen} onClose={() => setPaymentsOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>مدفوعات فاتورة {selectedInvoice?.invoice_number}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>مدفوعات فاتورة {selectedInvoice?.invoice_number}</DialogTitle>
         <DialogContent>
-          {selectedInvoice && <PurchaseInvoicePaymentsManager invoiceId={selectedInvoice.id} />}
+          {selectedInvoice && <PurchaseInvoicePaymentsManager invoiceId={selectedInvoice.id} invoice={selectedInvoice} />}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPaymentsOpen(false)}>إغلاق</Button>

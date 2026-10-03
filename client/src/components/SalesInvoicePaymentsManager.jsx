@@ -81,9 +81,10 @@ export default function SalesInvoicePaymentsManager({ invoiceId, invoice }) {
     const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const remainingAmount = Math.max(0, totalAmount - totalPaid);
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm("هل أنت متأكد من حذف هذا السند؟")) {
-            dispatch(deletePayment(id));
+            await dispatch(deletePayment(id));
+            dispatch(fetchPaymentsByInvoice(invoiceId));
         }
     };
 

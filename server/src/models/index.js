@@ -324,6 +324,10 @@ PurchaseInvoicePayment.belongsTo(PurchaseInvoice, {
   foreignKey: "purchase_invoice_id",
   as: "purchase_invoice",
 });
+PurchaseInvoice.hasMany(PurchaseInvoicePayment, {
+  foreignKey: "purchase_invoice_id",
+  as: "payments",
+});
 PurchaseInvoicePayment.belongsTo(Employee, { foreignKey: "employee_id", as: "employee" });
 Employee.hasMany(PurchaseInvoicePayment, { foreignKey: "employee_id", as: "purchase_payments" });
 

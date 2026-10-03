@@ -47,6 +47,7 @@ import ExpensesReportPage from "./pages/ExpensesReportPage";
 import JournalExpensesReportPage from "./pages/JournalExpensesReportPage";
 import JobOrdersReportPage from "./pages/JobOrdersReportPage";
 import WarehouseReportPage from "./pages/WarehouseReportPage";
+import ProductAverageCostReportPage from "./pages/ProductAverageCostReportPage";
 import IssueVouchersReportPage from "./pages/IssueVouchersReportPage";
 import OpeningSalesReportPage from "./pages/OpeningSalesReportPage";
 import ZakatReportPage from "./pages/ZakatReportPage";
@@ -140,6 +141,7 @@ export default function App() {
           <Route path="/reports/unbalanced-journal-entries" element={<UnbalancedJournalEntriesPage />} />
           <Route path="/reports/job-orders" element={<JobOrdersReportPage />} />
           <Route path="/reports/warehouse" element={<WarehouseReportPage />} />
+          <Route path="/reports/product-average-cost" element={<ProductAverageCostReportPage />} />
           <Route path="/reports/issue-vouchers" element={<IssueVouchersReportPage />} />
           <Route path="/reports/opening-sales" element={<OpeningSalesReportPage />} />
           <Route path="/reports/zakat" element={<ZakatReportPage />} />

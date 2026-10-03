@@ -56,6 +56,13 @@ const ReportsDashboard = () => {
             color: '#f3e5f5'
         },
         {
+            title: 'متوسط تكلفة الوحدة من كل منتج',
+            description: 'حساب متوسط التكلفة المرجح للمخزون والواردات مستنداً إلى التشغيلات (Batches)',
+            icon: <ZakatIcon sx={{ fontSize: 60, color: '#3f51b5' }} />,
+            path: '/reports/product-average-cost',
+            color: '#e8eaf6'
+        },
+        {
             title: 'تقرير أذونات الصرف',
             description: 'تقرير تفصيلي عن أذونات الصرف وتكلفة المصروفات',
             icon: <VoucherIcon sx={{ fontSize: 60, color: '#fbc02d' }} />,

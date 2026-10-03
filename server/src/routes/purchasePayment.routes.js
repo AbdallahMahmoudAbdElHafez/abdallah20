@@ -35,5 +35,6 @@ router.get("/all", async (req, res, next) => {
 router.post("/", controller.createPayment);
 router.get("/detail/:paymentId", controller.getPaymentDetail);
 router.put("/:paymentId", controller.updatePayment);
+router.delete("/:paymentId", controller.deletePayment);
 router.get("/:invoiceId", controller.getPayments);
 export default router;

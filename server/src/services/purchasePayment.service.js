@@ -1,4 +1,4 @@
-import { sequelize, PurchaseInvoicePayment, PurchaseInvoice, Party, Cheque, Account, ReferenceType } from "../models/index.js";
+import { sequelize, PurchaseInvoicePayment, PurchaseInvoice, Party, Cheque, Account, ReferenceType, Employee } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
 import { Op } from "sequelize"; // 👈 مهم جداً
 
@@ -166,13 +166,94 @@ export async function updatePayment(id, data) {
 export async function listPayments(invoiceId) {
   return await PurchaseInvoicePayment.findAll({
     where: { purchase_invoice_id: invoiceId },
-    include: [{ model: Account, as: "account" }],
+    include: [
+      { model: Account, as: "account" },
+      { model: Employee, as: "employee" }
+    ],
     order: [["payment_date", "DESC"]],
   });
 }
 
 export async function getPaymentById(id) {
   return await PurchaseInvoicePayment.findByPk(id, {
-    include: [{ model: Account, as: "account" }],
+    include: [
+      { model: Account, as: "account" },
+      { model: Employee, as: "employee" }
+    ],
   });
+}
+
+export async function deletePayment(id) {
+  const t = await sequelize.transaction();
+  try {
+    const payment = await PurchaseInvoicePayment.findByPk(id, {
+      include: [{ model: PurchaseInvoice, as: "purchase_invoice" }],
+      transaction: t,
+    });
+    if (!payment) throw new Error("Payment not found");
+
+    const invoice = payment.purchase_invoice;
+
+    const { JournalEntry, JournalEntryLine, ReferenceType } = await import("../models/index.js");
+    const refType = await ReferenceType.findOne({ where: { code: "purchase_payment" }, transaction: t });
+
+    if (refType) {
+      const originalEntry = await JournalEntry.findOne({
+        where: { reference_type_id: refType.id, reference_id: payment.id },
+        include: [{ model: JournalEntryLine, as: "lines" }],
+        transaction: t,
+      });
+
+      if (originalEntry && originalEntry.lines.length > 0) {
+        const reversalLines = originalEntry.lines.map((line) => ({
+          account_id: line.account_id,
+          debit: line.credit,
+          credit: line.debit,
+          description: `عكس قيد: ${line.description || ""}`,
+        }));
+
+        await createJournalEntry(
+          {
+            refCode: "manual_entry",
+            refId: payment.id,
+            entryDate: new Date(),
+            description: `إلغاء/عكس سداد فاتورة مشتريات #${invoice?.invoice_number || ""} - السند رقم ${payment.id}`,
+            entryTypeId: 5,
+            lines: reversalLines,
+          },
+          { transaction: t }
+        );
+      }
+    }
+
+    await Cheque.destroy({
+      where: { purchase_payment_id: payment.id },
+      transaction: t,
+    });
+
+    await payment.destroy({ transaction: t });
+
+    if (invoice) {
+      const totalPaid = await PurchaseInvoicePayment.sum("amount", {
+        where: { purchase_invoice_id: invoice.id },
+        transaction: t,
+      });
+
+      const newPaid = Number(totalPaid || 0);
+      const newStatus =
+        newPaid >= Number(invoice.total_amount)
+          ? "paid"
+          : newPaid > 0
+            ? "partially_paid"
+            : "unpaid";
+
+      await invoice.update({ status: newStatus }, { transaction: t });
+    }
+
+    await t.commit();
+    return { success: true, message: "Payment deleted successfully" };
+  } catch (err) {
+    await t.rollback();
+    throw err;
+  }
 }

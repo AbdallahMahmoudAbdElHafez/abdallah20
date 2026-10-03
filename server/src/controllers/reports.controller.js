@@ -105,6 +105,23 @@ const reportsController = {
         }
     },
 
+    getProductAverageCostReport: async (req, res) => {
+        try {
+            const { warehouseId, startDate, endDate, onlyInStock, search } = req.query;
+            const data = await reportsService.getProductAverageCostReport({
+                warehouseId,
+                startDate,
+                endDate,
+                onlyInStock,
+                search
+            });
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching product average cost report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     getIssueVouchersReport: async (req, res) => {
         try {
             const { startDate, endDate } = req.query;

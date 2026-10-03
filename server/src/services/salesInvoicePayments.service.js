@@ -1,4 +1,4 @@
-import { sequelize, SalesInvoicePayment, SalesInvoice, Party, Account, Cheque, ReferenceType } from "../models/index.js";
+import { sequelize, SalesInvoicePayment, SalesInvoice, Party, Account, Cheque, ReferenceType, Employee } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
 import ENTRY_TYPES from "../constants/entryTypes.js";
 import { Op } from "sequelize";

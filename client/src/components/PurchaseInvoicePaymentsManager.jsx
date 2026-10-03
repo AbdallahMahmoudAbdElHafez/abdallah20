@@ -9,6 +9,9 @@ import {
     DialogActions,
     TextField,
     MenuItem,
+    Paper,
+    Typography,
+    Grid,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,11 +25,13 @@ import { fetchAccounts } from "../features/accounts/accountsSlice";
 import { fetchEmployees } from "../features/employees/employeesSlice";
 import ChequeDetailsForm from "./ChequeDetailsForm";
 
-export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
+export default function PurchaseInvoicePaymentsManager({ invoiceId, invoice }) {
     const dispatch = useDispatch();
     const { byInvoice, status } = useSelector((s) => s.purchasePayments);
     const { items: accounts } = useSelector((s) => s.accounts);
     const { list: employees } = useSelector((s) => s.employees);
+
+    const [invoiceData, setInvoiceData] = useState(invoice || null);
 
     // ====== state for editing/adding ======
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -38,12 +43,18 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
         payment_date: new Date().toISOString().split("T")[0],
         payment_method: "cash",
         account_id: "",
-        notes: "",
+        note: "",
         cheque_details: {
             bank_name: ""
         },
         employee_id: ""
     });
+
+    useEffect(() => {
+        if (invoice) {
+            setInvoiceData(invoice);
+        }
+    }, [invoice]);
 
     useEffect(() => {
         if (invoiceId) {
@@ -55,9 +66,15 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
 
     const payments = byInvoice[invoiceId] || [];
 
-    const handleDelete = (id) => {
+    // Calculate totals
+    const totalAmount = Number(invoiceData?.total_amount || 0);
+    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+    const remainingAmount = Math.max(0, totalAmount - totalPaid);
+
+    const handleDelete = async (id) => {
         if (window.confirm("هل أنت متأكد من حذف هذا السند؟")) {
-            dispatch(deletePayment(id));
+            await dispatch(deletePayment(id));
+            dispatch(fetchPaymentsByInvoice(invoiceId));
         }
     };
 
@@ -72,18 +89,21 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
                 payment_method: payment.payment_method,
                 account_id: payment.account_id,
                 employee_id: payment.employee_id || "",
-                notes: payment.notes || "",
+                note: payment.note || payment.notes || "",
+                cheque_details: {
+                    bank_name: ""
+                }
             });
         } else {
             setIsEditing(false);
             setFormData({
                 id: "",
                 purchase_invoice_id: invoiceId,
-                amount: "",
+                amount: remainingAmount > 0 ? remainingAmount : "",
                 payment_date: new Date().toISOString().split("T")[0],
                 payment_method: "cash",
                 account_id: "",
-                notes: "",
+                note: "",
                 cheque_details: {
                     bank_name: ""
                 },
@@ -110,7 +130,15 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
 
     const columns = [
         { accessorKey: "id", header: "المعرف" },
-        { accessorKey: "amount", header: "المبلغ" },
+        {
+            accessorKey: "amount",
+            header: "المبلغ المدفوع",
+            Cell: ({ cell }) => (
+                <Typography variant="body2" sx={{ fontWeight: 700, color: "success.main" }}>
+                    {Number(cell.getValue() || 0).toLocaleString()} ج.م
+                </Typography>
+            )
+        },
         { accessorKey: "payment_date", header: "التاريخ" },
         { accessorKey: "payment_method", header: "الطريقة" },
         {
@@ -121,7 +149,10 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
             accessorFn: (row) => row.employee?.name || row.employee_id || "-",
             header: "الموظف"
         },
-        { accessorKey: "notes", header: "ملاحظات" },
+        {
+            accessorFn: (row) => row.note || row.notes || "-",
+            header: "ملاحظات"
+        },
         {
             header: "إجراءات",
             Cell: ({ row }) => (
@@ -146,12 +177,78 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
         },
     ];
 
-    if (status === "loading") {
+    if (status === "loading" && !payments.length) {
         return <CircularProgress />;
     }
 
     return (
         <Box>
+            {/* Summary Cards */}
+            {totalAmount > 0 && (
+                <Grid container spacing={2} sx={{ mb: 3 }}>
+                    <Grid item xs={12} sm={4}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                textAlign: "center",
+                                borderRadius: 2,
+                                bgcolor: "grey.50",
+                                border: "1px solid",
+                                borderColor: "grey.200"
+                            }}
+                        >
+                            <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                                إجمالي الفاتورة
+                            </Typography>
+                            <Typography variant="h6" fontWeight={800} color="primary.main">
+                                {totalAmount.toLocaleString()} ج.م
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                textAlign: "center",
+                                borderRadius: 2,
+                                bgcolor: "success.50",
+                                border: "1px solid",
+                                borderColor: "success.200"
+                            }}
+                        >
+                            <Typography variant="caption" color="success.dark" fontWeight={600}>
+                                إجمالي المسدد
+                            </Typography>
+                            <Typography variant="h6" fontWeight={800} color="success.main">
+                                {totalPaid.toLocaleString()} ج.م
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                        <Paper
+                            elevation={0}
+                            sx={{
+                                p: 2,
+                                textAlign: "center",
+                                borderRadius: 2,
+                                bgcolor: remainingAmount > 0 ? "error.50" : "grey.50",
+                                border: "1px solid",
+                                borderColor: remainingAmount > 0 ? "error.200" : "grey.200"
+                            }}
+                        >
+                            <Typography variant="caption" color={remainingAmount > 0 ? "error.dark" : "text.secondary"} fontWeight={600}>
+                                المتبقي
+                            </Typography>
+                            <Typography variant="h6" fontWeight={800} color={remainingAmount > 0 ? "error.main" : "text.secondary"}>
+                                {remainingAmount.toLocaleString()} ج.م
+                            </Typography>
+                        </Paper>
+                    </Grid>
+                </Grid>
+            )}
+
             <Button variant="contained" onClick={() => handleOpenDialog()} sx={{ mb: 2 }}>
                 إضافة دفعة
             </Button>
@@ -204,6 +301,9 @@ export default function PurchaseInvoicePaymentsManager({ invoiceId }) {
                         ))}
                     </TextField>
                     <TextField
+                        label="ملاحظات"
+                        value={formData.note}
+                        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                         fullWidth
                     />
                     <TextField

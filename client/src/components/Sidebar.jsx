@@ -35,8 +35,7 @@ const navItems = [
 const productsMenu = [
   { label: "المنتجات", path: "/products" },
   { label: "تكلفة المنتجات", path: "/product-costs" },
-
-
+  { label: "متوسط تكلفة الوحدة", path: "/reports/product-average-cost" },
 ];
 const companyInfoMenu = [
   { label: "الشركات", path: "/companies" },
@@ -70,6 +69,8 @@ const salesMenu = [
 const warehousesMenu = [
   { label: "حركة المخازن", path: "/inventory-transactions" },
   { label: "ارصدة المخازن", path: "/current-inventory" },
+  { label: "متوسط تكلفة الوحدة", path: "/reports/product-average-cost" },
+  { label: "تقرير المخازن", path: "/reports/warehouse" },
   { label: "دليل المخازن", path: "/warehouses" },
   { label: "التحويل من مخزن الى مخزن", path: "/warehouse-transfers" },
   { label: "اذونات الصرف", path: "/issue-vouchers" },
@@ -78,6 +79,8 @@ const warehousesMenu = [
 ];
 const reportsMenu = [
   { label: "إعداد التقارير", path: "/reports-dashboard" },
+  { label: "متوسط تكلفة الوحدة", path: "/reports/product-average-cost" },
+  { label: "تقرير المخازن", path: "/reports/warehouse" },
   { label: "كشف حساب المورد", path: "/suppliers/statement" },
   { label: "كشف حساب العميل", path: "/customers/statement" },
   { label: "تحليل المبيعات", path: "/reports/sales-analysis" },
