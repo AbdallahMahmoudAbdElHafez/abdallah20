@@ -49,6 +49,7 @@ const useProductFormValidation = (initialData = {}) => {
     cost_price: "",
     unit_id: "",
     type_id: "",
+    crm_id: "",
     ...initialData,
   });
   const [errors, setErrors] = useState({});
@@ -81,6 +82,10 @@ const useProductFormValidation = (initialData = {}) => {
 
       case 'unit_id':
         if (!value || value === "") return "الوحدة مطلوبة";
+        return "";
+
+      case 'crm_id':
+        if (value && (isNaN(Number(value)) || Number(value) < 0)) return "كود CRM يجب أن يكون رقماً موجباً";
         return "";
 
       default:
@@ -297,6 +302,7 @@ export default function ProductsPage() {
         cost_price: row.cost_price || "",
         unit_id: row.unit_id || "",
         type_id: row.type_id || "",
+        crm_id: row.crm_id ?? "",
       });
     } else {
       setEditRow(null);
@@ -339,6 +345,7 @@ export default function ProductsPage() {
         name: productForm.formData.name.trim(),
         price: parseFloat(productForm.formData.price),
         cost_price: parseFloat(productForm.formData.cost_price),
+        crm_id: productForm.formData.crm_id ? parseInt(productForm.formData.crm_id, 10) : null,
       };
 
       if (editRow) {
@@ -416,6 +423,23 @@ export default function ProductsPage() {
           color="primary"
           variant="outlined"
         />
+      ),
+    },
+    {
+      accessorKey: "crm_id",
+      header: "كود CRM",
+      size: 100,
+      Cell: ({ cell }) => (
+        cell.getValue() ? (
+          <Chip
+            label={`#${cell.getValue()}`}
+            size="small"
+            color="info"
+            variant="outlined"
+          />
+        ) : (
+          <Typography variant="body2" color="text.disabled">-</Typography>
+        )
       ),
     },
     {
@@ -800,6 +824,19 @@ export default function ProductsPage() {
                   </IconButton>
                 </Tooltip>
               </Stack>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="كود CRM"
+                type="number"
+                value={productForm.formData.crm_id || ""}
+                onChange={(e) => productForm.handleFieldChange('crm_id', e.target.value)}
+                onBlur={() => productForm.handleFieldBlur('crm_id')}
+                error={productForm.touched.crm_id && !!productForm.errors.crm_id}
+                helperText={productForm.touched.crm_id && productForm.errors.crm_id}
+                inputProps={{ min: 1 }}
+              />
             </Grid>
             {/* Profit Margin Preview */}
             {productForm.formData.price && productForm.formData.cost_price && (

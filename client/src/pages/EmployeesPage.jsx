@@ -37,6 +37,7 @@ export default function EmployeesPage() {
     phone: "",
     email: "",
     hire_date: "",
+    crm_id: "",
   });
 
   const loadLists = async () => {
@@ -57,6 +58,7 @@ export default function EmployeesPage() {
   const columns = useMemo(
     () => [
       { accessorKey: "name", header: "الاسم" },
+      { accessorKey: "crm_id", header: "كود CRM", Cell: ({ cell }) => cell.getValue() ? `#${cell.getValue()}` : "-" },
       { accessorKey: "job_title.title_name", header: "الوظيفة" },
       { accessorKey: "department.name", header: "القسم" },
       { accessorKey: "phone", header: "الهاتف" },
@@ -80,10 +82,15 @@ export default function EmployeesPage() {
       return;
     }
 
+    const payload = {
+      ...form,
+      crm_id: form.crm_id ? parseInt(form.crm_id, 10) : null,
+    };
+
     if (editData) {
-      dispatch(updateEmployee({ id: editData.id, data: form }));
+      dispatch(updateEmployee({ id: editData.id, data: payload }));
     } else {
-      dispatch(addEmployee(form));
+      dispatch(addEmployee(payload));
     }
 
     setOpen(false);
@@ -100,6 +107,7 @@ export default function EmployeesPage() {
       phone: "",
       email: "",
       hire_date: "",
+      crm_id: "",
     });
   };
 
@@ -120,7 +128,10 @@ export default function EmployeesPage() {
             <Button
               onClick={() => {
                 setEditData(row.original);
-                setForm(row.original);
+                setForm({
+                  ...row.original,
+                  crm_id: row.original.crm_id ?? "",
+                });
                 setOpen(true);
               }}
             >
@@ -199,6 +210,16 @@ export default function EmployeesPage() {
               </MenuItem>
             ))}
           </TextField>
+
+          <TextField
+            fullWidth
+            label="كود CRM"
+            type="number"
+            value={form.crm_id || ""}
+            onChange={(e) => setForm({ ...form, crm_id: e.target.value })}
+            margin="dense"
+            inputProps={{ min: 1 }}
+          />
 
           <TextField
             fullWidth

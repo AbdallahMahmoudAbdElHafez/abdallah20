@@ -15,6 +15,7 @@ export default (sequelize) => {
 
         cost_price: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0.0 },
         unit_id: { type: DataTypes.INTEGER, allowNull: true, references: { model: 'units', key: 'id' } },
+        crm_id: { type: DataTypes.INTEGER, allowNull: true },
         created_at: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     }, {
         tableName: 'products',

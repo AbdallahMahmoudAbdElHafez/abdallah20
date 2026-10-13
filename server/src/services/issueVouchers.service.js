@@ -122,7 +122,7 @@ export class IssueVouchersService {
       }
 
       // --- Journal Entry Creation ---
-      await this._syncJournalEntry(voucher.id, finalItemsData, transaction);
+      await this._syncJournalEntry(voucher.id, createdItems, transaction);
 
       await transaction.commit();
       return await this.getIssueVoucherById(voucher.id, true);
@@ -358,7 +358,8 @@ export class IssueVouchersService {
         });
         finalItemsData = itemsWithVoucherId;
 
-        await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+        const createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+        finalItemsData = createdItems;
       }
 
       // --- Journal Entry Update ---
@@ -535,12 +536,12 @@ export class IssueVouchersService {
   async _syncJournalEntry(voucherId, itemsData, transaction) {
     try {
       const { createJournalEntry } = await import('./journal.service.js');
-      const { JournalEntry } = await import('../models/index.js');
+      const { JournalEntry, JournalEntryLine, InventoryTransaction, InventoryTransactionBatches } = await import('../models/index.js');
 
       const voucher = await IssueVoucher.findByPk(voucherId, { transaction });
       if (!voucher) return;
 
-      // 1. Delete existing entry if any
+      // 1. Delete existing entry if any (including lines)
       let refType = await ReferenceType.findOne({ where: { code: 'issue_voucher' }, transaction });
       if (!refType) {
         refType = await ReferenceType.create({
@@ -551,12 +552,23 @@ export class IssueVouchersService {
         }, { transaction });
       }
 
-      await JournalEntry.destroy({
+      const existingEntries = await JournalEntry.findAll({
         where: { reference_type_id: refType.id, reference_id: voucher.id },
         transaction
       });
+      for (const entry of existingEntries) {
+        await JournalEntryLine.destroy({ where: { journal_entry_id: entry.id }, transaction });
+        await entry.destroy({ transaction });
+      }
 
-      if (!itemsData || itemsData.length === 0) return;
+      let effectiveItemsData = itemsData;
+      if (!effectiveItemsData || effectiveItemsData.length === 0) {
+        effectiveItemsData = await IssueVoucherItem.findAll({
+          where: { voucher_id: voucherId },
+          transaction
+        });
+      }
+      if (!effectiveItemsData || effectiveItemsData.length === 0) return;
 
       // 2. Resolve Accounts
       const INVENTORY_ACCOUNTS = {
@@ -578,7 +590,7 @@ export class IssueVouchersService {
 
       // 3. Calculate Costs
       const FIFOCostService = (await import('./fifoCost.service.js')).default;
-      const productIds = itemsData.map(i => i.product_id);
+      const productIds = effectiveItemsData.map(i => i.product_id);
       const products = await Product.findAll({
         where: { id: { [Op.in]: productIds } },
         attributes: ['id', 'name', 'cost_price', 'price', 'type_id'],
@@ -586,44 +598,77 @@ export class IssueVouchersService {
       });
       const productMap = new Map(products.map(p => [p.id, p]));
 
-      const itemsForCost = itemsData.map(item => ({
-        product_id: item.product_id,
-        warehouse_id: voucher.warehouse_id,
-        quantity: Number(item.quantity)
-      }));
+      // Check if inventory transactions already have batches with costs for these items
+      const itemIds = effectiveItemsData.map(i => i.id).filter(Boolean);
+      let txBatchesByItemId = new Map();
+      if (itemIds.length > 0) {
+        const txs = await InventoryTransaction.findAll({
+          where: { source_type: 'issue_voucher', source_id: { [Op.in]: itemIds } },
+          include: [{ model: InventoryTransactionBatches, as: 'transaction_batches' }],
+          transaction
+        });
+        for (const tx of txs) {
+          if (tx.transaction_batches && tx.transaction_batches.length > 0) {
+            const txCost = tx.transaction_batches.reduce(
+              (sum, b) => sum + (Number(b.quantity) * Number(b.cost_per_unit || 0)),
+              0
+            );
+            if (txCost > 0) {
+              txBatchesByItemId.set(Number(tx.source_id), txCost);
+            }
+          }
+        }
+      }
 
       const costsByType = {};
       let totalCost = 0;
 
-      try {
-        const { totalCost: fifoCost, itemCosts } = await FIFOCostService.calculateFIFOCostForItems(
-          itemsForCost,
-          transaction
-        );
-        totalCost = fifoCost;
+      for (const item of effectiveItemsData) {
+        const product = productMap.get(Number(item.product_id));
+        const typeId = product?.type_id || null;
+        const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
 
-        for (const itemCost of itemCosts) {
-          const product = productMap.get(Number(itemCost.product_id));
-          const typeId = product?.type_id || null;
-          const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
+        let itemCost = 0;
 
-          if (!costsByType[accountId]) costsByType[accountId] = 0;
-          costsByType[accountId] += itemCost.cost;
+        // 1. Exact cost from already created inventory transaction batches
+        if (item.id && txBatchesByItemId.has(Number(item.id))) {
+          itemCost = txBatchesByItemId.get(Number(item.id));
         }
-      } catch (error) {
-        console.warn('Issue Voucher: FIFO Cost Failed, falling back to cost_price');
-        for (const item of itemsData) {
-          const product = productMap.get(Number(item.product_id));
-          if (product && Number(product.cost_price) > 0) {
-            const itemCost = Number(item.quantity) * Number(product.cost_price);
-            totalCost += itemCost;
-            const typeId = product?.type_id || null;
-            const accountId = PRODUCT_TYPE_TO_ACCOUNT[typeId] || INVENTORY_ACCOUNTS.DEFAULT;
-            if (!costsByType[accountId]) costsByType[accountId] = 0;
-            costsByType[accountId] += itemCost;
+
+        // 2. Explicit cost_per_unit on the voucher item
+        if (itemCost <= 0 && Number(item.cost_per_unit) > 0) {
+          itemCost = Number(item.quantity) * Number(item.cost_per_unit);
+        }
+
+        // 3. FIFO calculation from warehouse inventory batches (if not yet deducted)
+        if (itemCost <= 0) {
+          try {
+            const fifoRes = await FIFOCostService.calculateFIFOCost(
+              item.product_id,
+              voucher.warehouse_id,
+              Number(item.quantity),
+              transaction
+            );
+            itemCost = fifoRes.totalCost;
+          } catch (e) {
+            // FIFO unavailable or inventory already deducted
           }
         }
+
+        // 4. Fallback to product.cost_price
+        if (itemCost <= 0 && product && Number(product.cost_price) > 0) {
+          itemCost = Number(item.quantity) * Number(product.cost_price);
+        }
+
+        itemCost = Math.round(itemCost * 100) / 100;
+        if (itemCost > 0) {
+          totalCost += itemCost;
+          if (!costsByType[accountId]) costsByType[accountId] = 0;
+          costsByType[accountId] += itemCost;
+        }
       }
+
+      totalCost = Math.round(totalCost * 100) / 100;
 
       if (totalCost <= 0 && voucher.issue_type !== 'replacement') return;
 
@@ -647,7 +692,7 @@ export class IssueVouchersService {
         const ACC_CUSTOMER = 47;
         const ACC_EXCHANGE_CLEARING = 116;
 
-        for (const item of itemsData) {
+        for (const item of effectiveItemsData) {
           const price = Number(item.price) || 0;
           totalSaleValue += Number(item.quantity) * price;
         }
