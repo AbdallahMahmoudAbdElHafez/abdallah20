@@ -49,7 +49,7 @@ const useProductFormValidation = (initialData = {}) => {
     cost_price: "",
     unit_id: "",
     type_id: "",
-    crm_id: "",
+    crm_product_id: "",
     ...initialData,
   });
   const [errors, setErrors] = useState({});
@@ -84,8 +84,11 @@ const useProductFormValidation = (initialData = {}) => {
         if (!value || value === "") return "الوحدة مطلوبة";
         return "";
 
-      case 'crm_id':
-        if (value && (isNaN(Number(value)) || Number(value) < 0)) return "كود CRM يجب أن يكون رقماً موجباً";
+      case 'crm_product_id':
+        if (value && value !== "") {
+          const crmId = parseInt(value, 10);
+          if (isNaN(crmId) || crmId <= 0) return "معرف CRM يجب أن يكون رقماً صحيحاً موجباً";
+        }
         return "";
 
       default:
@@ -132,6 +135,7 @@ const useProductFormValidation = (initialData = {}) => {
       cost_price: "",
       unit_id: "",
       type_id: "",
+      crm_product_id: "",
       ...newData,
     };
     setFormData(resetData);
@@ -302,7 +306,7 @@ export default function ProductsPage() {
         cost_price: row.cost_price || "",
         unit_id: row.unit_id || "",
         type_id: row.type_id || "",
-        crm_id: row.crm_id ?? "",
+        crm_product_id: row.crm_product_id ?? "",
       });
     } else {
       setEditRow(null);
@@ -345,7 +349,7 @@ export default function ProductsPage() {
         name: productForm.formData.name.trim(),
         price: parseFloat(productForm.formData.price),
         cost_price: parseFloat(productForm.formData.cost_price),
-        crm_id: productForm.formData.crm_id ? parseInt(productForm.formData.crm_id, 10) : null,
+        crm_product_id: productForm.formData.crm_product_id ? parseInt(productForm.formData.crm_product_id, 10) : null,
       };
 
       if (editRow) {
@@ -426,21 +430,24 @@ export default function ProductsPage() {
       ),
     },
     {
-      accessorKey: "crm_id",
-      header: "كود CRM",
-      size: 100,
-      Cell: ({ cell }) => (
-        cell.getValue() ? (
+      accessorKey: "crm_product_id",
+      header: "معرف CRM",
+      size: 110,
+      Cell: ({ cell }) => {
+        const val = cell.getValue();
+        return val ? (
           <Chip
-            label={`#${cell.getValue()}`}
+            label={`#${val}`}
             size="small"
             color="info"
             variant="outlined"
           />
         ) : (
-          <Typography variant="body2" color="text.disabled">-</Typography>
-        )
-      ),
+          <Typography variant="body2" color="text.disabled">
+            -
+          </Typography>
+        );
+      },
     },
     {
       accessorKey: "name",
@@ -828,14 +835,14 @@ export default function ProductsPage() {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="كود CRM"
+                label="معرف CRM للمنتج (CRM Product ID)"
                 type="number"
-                value={productForm.formData.crm_id || ""}
-                onChange={(e) => productForm.handleFieldChange('crm_id', e.target.value)}
-                onBlur={() => productForm.handleFieldBlur('crm_id')}
-                error={productForm.touched.crm_id && !!productForm.errors.crm_id}
-                helperText={productForm.touched.crm_id && productForm.errors.crm_id}
-                inputProps={{ min: 1 }}
+                value={productForm.formData.crm_product_id || ""}
+                onChange={(e) => productForm.handleFieldChange('crm_product_id', e.target.value)}
+                onBlur={() => productForm.handleFieldBlur('crm_product_id')}
+                error={productForm.touched.crm_product_id && !!productForm.errors.crm_product_id}
+                helperText={productForm.touched.crm_product_id && productForm.errors.crm_product_id}
+                inputProps={{ min: 1, step: 1 }}
               />
             </Grid>
             {/* Profit Margin Preview */}

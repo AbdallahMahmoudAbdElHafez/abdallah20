@@ -6,6 +6,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  Chip,
 } from "@mui/material";
 import { MaterialReactTable } from "material-react-table";
 import { defaultTableProps } from "../config/tableConfig";
@@ -37,7 +38,7 @@ export default function EmployeesPage() {
     phone: "",
     email: "",
     hire_date: "",
-    crm_id: "",
+    crm_user_id: "",
   });
 
   const loadLists = async () => {
@@ -58,12 +59,26 @@ export default function EmployeesPage() {
   const columns = useMemo(
     () => [
       { accessorKey: "name", header: "الاسم" },
-      { accessorKey: "crm_id", header: "كود CRM", Cell: ({ cell }) => cell.getValue() ? `#${cell.getValue()}` : "-" },
       { accessorKey: "job_title.title_name", header: "الوظيفة" },
       { accessorKey: "department.name", header: "القسم" },
       { accessorKey: "phone", header: "الهاتف" },
       { accessorKey: "email", header: "الإيميل" },
       { accessorKey: "hire_date", header: "تاريخ التعيين" },
+      {
+        accessorKey: "crm_user_id",
+        header: "معرف CRM",
+        Cell: ({ cell }) =>
+          cell.getValue() ? (
+            <Chip
+              label={`#${cell.getValue()}`}
+              size="small"
+              variant="outlined"
+              color="info"
+            />
+          ) : (
+            "-"
+          ),
+      },
     ],
     []
   );
@@ -84,7 +99,7 @@ export default function EmployeesPage() {
 
     const payload = {
       ...form,
-      crm_id: form.crm_id ? parseInt(form.crm_id, 10) : null,
+      crm_user_id: form.crm_user_id ? Number(form.crm_user_id) : null,
     };
 
     if (editData) {
@@ -107,7 +122,7 @@ export default function EmployeesPage() {
       phone: "",
       email: "",
       hire_date: "",
-      crm_id: "",
+      crm_user_id: "",
     });
   };
 
@@ -130,7 +145,7 @@ export default function EmployeesPage() {
                 setEditData(row.original);
                 setForm({
                   ...row.original,
-                  crm_id: row.original.crm_id ?? "",
+                  crm_user_id: row.original.crm_user_id ?? "",
                 });
                 setOpen(true);
               }}
@@ -213,16 +228,6 @@ export default function EmployeesPage() {
 
           <TextField
             fullWidth
-            label="كود CRM"
-            type="number"
-            value={form.crm_id || ""}
-            onChange={(e) => setForm({ ...form, crm_id: e.target.value })}
-            margin="dense"
-            inputProps={{ min: 1 }}
-          />
-
-          <TextField
-            fullWidth
             label="الهاتف"
             value={form.phone || ""}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -246,6 +251,18 @@ export default function EmployeesPage() {
             onChange={(e) =>
               setForm({ ...form, hire_date: e.target.value })
             }
+            margin="dense"
+          />
+
+          <TextField
+            type="number"
+            fullWidth
+            label="معرف CRM للموظف (CRM User ID)"
+            value={form.crm_user_id ?? ""}
+            onChange={(e) =>
+              setForm({ ...form, crm_user_id: e.target.value })
+            }
+            inputProps={{ min: 1, step: 1 }}
             margin="dense"
           />
 

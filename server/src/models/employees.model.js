@@ -41,7 +41,7 @@ export default (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
-      crm_id: {
+      crm_user_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },

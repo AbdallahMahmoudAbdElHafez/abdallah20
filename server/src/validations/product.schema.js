@@ -6,7 +6,7 @@ name: Joi.string().max(150).required(),
 price: Joi.number().precision(2).required(),
 unit_id: Joi.number().integer().allow(null),
 cost_price: Joi.number().precision(2).default(0),
-crm_id: Joi.number().integer().allow(null),
+crm_product_id: Joi.number().integer().allow(null),
 });
 
 
@@ -15,5 +15,5 @@ name: Joi.string().max(150),
 price: Joi.number().precision(2),
 unit_id: Joi.number().integer().allow(null),
 cost_price: Joi.number().precision(2),
-crm_id: Joi.number().integer().allow(null),
+crm_product_id: Joi.number().integer().allow(null),
 });
