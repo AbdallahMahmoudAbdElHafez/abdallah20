@@ -1,6 +1,7 @@
 import { SalesInvoice, SalesInvoiceItem, sequelize, InventoryTransaction, Account, Product, ReferenceType, SalesReturn, SalesReturnItem } from "../models/index.js";
 import { Op } from "sequelize";
 import InventoryTransactionService from './inventoryTransaction.service.js';
+import crmExportService from './crmExport.service.js';
 
 export default {
     getAll: async (params = {}) => {
@@ -537,6 +538,11 @@ export default {
 
             if (!options.transaction) await transaction.commit();
             console.log('Service: Transaction committed');
+
+            if (invoice.invoice_status === 'approved') {
+                crmExportService.exportSalesInvoice(invoice.id);
+            }
+
             return invoice;
         } catch (error) {
             console.error('Service: Error occurred:', error.message);
@@ -931,6 +937,11 @@ export default {
             }
 
             await transaction.commit();
+
+            if (invoice.invoice_status === 'approved') {
+                crmExportService.exportSalesInvoice(invoice.id);
+            }
+
             return invoice;
         } catch (error) {
             await transaction.rollback();

@@ -1,6 +1,7 @@
 import { SalesReturn, SalesReturnItem, sequelize, InventoryTransaction, InventoryTransactionBatches, Account, Product, SalesInvoice, SalesInvoiceItem, ReferenceType } from "../models/index.js";
 import { Op } from "sequelize";
 import InventoryTransactionService from './inventoryTransaction.service.js';
+import crmExportService from './crmExport.service.js';
 
 export default {
     getAll: async () => {
@@ -533,6 +534,9 @@ export default {
 
 
             await transaction.commit();
+            if (salesReturn.status === 'approved') {
+                crmExportService.exportSalesReturn(salesReturn.id);
+            }
             return salesReturn;
 
         } catch (error) {
@@ -1111,6 +1115,9 @@ export default {
 
             
             await transaction.commit();
+            if (salesReturn.status === 'approved') {
+                crmExportService.exportSalesReturn(salesReturn.id);
+            }
             return salesReturn;
         } catch (error) {
             await transaction.rollback();
