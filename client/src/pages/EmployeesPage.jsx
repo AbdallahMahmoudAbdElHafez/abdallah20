@@ -103,9 +103,13 @@ export default function EmployeesPage() {
     };
 
     if (editData) {
-      dispatch(updateEmployee({ id: editData.id, data: payload }));
+      dispatch(updateEmployee({ id: editData.id, data: payload })).then(() => {
+        dispatch(fetchEmployees());
+      });
     } else {
-      dispatch(addEmployee(payload));
+      dispatch(addEmployee(payload)).then(() => {
+        dispatch(fetchEmployees());
+      });
     }
 
     setOpen(false);

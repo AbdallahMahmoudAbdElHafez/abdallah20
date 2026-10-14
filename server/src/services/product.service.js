@@ -68,7 +68,7 @@ class ProductService {
       });
     }
 
-    return product;
+    return await this.getById(id);
   }
 
   static async delete(id) {

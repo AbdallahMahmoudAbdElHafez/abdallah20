@@ -359,6 +359,7 @@ export default function ProductsPage() {
         await dispatch(addProduct(payload)).unwrap();
         showSnackbar("تم إضافة المنتج بنجاح", "success");
       }
+      await dispatch(fetchProducts());
       handleCloseDialog();
     } catch (err) {
       showSnackbar(err.message || "حدث خطأ أثناء الحفظ", "error");

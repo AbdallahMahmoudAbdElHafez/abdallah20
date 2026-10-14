@@ -21,7 +21,7 @@ static  async create(data) {
     const emp = await Employee.findByPk(id);
     if (!emp) return null;
     await emp.update(data);
-    return emp;
+    return await this.getById(id);
   }
 
  static async delete(id) {
