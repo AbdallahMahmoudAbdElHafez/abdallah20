@@ -331,6 +331,7 @@ const SalesReportPage = () => {
             { accessorKey: 'sales_channel', id: 'sales_channel', header: 'قناة البيع', size: 120 },
             { accessorKey: 'governate', id: 'governate', header: 'المحافظة', size: 120 },
             { accessorKey: 'city', id: 'city', header: 'المنطقة', size: 120 },
+            { accessorKey: 'note', id: 'note', header: 'ملاحظات', size: 200, enablePinning: true },
         ];
 
         sortedProducts.forEach(prod => {
@@ -373,6 +374,7 @@ const SalesReportPage = () => {
                 sales_channel: invoice.sales_channel || '-',
                 governate: invoice.party?.city?.governate?.name || '-',
                 city: invoice.party?.city?.name || '-',
+                note: invoice.note || '',
                 additional_discount_pct: addDiscPct,
                 total_invoice: parseFloat(invoice.total_amount || 0)
             };
@@ -427,6 +429,7 @@ const SalesReportPage = () => {
                 sales_channel: ret.invoice?.sales_channel || '-',
                 governate: ret.customer?.city?.governate?.name || '-',
                 city: ret.customer?.city?.name || '-',
+                note: ret.notes || ret.note || '',
                 additional_discount_pct: 0,
                 total_invoice: -parseFloat(ret.total_amount || 0),
                 is_return: true
@@ -483,6 +486,7 @@ const SalesReportPage = () => {
                 sales_channel: '',
                 governate: '',
                 city: '',
+                note: '',
                 additional_discount_pct: 0,
                 total_invoice: 0
             };

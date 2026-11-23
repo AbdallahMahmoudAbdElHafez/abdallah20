@@ -57,6 +57,7 @@ import InventoryAdjustmentPage from "./pages/InventoryAdjustmentPage";
 import CustomerReceivablesReportPage from "./pages/CustomerReceivablesReportPage";
 import BatchCustomerStatementsPage from "./pages/BatchCustomerStatementsPage";
 import ProfitReportPage from "./pages/ProfitReportPage";
+import FinancialAnalysisPage from "./pages/FinancialAnalysisPage";
 import BankAndCashBalancesPage from "./pages/BankAndCashBalancesPage";
 import SafeMovementsReportPage from "./pages/SafeMovementsReportPage";
 import ExternalServiceInvoicesPage from "./pages/ExternalServiceInvoicesPage";
@@ -133,6 +134,7 @@ export default function App() {
           <Route path="/companies" element={<CompaniesPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/reports-dashboard" element={<ReportsDashboard />} />
+          <Route path="/reports/financial-analysis" element={<FinancialAnalysisPage />} />
           <Route path="/reports/sales-analysis" element={<SalesAnalysisPage />} />
           <Route path="/reports/sales" element={<SalesReportPage />} />
           <Route path="/reports/purchases" element={<PurchasesReportPage />} />

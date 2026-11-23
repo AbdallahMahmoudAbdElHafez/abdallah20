@@ -1128,6 +1128,7 @@ export default function SalesInvoiceDialog({
                                     <MenuItem value="شركة شحن">شركة شحن</MenuItem>
                                     <MenuItem value="مندوب">مندوب</MenuItem>
                                     <MenuItem value="أمازون">أمازون</MenuItem>
+                                    <MenuItem value="تساهيل">تساهيل</MenuItem>
                                 </TextField>
                             </Grid>
                             <Grid item xs={12} md={2}>

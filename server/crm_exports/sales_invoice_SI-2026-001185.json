@@ -1,0 +1,44 @@
+[
+  {
+    "product_id": 2,
+    "user_id": 2,
+    "quantity": 10,
+    "unit_price": 252
+  },
+  {
+    "product_id": 7,
+    "user_id": 2,
+    "quantity": 10,
+    "unit_price": 392.4
+  },
+  {
+    "product_id": 3,
+    "user_id": 2,
+    "quantity": 10,
+    "unit_price": 324
+  },
+  {
+    "product_id": 6,
+    "user_id": 2,
+    "quantity": 5,
+    "unit_price": 212.4
+  },
+  {
+    "product_id": 4,
+    "user_id": 2,
+    "quantity": 10,
+    "unit_price": 201.6
+  },
+  {
+    "product_id": 8,
+    "user_id": 2,
+    "quantity": 5,
+    "unit_price": 176.4
+  },
+  {
+    "product_id": 9,
+    "user_id": 2,
+    "quantity": 20,
+    "unit_price": 144
+  }
+]

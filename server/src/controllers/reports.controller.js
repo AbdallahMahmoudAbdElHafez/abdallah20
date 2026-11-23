@@ -39,6 +39,17 @@ const reportsController = {
 
     // ============ NEW REPORT CONTROLLERS ============
 
+    getFinancialAnalysis: async (req, res) => {
+        try {
+            const { startDate, endDate } = req.query;
+            const data = await reportsService.getFinancialAnalysis(startDate, endDate);
+            res.json(data);
+        } catch (error) {
+            console.error('Error fetching financial analysis report:', error);
+            res.status(500).json({ message: error.message });
+        }
+    },
+
     getSalesAnalysis: async (req, res) => {
         try {
             const { startDate, endDate } = req.query;

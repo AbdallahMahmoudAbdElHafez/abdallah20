@@ -7,6 +7,7 @@ const reportsApi = {
     getLowStock: (params) => axiosClient.get('/reports/low-stock', { params }),
 
     // Detailed Reports
+    getFinancialAnalysis: (params) => axiosClient.get('/reports/financial-analysis', { params }),
     getSalesAnalysisReport: (params) => axiosClient.get('/reports/sales-analysis', { params }),
     getSalesReport: (params) => axiosClient.get('/reports/sales', { params }),
     getPurchasesReport: (params) => axiosClient.get('/reports/purchases', { params }),

@@ -79,6 +79,7 @@ const warehousesMenu = [
 ];
 const reportsMenu = [
   { label: "إعداد التقارير", path: "/reports-dashboard" },
+  { label: "التحليل المالي الذكي", path: "/reports/financial-analysis" },
   { label: "متوسط تكلفة الوحدة", path: "/reports/product-average-cost" },
   { label: "تقرير المخازن", path: "/reports/warehouse" },
   { label: "كشف حساب المورد", path: "/suppliers/statement" },

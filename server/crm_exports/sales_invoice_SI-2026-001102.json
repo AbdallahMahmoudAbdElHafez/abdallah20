@@ -1,0 +1,26 @@
+[
+  {
+    "product_id": 2,
+    "user_id": 60002,
+    "quantity": 10,
+    "unit_price": 270.48
+  },
+  {
+    "product_id": 4,
+    "user_id": 60002,
+    "quantity": 10,
+    "unit_price": 216.38
+  },
+  {
+    "product_id": 8,
+    "user_id": 60002,
+    "quantity": 10,
+    "unit_price": 189.34
+  },
+  {
+    "product_id": 7,
+    "user_id": 60002,
+    "quantity": 10,
+    "unit_price": 421.18
+  }
+]

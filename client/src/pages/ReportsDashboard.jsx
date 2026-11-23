@@ -12,7 +12,8 @@ import {
     Calculate as ZakatIcon,
     AccountBalance as ProfitIcon,
     Payment as PaymentIcon,
-    GppBad as GppBadIcon
+    GppBad as GppBadIcon,
+    Insights as FinancialAnalysisIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,6 +21,14 @@ const ReportsDashboard = () => {
     const navigate = useNavigate();
 
     const reports = [
+        {
+            title: 'التحليل المالي الذكي (مبسط وتنفيذي)',
+            description: 'مؤشرات الربحية والسيولة، تقييم الصحة المالية، وتوصيات ذكية يفهمها أي شخص',
+            icon: <FinancialAnalysisIcon sx={{ fontSize: 60, color: '#0d47a1' }} />,
+            path: '/reports/financial-analysis',
+            color: '#e3f2fd',
+            featured: true
+        },
         {
             title: 'تقرير المبيعات',
             description: 'تقرير تفصيلي عن جميع المبيعات مع رسوم بيانية',
@@ -178,6 +187,8 @@ const ReportsDashboard = () => {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 bgcolor: report.color,
+                                border: report.featured ? '2px solid #1976d2' : 'none',
+                                position: 'relative',
                                 transition: 'transform 0.2s, box-shadow 0.2s',
                                 '&:hover': {
                                     transform: 'translateY(-5px)',

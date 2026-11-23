@@ -2890,7 +2890,563 @@ const getProductAverageCostReport = async ({ warehouseId = null, startDate = nul
     };
 };
 
+/**
+ * Smart Financial Analysis Report
+ * Designed to be professional, executive, yet simple enough for non-accountants to understand immediately.
+ */
+const getFinancialAnalysis = async (startDate, endDate) => {
+    const {
+        Account,
+        JournalEntryLine,
+        JournalEntry,
+        SalesInvoice,
+        SalesInvoicePayment,
+        PurchaseInvoice,
+        Expense,
+        sequelize
+    } = await import('../models/index.js');
+    const { Op } = await import('sequelize');
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const currentYear = new Date().getFullYear();
+    const effectiveStart = startDate || `${currentYear}-01-01`;
+    const effectiveEnd = endDate || todayStr;
+
+    // 1. Load all accounts once in-memory
+    const allAccounts = await Account.findAll({ raw: true });
+    const accMap = {};
+    allAccounts.forEach(a => accMap[a.id] = a);
+
+    const getChildIds = (parentId) => {
+        let ids = [parentId];
+        const children = allAccounts.filter(a => a.parent_account_id === parentId);
+        for (const c of children) {
+            ids = ids.concat(getChildIds(c.id));
+        }
+        return ids;
+    };
+
+    // Category Root IDs
+    const REVENUE_ROOT_ID = 5;
+    const DIRECT_EXPENSES_ID = 3;
+    const INDIRECT_EXPENSES_ID = 4;
+    const ASSETS_ROOT_ID = 1;
+    const FIXED_ASSETS_ID = 8;
+    const CURRENT_ASSETS_ID = 9;
+    const CASH_BANKS_ID = 40;
+    const CUSTOMERS_ID = 47;
+    const INVENTORY_ID = 49;
+    const LIABILITIES_ROOT_ID = 2;
+    const CURRENT_LIABILITIES_ID = 12;
+    const SUPPLIERS_ID = 62;
+    const EQUITY_ROOT_ID = 7;
+
+    const periodWhere = {
+        entry_date: { [Op.between]: [effectiveStart, effectiveEnd] }
+    };
+    const cumulativeWhere = {
+        entry_date: { [Op.lte]: effectiveEnd }
+    };
+
+    const getPeriodBalance = async (accountIds, normalBalance = 'debit') => {
+        if (!accountIds || accountIds.length === 0) return 0;
+        const res = await JournalEntryLine.findOne({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+                [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+            ],
+            where: { account_id: { [Op.in]: accountIds } },
+            include: [{
+                model: JournalEntry,
+                as: 'journal_entry',
+                attributes: [],
+                where: periodWhere
+            }],
+            raw: true
+        });
+        const deb = parseFloat(res?.total_debit || 0);
+        const cred = parseFloat(res?.total_credit || 0);
+        return normalBalance === 'credit' ? cred - deb : deb - cred;
+    };
+
+    const getCumulativeBalance = async (accountIds, normalBalance = 'debit') => {
+        if (!accountIds || accountIds.length === 0) return 0;
+        const res = await JournalEntryLine.findOne({
+            attributes: [
+                [sequelize.fn('SUM', sequelize.col('debit')), 'total_debit'],
+                [sequelize.fn('SUM', sequelize.col('credit')), 'total_credit']
+            ],
+            where: { account_id: { [Op.in]: accountIds } },
+            include: [{
+                model: JournalEntry,
+                as: 'journal_entry',
+                attributes: [],
+                where: cumulativeWhere
+            }],
+            raw: true
+        });
+        const deb = parseFloat(res?.total_debit || 0);
+        const cred = parseFloat(res?.total_credit || 0);
+        return normalBalance === 'credit' ? cred - deb : deb - cred;
+    };
+
+    const getChildBreakdown = async (parentId, isCumulative = false, normalBalance = 'debit') => {
+        const directChildren = allAccounts.filter(a => a.parent_account_id === parentId);
+        const list = [];
+        for (const child of directChildren) {
+            const ids = getChildIds(child.id);
+            const bal = isCumulative
+                ? await getCumulativeBalance(ids, normalBalance)
+                : await getPeriodBalance(ids, normalBalance);
+            if (Math.abs(bal) > 0.01) {
+                list.push({
+                    id: child.id,
+                    name: child.name,
+                    amount: Math.round(bal * 100) / 100,
+                    balance: Math.round(bal * 100) / 100
+                });
+            }
+        }
+        return list.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+    };
+
+    // 2. Perform Income Statement queries
+    const revChildIds = getChildIds(REVENUE_ROOT_ID);
+    const directExpChildIds = getChildIds(DIRECT_EXPENSES_ID);
+    const indirectExpChildIds = getChildIds(INDIRECT_EXPENSES_ID);
+
+    const [totalRevenue, directExpenses, indirectExpenses] = await Promise.all([
+        getPeriodBalance(revChildIds, 'credit'),
+        getPeriodBalance(directExpChildIds, 'debit'),
+        getPeriodBalance(indirectExpChildIds, 'debit')
+    ]);
+
+    const grossProfit = totalRevenue - directExpenses;
+    const netProfit = grossProfit - indirectExpenses;
+    const totalExpenses = directExpenses + indirectExpenses;
+
+    const grossMarginPct = totalRevenue > 0 ? Math.round((grossProfit / totalRevenue) * 1000) / 10 : 0;
+    const netMarginPct = totalRevenue > 0 ? Math.round((netProfit / totalRevenue) * 1000) / 10 : 0;
+    const operatingExpenseRatio = totalRevenue > 0 ? Math.round((indirectExpenses / totalRevenue) * 1000) / 10 : 0;
+    const costOfGoodsSoldRatio = totalRevenue > 0 ? Math.round((directExpenses / totalRevenue) * 1000) / 10 : 0;
+    const roiOnExpenses = totalExpenses > 0 ? Math.round((netProfit / totalExpenses) * 1000) / 10 : 0;
+
+    // 3. Perform Balance Sheet queries (Cumulative as of effectiveEnd)
+    const curAssetChildIds = getChildIds(CURRENT_ASSETS_ID);
+    const fixedAssetChildIds = getChildIds(FIXED_ASSETS_ID);
+    const allAssetChildIds = getChildIds(ASSETS_ROOT_ID);
+    const curLiabChildIds = getChildIds(CURRENT_LIABILITIES_ID);
+    const allLiabChildIds = getChildIds(LIABILITIES_ROOT_ID);
+    const equityChildIds = getChildIds(EQUITY_ROOT_ID);
+
+    const cashChildIds = getChildIds(CASH_BANKS_ID);
+    const receivablesChildIds = getChildIds(CUSTOMERS_ID);
+    const inventoryChildIds = getChildIds(INVENTORY_ID);
+    const suppliersChildIds = getChildIds(SUPPLIERS_ID);
+
+    const [
+        totalAssets,
+        fixedAssets,
+        currentAssets,
+        cashAndBanks,
+        receivables,
+        inventory,
+        totalLiabilities,
+        currentLiabilities,
+        suppliersPayable,
+        equity
+    ] = await Promise.all([
+        getCumulativeBalance(allAssetChildIds, 'debit'),
+        getCumulativeBalance(fixedAssetChildIds, 'debit'),
+        getCumulativeBalance(curAssetChildIds, 'debit'),
+        getCumulativeBalance(cashChildIds, 'debit'),
+        getCumulativeBalance(receivablesChildIds, 'debit'),
+        getCumulativeBalance(inventoryChildIds, 'debit'),
+        getCumulativeBalance(allLiabChildIds, 'credit'),
+        getCumulativeBalance(curLiabChildIds, 'credit'),
+        getCumulativeBalance(suppliersChildIds, 'credit'),
+        getCumulativeBalance(equityChildIds, 'credit')
+    ]);
+
+    const otherCurrentAssets = Math.max(0, currentAssets - (cashAndBanks + receivables + inventory));
+    const workingCapital = currentAssets - currentLiabilities;
+
+    // Financial Ratios
+    const currentRatio = currentLiabilities > 0 ? Math.round((currentAssets / currentLiabilities) * 100) / 100 : (currentAssets > 0 ? 99 : 0);
+    const quickRatio = currentLiabilities > 0 ? Math.round(((cashAndBanks + receivables) / currentLiabilities) * 100) / 100 : ((cashAndBanks + receivables) > 0 ? 99 : 0);
+    const cashRatio = currentLiabilities > 0 ? Math.round((cashAndBanks / currentLiabilities) * 100) / 100 : (cashAndBanks > 0 ? 99 : 0);
+    const debtToAssetsPct = totalAssets > 0 ? Math.round((totalLiabilities / totalAssets) * 1000) / 10 : 0;
+    const debtToEquityPct = equity > 0 ? Math.round((totalLiabilities / equity) * 1000) / 10 : 0;
+
+    // 4. Sales & Operations Data in period
+    const [salesInvoiceStats, paymentsStats] = await Promise.all([
+        SalesInvoice.findOne({
+            attributes: [
+                [sequelize.fn('COUNT', sequelize.col('id')), 'invoices_count'],
+                [sequelize.fn('SUM', sequelize.col('total_amount')), 'invoices_sum']
+            ],
+            where: {
+                invoice_date: { [Op.between]: [effectiveStart, effectiveEnd] },
+                invoice_type: 'normal',
+                invoice_status: { [Op.notIn]: ['cancelled', 'draft'] }
+            },
+            raw: true
+        }),
+        SalesInvoicePayment.findOne({
+            attributes: [
+                [sequelize.fn('COUNT', sequelize.col('id')), 'payments_count'],
+                [sequelize.fn('SUM', sequelize.col('amount')), 'payments_sum']
+            ],
+            where: {
+                payment_date: { [Op.between]: [effectiveStart, effectiveEnd] }
+            },
+            raw: true
+        })
+    ]);
+
+    const invoicesCount = parseInt(salesInvoiceStats?.invoices_count || 0);
+    const invoicesTotal = parseFloat(salesInvoiceStats?.invoices_sum || 0);
+    const avgInvoiceAmount = invoicesCount > 0 ? Math.round((invoicesTotal / invoicesCount) * 100) / 100 : 0;
+    const collectionsTotal = parseFloat(paymentsStats?.payments_sum || 0);
+    const collectionEfficiencyPct = invoicesTotal > 0 ? Math.round((collectionsTotal / invoicesTotal) * 1000) / 10 : 0;
+
+    // 5. Monthly Evolution Trend (Revenues vs Costs vs Net Profit)
+    const allExpChildIds = directExpChildIds.concat(indirectExpChildIds);
+    const trendRows = await JournalEntryLine.findAll({
+        attributes: [
+            [sequelize.fn('DATE_FORMAT', sequelize.col('journal_entry.entry_date'), '%Y-%m'), 'month'],
+            [sequelize.fn('SUM', sequelize.literal('CASE WHEN account_id IN (' + revChildIds.join(',') + ') THEN (credit - debit) ELSE 0 END')), 'revenue'],
+            [sequelize.fn('SUM', sequelize.literal('CASE WHEN account_id IN (' + directExpChildIds.join(',') + ') THEN (debit - credit) ELSE 0 END')), 'direct_expenses'],
+            [sequelize.fn('SUM', sequelize.literal('CASE WHEN account_id IN (' + indirectExpChildIds.join(',') + ') THEN (debit - credit) ELSE 0 END')), 'indirect_expenses']
+        ],
+        include: [{
+            model: JournalEntry,
+            as: 'journal_entry',
+            attributes: [],
+            where: periodWhere
+        }],
+        where: { account_id: { [Op.in]: revChildIds.concat(allExpChildIds) } },
+        group: [sequelize.fn('DATE_FORMAT', sequelize.col('journal_entry.entry_date'), '%Y-%m')],
+        order: [[sequelize.fn('DATE_FORMAT', sequelize.col('journal_entry.entry_date'), '%Y-%m'), 'ASC']],
+        raw: true
+    });
+
+    const arabicMonths = {
+        '01': 'يناير', '02': 'فبراير', '03': 'مارس', '04': 'أبريل',
+        '05': 'مايو', '06': 'يونيو', '07': 'يوليو', '08': 'أغسطس',
+        '09': 'سبتمبر', '10': 'أكتوبر', '11': 'نوفمبر', '12': 'ديسمبر'
+    };
+
+    const monthlyTrend = trendRows.map(r => {
+        const rev = Math.round(parseFloat(r.revenue || 0) * 100) / 100;
+        const dir = Math.round(parseFloat(r.direct_expenses || 0) * 100) / 100;
+        const ind = Math.round(parseFloat(r.indirect_expenses || 0) * 100) / 100;
+        const net = Math.round((rev - dir - ind) * 100) / 100;
+        const parts = (r.month || '').split('-');
+        const monthLabel = parts.length === 2 ? `${arabicMonths[parts[1]] || parts[1]} ${parts[0]}` : r.month;
+        return {
+            month: r.month,
+            monthLabel,
+            revenue: rev,
+            direct_expenses: dir,
+            indirect_expenses: ind,
+            total_expenses: Math.round((dir + ind) * 100) / 100,
+            net_profit: net,
+            profit_margin: rev > 0 ? Math.round((net / rev) * 1000) / 10 : 0
+        };
+    });
+
+    // 6. Detailed breakdowns for drill down
+    const [revenueDetails, directExpensesDetails, indirectExpensesDetails, currentAssetsDetails, currentLiabilitiesDetails] = await Promise.all([
+        getChildBreakdown(REVENUE_ROOT_ID, false, 'credit'),
+        getChildBreakdown(DIRECT_EXPENSES_ID, false, 'debit'),
+        getChildBreakdown(INDIRECT_EXPENSES_ID, false, 'debit'),
+        getChildBreakdown(CURRENT_ASSETS_ID, true, 'debit'),
+        getChildBreakdown(CURRENT_LIABILITIES_ID, true, 'credit')
+    ]);
+
+    // 7. Calculate Health Score (0 - 100)
+    let score = 0;
+    // Profitability component (Max 35)
+    if (netMarginPct >= 20) score += 35;
+    else if (netMarginPct >= 12) score += 28;
+    else if (netMarginPct >= 5) score += 20;
+    else if (netMarginPct > 0) score += 12;
+    else score += 0;
+
+    // Liquidity component (Max 35)
+    if (currentRatio >= 1.5 && currentRatio <= 3.5) score += 35;
+    else if (currentRatio > 3.5) score += 30;
+    else if (currentRatio >= 1.2) score += 25;
+    else if (currentRatio >= 1.0) score += 18;
+    else score += 5;
+
+    // Collections & Efficiency component (Max 20)
+    if (collectionEfficiencyPct >= 75) score += 20;
+    else if (collectionEfficiencyPct >= 50) score += 15;
+    else if (collectionEfficiencyPct >= 30) score += 10;
+    else score += 5;
+
+    // Debt/Solvency component (Max 10)
+    if (debtToAssetsPct <= 20) score += 10;
+    else if (debtToAssetsPct <= 45) score += 7;
+    else if (debtToAssetsPct <= 70) score += 4;
+    else score += 1;
+
+    let healthStatus = 'ممتاز';
+    let healthColor = '#2e7d32'; // green
+    let healthBg = '#e8f5e9';
+    let healthBadge = 'أداء مالي استثنائي وقوي';
+
+    if (score < 50) {
+        healthStatus = 'يحتاج انتباه وتدخل';
+        healthColor = '#d32f2f'; // red
+        healthBg = '#ffebee';
+        healthBadge = 'مخاطر سيولة أو ربحية تتطلب تصحيحاً';
+    } else if (score < 70) {
+        healthStatus = 'مستقر ومتوازن';
+        healthColor = '#ed6c02'; // orange
+        healthBg = '#fff3e0';
+        healthBadge = 'وضع آمن مع فرص واضحة للتحسين';
+    } else if (score < 85) {
+        healthStatus = 'جيد جداً';
+        healthColor = '#1976d2'; // blue
+        healthBg = '#e3f2fd';
+        healthBadge = 'صحة مالية ممتازة ومستقرة';
+    }
+
+    // 8. Plain Arabic Executive Summary (ملخص تنفيذي يفهمه أي شخص)
+    const summaryText = `خلال الفترة المحددة، حققت الشركة إجمالي إيرادات بقيمة ${new Intl.NumberFormat('ar-EG').format(Math.round(totalRevenue))} جنيه، وحققت صافي ربح فعلي بعد خصم جميع التكاليف والمصاريف قدره ${new Intl.NumberFormat('ar-EG').format(Math.round(netProfit))} جنيه بهامش ربح صافي ${netMarginPct}%. يبلغ رصيد النقدية والسيولة الجاهزة بالخزائن والبنوك ${new Intl.NumberFormat('ar-EG').format(Math.round(cashAndBanks))} جنيه، بينما تمتلك الشركة أصولاً متداولة تغطي ديونها والتزاماتها العاجلة بنسبة ${currentRatio} مرة، مما يمنحها وضعاً مالياً بتقدير "${healthStatus}".`;
+
+    // 9. Smart Insights & Recommendations (التشخيص والتوصيات الذكية)
+    const insights = [];
+
+    // Profitability insight
+    if (netMarginPct >= 15) {
+        insights.push({
+            type: 'positive',
+            category: 'profitability',
+            title: 'ربحية قوية وممتازة',
+            description: `هامش صافي الربح يبلغ ${netMarginPct}%، وهو مؤشر قوي على أن النشاط يدر عائداً ممتازاً بعد تغطية تكلفة البضاعة وكافة المصروفات.`,
+            simpleExplanation: `من كل 100 جنيه مبيعات، يتبقى في جيب الشركة ${netMarginPct} جنيه ربح خالص.`
+        });
+    } else if (netMarginPct > 0) {
+        insights.push({
+            type: 'tip',
+            category: 'profitability',
+            title: 'الربحية مقبولة مع فرصة للتحسين',
+            description: `هامش صافي الربح عند ${netMarginPct}%. يمكن تعزيز الربحية عن طريق تقليل المصروفات التشغيلية أو زيادة هامش ربح الأصناف الأكثر طلباً.`,
+            simpleExplanation: `الشركة تحقق أرباحاً ولكن المصروفات تقتطع جزءاً كبيراً من المكسب.`
+        });
+    } else {
+        insights.push({
+            type: 'warning',
+            category: 'profitability',
+            title: 'صافي خسارة في الفترة',
+            description: `المصروفات الإجمالية تفوق الإيرادات المحققة في هذه الفترة بمقدار ${Math.abs(Math.round(netProfit))} جنيه. يُرجى مراجعة تسعير المنتجات وحجم الإنفاق.`,
+            simpleExplanation: `المصاريف حالياً أعلى من الدخل.`
+        });
+    }
+
+    // Liquidity & Solvency insight
+    if (currentRatio >= 1.5) {
+        insights.push({
+            type: 'positive',
+            category: 'liquidity',
+            title: 'قدرة فائقة على سداد الالتزامات والديون',
+            description: `نسبة التداول تبلغ ${currentRatio} مرة، ولديك كاش متوفر يبلغ ${new Intl.NumberFormat('ar-EG').format(Math.round(cashAndBanks))} جنيه، مما يضمن أماناً مالياً تاماً ضد أي تعثر.`,
+            simpleExplanation: `لكل جنيه دين عليك، تمتلك الشركة ${currentRatio} جنيه أصولاً لتسديده فوراً.`
+        });
+    } else if (currentRatio >= 1.0) {
+        insights.push({
+            type: 'tip',
+            category: 'liquidity',
+            title: 'السيولة كافية لسداد الديون القريبة',
+            description: `نسبة التداول تبلغ ${currentRatio} مرة. السيولة تغطي الالتزامات ولكن ينصح بتعزيز الرصيد النقدي للحالات الطارئة.`,
+            simpleExplanation: `الأصول تغطي الديون بالظبط، ويفضل الحفاظ على فائض نقدي أكبر.`
+        });
+    } else {
+        insights.push({
+            type: 'warning',
+            category: 'liquidity',
+            title: 'تنبيه: عجز في السيولة المتداولة',
+            description: `الخصوم المتداولة أعلى من الأصول المتداولة. يجب جدولة الديون وتكثيف التحصيل لتحسين السيولة النقدية.`,
+            simpleExplanation: `الديون القريبة أعلى من الأموال السريعة المتاحة.`
+        });
+    }
+
+    // Receivables insight
+    const receivablesPctOfAssets = currentAssets > 0 ? Math.round((receivables / currentAssets) * 100) : 0;
+    if (receivablesPctOfAssets > 35) {
+        insights.push({
+            type: 'warning',
+            category: 'receivables',
+            title: 'تركز مالي كبير في مديونيات العملاء (فلوسك في السوق)',
+            description: `مديونيات العملاء تبلغ ${new Intl.NumberFormat('ar-EG').format(Math.round(receivables))} جنيه وتمثل ${receivablesPctOfAssets}% من أصولك المتداولة. يُوصى بوضع حوافز للسداد النقدي وتقليل البيع الآجل غير المضمون.`,
+            simpleExplanation: `جزء كبير من أموالك مجمد عند العملاء ويجب تحصيله ليدخل الخزينة كاش.`
+        });
+    } else {
+        insights.push({
+            type: 'positive',
+            category: 'receivables',
+            title: 'توازن جيد في مديونيات العملاء',
+            description: `مديونيات العملاء تحت السيطرة وتمثل ${receivablesPctOfAssets}% فقط من الأصول المتداولة، مع معدل تحصيل كاش جيد.`,
+            simpleExplanation: `أموالك في السوق متوازنة والتحصيل منتظم.`
+        });
+    }
+
+    // Operating Cost Insight
+    if (operatingExpenseRatio > 35) {
+        const topExpense = indirectExpensesDetails[0];
+        insights.push({
+            type: 'tip',
+            category: 'expenses',
+            title: 'المصروفات التشغيلية مرتفعة نسبياً',
+            description: `المصروفات غير المباشرة تستهلك ${operatingExpenseRatio}% من الإيرادات. أعلى بند إنفاق هو "${topExpense?.name || 'مصروفات أخرى'}" بقيمة ${new Intl.NumberFormat('ar-EG').format(topExpense?.amount || 0)} جنيه.`,
+            simpleExplanation: `مراجعة بنود الإنفاق الأعلى قد توفر آلاف الجنيهات وتزيد صافي الربح فوراً.`
+        });
+    }
+
+    // Inventory Insight
+    const inventoryPctOfAssets = currentAssets > 0 ? Math.round((inventory / currentAssets) * 100) : 0;
+    insights.push({
+        type: 'tip',
+        category: 'inventory',
+        title: 'حجم المخزون المتاح للبيع والتشغيل',
+        description: `قيمة المخزون الحالي تبلغ ${new Intl.NumberFormat('ar-EG').format(Math.round(inventory))} جنيه (${inventoryPctOfAssets}% من الأصول المتداولة). تأكد من سرعة دوران البضاعة الراكدة لعدم تجميد السيولة.`,
+        simpleExplanation: `لديك بضاعة بالمخازن كافية لتلبية الطلبيات ودعم المبيعات المستمرة.`
+    });
+
+    // 10. Chart-ready formatted packages
+    const poundBreakdown = [
+        {
+            name: 'تكلفة البضاعة المباشرة',
+            value: Math.round(directExpenses * 100) / 100,
+            percentage: costOfGoodsSoldRatio,
+            color: '#ef5350'
+        },
+        {
+            name: 'المصروفات التشغيلية والعمومية',
+            value: Math.round(indirectExpenses * 100) / 100,
+            percentage: operatingExpenseRatio,
+            color: '#ffa726'
+        },
+        {
+            name: 'صافي الربح المتبقي',
+            value: Math.max(0, Math.round(netProfit * 100) / 100),
+            percentage: Math.max(0, netMarginPct),
+            color: '#66bb6a'
+        }
+    ];
+
+    const currentAssetsStructure = [
+        { name: 'نقدية وبنوك', value: Math.round(cashAndBanks * 100) / 100, color: '#4caf50' },
+        { name: 'مديونيات عملاء', value: Math.round(receivables * 100) / 100, color: '#2196f3' },
+        { name: 'مخزون بضاعة', value: Math.round(inventory * 100) / 100, color: '#ff9800' },
+        { name: 'أصول متداولة أخرى', value: Math.round(otherCurrentAssets * 100) / 100, color: '#9c27b0' }
+    ].filter(item => item.value > 0);
+
+    const obligationsVsLiquidity = [
+        { name: 'كاش جاهز بالبنوك والخزن', amount: Math.round(cashAndBanks * 100) / 100, type: 'liquid' },
+        { name: 'فلوس لك عند العملاء', amount: Math.round(receivables * 100) / 100, type: 'liquid' },
+        { name: 'مستحقات الموردين والديون', amount: Math.round(currentLiabilities * 100) / 100, type: 'debt' }
+    ];
+
+    // Fetch full receivables / market breakdown
+    let customerDebtsData = [];
+    try {
+        const receivablesReport = await getCustomerReceivablesReport(effectiveStart, effectiveEnd);
+        customerDebtsData = receivablesReport?.data || [];
+    } catch (e) {
+        console.error('Error fetching customer receivables in financial analysis:', e);
+    }
+
+    const marketAndDebts = {
+        totalReceivables: Math.round(receivables * 100) / 100,
+        totalLiabilities: Math.round(currentLiabilities * 100) / 100,
+        netMarketBalance: Math.round((receivables - currentLiabilities) * 100) / 100,
+        totalCustomersWithDebt: customerDebtsData.length,
+        avgDebtPerCustomer: customerDebtsData.length > 0 ? Math.round(receivables / customerDebtsData.length) : 0,
+        topDebtors: customerDebtsData.slice(0, 10),
+        allDebtors: customerDebtsData,
+        liabilityAccounts: currentLiabilitiesDetails,
+        receivableAccounts: currentAssetsDetails.filter(a => [47, 48, 116].includes(a.id))
+    };
+
+    return {
+        period: {
+            startDate: effectiveStart,
+            endDate: effectiveEnd
+        },
+        marketAndDebts,
+        healthIndex: {
+            score,
+            status: healthStatus,
+            badge: healthBadge,
+            color: healthColor,
+            bgColor: healthBg,
+            summaryText
+        },
+        incomeStatement: {
+            totalRevenue: Math.round(totalRevenue * 100) / 100,
+            directExpenses: Math.round(directExpenses * 100) / 100,
+            grossProfit: Math.round(grossProfit * 100) / 100,
+            indirectExpenses: Math.round(indirectExpenses * 100) / 100,
+            netProfit: Math.round(netProfit * 100) / 100,
+            totalExpenses: Math.round(totalExpenses * 100) / 100,
+            grossMarginPct,
+            netMarginPct,
+            operatingExpenseRatio,
+            costOfGoodsSoldRatio,
+            roiOnExpenses
+        },
+        balanceSheet: {
+            totalAssets: Math.round(totalAssets * 100) / 100,
+            fixedAssets: Math.round(fixedAssets * 100) / 100,
+            currentAssets: Math.round(currentAssets * 100) / 100,
+            cashAndBanks: Math.round(cashAndBanks * 100) / 100,
+            receivables: Math.round(receivables * 100) / 100,
+            inventory: Math.round(inventory * 100) / 100,
+            otherCurrentAssets: Math.round(otherCurrentAssets * 100) / 100,
+            totalLiabilities: Math.round(totalLiabilities * 100) / 100,
+            currentLiabilities: Math.round(currentLiabilities * 100) / 100,
+            suppliersPayable: Math.round(suppliersPayable * 100) / 100,
+            equity: Math.round(equity * 100) / 100,
+            workingCapital: Math.round(workingCapital * 100) / 100
+        },
+        ratios: {
+            currentRatio,
+            quickRatio,
+            cashRatio,
+            debtToAssetsPct,
+            debtToEquityPct,
+            collectionEfficiencyPct
+        },
+        operations: {
+            invoicesCount,
+            invoicesTotal: Math.round(invoicesTotal * 100) / 100,
+            avgInvoiceAmount,
+            collectionsTotal: Math.round(collectionsTotal * 100) / 100
+        },
+        charts: {
+            monthlyTrend,
+            poundBreakdown,
+            currentAssetsStructure,
+            obligationsVsLiquidity
+        },
+        details: {
+            revenue: revenueDetails,
+            directExpenses: directExpensesDetails,
+            indirectExpenses: indirectExpensesDetails,
+            currentAssets: currentAssetsDetails,
+            currentLiabilities: currentLiabilitiesDetails
+        },
+        insights
+    };
+};
+
 export default {
+    getFinancialAnalysis,
     getProductAverageCostReport,
     getAssetsReport,
     getDashboardSummary,

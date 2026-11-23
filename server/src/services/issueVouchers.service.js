@@ -32,6 +32,7 @@ export class IssueVouchersService {
       const voucher = await IssueVoucher.create(voucherData, { transaction });
 
       let finalItemsData = itemsData;
+      let createdItems = [];
 
       if (itemsData.length > 0) {
         // Fetch products to get current prices if not provided
@@ -53,7 +54,8 @@ export class IssueVouchersService {
         });
         finalItemsData = itemsWithVoucherId;
 
-        const createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+        createdItems = await IssueVoucherItem.bulkCreate(itemsWithVoucherId, { transaction });
+        finalItemsData = createdItems;
 
         // Import InventoryTransactionService
         const InventoryTransactionService = (await import('./inventoryTransaction.service.js')).default;

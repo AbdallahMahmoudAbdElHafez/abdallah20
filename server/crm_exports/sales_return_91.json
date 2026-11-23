@@ -1,0 +1,14 @@
+[
+  {
+    "product_id": 3,
+    "user_id": 90003,
+    "quantity": 1,
+    "unit_price": 315
+  },
+  {
+    "product_id": 4,
+    "user_id": 90003,
+    "quantity": 1,
+    "unit_price": 196
+  }
+]
