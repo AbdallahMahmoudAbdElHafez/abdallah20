@@ -1,5 +1,6 @@
 // routes/inventoryTransaction.routes.js
-import {Router} from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 const router = Router();
 import InventoryTransactionController from "../controllers/inventoryTransaction.controller.js";
 

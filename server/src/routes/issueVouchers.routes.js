@@ -1,4 +1,5 @@
-import { Router } from 'express';
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import { IssueVouchersController } from '../controllers/issueVouchers.controller.js';
 import issueVoucherItemsRoutes from '../routes/IssueVoucherItems.routes.js';
 

@@ -1,6 +1,7 @@
 // src/services/billOfMaterial.service.js
 import {BillOfMaterial} from '../models/index.js';
-import { Op } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 export const createBOM = async (data) => {
   return BillOfMaterial.create(data);

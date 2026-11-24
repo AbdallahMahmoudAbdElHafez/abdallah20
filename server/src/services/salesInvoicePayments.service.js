@@ -1,7 +1,8 @@
 import { sequelize, SalesInvoicePayment, SalesInvoice, Party, Account, Cheque, ReferenceType, Employee } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
 import ENTRY_TYPES from "../constants/entryTypes.js";
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 export async function createPayment(data) {
     // Sanitize input data to handle empty strings for integer columns

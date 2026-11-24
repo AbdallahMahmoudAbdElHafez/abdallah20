@@ -1,7 +1,9 @@
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import * as controller from "../controllers/purchasePayment.controller.js";
 import { PurchaseInvoicePayment, PurchaseInvoice, Party } from "../models/index.js"; // ✅ استيراد الموديلات
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 const router = Router();
 

@@ -1,5 +1,6 @@
 import { PurchaseInvoice, Party, PurchaseOrder, PurchaseInvoiceItem, sequelize, Account, ReferenceType } from "../models/index.js";
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 class PurchaseInvoiceService {
   static async getAll(purchaseOrderId = null) {

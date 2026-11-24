@@ -1,5 +1,6 @@
 import { SalesInvoice, SalesInvoiceItem, sequelize, InventoryTransaction, Account, Product, ReferenceType, SalesReturn, SalesReturnItem } from "../models/index.js";
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 import InventoryTransactionService from './inventoryTransaction.service.js';
 import crmExportService from './crmExport.service.js';
 

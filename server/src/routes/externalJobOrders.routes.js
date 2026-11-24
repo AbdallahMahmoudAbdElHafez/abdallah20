@@ -1,5 +1,6 @@
 // src/routes/externalJobOrders.routes.js
-import { Router } from 'express';
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import ExternalJobOrdersController from '../controllers/externalJobOrders.controller.js';
 
 const router = Router();

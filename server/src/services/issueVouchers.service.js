@@ -12,7 +12,8 @@ import {
   EntryType,
   Unit
 } from '../models/index.js';
-import { Op } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 import { ENTRY_TYPES } from '../constants/entryTypes.js';
 
 export class IssueVouchersService {

@@ -1,6 +1,7 @@
 // server/src/models/purchaseInvoiceItem.model.js
 
-import { DataTypes } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { DataTypes } = _sequelizePkg;
 export default (sequelize) => {
     return sequelize.define('PurchaseInvoiceItem', {
         id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },

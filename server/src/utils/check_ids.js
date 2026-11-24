@@ -1,4 +1,5 @@
-import { Sequelize } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Sequelize } = _sequelizePkg;
 
 // Using the NEW db name 'nurivina_erp'
 const sequelize = new Sequelize('nurivina_erp', 'root', 'Abdallah20203040', {

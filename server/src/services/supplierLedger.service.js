@@ -1,4 +1,5 @@
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 import { PurchaseInvoice, PurchaseInvoicePayment, Party, ExternalJobOrder, ServicePayment, PurchaseReturn, Account, ExternalJobOrderService, ExternalServiceInvoice } from "../models/index.js";
 
 export async function getSupplierStatement(supplierId, { from, to }) {

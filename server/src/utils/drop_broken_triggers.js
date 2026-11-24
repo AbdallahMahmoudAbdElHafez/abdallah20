@@ -1,4 +1,5 @@
-import { Sequelize } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Sequelize } = _sequelizePkg;
 
 const sequelize = new Sequelize('nurivina_erp', 'root', 'Abdallah20203040', {
     host: 'localhost',

@@ -1,4 +1,5 @@
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 const router = Router();
 import PurchaseOrderItemController from "../controllers/purchaseOrderItem.controller.js";
 

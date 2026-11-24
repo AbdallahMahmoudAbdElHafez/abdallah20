@@ -1,6 +1,7 @@
 
 import EntryTypeController from "../controllers/entryTypes.controller.js";
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 const router = Router();
 
 router.get("/", EntryTypeController.getAll);

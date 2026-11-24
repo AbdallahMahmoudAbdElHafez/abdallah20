@@ -1,5 +1,6 @@
 // src/routes/serviceTypes.routes.js
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import ServiceTypesController from "../controllers/serviceTypes.controller.js";
 
 const router = Router();

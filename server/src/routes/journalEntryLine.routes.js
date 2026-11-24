@@ -1,6 +1,7 @@
 // routes/journalEntryLineRoutes.js
 
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import { getJournalEntries, getAll, getById, create, update, deleteById } from "../controllers/journalEntryLine.controller.js";
 
 const router = Router();

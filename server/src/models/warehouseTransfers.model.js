@@ -1,5 +1,6 @@
 // server/src/models/warehouseTransfers.model.js
-import { DataTypes } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { DataTypes } = _sequelizePkg;
 export default (sequelize) => {
   const WarehouseTransfer = sequelize.define(
     "warehouse_transfer",

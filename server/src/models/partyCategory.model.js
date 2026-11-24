@@ -1,5 +1,6 @@
 
-import { DataTypes } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { DataTypes } = _sequelizePkg;
 export default (sequelize) => {
     return sequelize.define('PartyCategory', {
         id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },

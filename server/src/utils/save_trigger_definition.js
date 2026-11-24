@@ -1,4 +1,5 @@
-import { Sequelize } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Sequelize } = _sequelizePkg;
 import fs from 'fs';
 
 const sequelize = new Sequelize('nurivina', 'root', 'Abdallah20203040', {

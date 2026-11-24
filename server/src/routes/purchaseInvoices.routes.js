@@ -1,6 +1,7 @@
 // server/src/routes/purchaseInvoices.routes.js
 
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 
 const router = Router();
 import PurchaseInvoiceController from "../controllers/purchaseInvoices.controller.js";

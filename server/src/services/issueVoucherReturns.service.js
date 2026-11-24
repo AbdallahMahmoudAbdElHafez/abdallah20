@@ -9,7 +9,8 @@ import {
     Unit,
     sequelize,
 } from '../models/index.js';
-import { Op } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 export class IssueVoucherReturnsService {
 

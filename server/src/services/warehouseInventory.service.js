@@ -1,5 +1,6 @@
 import { BatchInventory, Batches, Product, InventoryTransactionBatches, InventoryTransaction, CurrentInventory } from "../models/index.js";
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 class WarehouseInventoryService {
     static async getProductsByWarehouse(warehouseId) {

@@ -1,5 +1,6 @@
 
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 const router = Router();
 import Account from "../models/account.model.js"; // أو المسار المناسب إلى موديل الـAccount
 import AccountController from "../controllers/account.controller.js";

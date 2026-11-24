@@ -1,5 +1,6 @@
 // server/src/routes/party.routes.js
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import partyController from "../controllers/party.controller.js";
 const router = Router();
 

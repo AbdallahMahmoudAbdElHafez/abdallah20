@@ -1,6 +1,7 @@
 import { PurchaseReturn, PurchaseReturnItem, sequelize, PurchaseInvoice, PurchaseInvoiceItem, InventoryTransaction, Product, Account, Party } from "../models/index.js";
 import InventoryTransactionService from './inventoryTransaction.service.js';
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 export default {
   getAll: async () => {

@@ -1,6 +1,7 @@
 
 import UnitController from "../controllers/unit.controller.js";
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 const router = Router();
 
 router.get("/", UnitController.getAll);

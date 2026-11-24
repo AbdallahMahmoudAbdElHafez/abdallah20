@@ -1,6 +1,7 @@
 import { sequelize, PurchaseInvoicePayment, PurchaseInvoice, Party, Cheque, Account, ReferenceType, Employee } from "../models/index.js";
 import { createJournalEntry } from "./journal.service.js";
-import { Op } from "sequelize"; // 👈 مهم جداً
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg; // 👈 مهم جداً
 
 export async function createPayment(data) {
   // Sanitize input data

@@ -1,4 +1,5 @@
-import { Sequelize } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Sequelize } = _sequelizePkg;
 import { env } from './config/env.js';
 
 async function updateSchema() {

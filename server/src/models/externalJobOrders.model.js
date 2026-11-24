@@ -1,5 +1,6 @@
 // src/models/externalJobOrders.model.js
-import { DataTypes } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { DataTypes } = _sequelizePkg;
 
 export default (sequelize) => {
   return sequelize.define(

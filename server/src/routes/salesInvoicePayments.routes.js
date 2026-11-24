@@ -1,7 +1,9 @@
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import * as controller from "../controllers/salesInvoicePayments.controller.js";
 import { SalesInvoicePayment, SalesInvoice, Party, City, Employee } from "../models/index.js";
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 const router = Router();
 

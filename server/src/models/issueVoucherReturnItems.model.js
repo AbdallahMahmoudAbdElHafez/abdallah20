@@ -1,4 +1,5 @@
-import { DataTypes } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { DataTypes } = _sequelizePkg;
 
 const IssueVoucherReturnItemModel = (sequelize) => {
     const IssueVoucherReturnItem = sequelize.define('IssueVoucherReturnItem', {

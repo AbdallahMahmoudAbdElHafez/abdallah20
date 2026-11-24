@@ -1,4 +1,5 @@
-import { Sequelize } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Sequelize } = _sequelizePkg;
 
 // Checking 'nurivina' (User switched back to this)
 const sequelize = new Sequelize('nurivina', 'root', 'Abdallah20203040', {

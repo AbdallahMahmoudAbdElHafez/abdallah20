@@ -1,5 +1,6 @@
 // src/models/productCosts.model.js
-import { DataTypes } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { DataTypes } = _sequelizePkg;
 
 export default (sequelize) => {
   const ProductCost = sequelize.define('product_cost', {

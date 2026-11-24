@@ -1,4 +1,5 @@
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 import { SalesInvoice, SalesInvoicePayment, Party, SalesReturn, IssueVoucher, IssueVoucherItem, Product, SalesInvoiceItem, SalesReturnItem, City, Governate } from "../models/index.js";
 
 export async function getCustomerStatement(customerId, { from, to }) {

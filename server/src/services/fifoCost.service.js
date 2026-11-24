@@ -1,5 +1,6 @@
 import { BatchInventory, Batches, InventoryTransaction, InventoryTransactionBatches, sequelize } from "../models/index.js";
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 class FIFOCostService {
     /**

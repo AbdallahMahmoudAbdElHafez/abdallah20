@@ -1,5 +1,6 @@
 // src/routes/externalServiceInvoices.routes.js
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import ExternalServiceInvoicesController from "../controllers/externalServiceInvoices.controller.js";
 
 const router = Router();

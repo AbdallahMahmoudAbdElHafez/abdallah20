@@ -1,5 +1,6 @@
 // src/routes/processes.routes.js
-import { Router } from 'express';
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import ProcessController from '../controllers/processes.controller.js';
 
 const router = Router();

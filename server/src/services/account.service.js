@@ -1,5 +1,6 @@
 import { Account, sequelize } from "../models/index.js";
-import { Op } from "sequelize";
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 import { createOrAdjustOpeningBalanceEntry } from "./journal.service.js";
 
 // الأنواع المسموح لها بالرصيد الافتتاحي

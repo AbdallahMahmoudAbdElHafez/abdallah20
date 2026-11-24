@@ -8,7 +8,8 @@ import {
     Governate,
     sequelize
 } from '../models/index.js';
-import { Op } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Op } = _sequelizePkg;
 
 const getCrossRegionReport = async (warehouseId, startDate, endDate) => {
     if (!warehouseId) {

@@ -1,5 +1,6 @@
 // server/src/models/purchaseOrder.model.js
-import { DataTypes } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { DataTypes } = _sequelizePkg;
 
 export default (sequelize) => {
   const PurchaseOrder = sequelize.define('PurchaseOrder', {

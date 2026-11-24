@@ -1,5 +1,6 @@
 
-import { Sequelize } from 'sequelize';
+import _sequelizePkg from 'sequelize';
+const { Sequelize } = _sequelizePkg;
 import mysql2 from 'mysql2';
 import { env } from '../config/env.js';
 import ProductModel from './product.model.js';

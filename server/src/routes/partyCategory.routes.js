@@ -1,4 +1,5 @@
-import { Router } from "express";
+import _expressPkg from 'express';
+const { Router } = _expressPkg;
 import PartyCategoryController from "../controllers/partyCategory.controller.js";
 const router = Router();
 router.get("/", PartyCategoryController.getAll);
