@@ -1,12 +1,13 @@
 {
   "version": 2,
   "framework": null,
-  "installCommand": "npm install --include=dev && npm --prefix client install --include=dev",
+  "installCommand": "rm -rf server/node_modules && npm install --include=dev && npm --prefix client install --include=dev",
   "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/dist",
   "functions": {
     "api/index.js": {
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "node_modules/moment-timezone/data/packed/latest.json"
     }
   },
   "rewrites": [
