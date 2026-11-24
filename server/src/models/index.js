@@ -1,5 +1,6 @@
 
 import { Sequelize } from 'sequelize';
+import mysql2 from 'mysql2';
 import { env } from '../config/env.js';
 import ProductModel from './product.model.js';
 import UnitModel from './unit.model.js';
@@ -79,7 +80,22 @@ const sequelize = new Sequelize(env.db.name, env.db.user, env.db.pass, {
   host: env.db.host,
   port: env.db.port,
   dialect: 'mysql',
+  dialectModule: mysql2,
+  dialectOptions: env.db.ssl
+    ? {
+        ssl: {
+          minVersion: 'TLSv1.2',
+          rejectUnauthorized: true,
+        },
+      }
+    : {},
   logging: false,
+  pool: {
+    max: env.isVercel ? 5 : 10,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
 });
 
 // تعريف الموديلات
