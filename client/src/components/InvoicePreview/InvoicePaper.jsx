@@ -36,7 +36,7 @@ export default function InvoicePaper({ invoice, items, columns, type = 'sales', 
                 <div className="inv-company-info">
                     {company?.logo_path && (
                         <img
-                            src={`http://localhost:5000/${company.logo_path}`}
+                            src={`/${company.logo_path.replace(/^\/+/, '')}`}
                             alt="Company Logo"
                             style={{ maxHeight: '80px', marginBottom: '10px', display: 'block' }}
                         />

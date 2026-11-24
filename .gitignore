@@ -37,3 +37,4 @@ server/*.json
 *.xlsx
 uploads/
 server/uploads/
+!client/public/uploads/

@@ -143,7 +143,7 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         // Add Logo if exists
         if (selectedCompany.logo_path) {
             try {
-                const response = await fetch(`http://localhost:5000/${selectedCompany.logo_path}`);
+                const response = await fetch(`/${selectedCompany.logo_path.replace(/^\/+/, '')}`);
                 const blob = await response.blob();
                 const buffer = await blob.arrayBuffer();
 
@@ -334,7 +334,7 @@ export default function InvoicePreviewDialog({ open, onClose, invoice, items, ty
         // Add Logo if exists
         if (selectedCompany.logo_path) {
             try {
-                const response = await fetch(`http://localhost:5000/${selectedCompany.logo_path}`);
+                const response = await fetch(`/${selectedCompany.logo_path.replace(/^\/+/, '')}`);
                 const blob = await response.blob();
                 const buffer = await blob.arrayBuffer();
 
