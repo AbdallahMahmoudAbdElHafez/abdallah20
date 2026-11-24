@@ -15,6 +15,9 @@ export class DatabaseService {
     }
 
     static async backupDatabase(dbName) {
+        if (env.isVercel) {
+            throw new Error('النسخ الاحتياطي عبر mysqldump غير متاح على Vercel Serverless. استخدم لوحة تحكم TiDB Cloud للنسخ الاحتياطي.');
+        }
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const backupDir = path.join(process.cwd(), 'backups');
 
@@ -35,6 +38,9 @@ export class DatabaseService {
     }
 
     static async switchDatabase(dbName) {
+        if (env.isVercel) {
+            throw new Error('تبديل قاعدة البيانات عبر ملف .env غير متاح على Vercel. عدّل متغير DB_NAME من إعدادات Vercel.');
+        }
         const envPath = path.join(process.cwd(), '.env');
         let envContent = await fs.readFile(envPath, 'utf8');
 

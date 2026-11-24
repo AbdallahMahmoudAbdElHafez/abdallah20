@@ -2,15 +2,24 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-const uploadDir = 'uploads/companies';
+const isVercel = Boolean(process.env.VERCEL);
+const uploadDir = isVercel ? '/tmp/uploads/companies' : 'uploads/companies';
 
-// Ensure upload directory exists
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+function ensureUploadDir() {
+    try {
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+    } catch (err) {
+        console.warn('[Upload] Could not create upload directory:', err.message);
+    }
 }
+
+ensureUploadDir();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
+        ensureUploadDir();
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {

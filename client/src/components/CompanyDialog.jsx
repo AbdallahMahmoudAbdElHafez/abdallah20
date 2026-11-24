@@ -96,7 +96,8 @@ const CompanyDialog = ({ open, onClose, companyToEdit }) => {
         if (companyToEdit) {
             // ... existing logic ...
             if (companyToEdit.logo_path) {
-                setPreviewUrl(`http://localhost:5000/${companyToEdit.logo_path}`);
+                const baseOrigin = (import.meta.env.VITE_API_URL || "").replace(/\/api\/?$/, "");
+                setPreviewUrl(`${baseOrigin}/${companyToEdit.logo_path}`);
             } else {
                 setPreviewUrl(null);
             }

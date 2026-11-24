@@ -21,7 +21,7 @@ import { defaultTableProps } from "../config/tableConfig";
 import axios from "axios";
 import { Inventory as InventoryIcon, Save as SaveIcon } from "@mui/icons-material";
 
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 export default function InventoryAdjustmentPage() {
     const [warehouses, setWarehouses] = useState([]);

@@ -5,7 +5,9 @@ import { SalesInvoice, SalesReturn } from '../models/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const EXPORT_DIR = path.resolve(__dirname, '../../crm_exports');
+const EXPORT_DIR = process.env.VERCEL
+    ? path.join('/tmp', 'crm_exports')
+    : path.resolve(__dirname, '../../crm_exports');
 
 class CrmExportService {
     async ensureExportDir() {

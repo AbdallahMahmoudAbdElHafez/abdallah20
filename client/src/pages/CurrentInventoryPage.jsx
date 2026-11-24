@@ -43,13 +43,15 @@ export default function CurrentInventoryPage() {
     fetchWarehouses();
   }, [dispatch]);
 
+  const API_BASE = import.meta.env.VITE_API_URL || "/api";
+
   const fetchProducts = async () => {
-    const r = await axios.get("http://localhost:5000/api/products");
+    const r = await axios.get(`${API_BASE}/products`);
     setProducts(r.data || []);
   };
 
   const fetchWarehouses = async () => {
-    const r = await axios.get("http://localhost:5000/api/warehouses");
+    const r = await axios.get(`${API_BASE}/warehouses`);
     setWarehouses(r.data || []);
   };
 
