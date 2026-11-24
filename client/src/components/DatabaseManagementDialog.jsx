@@ -63,10 +63,37 @@ const DatabaseManagementDialog = ({ open, onClose }) => {
         setError('');
         setSuccess('');
         try {
-            const response = await axios.post(`${API_BASE_URL}/backup`, { dbName: selectedDb, password });
-            setSuccess(response.data.message);
+            const response = await axios.post(
+                `${API_BASE_URL}/backup`,
+                { dbName: selectedDb, password },
+                { responseType: 'blob' }
+            );
+            const fileName =
+                response.headers['x-backup-filename'] ||
+                `${selectedDb}_backup_${new Date().toISOString().slice(0, 10)}.sql`;
+
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/sql' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            setSuccess(`تم تحميل النسخة الاحتياطية بنجاح (${fileName})`);
         } catch (err) {
-            setError(err.response?.data?.message || 'فشل في عمل النسخة الاحتياطية');
+            let msg = 'فشل في عمل النسخة الاحتياطية';
+            if (err.response?.data instanceof Blob) {
+                try {
+                    const text = await err.response.data.text();
+                    const parsed = JSON.parse(text);
+                    if (parsed.message) msg = parsed.message;
+                } catch {}
+            } else if (err.response?.data?.message) {
+                msg = err.response.data.message;
+            }
+            setError(msg);
         } finally {
             setLoading(false);
         }

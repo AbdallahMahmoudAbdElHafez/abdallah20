@@ -1,4 +1,5 @@
 
+import zlib from 'zlib';
 import { DatabaseService } from '../services/database.service.js';
 
 export const getDatabases = async (req, res, next) => {
@@ -17,7 +18,19 @@ export const backup = async (req, res, next) => {
             return res.status(401).json({ message: 'كلمة المرور غير صحيحة' });
         }
         const result = await DatabaseService.backupDatabase(dbName);
-        res.json({ message: 'تم عمل النسخة الاحتياطية بنجاح', ...result });
+        res.setHeader('Content-Type', 'application/sql; charset=utf-8');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${result.fileName}"`
+        );
+        res.setHeader('X-Backup-Filename', result.fileName);
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition, X-Backup-Filename');
+        if ((req.headers['accept-encoding'] || '').includes('gzip')) {
+            const compressed = zlib.gzipSync(Buffer.from(result.sqlContent, 'utf8'));
+            res.setHeader('Content-Encoding', 'gzip');
+            return res.send(compressed);
+        }
+        res.send(result.sqlContent);
     } catch (error) {
         next(error);
     }
