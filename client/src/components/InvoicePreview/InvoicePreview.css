@@ -188,6 +188,30 @@
 }
 
 /* --- Print Media Query --- */
+@media (max-width: 900px) {
+  .invoice-preview-container {
+    flex-direction: column;
+    overflow: auto;
+    padding: 12px;
+    gap: 12px;
+    height: auto;
+  }
+
+  .invoice-sidebar {
+    width: 100%;
+    padding: 14px;
+    gap: 12px;
+    overflow-y: visible;
+  }
+
+  .invoice-main {
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 24px;
+  }
+}
+
 @media print {
   @page {
     size: A4;
