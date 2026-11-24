@@ -74,7 +74,12 @@ export class DatabaseService {
             );
 
             if (rows.length > 0) {
-                const columns = Object.keys(rows[0]);
+                const [genCols] = await sequelize.query(
+                    `SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND EXTRA LIKE '%GENERATED%'`,
+                    { replacements: [dbName, table] }
+                );
+                const generatedSet = new Set(genCols.map((c) => c.COLUMN_NAME));
+                const columns = Object.keys(rows[0]).filter((c) => !generatedSet.has(c));
                 const colList = columns
                     .map((c) => `\`${c.replace(/`/g, '``')}\``)
                     .join(', ');
