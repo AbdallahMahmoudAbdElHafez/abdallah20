@@ -18,6 +18,7 @@ import {
     Collapse,
     Paper,
     Stack,
+    Autocomplete,
 } from "@mui/material";
 import {
     Add as AddIcon,
@@ -649,25 +650,40 @@ export default function SalesInvoiceDialog({
                             </Grid>
 
                             <Grid item xs={12} md={3}>
-                                <TextField
-                                    select
+                                <Autocomplete
                                     fullWidth
-                                    label="العميل"
-                                    value={invoiceHead.party_id}
-                                    onChange={(e) =>
-                                        setInvoiceHead({ ...invoiceHead, party_id: e.target.value })
+                                    options={customers.filter((p) => p.party_type === "customer")}
+                                    value={
+                                        customers.find(
+                                            (c) => Number(c.id) === Number(invoiceHead.party_id)
+                                        ) || null
                                     }
+                                    onChange={(_, newValue) =>
+                                        setInvoiceHead({
+                                            ...invoiceHead,
+                                            party_id: newValue ? newValue.id : "",
+                                        })
+                                    }
+                                    getOptionLabel={(option) =>
+                                        option
+                                            ? `${option.name || ""}${
+                                                  option.city?.name ? ` (${option.city.name})` : ""
+                                              }`
+                                            : ""
+                                    }
+                                    isOptionEqualToValue={(option, value) =>
+                                        Number(option.id) === Number(value?.id)
+                                    }
+                                    noOptionsText="لا توجد نتائج"
                                     disabled={isReadOnly}
-                                >
-                                    <MenuItem value="">اختر العميل</MenuItem>
-                                    {customers
-                                        .filter((p) => p.party_type === "customer")
-                                        .map((c) => (
-                                            <MenuItem key={c.id} value={c.id}>
-                                                {c.name} {c.city?.name ? `(${c.city.name})` : ""}
-                                            </MenuItem>
-                                        ))}
-                                </TextField>
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="العميل"
+                                            placeholder="ابحث باسم العميل أو المدينة..."
+                                        />
+                                    )}
+                                />
                                 {selectedCustomer && (
                                     <Typography variant="caption">
                                         رقم الهاتف: {selectedCustomer.phone || "غير متوفر"}
