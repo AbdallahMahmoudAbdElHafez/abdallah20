@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { IssueVouchersController } from '../controllers/IssueVouchers.controller.js';
+import { IssueVouchersController } from '../controllers/issueVouchers.controller.js';
 import issueVoucherItemsRoutes from '../routes/IssueVoucherItems.routes.js';
 
 const router = Router();
