@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "framework": null,
   "installCommand": "npm install --include=dev && npm --prefix client install --include=dev",
   "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/dist",
