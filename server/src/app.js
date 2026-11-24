@@ -63,6 +63,8 @@ import serviceTypesRoutes from './routes/serviceTypes.routes.js';
 import issueVoucherReturnsRoutes from './routes/issueVoucherReturns.routes.js';
 import leaveTypesRoutes from './routes/leaveTypes.routes.js';
 import offerKitsRoutes from './routes/offerKits.routes.js';
+import { env } from './config/env.js';
+import { sequelize } from './models/index.js';
 import notesRoutes from './routes/notes.routes.js';
 
 const app = express();
@@ -70,7 +72,27 @@ app.use(cors());
 app.use(express.json());
 
 
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+app.get('/api/health', async (req, res) => {
+    const info = {
+        ok: true,
+        dbHost: env.db.host,
+        dbPort: env.db.port,
+        dbName: env.db.name,
+        dbSsl: env.db.ssl,
+        isVercel: env.isVercel,
+    };
+    if (req.query.db === '1') {
+        try {
+            await sequelize.authenticate();
+            info.dbConnected = true;
+        } catch (err) {
+            info.dbConnected = false;
+            info.dbError = err.message;
+            return res.status(500).json(info);
+        }
+    }
+    res.json(info);
+});
 app.use('/api/products', productRoutes);
 app.use('/api/units', unitRoutes);
 app.use('/api/countries', countryRoutes);
