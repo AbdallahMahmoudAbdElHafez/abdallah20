@@ -118,6 +118,7 @@ export const defaultTableProps = {
             maxWidth: '100%',
             overflowX: 'auto',
             WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-x pan-y',
         },
     },
     muiTopToolbarProps: {
@@ -144,9 +145,8 @@ export const defaultTableProps = {
         sx: {
             width: '100%',
             maxWidth: '100%',
-            overflow: 'hidden',
             border: '1px solid #e2e8f0',
-            borderRadius: '12px',
+            borderRadius: '14px',
         },
     },
 };

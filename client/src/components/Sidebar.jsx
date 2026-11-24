@@ -268,10 +268,11 @@ function Sidebar({ onToggleNotes, mobileOpen = false, onMobileClose }) {
     width: drawerWidth,
     maxWidth: "82vw",
     boxSizing: "border-box",
-    bgcolor: "#1a237e",
+    background: "linear-gradient(180deg, #1e1b4b 0%, #1e3a8a 100%)",
     color: "white",
     direction: "rtl",
     borderRadius: 0,
+    boxShadow: "0 12px 32px rgba(15, 23, 42, 0.28)",
   };
 
   return (

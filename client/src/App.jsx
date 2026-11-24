@@ -71,6 +71,7 @@ import SalesAnalysisPage from "./pages/SalesAnalysisPage";
 import UnbalancedJournalEntriesPage from "./pages/UnbalancedJournalEntriesPage";
 import OfferKitsPage from "./pages/OfferKitsPage";
 import DraggableNotes from "./components/DraggableNotes";
+import MobileBottomNav from "./components/MobileBottomNav";
 import { useState, useEffect } from "react";
 
 const drawerWidth = 240;
@@ -93,25 +94,27 @@ export default function App() {
       {/* Mobile Top Bar */}
       <AppBar
         position="sticky"
+        elevation={0}
         sx={{
           display: { xs: "block", md: "none" },
-          bgcolor: "#1a237e",
-          background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+          background: "linear-gradient(135deg, #1e1b4b 0%, #1d4ed8 100%)",
+          boxShadow: "0 4px 20px rgba(30, 27, 75, 0.22)",
           zIndex: (theme) => theme.zIndex.drawer + 1,
         }}
       >
-        <Toolbar sx={{ minHeight: 56, px: 1.5, justifyContent: "space-between" }}>
+        <Toolbar sx={{ minHeight: 58, px: 1.5, justifyContent: "space-between" }}>
           <IconButton
             color="inherit"
             edge="start"
             onClick={() => setMobileOpen(true)}
             aria-label="فتح القائمة"
+            sx={{ bgcolor: "rgba(255,255,255,0.12)", borderRadius: 2 }}
           >
             <MenuIcon />
           </IconButton>
           <Typography
             variant="subtitle1"
-            sx={{ fontWeight: "bold", fontSize: "1.05rem", color: "#fff" }}
+            sx={{ fontWeight: 800, fontSize: "1.05rem", color: "#fff", letterSpacing: 0.2 }}
           >
             نظام إدارة الحسابات
           </Typography>
@@ -120,6 +123,7 @@ export default function App() {
             edge="end"
             onClick={() => setShowNotes((prev) => !prev)}
             aria-label="الملاحظات"
+            sx={{ bgcolor: "rgba(255,255,255,0.12)", borderRadius: 2 }}
           >
             <NoteIcon />
           </IconButton>
@@ -137,9 +141,10 @@ export default function App() {
         sx={{
           mr: { xs: 0, md: `${drawerWidth}px` },
           width: { xs: "100%", md: `calc(100% - ${drawerWidth}px)` },
-          minHeight: "100vh",
+          minHeight: "100dvh",
           maxWidth: "100%",
-          overflowX: "hidden",
+          overflowX: "clip",
+          pb: { xs: 10, md: 0 },
           boxSizing: "border-box",
         }}
       >
@@ -217,6 +222,7 @@ export default function App() {
           <Route path="/offer-kits" element={<OfferKitsPage />} />
         </Routes>
       </Box>
+      <MobileBottomNav onOpenMenu={() => setMobileOpen(true)} />
       {showNotes && <DraggableNotes onClose={() => setShowNotes(false)} />}
     </BrowserRouter>
   );
