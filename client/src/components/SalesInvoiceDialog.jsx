@@ -713,26 +713,6 @@ export default function SalesInvoiceDialog({
 
                             <Grid item xs={12} md={3}>
                                 <TextField
-                                    select
-                                    fullWidth
-                                    label="الحساب"
-                                    value={invoiceHead.account_id}
-                                    onChange={(e) =>
-                                        setInvoiceHead({ ...invoiceHead, account_id: e.target.value })
-                                    }
-                                    disabled={isReadOnly}
-                                >
-                                    <MenuItem value="">اختر الحساب</MenuItem>
-                                    {accounts.map((acc) => (
-                                        <MenuItem key={acc.id} value={acc.id}>
-                                            {acc.name} ({acc.code})
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </Grid>
-
-                            <Grid item xs={12} md={3}>
-                                <TextField
                                     type="date"
                                     fullWidth
                                     label="تاريخ الفاتورة"
