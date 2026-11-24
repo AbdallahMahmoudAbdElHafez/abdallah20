@@ -21,7 +21,8 @@ import AccountingSettingsPage from "./pages/AccountingSettingsPage";
 import SupplierStatementPage from "./pages/SupplierStatementPage";
 import ExpenseCategoryPage from "./pages/ExpenseCategoryPage";
 import BillOfMaterialsPage from "./pages/BillOfMaterialsPage";
-import { Box } from "@mui/material";
+import { AppBar, Box, IconButton, Toolbar, Typography } from "@mui/material";
+import { Menu as MenuIcon, Note as NoteIcon } from "@mui/icons-material";
 import WarehouseTransfersPage from "./pages/WarehouseTransfersPage";
 import ProcessesPage from "./pages/processesPage";
 import ExternalJobOrdersPage from "./pages/externalJobOrdersPage";
@@ -76,9 +77,11 @@ const drawerWidth = 240;
 
 export default function App() {
   const [showNotes, setShowNotes] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Open notes after a short delay to avoid mount-time conflicts
+  // Open notes after a short delay on desktop only (avoid blocking mobile screen on load)
   useEffect(() => {
+    if (window.innerWidth < 900) return;
     const timer = setTimeout(() => {
       setShowNotes(true);
     }, 500);
@@ -87,8 +90,59 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Sidebar onToggleNotes={() => setShowNotes(!showNotes)} />
-      <Box sx={{ mr: `${drawerWidth}px` }}>
+      {/* Mobile Top Bar */}
+      <AppBar
+        position="sticky"
+        sx={{
+          display: { xs: "block", md: "none" },
+          bgcolor: "#1a237e",
+          background: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+      >
+        <Toolbar sx={{ minHeight: 56, px: 1.5, justifyContent: "space-between" }}>
+          <IconButton
+            color="inherit"
+            edge="start"
+            onClick={() => setMobileOpen(true)}
+            aria-label="فتح القائمة"
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: "bold", fontSize: "1.05rem", color: "#fff" }}
+          >
+            نظام إدارة الحسابات
+          </Typography>
+          <IconButton
+            color="inherit"
+            edge="end"
+            onClick={() => setShowNotes((prev) => !prev)}
+            aria-label="الملاحظات"
+          >
+            <NoteIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onMobileClose={() => setMobileOpen(false)}
+        onToggleNotes={() => setShowNotes((prev) => !prev)}
+      />
+
+      <Box
+        component="main"
+        sx={{
+          mr: { xs: 0, md: `${drawerWidth}px` },
+          width: { xs: "100%", md: `calc(100% - ${drawerWidth}px)` },
+          minHeight: "100vh",
+          maxWidth: "100%",
+          overflowX: "hidden",
+          boxSizing: "border-box",
+        }}
+      >
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/dashboard" element={<Dashboard />} />

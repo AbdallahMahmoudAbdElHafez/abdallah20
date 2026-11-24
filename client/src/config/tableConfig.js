@@ -91,7 +91,7 @@ export const MRT_Localization_AR = {
     unpinAll: 'إلغاء تثبيت الكل',
 };
 
-// Default table props for center alignment and styling
+// Default table props for center alignment, styling, and mobile responsiveness
 export const defaultTableProps = {
     localization: MRT_Localization_AR,
     muiTableHeadCellProps: {
@@ -99,16 +99,54 @@ export const defaultTableProps = {
         sx: {
             fontWeight: 'bold',
             backgroundColor: '#f8fafc',
-        }
+            whiteSpace: 'nowrap',
+            px: { xs: 1, sm: 1.5 },
+            py: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+        },
     },
     muiTableBodyCellProps: {
         align: 'center',
+        sx: {
+            px: { xs: 1, sm: 1.5 },
+            py: { xs: 0.75, sm: 1.25 },
+            fontSize: { xs: '0.8rem', sm: '0.875rem' },
+        },
+    },
+    muiTableContainerProps: {
+        sx: {
+            maxWidth: '100%',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+        },
+    },
+    muiTopToolbarProps: {
+        sx: {
+            flexWrap: 'wrap',
+            gap: 1,
+            '& > .MuiBox-root': {
+                flexWrap: 'wrap',
+                gap: 1,
+            },
+        },
+    },
+    muiBottomToolbarProps: {
+        sx: {
+            '& .MuiTablePagination-toolbar': {
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+                px: 1,
+            },
+        },
     },
     muiTablePaperProps: {
         elevation: 0,
         sx: {
+            width: '100%',
+            maxWidth: '100%',
+            overflow: 'hidden',
             border: '1px solid #e2e8f0',
             borderRadius: '12px',
-        }
+        },
     },
 };

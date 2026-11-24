@@ -1,5 +1,5 @@
 // client/src/theme/theme.js
-import { createTheme } from '@mui/material/styles';
+import { createTheme, responsiveFontSizes } from '@mui/material/styles';
 
 // Define custom color palette
 const colors = {
@@ -321,8 +321,16 @@ const theme = createTheme({
             fontSize: '0.875rem',
             textTransform: 'none',
             borderBottom: '2px solid #e2e8f0',
-            backgroundColor: '#f8fafc',
           },
+        },
+      },
+    },
+    MuiTableContainer: {
+      styleOverrides: {
+        root: {
+          maxWidth: '100%',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
         },
       },
     },
@@ -474,4 +482,4 @@ theme.mixins = {
   },
 };
 
-export default theme;
+export default responsiveFontSizes(theme);

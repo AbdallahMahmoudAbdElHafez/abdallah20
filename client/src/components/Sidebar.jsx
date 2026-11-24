@@ -6,43 +6,50 @@ import {
   Collapse,
   Toolbar,
   Typography,
-  Box,
   Divider,
+  IconButton,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
-import { ExpandLess, ExpandMore, Note as NoteIcon } from "@mui/icons-material";
+import {
+  ExpandLess,
+  ExpandMore,
+  Note as NoteIcon,
+  Close as CloseIcon,
+} from "@mui/icons-material";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 
-const drawerWidth = 240;
+export const drawerWidth = 240;
 
 const navItems = [
   { label: "الرئيسية", path: "/" },
   { label: "لوحة التحكم", path: "/dashboard" },
   { label: "الوحدات", path: "/units" },
   { label: "الدول", path: "/countries" },
-
   { label: "المصروفات", path: "/expenses" },
   { label: "الحسابات", path: "/accounts" },
   { label: "فئات العملاء/الموردين", path: "/party-categories" },
   { label: "العملاء الموردين", path: "/parties" },
   { label: "العمليات", path: "/processes" },
-
   { label: "فئات المصروفات", path: "/expense-categories" },
   { label: "مكونات التصنيع", path: "/bill-of-material" },
   { label: "الأطباء", path: "/doctors" },
-
 ];
+
 const productsMenu = [
   { label: "المنتجات", path: "/products" },
   { label: "تكلفة المنتجات", path: "/product-costs" },
   { label: "متوسط تكلفة الوحدة", path: "/reports/product-average-cost" },
 ];
+
 const companyInfoMenu = [
   { label: "الشركات", path: "/companies" },
   { label: "الاقسام", path: "/departments" },
   { label: "المسميات الوظيفيه", path: "/job-titles" },
   { label: "الموظفين", path: "/employees" },
 ];
+
 const purchasesMenu = [
   { label: "أوامر الشراء", path: "/purchase-orders" },
   { label: "فواتير الشراء", path: "/purchase-invoices" },
@@ -64,8 +71,8 @@ const salesMenu = [
   { label: "المقبوضات", path: "/sales-invoice-payments" },
   { label: "مرتجعات", path: "/sales-returns" },
   { label: "العروض الترويجية", path: "/offer-kits" },
-
 ];
+
 const warehousesMenu = [
   { label: "حركة المخازن", path: "/inventory-transactions" },
   { label: "ارصدة المخازن", path: "/current-inventory" },
@@ -77,6 +84,7 @@ const warehousesMenu = [
   { label: "مرتجعات اذون الصرف", path: "/issue-voucher-returns" },
   { label: "تسوية جرد", path: "/inventory-adjustment" },
 ];
+
 const reportsMenu = [
   { label: "إعداد التقارير", path: "/reports-dashboard" },
   { label: "التحليل المالي الذكي", path: "/reports/financial-analysis" },
@@ -91,8 +99,13 @@ const reportsMenu = [
   { label: "أرصدة البنوك والصناديق", path: "/reports/bank-cash" },
   { label: "كشف حركة الصندوق/البنك", path: "/reports/safe-movements" },
 ];
-function Sidebar({ onToggleNotes }) {
+
+function Sidebar({ onToggleNotes, mobileOpen = false, onMobileClose }) {
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const [openProducts, setOpenProducts] = useState(false);
   const [openPurchases, setOpenPurchases] = useState(false);
   const [openWarehouses, setOpenWarehouses] = useState(false);
   const [openCompanyInfo, setOpenCompanyInfo] = useState(false);
@@ -100,226 +113,133 @@ function Sidebar({ onToggleNotes }) {
   const [openManufacturing, setOpenManufacturing] = useState(false);
   const [openReports, setOpenReports] = useState(false);
 
-  const toggleCompanyInfo = () => setOpenCompanyInfo(!openCompanyInfo);
-  const toggleWarehouses = () => setOpenWarehouses(!openWarehouses);
-
-  const togglePurchases = () => setOpenPurchases(!openPurchases);
-  const toggleSales = () => setOpenSales(!openSales);
-  const toggleManufacturing = () => setOpenManufacturing(!openManufacturing);
-  const toggleReports = () => setOpenReports(!openReports);
   const isActive = (path) => location.pathname === path;
 
-  return (
-    <Drawer
-      variant="permanent"
-      anchor="right"
-      sx={{
-        width: drawerWidth,
-        "& .MuiDrawer-paper": {
-          width: drawerWidth,
-          boxSizing: "border-box",
-          bgcolor: "#1a237e",
-          color: "white",
-          direction: "rtl",
-        },
-      }}
-    >
-      <Toolbar>
-        <Typography variant="h6" sx={{ fontWeight: "bold", mx: "auto" }}>
+  const handleNavClick = () => {
+    if (isMobile && onMobileClose) {
+      onMobileClose();
+    }
+  };
+
+  const renderSubMenu = (items) => (
+    <List component="div" disablePadding>
+      {items.map((item) => (
+        <ListItemButton
+          key={`${item.path}-${item.label}`}
+          component={Link}
+          to={item.path}
+          onClick={handleNavClick}
+          sx={{
+            pr: 4,
+            bgcolor: isActive(item.path)
+              ? "rgba(255,255,255,0.16)"
+              : "transparent",
+            "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+          }}
+        >
+          <ListItemText primary={item.label} />
+        </ListItemButton>
+      ))}
+    </List>
+  );
+
+  const drawerContent = (
+    <>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between", px: 2 }}>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: "bold", mx: isMobile ? 0 : "auto", fontSize: "1.05rem" }}
+        >
           نظام إدارة الحسابات
         </Typography>
+        {isMobile && (
+          <IconButton
+            color="inherit"
+            edge="end"
+            onClick={onMobileClose}
+            aria-label="إغلاق القائمة"
+          >
+            <CloseIcon />
+          </IconButton>
+        )}
       </Toolbar>
       <Divider sx={{ bgcolor: "rgba(255,255,255,0.2)" }} />
-      <List>
+      <List sx={{ overflowY: "auto", pb: 4 }}>
         {/* بيانات الشركه */}
-        <ListItemButton onClick={toggleCompanyInfo}>
+        <ListItemButton onClick={() => setOpenCompanyInfo(!openCompanyInfo)}>
           <ListItemText primary="بيانات الشركه" />
           {openCompanyInfo ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={openCompanyInfo} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {companyInfoMenu.map((item) => (
-              <ListItemButton
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  pl: 4,
-                  bgcolor: isActive(item.path)
-                    ? "rgba(255,255,255,0.1)"
-                    : "transparent",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                }}
-              >
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            ))}
-          </List>
+          {renderSubMenu(companyInfoMenu)}
         </Collapse>
-        {/* اداراة المنتجات */}
-        <ListItemButton onClick={togglePurchases}>
+
+        {/* ادارة المنتجات */}
+        <ListItemButton onClick={() => setOpenProducts(!openProducts)}>
           <ListItemText primary="ادارة المنتجات" />
-          {openPurchases ? <ExpandLess /> : <ExpandMore />}
+          {openProducts ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
-        <Collapse in={openPurchases} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {productsMenu.map((item) => (
-              <ListItemButton
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  pl: 4,
-                  bgcolor: isActive(item.path)
-                    ? "rgba(255,255,255,0.1)"
-                    : "transparent",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                }}
-              >
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            ))}
-          </List>
+        <Collapse in={openProducts} timeout="auto" unmountOnExit>
+          {renderSubMenu(productsMenu)}
         </Collapse>
+
         {/* المشتريات */}
-        <ListItemButton onClick={togglePurchases}>
+        <ListItemButton onClick={() => setOpenPurchases(!openPurchases)}>
           <ListItemText primary="المشتريات" />
           {openPurchases ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={openPurchases} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {purchasesMenu.map((item) => (
-              <ListItemButton
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  pl: 4,
-                  bgcolor: isActive(item.path)
-                    ? "rgba(255,255,255,0.1)"
-                    : "transparent",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                }}
-              >
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            ))}
-          </List>
+          {renderSubMenu(purchasesMenu)}
         </Collapse>
 
-        {/* التصنيع (NEW SECTION) */}
-        <ListItemButton onClick={toggleManufacturing}>
+        {/* التصنيع */}
+        <ListItemButton onClick={() => setOpenManufacturing(!openManufacturing)}>
           <ListItemText primary="التصنيع" />
           {openManufacturing ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={openManufacturing} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {manufacturingMenu.map((item) => (
-              <ListItemButton
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  pl: 4,
-                  bgcolor: isActive(item.path)
-                    ? "rgba(255,255,255,0.1)"
-                    : "transparent",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                }}
-              >
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            ))}
-          </List>
+          {renderSubMenu(manufacturingMenu)}
         </Collapse>
 
-        {/* البيع */}
-        <ListItemButton onClick={toggleSales}>
+        {/* المبيعات */}
+        <ListItemButton onClick={() => setOpenSales(!openSales)}>
           <ListItemText primary="المبيعات" />
           {openSales ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={openSales} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {salesMenu.map((item) => (
-              <ListItemButton
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  pl: 4,
-                  bgcolor: isActive(item.path)
-                    ? "rgba(255,255,255,0.1)"
-                    : "transparent",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                }}
-              >
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            ))}
-          </List>
+          {renderSubMenu(salesMenu)}
         </Collapse>
+
         {/* المخازن */}
-        <ListItemButton onClick={toggleWarehouses}>
+        <ListItemButton onClick={() => setOpenWarehouses(!openWarehouses)}>
           <ListItemText primary="المخازن" />
           {openWarehouses ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={openWarehouses} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {warehousesMenu.map((item) => (
-              <ListItemButton
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  pl: 4,
-                  bgcolor: isActive(item.path)
-                    ? "rgba(255,255,255,0.1)"
-                    : "transparent",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                }}
-              >
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            ))}
-          </List>
+          {renderSubMenu(warehousesMenu)}
         </Collapse>
 
-
         {/* التقارير */}
-        <ListItemButton onClick={toggleReports}>
+        <ListItemButton onClick={() => setOpenReports(!openReports)}>
           <ListItemText primary="التقارير" />
           {openReports ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={openReports} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {reportsMenu.map((item) => (
-              <ListItemButton
-                key={item.path}
-                component={Link}
-                to={item.path}
-                sx={{
-                  pl: 4,
-                  bgcolor: isActive(item.path)
-                    ? "rgba(255,255,255,0.1)"
-                    : "transparent",
-                  "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
-                }}
-              >
-                <ListItemText primary={item.label} />
-              </ListItemButton>
-            ))}
-          </List>
+          {renderSubMenu(reportsMenu)}
         </Collapse>
+
         <Divider sx={{ my: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
+
         {/* باقي الروابط */}
         {navItems.map((item) => (
           <ListItemButton
             key={item.path}
             component={Link}
             to={item.path}
+            onClick={handleNavClick}
             sx={{
               bgcolor: isActive(item.path)
-                ? "rgba(255,255,255,0.1)"
+                ? "rgba(255,255,255,0.16)"
                 : "transparent",
               "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
             }}
@@ -327,13 +247,62 @@ function Sidebar({ onToggleNotes }) {
             <ListItemText primary={item.label} />
           </ListItemButton>
         ))}
+
         <Divider sx={{ my: 1, bgcolor: "rgba(255,255,255,0.2)" }} />
-        <ListItemButton onClick={onToggleNotes} sx={{ "&:hover": { bgcolor: "rgba(255,255,255,0.2)" } }}>
+
+        <ListItemButton
+          onClick={() => {
+            onToggleNotes?.();
+            handleNavClick();
+          }}
+          sx={{ "&:hover": { bgcolor: "rgba(255,255,255,0.2)" } }}
+        >
           <NoteIcon sx={{ ml: 1 }} />
           <ListItemText primary="الملاحظات" />
         </ListItemButton>
       </List>
-    </Drawer>
+    </>
+  );
+
+  const paperStyles = {
+    width: drawerWidth,
+    maxWidth: "82vw",
+    boxSizing: "border-box",
+    bgcolor: "#1a237e",
+    color: "white",
+    direction: "rtl",
+    borderRadius: 0,
+  };
+
+  return (
+    <>
+      {isMobile ? (
+        <Drawer
+          variant="temporary"
+          anchor="right"
+          open={mobileOpen}
+          onClose={onMobileClose}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            "& .MuiDrawer-paper": paperStyles,
+          }}
+        >
+          {drawerContent}
+        </Drawer>
+      ) : (
+        <Drawer
+          variant="permanent"
+          anchor="right"
+          sx={{
+            width: drawerWidth,
+            flexShrink: 0,
+            "& .MuiDrawer-paper": paperStyles,
+          }}
+        >
+          {drawerContent}
+        </Drawer>
+      )}
+    </>
   );
 }
 

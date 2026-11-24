@@ -11,6 +11,8 @@ import {
   CardContent,
   CardActions,
   CircularProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -22,6 +24,8 @@ import {
 import axiosClient from '../api/axiosClient';
 
 const DraggableNotes = ({ onClose }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [notes, setNotes] = useState([]);
   const [position, setPosition] = useState({ x: 100, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
@@ -80,6 +84,7 @@ const DraggableNotes = ({ onClose }) => {
 
   // Drag logic using transform for better performance
   const handleMouseDown = (e) => {
+    if (isMobile) return;
     const handle = e.target.closest('.drag-handle');
     if (handle) {
       setIsDragging(true);
@@ -133,15 +138,23 @@ const DraggableNotes = ({ onClose }) => {
   return (
     <Paper
       elevation={10}
-      style={{
-        transform: `translate(${position.x}px, ${position.y}px)`,
-      }}
+      style={
+        isMobile
+          ? undefined
+          : {
+              transform: `translate(${position.x}px, ${position.y}px)`,
+            }
+      }
       sx={{
         position: 'fixed',
-        left: 0,
-        top: 0,
-        width: 300,
-        height: 450,
+        left: isMobile ? 12 : 0,
+        right: isMobile ? 12 : 'auto',
+        top: isMobile ? 'auto' : 0,
+        bottom: isMobile ? 12 : 'auto',
+        width: isMobile ? 'auto' : 300,
+        maxWidth: isMobile ? 420 : 'none',
+        mx: isMobile ? 'auto' : 0,
+        height: isMobile ? '72dvh' : 450,
         zIndex: 9999,
         display: 'flex',
         flexDirection: 'column',
