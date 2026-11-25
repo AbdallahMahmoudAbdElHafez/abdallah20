@@ -93,7 +93,7 @@ class WarehouseTransfersService {
             source_type: 'transfer',
             source_id: transfer.id,
             batches: batches
-          });
+          }, { transaction: t });
 
           // IN to destination
           await InventoryTransactionService.create({
@@ -105,7 +105,7 @@ class WarehouseTransfersService {
             source_type: 'transfer',
             source_id: transfer.id,
             batches: batches
-          });
+          }, { transaction: t });
         }
       }
 

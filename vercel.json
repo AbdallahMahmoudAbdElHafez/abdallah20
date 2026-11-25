@@ -6,7 +6,7 @@
   "outputDirectory": "client/dist",
   "functions": {
     "api/index.js": {
-      "maxDuration": 30,
+      "maxDuration": 60,
       "includeFiles": "node_modules/moment-timezone/data/packed/latest.json"
     }
   },
