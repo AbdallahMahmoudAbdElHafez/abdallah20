@@ -75,3 +75,4 @@ export default function MobileBottomNav({ onOpenMenu }) {
     </Paper>
   );
 }
+
